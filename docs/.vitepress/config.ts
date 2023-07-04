@@ -112,7 +112,8 @@ export default defineConfig({
             ]
           },
           {text: 'SVN', link: '/user-guide/svn'},
-          {text: 'Debugging', link: '/user-guide/debugging'}
+          {text: 'Debugging', link: '/user-guide/debugging'},
+          {text: 'Kitsu', link: '/user-guide/kitsu'}
 
         ]
       },
