@@ -6,6 +6,7 @@ from typing import List
 from .operators import select_similar_curves
 from .operators import lock_curves
 from .operators import bake_anim_across_armatures
+from .operators import relink_overridden_asset
 from . import easy_constraints
 from . import warn_about_broken_libraries
 from . import bone_selection_sets
@@ -28,6 +29,7 @@ modules = (
     easy_constraints,
     warn_about_broken_libraries,
     bone_selection_sets,
+    relink_overridden_asset
 )
 
 
