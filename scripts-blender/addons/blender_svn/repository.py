@@ -231,6 +231,7 @@ class SVN_repository(PropertyGroup):
 
         return self
 
+    @property
     def exists(self) -> bool:
         return Path(self.directory).exists()
 
@@ -248,7 +249,8 @@ class SVN_repository(PropertyGroup):
 
     def authenticate(self, context):
         self.auth_failed = False
-        Processes.start('Authenticate')
+        if self.exists and self.is_cred_entered:
+            Processes.start('Authenticate')
 
     username: StringProperty(
         name="Username",
