@@ -78,6 +78,7 @@ class BackgroundProcess:
     def handle_error(self, context, error):
         self.output = ""
         self.error = error.stderr.decode()
+        self.is_running = False
 
     def process_output(self, context, prefs):
         """
@@ -133,7 +134,6 @@ class BackgroundProcess:
             return self.tick_delay
         elif self.error:
             self.debug_print("Shutdown: There was an error.")
-            self.is_running = False
             return
         elif self.output:
             self.debug_print("Processing output")
