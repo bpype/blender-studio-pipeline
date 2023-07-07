@@ -97,7 +97,7 @@ class SVN_addon_preferences(AddonPreferences):
 
     @property
     def active_repo(self) -> SVN_repository:
-        if len(self.repositories) > 0:
+        if 0 < len(self.repositories) < self.active_repo_idx-1:
             return self.repositories[self.active_repo_idx]
 
     debug_mode: BoolProperty(

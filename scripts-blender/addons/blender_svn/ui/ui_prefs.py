@@ -207,14 +207,13 @@ def draw_prefs_repos(self, context) -> None:
         return
     if self.active_repo_idx-1 > len(self.repositories):
         return
-    active_repo = self.repositories[self.active_repo_idx]
-    if not active_repo:
+    if not self.active_repo:
         return
 
-    repo_col.prop(active_repo, 'display_name', icon='FILE_TEXT')
-    repo_col.prop(active_repo, 'url', icon='URL')
-    repo_col.prop(active_repo, 'username', icon='USER')
-    repo_col.prop(active_repo, 'password', icon='LOCKED')
+    repo_col.prop(self.active_repo, 'display_name', icon='FILE_TEXT')
+    repo_col.prop(self.active_repo, 'url', icon='URL')
+    repo_col.prop(self.active_repo, 'username', icon='USER')
+    repo_col.prop(self.active_repo, 'password', icon='LOCKED')
 
     draw_process_info(context, layout.row())
 
