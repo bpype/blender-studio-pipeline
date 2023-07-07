@@ -2,6 +2,17 @@
 # (c) 2021, Blender Foundation - Paul Golter
 # (c) 2022, Blender Foundation - Demeter Dzadik
 
+from . import (
+    props,
+    repository,
+    operators,
+    threaded,
+    ui,
+    prefs,
+    svn_info,
+)
+import importlib
+from bpy.utils import register_class, unregister_class
 bl_info = {
     "name": "Blender SVN",
     "author": "Demeter Dzadik, Paul Golter",
@@ -15,18 +26,6 @@ bl_info = {
     "category": "Generic",
 }
 
-from bpy.utils import register_class, unregister_class
-import importlib
-
-from . import (
-    props,
-    repository,
-    operators,
-    threaded,
-    ui,
-    prefs,
-    svn_info,
-)
 
 modules = [
     props,
@@ -37,6 +36,7 @@ modules = [
     prefs,
     svn_info,
 ]
+
 
 def register_unregister_modules(modules: list, register: bool):
     """Recursively register or unregister modules by looking for either
@@ -54,7 +54,8 @@ def register_unregister_modules(modules: list, register: bool):
                     register_func(c)
                 except Exception as e:
                     un = 'un' if not register else ''
-                    print(f"Warning: SVN failed to {un}register class: {c.__name__}")
+                    print(
+                        f"Warning: SVN failed to {un}register class: {c.__name__}")
                     print(e)
 
         if hasattr(m, 'modules'):
@@ -65,8 +66,10 @@ def register_unregister_modules(modules: list, register: bool):
         elif hasattr(m, 'unregister'):
             m.unregister()
 
+
 def register():
     register_unregister_modules(modules, True)
+
 
 def unregister():
     register_unregister_modules(modules, False)

@@ -12,6 +12,7 @@ from .ui_file_list import draw_repo_file_list, draw_process_info
 from ..threaded.background_process import Processes
 import platform
 
+
 class SVN_UL_repositories(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         repo = item
@@ -25,6 +26,7 @@ class SVN_UL_repositories(UIList):
         if not repo.dir_exists:
             row.alert = True
         row.prop(repo, 'directory', text="")
+
 
 class SVN_OT_repo_add(Operator, ImportHelper):
     """Add a repository to the list"""
@@ -45,7 +47,8 @@ class SVN_OT_repo_add(Operator, ImportHelper):
         try:
             repo = prefs.init_repo(context, path)
         except Exception as e:
-            self.report({'ERROR'}, "Failed to initialize repository. Ensure you have SVN installed, and that the selected directory is the root of a repository.")
+            self.report(
+                {'ERROR'}, "Failed to initialize repository. Ensure you have SVN installed, and that the selected directory is the root of a repository.")
             print(e)
             return {'CANCELLED'}
         if not repo:
@@ -58,6 +61,7 @@ class SVN_OT_repo_add(Operator, ImportHelper):
         prefs.active_repo_idx = repos.find(repo.directory)
         prefs.save_repo_info_to_file()
         return {'FINISHED'}
+
 
 class SVN_OT_repo_remove(Operator):
     """Remove a repository from the list"""
@@ -81,14 +85,17 @@ class SVN_OT_repo_remove(Operator):
         prefs.save_repo_info_to_file()
         return {'FINISHED'}
 
+
 class SVN_MT_add_repo(Menu):
     bl_idname = "SVN_MT_add_repo"
     bl_label = "Add Repo"
 
     def draw(self, context):
         layout = self.layout
-        layout.operator("svn.repo_add", text="Browse Existing Checkout", icon='FILE_FOLDER')
-        layout.operator("svn.checkout_initiate", text="Create New Checkout", icon='URL').create=True
+        layout.operator(
+            "svn.repo_add", text="Browse Existing Checkout", icon='FILE_FOLDER')
+        layout.operator("svn.checkout_initiate",
+                        text="Create New Checkout", icon='URL').create = True
 
 
 def draw_prefs(self, context):
@@ -103,7 +110,7 @@ def draw_prefs_checkout(self, context):
         msg_windows = "If you don't, cancel this operation and toggle it using Window->Toggle System Console."
         msg_linux = "If you don't, quit Blender and re-launch it from a terminal."
         msg_mac = msg_linux
-        
+
         system = platform.system()
         if system == "Windows":
             return msg_windows
@@ -120,13 +127,17 @@ def draw_prefs_checkout(self, context):
     col.label(text="Make sure you have Blender's terminal open!")
     col.label(text=get_terminal_howto())
     col.separator()
-    col.label(text="Downloading a repository can take a long time, and the UI will be locked.")
-    col.label(text="Without a terminal, you won't be able to track the progress of the checkout.")
+    col.label(
+        text="Downloading a repository can take a long time, and the UI will be locked.")
+    col.label(
+        text="Without a terminal, you won't be able to track the progress of the checkout.")
     col.separator()
 
     col = layout.column()
-    col.label(text="To interrupt the checkout, you can press Ctrl+C in the terminal.", icon='INFO')
-    col.label(text="You can resume it by re-running this operation, or with the SVN Update button.", icon='INFO')
+    col.label(
+        text="To interrupt the checkout, you can press Ctrl+C in the terminal.", icon='INFO')
+    col.label(
+        text="You can resume it by re-running this operation, or with the SVN Update button.", icon='INFO')
     col.separator()
 
     prefs = get_addon_prefs(context)
@@ -137,8 +148,9 @@ def draw_prefs_checkout(self, context):
             continue
         if other_repo.directory == repo.directory:
             row = col.row()
-            row.alert=True
-            row.label(text="A repository at this filepath is already specified.", icon='ERROR')
+            row.alert = True
+            row.label(
+                text="A repository at this filepath is already specified.", icon='ERROR')
             break
 
     col.prop(repo, 'display_name', text="Folder Name", icon='NEWFOLDER')
@@ -148,9 +160,10 @@ def draw_prefs_checkout(self, context):
             continue
         if other_repo.url == repo.url:
             sub = col.column()
-            sub.alert=True
+            sub.alert = True
             sub.label(text="A repository with this URL is already specified.")
-            sub.label(text="If you're sure you want to checkout another copy of the repo, feel free to proceed.")
+            sub.label(
+                text="If you're sure you want to checkout another copy of the repo, feel free to proceed.")
             break
     col.prop(repo, 'username', icon='USER')
     col.prop(repo, 'password', icon='LOCKED')
@@ -158,6 +171,7 @@ def draw_prefs_checkout(self, context):
     op_row = layout.row()
     op_row.operator('svn.checkout_finalize', text="Checkout", icon='CHECKMARK')
     op_row.operator('svn.checkout_cancel', text="Cancel", icon="X")
+
 
 def draw_prefs_repos(self, context) -> None:
     layout = self.layout
@@ -224,10 +238,12 @@ def draw_prefs_repos(self, context) -> None:
         draw_repo_error(layout, "Directory is not an SVN repository.")
         split = layout.split(factor=0.24)
         split.row()
-        split.row().operator("svn.checkout_initiate", text="Create New Checkout", icon='URL').create=False
+        split.row().operator("svn.checkout_initiate",
+                             text="Create New Checkout", icon='URL').create = False
         return
     if not self.active_repo.authenticated and not auth_in_progress and not auth_error:
-        draw_repo_error(layout, "Repository not authenticated. Enter your credentials.")
+        draw_repo_error(
+            layout, "Repository not authenticated. Enter your credentials.")
         return
 
     if len(self.repositories) > 0 and self.active_repo.authenticated:
@@ -240,12 +256,14 @@ def draw_prefs_repos(self, context) -> None:
             layout.label(text="Log: ")
             draw_svn_log(context, layout, file_browser=False)
 
+
 def draw_repo_error(layout, message):
     split = layout.split(factor=0.24)
     split.row()
     col = split.column()
-    col.alert=True
+    col.alert = True
     col.label(text=message, icon='ERROR')
+
 
 registry = [
     SVN_UL_repositories,

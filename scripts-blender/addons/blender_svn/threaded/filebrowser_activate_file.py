@@ -1,5 +1,6 @@
 from .background_process import BackgroundProcess
 
+
 class BGP_SVN_Activate_File(BackgroundProcess):
     """This crazy hacky method of activating the file with some delay is necessary 
     because Blender won't let us select the file immediately when changing the 

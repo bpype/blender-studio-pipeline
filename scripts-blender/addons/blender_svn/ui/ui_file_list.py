@@ -122,7 +122,8 @@ class SVN_UL_file_list(UIList):
         element becomes hidden."""
         flt_neworder = []
         list_items = getattr(data, propname)
-        flt_flags = [file.show_in_filelist * cls.UILST_FLT_ITEM for file in list_items]
+        flt_flags = [file.show_in_filelist *
+                     cls.UILST_FLT_ITEM for file in list_items]
 
         helper_funcs = bpy.types.UI_UL_list
 
@@ -147,7 +148,8 @@ class SVN_UL_file_list(UIList):
 
         row.prop(self, 'show_file_paths', text="",
                  toggle=True, icon="FILE_FOLDER")
-        row.prop(context.scene.svn.get_repo(context), 'file_search_filter', text="")
+        row.prop(context.scene.svn.get_repo(context),
+                 'file_search_filter', text="")
 
 
 def draw_process_info(context, layout):
@@ -167,7 +169,7 @@ def draw_process_info(context, layout):
             warning.process_id = process.name
             any_error = True
             break
-        
+
         if process.is_running:
             message = process.get_ui_message(context)
             if message:
@@ -177,7 +179,8 @@ def draw_process_info(context, layout):
     if not any_error and process_message:
         col.label(text=process_message)
     if prefs.debug_mode:
-        col.label(text="Processes: " + ", ".join([p.name for p in Processes.running_processes]))
+        col.label(text="Processes: " +
+                  ", ".join([p.name for p in Processes.running_processes]))
 
 
 def draw_repo_file_list(context, layout, repo):
@@ -223,7 +226,7 @@ def draw_repo_file_list(context, layout, repo):
 
     col.separator()
     col.operator("svn.commit", icon='EXPORT', text="")
-    col.operator("svn.update_all", icon='IMPORT', text="").revision=0
+    col.operator("svn.update_all", icon='IMPORT', text="").revision = 0
 
     col.separator()
     col.operator("svn.cleanup", icon='BRUSH_DATA', text="")

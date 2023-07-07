@@ -62,14 +62,15 @@ class SVN_UL_log(UIList):
 
         if not self.show_all_logs:
             flt_flags = [
-                log_entry.affects_active_file * self.bitflag_filter_item 
+                log_entry.affects_active_file * self.bitflag_filter_item
                 for log_entry in log_entries
             ]
 
         if self.filter_name:
             # Filtering: Allow comma-separated keywords.
             # ALL keywords must be found somewhere in the log entry for it to show up.
-            filter_words = [word.strip().lower() for word in self.filter_name.split(",")]
+            filter_words = [word.strip().lower()
+                            for word in self.filter_name.split(",")]
             for idx, log_entry in enumerate(log_entries):
                 for filter_word in filter_words:
                     if filter_word not in log_entry.text_to_search:

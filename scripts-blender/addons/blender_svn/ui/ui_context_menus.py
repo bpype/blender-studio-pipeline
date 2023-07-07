@@ -6,6 +6,7 @@ from bpy.types import Context, UIList, Operator
 from bpy.props import StringProperty
 from pathlib import Path
 
+
 class SVN_OT_open_blend_file(Operator):
     # This is needed because drawing a button for wm.open_mainfile in the UI
     # directly simply does not work; Blender just opens a full-screen filebrowser,
@@ -18,7 +19,7 @@ class SVN_OT_open_blend_file(Operator):
     filepath: StringProperty()
 
     def execute(self, context):
-        bpy.ops.wm.open_mainfile(filepath=self.filepath, load_ui = False)
+        bpy.ops.wm.open_mainfile(filepath=self.filepath, load_ui=False)
         return {'FINISHED'}
 
 
@@ -39,7 +40,7 @@ def svn_file_list_context_menu(self: UIList, context: Context) -> None:
     active_file = context.scene.svn.get_repo(context).active_file
     if active_file.name.endswith("blend"):
         layout.operator("svn.open_blend_file",
-                    text=f"Open {active_file.name}").filepath = active_file.absolute_path
+                        text=f"Open {active_file.name}").filepath = active_file.absolute_path
     else:
         layout.operator("wm.path_open",
                         text=f"Open {active_file.name}").filepath = str(Path(active_file.absolute_path))
@@ -67,8 +68,10 @@ def register():
     bpy.types.UI_MT_list_item_context_menu.append(svn_file_list_context_menu)
     bpy.types.UI_MT_list_item_context_menu.append(svn_log_list_context_menu)
 
+
 def unregister():
     bpy.types.UI_MT_list_item_context_menu.remove(svn_file_list_context_menu)
     bpy.types.UI_MT_list_item_context_menu.remove(svn_log_list_context_menu)
+
 
 registry = [SVN_OT_open_blend_file]

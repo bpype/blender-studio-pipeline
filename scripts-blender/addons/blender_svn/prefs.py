@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 from .threaded.background_process import Processes
 
+
 class SVN_addon_preferences(AddonPreferences):
     bl_idname = __package__
 
@@ -56,7 +57,7 @@ class SVN_addon_preferences(AddonPreferences):
             self.active_repo_idx = scene_svn_idx
             self.idx_updating = False
             return
-            
+
         if not active_repo.authenticated and not active_repo.auth_failed and active_repo.is_cred_entered:
             active_repo.authenticate(context)
 
@@ -75,14 +76,15 @@ class SVN_addon_preferences(AddonPreferences):
     )
 
     active_repo_mode: EnumProperty(
-        name = "Choose Repository",
-        description = "Whether the add-on should communicate with the repository of the currently opened .blend file, or the repository selected in the list below",
-        items = [
+        name="Choose Repository",
+        description="Whether the add-on should communicate with the repository of the currently opened .blend file, or the repository selected in the list below",
+        items=[
             ('CURRENT_BLEND', "Current Blend", "Check if the current .blend file is in an SVN repository, and communicate with that if that is the case. The file list will display only the files of the repository of the current .blend file. If the current .blend is not in a repository, do nothing"),
-            ('SELECTED_REPO', "Selected Repo", "Communicate with the selected repository")
+            ('SELECTED_REPO', "Selected Repo",
+             "Communicate with the selected repository")
         ],
-        default = 'CURRENT_BLEND',
-        update = update_active_repo_mode
+        default='CURRENT_BLEND',
+        update=update_active_repo_mode
     )
 
     active_repo_idx: IntProperty(
@@ -101,11 +103,11 @@ class SVN_addon_preferences(AddonPreferences):
             return self.repositories[self.active_repo_idx]
 
     debug_mode: BoolProperty(
-        name = "Debug Mode",
-        description = "Enable some debug UI",
-        default = False
+        name="Debug Mode",
+        description="Enable some debug UI",
+        default=False
     )
-    
+
     @property
     def is_busy(self):
         return Processes.is_running('Commit', 'Update')
@@ -117,21 +119,25 @@ class SVN_addon_preferences(AddonPreferences):
     )
 
     def save_repo_info_to_file(self):
-        saved_props = {'url', 'directory', 'name', 'username', 'password', 'display_name'}
+        saved_props = {'url', 'directory', 'name',
+                       'username', 'password', 'display_name'}
         repo_data = {}
         for repo in self['repositories']:
             directory = repo.get('directory', '')
 
-            repo_data[directory] = {key:value for key, value in repo.to_dict().items() if key in saved_props}
+            repo_data[directory] = {
+                key: value for key, value in repo.to_dict().items() if key in saved_props}
 
-        filepath = Path(bpy.utils.user_resource('CONFIG')) / Path("blender_svn.txt")
+        filepath = Path(bpy.utils.user_resource('CONFIG')) / \
+            Path("blender_svn.txt")
         with open(filepath, "w") as f:
             json.dump(repo_data, f, indent=4)
 
     def load_repo_info_from_file(self):
         self.loading = True
         try:
-            filepath = Path(bpy.utils.user_resource('CONFIG')) / Path("blender_svn.txt")
+            filepath = Path(bpy.utils.user_resource(
+                'CONFIG')) / Path("blender_svn.txt")
             if not filepath.exists():
                 return
 
@@ -153,6 +159,7 @@ class SVN_addon_preferences(AddonPreferences):
         self.save_repo_info_to_file()
 
     draw = ui_prefs.draw_prefs
+
 
 registry = [
     SVN_addon_preferences

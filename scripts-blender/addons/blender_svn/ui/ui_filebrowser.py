@@ -67,4 +67,3 @@ registry = [
     FILEBROWSER_PT_SVN_files,
     FILEBROWSER_PT_SVN_log
 ]
-

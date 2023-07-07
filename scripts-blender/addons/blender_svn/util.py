@@ -8,11 +8,14 @@ import bpy
 
 package_name = __package__
 
+
 def get_addon_prefs(context):
     return context.preferences.addons[__package__].preferences
 
+
 def dots():
     return "." * int((time() % 10) + 3)
+
 
 def redraw_viewport(context=None) -> None:
     """This causes the sidebar UI to refresh without having to mouse-hover it."""

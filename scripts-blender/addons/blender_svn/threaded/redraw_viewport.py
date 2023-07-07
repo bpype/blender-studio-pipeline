@@ -1,6 +1,7 @@
 from .background_process import BackgroundProcess, Processes
 from ..util import redraw_viewport
 
+
 class BGP_SVN_Redraw_Viewport(BackgroundProcess):
     name = "Redraw Viewport"
     repeat_delay = 1

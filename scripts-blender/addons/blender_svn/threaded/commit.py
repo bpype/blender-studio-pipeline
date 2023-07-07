@@ -10,6 +10,7 @@ from .background_process import Processes, BackgroundProcess
 from .execute_subprocess import execute_svn_command
 from ..util import get_addon_prefs
 
+
 class BGP_SVN_Commit(BackgroundProcess):
     name = "Commit"
     needs_authentication = True
@@ -33,7 +34,8 @@ class BGP_SVN_Commit(BackgroundProcess):
 
         Processes.kill('Status')
         sanitized_commit_msg = self.commit_msg.replace('"', "'")
-        command = ["svn", "commit", "-m", f"{sanitized_commit_msg}"] + self.file_list
+        command = ["svn", "commit", "-m",
+                   f"{sanitized_commit_msg}"] + self.file_list
         self.output = execute_svn_command(
             context,
             command,
@@ -67,4 +69,3 @@ class BGP_SVN_Commit(BackgroundProcess):
 
     def stop(self):
         super().stop()
-    

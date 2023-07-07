@@ -2,7 +2,8 @@
 # (c) 2022, Blender Foundation - Demeter Dzadik
 
 import bpy
-import threading, subprocess
+import threading
+import subprocess
 import random
 from typing import List
 
@@ -180,8 +181,8 @@ class BackgroundProcess:
         if not bpy.app.timers.is_registered(self.timer_function):
             self.debug_print("Register timer")
             bpy.app.timers.register(
-                self.timer_function, 
-                first_interval=self.first_interval, 
+                self.timer_function,
+                first_interval=self.first_interval,
                 persistent=persistent
             )
 
@@ -206,6 +207,8 @@ def get_recursive_subclasses(typ) -> List[type]:
 
 
 processes = {}
+
+
 class ProcessManager:
     @property
     def processes(self):
@@ -226,7 +229,6 @@ class ProcessManager:
         for proc_name in args:
             if proc_name in self.processes:
                 return self.processes[proc_name].is_running
-
 
     def get(self, proc_name: str):
         return self.processes.get(proc_name)
@@ -258,6 +260,7 @@ class ProcessManager:
         if process:
             process.stop()
             del self.processes[proc_name]
+
 
 # I named this variable with title-case, to indicate that it's a Singleton.
 # There should only be one.

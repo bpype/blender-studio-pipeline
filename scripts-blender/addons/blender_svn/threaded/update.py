@@ -25,7 +25,7 @@ class BGP_SVN_Update(BackgroundProcess):
         if self.revision > 0:
             command.insert(2, f"-r{self.revision}")
         self.output = execute_svn_command(
-            context, 
+            context,
             command,
             use_cred=True
         )
@@ -43,7 +43,6 @@ class BGP_SVN_Update(BackgroundProcess):
 
         Processes.start('Log')
         Processes.start('Status')
-
 
     def get_ui_message(self, context) -> str:
         """Return a string that should be drawn in the UI for user feedback, 

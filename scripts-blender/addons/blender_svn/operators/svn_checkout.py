@@ -13,6 +13,7 @@ from ..threaded.background_process import Processes
 import subprocess
 from pathlib import Path
 
+
 class SVN_OT_checkout_initiate(Operator):
     bl_idname = "svn.checkout_initiate"
     bl_label = "Initiate SVN Checkout"
@@ -20,9 +21,9 @@ class SVN_OT_checkout_initiate(Operator):
     bl_options = {'INTERNAL'}
 
     create: BoolProperty(
-        name = "Create Repo Entry",
-        description = "Whether a new repo entry should be created, or the active one used",
-        default = True
+        name="Create Repo Entry",
+        description="Whether a new repo entry should be created, or the active one used",
+        default=True
     )
 
     def execute(self, context):
@@ -34,6 +35,7 @@ class SVN_OT_checkout_initiate(Operator):
 
         prefs.checkout_mode = True
         return {'FINISHED'}
+
 
 class SVN_OT_checkout_finalize(Operator, SVN_Operator):
     bl_idname = "svn.checkout_finalize"
@@ -54,11 +56,12 @@ class SVN_OT_checkout_finalize(Operator, SVN_Operator):
             ['svn', 'cleanup']
         )
         p = subprocess.Popen(
-            ["svn", "checkout", f"--username={repo.username}", f"--password={repo.password}", repo.url, repo.display_name],
-            shell = False,
-            cwd = repo.directory+"/",
-            stdout = subprocess.PIPE,
-            start_new_session = True
+            ["svn", "checkout", f"--username={repo.username}",
+                f"--password={repo.password}", repo.url, repo.display_name],
+            shell=False,
+            cwd=repo.directory+"/",
+            stdout=subprocess.PIPE,
+            start_new_session=True
         )
         repo.directory = str((Path(repo.directory) / repo.display_name))
         while True:
@@ -86,6 +89,7 @@ class SVN_OT_checkout_cancel(Operator):
         if not repo.url and not repo.username and not repo.password and not repo.directory:
             prefs.repositories.remove(prefs.active_repo_idx)
         return {'FINISHED'}
+
 
 registry = [
     SVN_OT_checkout_initiate,

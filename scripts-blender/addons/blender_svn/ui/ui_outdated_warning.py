@@ -3,6 +3,7 @@
 
 import bpy
 
+
 def draw_outdated_file_warning(self, context):
     repo = context.scene.svn.get_repo(context)
     if not repo:
@@ -30,6 +31,7 @@ def draw_outdated_file_warning(self, context):
         warning = row.operator(
             'svn.custom_tooltip', text="SVN: This .blend file is outdated.", icon='ERROR')
         warning.tooltip = "The currently opened .blend file has a newer version available on the remote repository. This means any changes in this file will result in a conflict, and potential loss of data. See the SVN panel for info"
+
 
 def register():
     bpy.types.VIEW3D_HT_header.prepend(draw_outdated_file_warning)

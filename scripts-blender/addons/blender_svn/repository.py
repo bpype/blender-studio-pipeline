@@ -14,6 +14,7 @@ from .svn_info import get_svn_info
 from .util import get_addon_prefs
 from . import constants
 
+
 class SVN_file(PropertyGroup):
     """Property Group that can represent a version of a File in an SVN repository."""
 
@@ -52,7 +53,8 @@ class SVN_file(PropertyGroup):
         items=[
             ("NONE", "None", "File status is not predicted, but actual."),
             ("SVN_UP", "Update", "File status is predicted by `svn up`. Status is protected until process is finished."),
-            ("SVN_COMMIT", "Commit", "File status is predicted by `svn commit`. Status is protected until process is finished."),
+            ("SVN_COMMIT", "Commit",
+             "File status is predicted by `svn commit`. Status is protected until process is finished."),
             ("SKIP_ONCE", "Skip Once", "File status is predicted by a working-copy svn file operation, like Revert. Next status update should be ignored, and this enum should be set to SKIPPED_ONCE."),
             ("SKIPPED_ONCE", "Skipped Once", "File status update was skipped. Next status update can be considered accurate, and this flag can be reset to NONE. Until then, operations on this file should remain disabled."),
         ],
@@ -164,6 +166,7 @@ class SVN_log(PropertyGroup):
         name="Changed Files",
         description="List of file entries that were affected by this revision"
     )
+
     def changes_file(self, file: SVN_file) -> bool:
         for affected_file in self.changed_files:
             if affected_file.svn_path == "/"+file.svn_path:
@@ -190,7 +193,7 @@ class SVN_log(PropertyGroup):
         rev = "r"+str(self.revision_number)
         auth = self.revision_author
         files = " ".join([f.svn_path for f in self.changed_files])
-        msg =  self.commit_message
+        msg = self.commit_message
         date = self.revision_date_simple
         return " ".join([rev, auth, files, msg, date]).lower()
 
@@ -199,6 +202,7 @@ class SVN_log(PropertyGroup):
         description="Flag set whenever the active file index updates. Used to accelerate drawing performance by moving filtering logic from the drawing code to update callbacks and flags",
         default=False
     )
+
 
 class SVN_repository(PropertyGroup):
     ### Basic SVN Info. ###
@@ -210,14 +214,14 @@ class SVN_repository(PropertyGroup):
         get_addon_prefs(context).save_repo_info_to_file()
 
     display_name: StringProperty(
-        name = "Display Name",
-        description = "Display name of this SVN repository",
-        update = update_repo_info_file
+        name="Display Name",
+        description="Display name of this SVN repository",
+        update=update_repo_info_file
     )
 
     url: StringProperty(
-        name = "URL",
-        description = "URL of the remote repository",
+        name="URL",
+        description="URL of the remote repository",
     )
 
     def update_directory(self, context):
@@ -245,8 +249,8 @@ class SVN_repository(PropertyGroup):
         dir_path = Path(self.directory)
         root_dir, base_url = get_svn_info(self.directory)
         return (
-            dir_path.exists() and 
-            dir_path.is_dir() and 
+            dir_path.exists() and
+            dir_path.is_dir() and
             root_dir and base_url and
             root_dir == self.directory and
             base_url == self.url
@@ -385,7 +389,6 @@ class SVN_repository(PropertyGroup):
         current = file.revision
         return latest > current
 
-
     ### SVN File List. ###
     external_files: CollectionProperty(type=SVN_file)
 
@@ -461,8 +464,9 @@ class SVN_repository(PropertyGroup):
 
         # Filter out log entries that did not affect the selected file.
         self.log.foreach_set(
-            'affects_active_file', 
-            [log_entry.changes_file(self.active_file) for log_entry in self.log]
+            'affects_active_file',
+            [log_entry.changes_file(self.active_file)
+             for log_entry in self.log]
         )
 
     external_files_active_index: IntProperty(
@@ -509,8 +513,8 @@ class SVN_repository(PropertyGroup):
         return self.get_file_by_absolute_path(bpy.data.filepath)
 
     ### File List UIList filter properties ###
-    # Filtering properties are normally stored on the UIList, 
-    # but then they cannot be accessed from anywhere else, 
+    # Filtering properties are normally stored on the UIList,
+    # but then they cannot be accessed from anywhere else,
     # since template_list() does not return the UIList instance.
     # We need to be able to access them outside of drawing code, to be able to
     # ensure that a filtered out entry can never be the active one.
@@ -531,13 +535,13 @@ class SVN_repository(PropertyGroup):
 
     def update_file_filter(self, context):
         """Should run when any of the SVN file list search filters are changed."""
-        
+
         UI_LIST = bpy.types.UI_UL_list
         if self.file_search_filter:
             filter_list = UI_LIST.filter_items_by_name(
-                self.file_search_filter, 
-                1, 
-                self.external_files, 
+                self.file_search_filter,
+                1,
+                self.external_files,
                 "name",
                 reverse=False
             )

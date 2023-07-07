@@ -4,6 +4,7 @@
 import subprocess
 from typing import List
 
+
 def get_credential_commands(context) -> List[str]:
     repo = context.scene.svn.get_repo(context)
     assert (repo.is_cred_entered), "No username or password entered for this repository. The UI shouldn't have allowed you to get into a state where you can press an SVN operation button without having your credentials entered, so this is a bug!"

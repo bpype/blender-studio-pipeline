@@ -4,6 +4,7 @@ import subprocess
 
 from .threaded.execute_subprocess import execute_command
 
+
 def get_svn_info(path: Path or str) -> Tuple[str, str]:
     """Use the `svn info` command to get the root dir, the URL, and the relative URL."""
     path = Path(path)

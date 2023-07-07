@@ -1,24 +1,21 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # (c) 2022, Blender Foundation - Demeter Dzadik
 
+from ..svn_info import get_svn_info
+from ..util import get_addon_prefs
+from .. import constants
+from .execute_subprocess import execute_svn_command
+from .background_process import BackgroundProcess, Processes
+from bpy.types import Operator
+from bpy.props import StringProperty
+import bpy
+import xmltodict
+import time
+from pathlib import Path
+from typing import List, Dict, Union, Any, Set, Optional, Tuple
 from .. import wheels
 # This will load the xmltodict wheel file.
 wheels.preload_dependencies()
-
-from typing import List, Dict, Union, Any, Set, Optional, Tuple
-from pathlib import Path
-import time
-import xmltodict
-
-import bpy
-from bpy.props import StringProperty
-from bpy.types import Operator
-
-from .background_process import BackgroundProcess, Processes
-from .execute_subprocess import execute_svn_command
-from .. import constants
-from ..util import get_addon_prefs
-from ..svn_info import get_svn_info
 
 
 class SVN_OT_explain_status(Operator):
@@ -72,7 +69,7 @@ def init_svn_of_current_file(_scene=None):
     prefs.sync_repo_info_file()
 
     for repo in prefs.repositories:
-        # This would ideally only run when opening Blender for the first 
+        # This would ideally only run when opening Blender for the first
         # time, but there is no app handler for that, sadly.
         repo.authenticated = False
         repo.auth_failed = False
@@ -89,7 +86,7 @@ def init_svn_of_current_file(_scene=None):
         repo = scene_svn.get_scene_repo(context)
         if not repo:
             repo = prefs.init_repo(context, scene_svn.svn_directory)
-        
+
         for i, other_repo in enumerate(prefs.repositories):
             if other_repo == repo:
                 prefs.active_repo_idx = i
@@ -129,6 +126,7 @@ def set_scene_svn_info(context) -> bool:
 ############## AUTOMATICALLY KEEPING FILE STATUSES UP TO DATE ##################
 ################################################################################
 
+
 class BGP_SVN_Status(BackgroundProcess):
     name = "Status"
     needs_authentication = True
@@ -142,7 +140,7 @@ class BGP_SVN_Status(BackgroundProcess):
 
     def acquire_output(self, context, prefs):
         self.output = execute_svn_command(
-            context, 
+            context,
             ["svn", "status", "--show-updates", "--verbose", "--xml"],
             use_cred=True
         )
@@ -228,7 +226,8 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
             entry_existed = False
             file_entry = repo.external_files.add()
             file_entry.svn_path = svn_path_str
-            file_entry.absolute_path = str(repo.svn_to_absolute_path(svn_path).as_posix())
+            file_entry.absolute_path = str(
+                repo.svn_to_absolute_path(svn_path).as_posix())
 
             file_entry['name'] = svn_path.name
             if not file_entry.exists:
@@ -261,7 +260,8 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
         # File entry status has changed between local and repo.
         file_strings = []
         for svn_path, repos_status in new_files_on_repo:
-            status_char = constants.SVN_STATUS_NAME_TO_CHAR.get(repos_status, " ")
+            status_char = constants.SVN_STATUS_NAME_TO_CHAR.get(
+                repos_status, " ")
             file_strings.append(f"{status_char}    {svn_path}")
         print(
             "SVN: Detected file changes on remote:\n",

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # (c) 2022, Blender Foundation - Demeter Dzadik
 
+from datetime import datetime
 from pathlib import Path
 import subprocess
 
@@ -57,7 +58,8 @@ def reload_svn_log(self, context):
         log_entry.revision_author = r_author
 
         log_entry.revision_date = r_date
-        log_entry.revision_date_simple = svn_date_simple(r_date).split(" ")[0][5:]
+        log_entry.revision_date_simple = svn_date_simple(r_date).split(" ")[
+            0][5:]
 
         # File change set is on line 3 until the commit message begins...
         file_change_lines = chunk[2:-(r_msg_length+1)]
@@ -74,7 +76,8 @@ def reload_svn_log(self, context):
             log_file_entry = log_entry.changed_files.add()
             log_file_entry.name = file_path.name
             log_file_entry.svn_path = str(file_path.as_posix())
-            log_file_entry.absolute_path = str(repo.svn_to_absolute_path(file_path).as_posix())
+            log_file_entry.absolute_path = str(
+                repo.svn_to_absolute_path(file_path).as_posix())
             log_file_entry.revision = r_number
             log_file_entry.status = constants.SVN_STATUS_CHAR_TO_NAME[status_char]
 
@@ -146,7 +149,8 @@ class BGP_SVN_Log(BackgroundProcess):
         try:
             self.output = execute_svn_command(
                 context,
-                ["svn", "log", "--verbose", f"-r{latest_log_rev+1}:HEAD", "--limit", "10"],
+                ["svn", "log", "--verbose",
+                    f"-r{latest_log_rev+1}:HEAD", "--limit", "10"],
                 print_errors=False,
                 use_cred=True
             )
@@ -170,7 +174,7 @@ class BGP_SVN_Log(BackgroundProcess):
             rev_no = repo.log[-1].revision_number
             return f"Updating log. Current: r{rev_no}..."
 
-from datetime import datetime
+
 def svn_date_to_datetime(datetime_str: str) -> datetime:
     """Convert a string from SVN's datetime format to a datetime object."""
     date, time, _timezone, _day, _n_day, _mo, _y = datetime_str.split(" ")

@@ -67,4 +67,3 @@ registry = [
     VIEW3D_PT_svn_credentials,
     VIEW3D_PT_svn_files,
 ]
-

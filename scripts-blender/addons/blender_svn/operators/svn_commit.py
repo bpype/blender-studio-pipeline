@@ -86,7 +86,7 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
         self.is_file_really_dirty = bpy.data.is_dirty
 
         # This flag is needed as a workaround because bpy.data.is_dirty gets set to True
-        # when we change the operator's checkboxes or 
+        # when we change the operator's checkboxes or
         self.is_file_dirty_on_invoke = bpy.data.is_dirty
 
         for f in repo.external_files:
@@ -119,7 +119,8 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
                 icon = 'ERROR'
                 op_row = split.row()
                 op_row.alignment = 'LEFT'
-                op_row.operator('svn.save_during_commit', icon='FILE_BLEND', text="Save")
+                op_row.operator('svn.save_during_commit',
+                                icon='FILE_BLEND', text="Save")
             row.label(text=text, icon=icon)
 
         row = layout.row()
@@ -159,9 +160,9 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
         self.set_predicted_file_statuses(files_to_commit)
         Processes.stop('Status')
         Processes.start('Commit',
-            commit_msg=repo.commit_message,
-            file_list=filepaths
-        )
+                        commit_msg=repo.commit_message,
+                        file_list=filepaths
+                        )
 
         report = f"{(len(files_to_commit))} files"
         if len(files_to_commit) == 1:

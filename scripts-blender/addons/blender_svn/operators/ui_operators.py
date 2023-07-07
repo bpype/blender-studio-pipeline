@@ -3,6 +3,7 @@ from bpy.props import BoolProperty, StringProperty
 from bpy.types import Operator
 from ..threaded.background_process import Processes
 
+
 class SVN_OT_custom_tooltip(Operator):
     """Tooltip"""
     bl_idname = "svn.custom_tooltip"
