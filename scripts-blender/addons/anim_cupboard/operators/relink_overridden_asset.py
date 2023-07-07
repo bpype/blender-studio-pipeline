@@ -2,6 +2,16 @@ import bpy
 from typing import List, Dict, Set, Optional, Tuple
 
 
+class OUTLINER_OT_better_purge(bpy.types.Operator):
+    """Like Blender's purge, but clears fake users from linked IDs and collections"""
+    bl_idname = "outliner.better_purge"
+    bl_label = "Better Purge"
+
+    def execute(self, context):
+        better_purge(context)
+        return {'FINISHED'}
+
+
 class OUTLINER_OT_relink_overridden_asset(bpy.types.Operator):
     """Relink an overridden asset. Can be useful to recover assets from all sorts of broken states, but may lose un-keyed overridden values. Should preserve bone constraints, active actions of armatures, and any outside references to objects within the asset. Will also purge the .blend file and unlink the OVERRIDE_HIDDEN collection if present, out of necessity"""
     bl_idname = "object.relink_overridden_asset"
@@ -102,7 +112,7 @@ class OUTLINER_OT_relink_overridden_asset(bpy.types.Operator):
             empty_map[old_obj.override_library.reference] = empty
 
         nuke_override_hidden()
-        better_purge()
+        better_purge(context)
 
         for new_obj in list(new_hierarchy_root.all_objects):
             if not new_obj.override_library:
@@ -119,7 +129,7 @@ class OUTLINER_OT_relink_overridden_asset(bpy.types.Operator):
             # This usually won't do anything, but since we gave them fake users, let's keep it here just in case.
             bpy.data.objects.remove(empty)
 
-        better_purge()
+        better_purge(context)
         restore_names(new_hierarchy_root)
 
         for new_obj in new_hierarchy_root.all_objects:
@@ -130,7 +140,7 @@ class OUTLINER_OT_relink_overridden_asset(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def better_purge(clear_coll_fake_users=True):
+def better_purge(context, clear_coll_fake_users=True):
     """Call Blender's purge function, but first Python-override all library IDs' 
     use_fake_user to False.
     Otherwise, linked IDs essentially do not get purged properly.
@@ -317,19 +327,30 @@ def get_objects_in_override_hidden(linked_collection: bpy.types.Collection) -> L
     return ret
 
 
-def draw_menu_ui(self, context):
+def draw_relink_ui(self, context):
     self.layout.separator()
     self.layout.operator(OUTLINER_OT_relink_overridden_asset.bl_idname, text="Purge & Re-link")
 
+def draw_purge_ui(self, context):
+    layout = self.layout
+    layout.separator()
+    layout.operator(OUTLINER_OT_better_purge.bl_idname)
+
 
 registry = [
+    OUTLINER_OT_better_purge,
     OUTLINER_OT_relink_overridden_asset,
 ]
 
+
 def register():
-    bpy.types.VIEW3D_MT_object_liboverride.append(draw_menu_ui)
-    bpy.types.OUTLINER_MT_liboverride.append(draw_menu_ui)
+    bpy.types.TOPBAR_MT_file_cleanup.append(draw_purge_ui)
+
+    bpy.types.VIEW3D_MT_object_liboverride.append(draw_relink_ui)
+    bpy.types.OUTLINER_MT_liboverride.append(draw_relink_ui)
 
 def unregister():
-    bpy.types.OUTLINER_MT_liboverride.append(draw_menu_ui)
-    bpy.types.OUTLINER_MT_liboverride.remove(draw_menu_ui)
+    bpy.types.TOPBAR_MT_file_cleanup.remove(draw_purge_ui)
+
+    bpy.types.OUTLINER_MT_liboverride.append(draw_relink_ui)
+    bpy.types.OUTLINER_MT_liboverride.remove(draw_relink_ui)
