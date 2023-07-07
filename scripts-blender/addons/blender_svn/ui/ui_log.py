@@ -99,12 +99,14 @@ def is_log_useful(context):
     repo = context.scene.svn.get_repo(context)
     if len(repo.log) == 0:
         return False
-    any_visible = repo.get_visible_indicies(context)
-    if not any_visible:
-        return False
     active_file = repo.active_file
     if active_file.status in ['unversioned', 'added']:
         return False
+
+    if repo.file_search_filter:
+        any_visible = any([file.show_in_filelist for file in repo.external_files])
+        if not any_visible:
+            return False
 
     return True
 

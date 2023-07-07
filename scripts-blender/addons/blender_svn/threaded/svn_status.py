@@ -273,6 +273,7 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
         if file_entry.svn_path not in svn_paths:
             repo.remove_file_entry(file_entry)
 
+    repo.update_file_filter(context)
     repo.force_good_active_index(context)
 
 

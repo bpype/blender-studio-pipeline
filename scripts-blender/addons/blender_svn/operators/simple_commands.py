@@ -18,6 +18,11 @@ from ..util import get_addon_prefs, redraw_viewport
 # TODO: Add an operator to revert all local changes to the working copy.
 
 class SVN_Operator:
+    @staticmethod
+    def update_file_list(context):
+        repo = context.scene.svn.get_repo(context)
+        repo.update_file_filter(context)
+
     def execute_svn_command(self, context, command: List[str], use_cred=False) -> str:
         # Since a status update might already be being requested when an SVN operator is run,
         # we want to ignore the first update after any SVN operator.
@@ -51,6 +56,7 @@ class SVN_Operator_Single_File(SVN_Operator):
             # file.status_prediction_type = "SKIP_ONCE"
             redraw_viewport()
 
+        self.update_file_list(context)
         return ret
 
     def _execute(self, context: Context) -> Set[str]:
@@ -227,13 +233,14 @@ class SVN_OT_download_repo_revision(SVN_Operator, Operator):
         # NOTE: This can take a long time, but providing a progress bar is 
         # fundamentally impossible because SVN itself doesn't provide the command 
         # line with any progress info.
-        # TODO: Doing it in the background may be an option, just a hassle.
+        # TODO: Should run in the background like regular `svn up`.
         output = self.execute_svn_command(
             context,
             ["svn", "up", f"-r{self.revision}", "--accept", "postpone"],
             use_cred=True
         )
         self.report({"INFO"}, output.split("\n")[-2])
+        self.update_file_list(context)
         return {"FINISHED"}
 
     def set_predicted_file_status(self, repo, file_entry: "SVN_file"):

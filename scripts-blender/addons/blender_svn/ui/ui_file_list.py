@@ -121,9 +121,9 @@ class SVN_UL_file_list(UIList):
         properties to the addon preferences) we can find a visible entry
         from other UI code, allowing us to avoid situations where the active
         element becomes hidden."""
-        flt_flags = []
         flt_neworder = []
         list_items = getattr(data, propname)
+        flt_flags = [file.show_in_filelist * cls.UILST_FLT_ITEM for file in list_items]
 
         helper_funcs = bpy.types.UI_UL_list
 
@@ -133,25 +133,6 @@ class SVN_UL_file_list(UIList):
         repo = context.scene.svn.get_repo(context)
         if not repo:
             return flt_flags, flt_neworder
-
-        def has_default_status(file):
-            return file.status == 'normal' and file.repos_status == 'none' and file.status_prediction_type == 'NONE'
-
-        if repo.file_search_filter:
-            flt_flags = helper_funcs.filter_items_by_name(repo.file_search_filter, cls.UILST_FLT_ITEM, list_items, "name",
-                                                          reverse=False)
-        else:
-            # Start with all files visible.
-            flt_flags = [cls.UILST_FLT_ITEM] * len(list_items)
-
-            for i, item in enumerate(list_items):
-                if item == repo.current_blend_file:
-                    # ALWAYS display the current .blend file.
-                    continue
-
-                if has_default_status(item):
-                    # Filter out files that have default statuses.
-                    flt_flags[i] = 0
 
         return flt_flags, flt_neworder
 

@@ -123,6 +123,16 @@ class SVN_file(PropertyGroup):
 
         return 'QUESTION'
 
+    @property
+    def has_default_status(self):
+        return self.status == 'normal' and self.repos_status == 'none' and self.status_prediction_type == 'NONE'
+
+    show_in_filelist: BoolProperty(
+        name="Show In File List",
+        description="Flag indicating whether this file should be drawn in the file list. This flag is updated for every file whenever the file search string is modified. If we did this filtering during drawing time, it is painfully slow",
+        default=False
+    )
+
 
 class SVN_log(PropertyGroup):
     """Property Group that can represent an SVN log entry."""
@@ -251,6 +261,8 @@ class SVN_repository(PropertyGroup):
         self.auth_failed = False
         if self.exists and self.is_cred_entered:
             Processes.start('Authenticate')
+            # Trigger the file list filtering.
+            self.file_search_filter = self.file_search_filter
 
     username: StringProperty(
         name="Username",
@@ -467,18 +479,11 @@ class SVN_repository(PropertyGroup):
         return self.get_file_by_absolute_path(bpy.data.filepath)
 
     ### File List UIList filter properties ###
-    # These are normally stored on the UIList, but then they cannot be accessed
-    # from anywhere else, since template_list() does not return the UIList instance.
+    # Filtering properties are normally stored on the UIList, 
+    # but then they cannot be accessed from anywhere else, 
+    # since template_list() does not return the UIList instance.
     # We need to be able to access them outside of drawing code, to be able to
-    # know which entries are visible and ensure that a filtered out entry can never
-    # be the active one.
-
-    def get_visible_indicies(self, context) -> List[int]:
-        flt_flags, _flt_neworder = bpy.types.SVN_UL_file_list.cls_filter_items(
-            context, self, 'external_files')
-
-        visible_indicies = [i for i, flag in enumerate(flt_flags) if flag != 0]
-        return visible_indicies
+    # ensure that a filtered out entry can never be the active one.
 
     def force_good_active_index(self, context) -> bool:
         """
@@ -486,14 +491,34 @@ class SVN_repository(PropertyGroup):
         If the active element is being filtered out, set the active element to 
         something that is visible.
         """
-        visible_indicies = self.get_visible_indicies(context)
-        if len(visible_indicies) == 0:
-            self.external_files_active_index = 0
-        elif self.external_files_active_index not in visible_indicies:
-            self.external_files_active_index = visible_indicies[0]
+        if not self.active_file.show_in_filelist:
+            for i, file in enumerate(self.external_files):
+                if file.show_in_filelist:
+                    self.external_files_active_index = i
+                    return
 
     def update_file_filter(self, context):
         """Should run when any of the SVN file list search filters are changed."""
+        
+        UI_LIST = bpy.types.UI_UL_list
+        if self.file_search_filter:
+            filter_list = UI_LIST.filter_items_by_name(
+                self.file_search_filter, 
+                1, 
+                self.external_files, 
+                "name",
+                reverse=False
+            )
+            filter_list = [bool(val) for val in filter_list]
+            self.external_files.foreach_set('show_in_filelist', filter_list)
+        else:
+            for file in self.external_files:
+                if file == self.current_blend_file:
+                    file.show_in_filelist = True
+                    continue
+
+                file.show_in_filelist = not file.has_default_status
+
         self.force_good_active_index(context)
 
     file_search_filter: StringProperty(
