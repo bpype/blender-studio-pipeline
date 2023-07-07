@@ -60,29 +60,21 @@ class SVN_UL_log(UIList):
                               key=lambda i: log_entries[i].revision_number)
         flt_neworder.reverse()
 
-        is_filebrowser = context.space_data.type == 'FILE_BROWSER'
-        active_file = svn.get_filebrowser_active_file(
-            context) if is_filebrowser else svn.active_file
-
         if not self.show_all_logs:
-            # Filter out log entries that did not affect the selected file.
-            for idx, log_entry in enumerate(log_entries):
-                for affected_file in log_entry.changed_files:
-                    if affected_file.svn_path == "/"+active_file.svn_path:
-                        # If the active file is one of the files affected by this log
-                        # entry, break the for loop and skip the else block.
-                        break
-                else:
-                    flt_flags[idx] = 0
+            flt_flags = [
+                log_entry.affects_active_file * self.bitflag_filter_item 
+                for log_entry in log_entries
+            ]
 
-        # Filtering: Allow comma-separated keywords.
-        # ALL keywords must be found somewhere in the log entry for it to show up.
-        filter_words = [word.strip().lower() for word in self.filter_name.split(",")]
-        for idx, log_entry in enumerate(log_entries):
-            for filter_word in filter_words:
-                if filter_word not in log_entry.text_to_search:
-                    flt_flags[idx] = 0
-                    break
+        if self.filter_name:
+            # Filtering: Allow comma-separated keywords.
+            # ALL keywords must be found somewhere in the log entry for it to show up.
+            filter_words = [word.strip().lower() for word in self.filter_name.split(",")]
+            for idx, log_entry in enumerate(log_entries):
+                for filter_word in filter_words:
+                    if filter_word not in log_entry.text_to_search:
+                        flt_flags[idx] = 0
+                        break
 
         return flt_flags, flt_neworder
 

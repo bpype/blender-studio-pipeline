@@ -164,6 +164,11 @@ class SVN_log(PropertyGroup):
         name="Changed Files",
         description="List of file entries that were affected by this revision"
     )
+    def changes_file(self, file: SVN_file) -> bool:
+        for affected_file in self.changed_files:
+            if affected_file.svn_path == "/"+file.svn_path:
+                return True
+        return False
 
     matches_filter: BoolProperty(
         name="Matches Filter",
@@ -189,6 +194,11 @@ class SVN_log(PropertyGroup):
         date = self.revision_date_simple
         return " ".join([rev, auth, files, msg, date]).lower()
 
+    affects_active_file: BoolProperty(
+        name="Affects Active File",
+        description="Flag set whenever the active file index updates. Used to accelerate drawing performance by moving filtering logic from the drawing code to update callbacks and flags",
+        default=False
+    )
 
 class SVN_repository(PropertyGroup):
     ### Basic SVN Info. ###
@@ -434,6 +444,12 @@ class SVN_repository(PropertyGroup):
             space.activate_file_by_relative_path(
                 relative_path=self.active_file.name)
             Processes.start('Activate File')
+
+        # Filter out log entries that did not affect the selected file.
+        self.log.foreach_set(
+            'affects_active_file', 
+            [log_entry.changes_file(self.active_file) for log_entry in self.log]
+        )
 
     external_files_active_index: IntProperty(
         name="File List",
