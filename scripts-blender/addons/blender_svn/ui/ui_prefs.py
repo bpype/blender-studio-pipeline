@@ -15,6 +15,10 @@ class SVN_UL_repositories(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         repo = item
         row = layout.row()
+
+        prefs = get_addon_prefs(context)
+        if prefs.ui_mode == 'CURRENT_BLEND' and repo != context.scene.svn.get_repo(context):
+            row.enabled = False
         row.label(text=repo.display_name)
 
         if not repo.is_valid:
@@ -107,8 +111,6 @@ def draw_prefs(self, context) -> None:
     repo_col.enabled = not auth_in_progress
 
     list_row = repo_col.row()
-    if self.ui_mode == 'CURRENT_BLEND':
-        list_row.enabled = False
     col = list_row.column()
     col.template_list(
         "SVN_UL_repositories",

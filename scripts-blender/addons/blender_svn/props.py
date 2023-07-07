@@ -42,13 +42,12 @@ class SVN_scene_properties(PropertyGroup):
             return prefs.active_repo
 
     def get_scene_repo(self, context) -> Optional['SVN_repository']:
-        scene_svn = context.scene.svn
-        if not scene_svn.svn_url or not scene_svn.svn_directory:
+        if not self.svn_url or not self.svn_directory:
             return
 
         prefs = get_addon_prefs(context)
         for repo in prefs.repositories:
-            if (repo.url == scene_svn.svn_url) and (Path(repo.directory) == Path(scene_svn.svn_directory)):
+            if (repo.url == self.svn_url) and (Path(repo.directory) == Path(self.svn_directory)):
                 return repo
 
 

@@ -28,7 +28,6 @@ class SVN_UL_file_list(UIList):
         if self.layout_type != 'DEFAULT':
             raise NotImplemented
 
-        repo = data
         file_entry = item
         prefs = get_addon_prefs(context)
 

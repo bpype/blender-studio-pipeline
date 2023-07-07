@@ -12,7 +12,7 @@ def get_svn_info(path: Path or str) -> Tuple[str, str]:
     except subprocess.CalledProcessError as e:
         error_msg = e.stderr.decode()
         if "is not a working copy" in error_msg:
-            return None, None, None
+            return None, None
         elif "E200009" in error_msg:
             # If we're in a folder that wasn't yet added to the repo,
             # try again one folder higher.

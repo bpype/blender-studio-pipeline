@@ -89,6 +89,10 @@ def init_svn_of_current_file(_scene=None):
         repo = scene_svn.get_scene_repo(context)
         if not repo:
             repo = prefs.init_repo(context, scene_svn.svn_directory)
+        
+        for i, other_repo in enumerate(prefs.repositories):
+            if other_repo == repo:
+                prefs.active_repo_idx = i
 
     else:
         repo = prefs.active_repo
