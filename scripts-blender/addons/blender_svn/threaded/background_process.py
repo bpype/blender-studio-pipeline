@@ -67,6 +67,9 @@ class BackgroundProcess:
         Should save data into self.output and self.error.
         Reading Blender data from this function is safe, but writing isn't!
         """
+        repo = context.scene.svn.get_repo(context)
+        if not repo.is_valid_svn:
+            self.stop()
         try:
             self.acquire_output(context, prefs)
         except subprocess.CalledProcessError as error:

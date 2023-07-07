@@ -234,13 +234,30 @@ class SVN_repository(PropertyGroup):
         description="Absolute directory path of the SVN repository's root in the file system",
         update=update_directory
     )
+
     @property
-    def is_valid(self):
+    def dir_exists(self):
         dir_path = Path(self.directory)
         return dir_path.exists() and dir_path.is_dir()
 
-    def initialize(self, directory: str, url: str, display_name=""):
+    @property
+    def is_valid_svn(self):
+        dir_path = Path(self.directory)
+        root_dir, base_url = get_svn_info(self.directory)
+        return (
+            dir_path.exists() and 
+            dir_path.is_dir() and 
+            root_dir and base_url and
+            root_dir == self.directory and
+            base_url == self.url
+        )
+
+    def initialize(self, directory: str, url: str, display_name="", username="", password=""):
         self.url = url
+        if username:
+            self.username = username
+        if password:
+            self.password = password
         if self.directory != directory:
             # Don't set this if it's already set, to avoid infinite recursion
             # via the update callback.
@@ -251,10 +268,6 @@ class SVN_repository(PropertyGroup):
             self.display_name = Path(directory).name
 
         return self
-
-    @property
-    def exists(self) -> bool:
-        return Path(self.directory).exists()
 
     ### Credentials. ###
     def update_cred(self, context):
@@ -270,7 +283,7 @@ class SVN_repository(PropertyGroup):
 
     def authenticate(self, context):
         self.auth_failed = False
-        if self.exists and self.is_cred_entered:
+        if self.is_valid_svn and self.is_cred_entered:
             Processes.start('Authenticate')
             # Trigger the file list filtering.
             self.file_search_filter = self.file_search_filter

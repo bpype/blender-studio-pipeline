@@ -15,7 +15,6 @@ from ..threaded.execute_subprocess import execute_svn_command
 from ..threaded.background_process import Processes
 from ..util import get_addon_prefs, redraw_viewport
 
-# TODO: Add an operator to revert all local changes to the working copy.
 
 class SVN_Operator:
     @staticmethod
@@ -53,8 +52,6 @@ class SVN_Operator_Single_File(SVN_Operator):
         file = self.get_file(context)
         if file:
             Processes.start('Status')
-            # self.set_predicted_file_status(repo, file)
-            # file.status_prediction_type = "SKIP_ONCE"
             redraw_viewport()
 
         self.update_file_list(context)

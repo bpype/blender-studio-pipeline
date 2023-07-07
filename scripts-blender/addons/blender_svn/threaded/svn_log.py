@@ -150,7 +150,7 @@ class BGP_SVN_Log(BackgroundProcess):
                 print_errors=False,
                 use_cred=True
             )
-            self.debug_print("Output: \n" + self.output)
+            self.debug_print("Output: \n" + str(self.output))
         except subprocess.CalledProcessError as error:
             error_msg = error.stderr.decode()
             if "No such revision" in error_msg:

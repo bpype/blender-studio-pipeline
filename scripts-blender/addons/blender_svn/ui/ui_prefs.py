@@ -3,13 +3,14 @@
 
 from pathlib import Path
 
-from bpy.types import UIList, Operator
+from bpy.types import UIList, Operator, Menu
 from bpy_extras.io_utils import ImportHelper
 
 from ..util import get_addon_prefs
 from .ui_log import draw_svn_log, is_log_useful
 from .ui_file_list import draw_repo_file_list, draw_process_info
 from ..threaded.background_process import Processes
+import platform
 
 class SVN_UL_repositories(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -17,11 +18,11 @@ class SVN_UL_repositories(UIList):
         row = layout.row()
 
         prefs = get_addon_prefs(context)
-        if prefs.ui_mode == 'CURRENT_BLEND' and repo != context.scene.svn.get_repo(context):
+        if prefs.active_repo_mode == 'CURRENT_BLEND' and repo != context.scene.svn.get_repo(context):
             row.enabled = False
         row.label(text=repo.display_name)
 
-        if not repo.is_valid:
+        if not repo.dir_exists:
             row.alert = True
         row.prop(repo, 'directory', text="")
 
@@ -80,13 +81,90 @@ class SVN_OT_repo_remove(Operator):
         prefs.save_repo_info_to_file()
         return {'FINISHED'}
 
+class SVN_MT_add_repo(Menu):
+    bl_idname = "SVN_MT_add_repo"
+    bl_label = "Add Repo"
 
-def draw_prefs(self, context) -> None:
+    def draw(self, context):
+        layout = self.layout
+        layout.operator("svn.repo_add", text="Browse Existing Checkout", icon='FILE_FOLDER')
+        layout.operator("svn.checkout_initiate", text="Create New Checkout", icon='URL').create=True
+
+
+def draw_prefs(self, context):
+    if self.checkout_mode:
+        draw_prefs_checkout(self, context)
+    else:
+        draw_prefs_repos(self, context)
+
+
+def draw_prefs_checkout(self, context):
+    def get_terminal_howto():
+        msg_windows = "If you don't, cancel this operation and toggle it using Window->Toggle System Console."
+        msg_linux = "If you don't, quit Blender and re-launch it from a terminal."
+        msg_mac = msg_linux
+        
+        system = platform.system()
+        if system == "Windows":
+            return msg_windows
+        elif system == "Linux":
+            return msg_linux
+        elif system == "Darwin":
+            return msg_mac
+
+    layout = self.layout
+    col = layout.column()
+    col.alert = True
+
+    col.label(text="IMPORTANT! ", icon='ERROR')
+    col.label(text="Make sure you have Blender's terminal open!")
+    col.label(text=get_terminal_howto())
+    col.separator()
+    col.label(text="Downloading a repository can take a long time, and the UI will be locked.")
+    col.label(text="Without a terminal, you won't be able to track the progress of the checkout.")
+    col.separator()
+
+    col = layout.column()
+    col.label(text="To interrupt the checkout, you can press Ctrl+C in the terminal.", icon='INFO')
+    col.label(text="You can resume it by re-running this operation, or with the SVN Update button.", icon='INFO')
+    col.separator()
+
+    prefs = get_addon_prefs(context)
+    repo = prefs.repositories[-1]
+    col.prop(repo, 'directory')
+    for other_repo in prefs.repositories:
+        if other_repo == repo:
+            continue
+        if other_repo.directory == repo.directory:
+            row = col.row()
+            row.alert=True
+            row.label(text="A repository at this filepath is already specified.", icon='ERROR')
+            break
+
+    col.prop(repo, 'display_name', text="Folder Name", icon='NEWFOLDER')
+    col.prop(repo, 'url', icon='URL')
+    for other_repo in prefs.repositories:
+        if other_repo == repo:
+            continue
+        if other_repo.url == repo.url:
+            sub = col.column()
+            sub.alert=True
+            sub.label(text="A repository with this URL is already specified.")
+            sub.label(text="If you're sure you want to checkout another copy of the repo, feel free to proceed.")
+            break
+    col.prop(repo, 'username', icon='USER')
+    col.prop(repo, 'password', icon='LOCKED')
+
+    op_row = layout.row()
+    op_row.operator('svn.checkout_finalize', text="Checkout", icon='CHECKMARK')
+    op_row.operator('svn.checkout_cancel', text="Cancel", icon="X")
+
+def draw_prefs_repos(self, context) -> None:
     layout = self.layout
 
     row = layout.row()
     row.use_property_split = True
-    row.prop(self, 'ui_mode', expand=True)
+    row.prop(self, 'active_repo_mode', expand=True)
 
     auth_in_progress = False
     auth_error = False
@@ -95,7 +173,7 @@ def draw_prefs(self, context) -> None:
         auth_in_progress = auth_proc.is_running
         auth_error = auth_proc.error
 
-    if self.ui_mode == 'CURRENT_BLEND' and not context.scene.svn.get_repo(context):
+    if self.active_repo_mode == 'CURRENT_BLEND' and not context.scene.svn.get_repo(context):
         split = layout.split(factor=0.4)
         split.row()
         split.row().label(text="Current file is not in a repository.")
@@ -122,7 +200,7 @@ def draw_prefs(self, context) -> None:
     )
 
     op_col = list_row.column()
-    op_col.operator('svn.repo_add', icon='ADD', text="")
+    op_col.menu('SVN_MT_add_repo', icon='ADD', text="")
     op_col.operator('svn.repo_remove', icon='REMOVE', text="")
 
     if len(self.repositories) == 0:
@@ -140,8 +218,14 @@ def draw_prefs(self, context) -> None:
 
     draw_process_info(context, layout.row())
 
-    if not self.active_repo.exists:
+    if not self.active_repo.dir_exists:
         draw_repo_error(layout, "Repository not found on file system.")
+        return
+    if not self.active_repo.is_valid_svn:
+        draw_repo_error(layout, "Directory is not an SVN repository.")
+        split = layout.split(factor=0.24)
+        split.row()
+        split.row().operator("svn.checkout_initiate", text="Create New Checkout", icon='URL').create=False
         return
     if not self.active_repo.authenticated and not auth_in_progress and not auth_error:
         draw_repo_error(layout, "Repository not authenticated. Enter your credentials.")
@@ -167,5 +251,6 @@ def draw_repo_error(layout, message):
 registry = [
     SVN_UL_repositories,
     SVN_OT_repo_add,
-    SVN_OT_repo_remove
+    SVN_OT_repo_remove,
+    SVN_MT_add_repo
 ]

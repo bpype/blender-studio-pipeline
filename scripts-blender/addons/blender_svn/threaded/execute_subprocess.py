@@ -34,7 +34,7 @@ def execute_svn_command(context, command: List[str], *, ignore_errors=False, pri
     command.append("--non-interactive")
 
     try:
-        if repo.is_valid:
+        if repo.is_valid_svn:
             return execute_command(repo.directory, command)
     except subprocess.CalledProcessError as error:
         if ignore_errors:

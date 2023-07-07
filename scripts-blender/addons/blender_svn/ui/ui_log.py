@@ -89,16 +89,15 @@ class SVN_UL_log(UIList):
 
 def is_log_useful(context):
     repo = context.scene.svn.get_repo(context)
-    if len(repo.log) == 0:
+    if len(repo.log) == 0 or len(repo.external_files) == 0:
         return False
     active_file = repo.active_file
     if active_file.status in ['unversioned', 'added']:
         return False
 
-    if repo.file_search_filter:
-        any_visible = any([file.show_in_filelist for file in repo.external_files])
-        if not any_visible:
-            return False
+    any_visible = any([file.show_in_filelist for file in repo.external_files])
+    if not any_visible:
+        return False
 
     return True
 

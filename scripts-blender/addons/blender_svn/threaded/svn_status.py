@@ -77,7 +77,7 @@ def init_svn_of_current_file(_scene=None):
         repo.authenticated = False
         repo.auth_failed = False
 
-    if prefs.ui_mode == 'CURRENT_BLEND':
+    if prefs.active_repo_mode == 'CURRENT_BLEND':
         if not bpy.data.filepath:
             scene_svn.svn_url = ""
             return
@@ -172,7 +172,7 @@ class BGP_SVN_Authenticate(BGP_SVN_Status):
 
     def acquire_output(self, context, prefs):
         repo = context.scene.svn.get_repo(context)
-        if not repo or not repo.is_cred_entered or repo.authenticated:
+        if not repo or not repo.is_valid_svn or not repo.is_cred_entered or repo.authenticated:
             return
 
         super().acquire_output(context, prefs)

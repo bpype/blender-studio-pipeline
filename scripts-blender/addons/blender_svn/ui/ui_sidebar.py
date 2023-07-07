@@ -17,7 +17,7 @@ class VIEW3D_PT_svn_credentials(Panel):
     @classmethod
     def poll(cls, context):
         prefs = get_addon_prefs(context)
-        if prefs.ui_mode == 'CURRENT_BLEND':
+        if prefs.active_repo_mode == 'CURRENT_BLEND':
             repo = context.scene.svn.get_scene_repo(context)
         else:
             repo = context.scene.svn.get_repo(context)

@@ -47,7 +47,7 @@ class SVN_addon_preferences(AddonPreferences):
             return
         self.idx_updating = True
         active_repo = self.active_repo
-        if self.ui_mode == 'CURRENT_BLEND':
+        if self.active_repo_mode == 'CURRENT_BLEND':
             scene_svn = context.scene.svn
             scene_svn_idx = self.repositories.find(scene_svn.svn_directory)
             if scene_svn_idx == -1:
@@ -62,13 +62,19 @@ class SVN_addon_preferences(AddonPreferences):
 
         self.idx_updating = False
 
-    def update_ui_mode(self, context):
-        if self.ui_mode == 'CURRENT_BLEND':
+    def update_active_repo_mode(self, context):
+        if self.active_repo_mode == 'CURRENT_BLEND':
             scene_svn = context.scene.svn
             scene_svn_idx = self.repositories.find(scene_svn.svn_directory)
             self.active_repo_idx = scene_svn_idx
 
-    ui_mode: EnumProperty(
+    checkout_mode: BoolProperty(
+        name="Checkout In Progress",
+        description="Internal flag to indicate that the user is currently trying to create a new checkout",
+        default=False
+    )
+
+    active_repo_mode: EnumProperty(
         name = "Choose Repository",
         description = "Whether the add-on should communicate with the repository of the currently opened .blend file, or the repository selected in the list below",
         items = [
@@ -76,7 +82,7 @@ class SVN_addon_preferences(AddonPreferences):
             ('SELECTED_REPO', "Selected Repo", "Communicate with the selected repository")
         ],
         default = 'CURRENT_BLEND',
-        update = update_ui_mode
+        update = update_active_repo_mode
     )
 
     active_repo_idx: IntProperty(

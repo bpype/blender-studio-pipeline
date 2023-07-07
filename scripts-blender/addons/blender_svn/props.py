@@ -36,7 +36,7 @@ class SVN_scene_properties(PropertyGroup):
         """
         prefs = get_addon_prefs(context)
 
-        if prefs.ui_mode == 'CURRENT_BLEND':
+        if prefs.active_repo_mode == 'CURRENT_BLEND':
             return self.get_scene_repo(context)
         else:
             return prefs.active_repo
