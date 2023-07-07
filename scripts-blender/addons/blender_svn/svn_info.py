@@ -6,8 +6,12 @@ from .threaded.execute_subprocess import execute_command
 
 def get_svn_info(path: Path or str) -> Tuple[str, str]:
     """Use the `svn info` command to get the root dir, the URL, and the relative URL."""
+    path = Path(path)
+    if not path.exists():
+        return "", ""
+
     try:
-        dirpath_str = str(Path(path).as_posix())
+        dirpath_str = str(path.as_posix())
         svn_info = execute_command(dirpath_str, ["svn", "info"])
     except subprocess.CalledProcessError as e:
         error_msg = e.stderr.decode()

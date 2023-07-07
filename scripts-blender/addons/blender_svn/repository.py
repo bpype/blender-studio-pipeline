@@ -224,7 +224,8 @@ class SVN_repository(PropertyGroup):
         self.name = self.directory
 
         root_dir, base_url = get_svn_info(self.directory)
-        self.initialize(root_dir, base_url)
+        if root_dir and base_url:
+            self.initialize(root_dir, base_url)
 
     directory: StringProperty(
         name="Root Directory",
@@ -507,6 +508,8 @@ class SVN_repository(PropertyGroup):
         If the active element is being filtered out, set the active element to 
         something that is visible.
         """
+        if len(self.external_files) == 0:
+            return
         if not self.active_file.show_in_filelist:
             for i, file in enumerate(self.external_files):
                 if file.show_in_filelist:
