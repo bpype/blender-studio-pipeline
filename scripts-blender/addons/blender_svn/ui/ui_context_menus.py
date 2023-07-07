@@ -58,7 +58,7 @@ def svn_log_list_context_menu(self: UIList, context: Context) -> None:
 
     repo = context.scene.svn.get_repo(context)
     active_log = repo.active_log_filebrowser if is_filebrowser else repo.active_log
-    layout.operator("svn.download_repo_revision",
+    layout.operator("svn.update_all",
                     text=f"Revert Repository To r{active_log.revision_number}").revision = active_log.revision_number
     layout.separator()
 

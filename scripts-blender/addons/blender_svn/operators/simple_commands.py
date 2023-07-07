@@ -36,11 +36,12 @@ class SVN_Operator_Single_File(SVN_Operator):
     """Base class for SVN operators operating on a single file."""
     file_rel_path: StringProperty()
 
+    # Flag to differentiate operators that require that the file exists pre-execute.
     missing_file_allowed = False
 
     def execute(self, context: Context) -> Set[str]:
-        """Most operators want to make sure that the file exists pre-execute."""
         if not self.file_exists(context) and not type(self).missing_file_allowed:
+            # If the operator requires the file to exist and it doesn't, cancel.
             self.report({'ERROR'}, f'File is no longer on the file system: "{self.file_rel_path}"')
             return {'CANCELLED'}
 
@@ -217,34 +218,6 @@ class SVN_OT_download_file_revision(May_Modifiy_Current_Blend, Operator):
         else:
             file_entry.status = 'normal'
             file_entry.repos_status = 'modified'
-
-
-class SVN_OT_download_repo_revision(SVN_Operator, Operator):
-    bl_idname = "svn.download_repo_revision"
-    bl_label = "Download Repository Revision"
-    bl_description = "Revert the entire working copy to this revision. Can be used to see what state a project was in at a certain point in time. May take a long time to download all the files"
-    bl_options = {'INTERNAL'}
-
-    missing_file_allowed = True
-
-    revision: IntProperty()
-
-    def execute(self, context: Context) -> Set[str]:
-        # NOTE: This can take a long time, but providing a progress bar is 
-        # fundamentally impossible because SVN itself doesn't provide the command 
-        # line with any progress info.
-        # TODO: Should run in the background like regular `svn up`.
-        output = self.execute_svn_command(
-            context,
-            ["svn", "up", f"-r{self.revision}", "--accept", "postpone"],
-            use_cred=True
-        )
-        self.report({"INFO"}, output.split("\n")[-2])
-        self.update_file_list(context)
-        return {"FINISHED"}
-
-    def set_predicted_file_status(self, repo, file_entry: "SVN_file"):
-        file_entry.status = 'normal'
 
 
 class SVN_OT_restore_file(May_Modifiy_Current_Blend, Operator):
@@ -453,7 +426,6 @@ class SVN_OT_cleanup(SVN_Operator, Operator):
 registry = [
     SVN_OT_update_single,
     SVN_OT_download_file_revision,
-    SVN_OT_download_repo_revision,
     SVN_OT_revert_file,
     SVN_OT_restore_file,
     SVN_OT_unadd_file,

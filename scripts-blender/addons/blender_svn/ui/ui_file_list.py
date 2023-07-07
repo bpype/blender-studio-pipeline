@@ -223,7 +223,7 @@ def draw_repo_file_list(context, layout, repo):
 
     col.separator()
     col.operator("svn.commit", icon='EXPORT', text="")
-    col.operator("svn.update_all", icon='IMPORT', text="")
+    col.operator("svn.update_all", icon='IMPORT', text="").revision=0
 
     col.separator()
     col.operator("svn.cleanup", icon='BRUSH_DATA', text="")

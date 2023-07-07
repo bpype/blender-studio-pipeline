@@ -14,11 +14,19 @@ class BGP_SVN_Update(BackgroundProcess):
     repeat_delay = 0
     debug = False
 
+    def __init__(self, revision=0):
+        super().__init__()
+
+        self.revision = revision
+
     def acquire_output(self, context, prefs):
         Processes.kill('Status')
+        command = ["svn", "up", "--accept", "postpone"]
+        if self.revision > 0:
+            command.insert(2, f"-r{self.revision}")
         self.output = execute_svn_command(
             context, 
-            ["svn", "up", "--accept", "postpone"],
+            command,
             use_cred=True
         )
 
