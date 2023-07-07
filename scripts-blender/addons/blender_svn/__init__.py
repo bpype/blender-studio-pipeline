@@ -18,7 +18,7 @@ bl_info = {
     "author": "Demeter Dzadik, Paul Golter",
     "description": "Blender Add-on to interact with Subversion.",
     "blender": (3, 1, 0),
-    "version": (0, 2, 1),
+    "version": (1, 0, 0),
     "location": "View3D",
     "warning": "",
     "doc_url": "",
