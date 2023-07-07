@@ -74,13 +74,23 @@ def link_shape_key_node_tree(context) -> bpy.types.NodeTree:
     return bpy.data.node_groups[NODETREE_NAME]
 
 
-def ensure_shapekey_collection(scene: bpy.types.Scene) -> bpy.types.Collection:
+def ensure_shapekey_collection(context: bpy.types.Context) -> bpy.types.Collection:
     """Ensure and return a collection used for the objects created by the add-on."""
+    scene = context.scene
     coll = bpy.data.collections.get(COLLECTION_NAME)
     if not coll:
         coll = bpy.data.collections.new(COLLECTION_NAME)
         scene.collection.children.link(coll)
         coll.hide_render = True
+
+    coll.hide_viewport = False
+    if coll not in list(scene.collection.children):
+        scene.collection.children.link(coll)
+
+    context.view_layer.layer_collection.children[coll.name].exclude = False
+
+    for obj in coll.all_objects:
+        obj.hide_set(True)
 
     return coll
 
@@ -263,7 +273,8 @@ class GNSK_add_shape(bpy.types.Operator):
         sk_mesh = bpy.data.meshes.new_from_object(obj.evaluated_get(eval_dg))
         sk_ob = bpy.data.objects.new(obj.name+"."+self.shape_name, sk_mesh)
         sk_ob.data.name = sk_ob.name
-        ensure_shapekey_collection(context.scene).objects.link(sk_ob)
+        sk_coll = ensure_shapekey_collection(context)
+        sk_coll.objects.link(sk_ob)
 
         # Add shape keys
         sk_ob.use_shape_key_edit_mode = True
