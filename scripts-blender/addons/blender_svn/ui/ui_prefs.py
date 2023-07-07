@@ -138,11 +138,11 @@ def draw_prefs(self, context) -> None:
 
     draw_process_info(context, layout.row())
 
+    if not self.active_repo.exists:
+        draw_repo_error(layout, "Repository not found on file system.")
+        return
     if not self.active_repo.authenticated and not auth_in_progress and not auth_error:
-        split = layout.split(factor=0.24)
-        split.row()
-        col = split.column()
-        col.label(text="Repository not authenticated. Enter your credentials.")
+        draw_repo_error(layout, "Repository not authenticated. Enter your credentials.")
         return
 
     if len(self.repositories) > 0 and self.active_repo.authenticated:
@@ -155,6 +155,12 @@ def draw_prefs(self, context) -> None:
             layout.label(text="Log: ")
             draw_svn_log(context, layout, file_browser=False)
 
+def draw_repo_error(layout, message):
+    split = layout.split(factor=0.24)
+    split.row()
+    col = split.column()
+    col.alert=True
+    col.label(text=message, icon='ERROR')
 
 registry = [
     SVN_UL_repositories,
