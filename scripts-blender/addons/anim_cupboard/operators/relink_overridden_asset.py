@@ -19,27 +19,32 @@ class OUTLINER_OT_relink_overridden_asset(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.object and context.object.override_library
+        return cls.get_id(context)
 
     def invoke(self, context, _event):
         return context.window_manager.invoke_props_dialog(self)
 
+    @staticmethod
+    def get_id(context) -> Optional[bpy.types.ID]:
+        if context.area.type == 'OUTLINER' and len(context.selected_ids) > 0 and \
+                context.selected_ids[0].override_library:
+            return context.selected_ids[0]
+        else:
+            if context.object and context.object.override_library:
+                return context.object
+            elif context.collection and context.collection.override_library:
+                return context.collection
+
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
-        layout.label(text="Relink this asset?")
-        layout.prop(context.object.override_library, 'hierarchy_root')
+        layout.label(text="Relink this asset? Un-keyed values may get reset!")
+        id = self.get_id(context)
+        layout.prop(id.override_library, 'hierarchy_root')
 
     def execute(self, context):
-        outliners = [
-            area for area in bpy.context.screen.areas if area.type == 'OUTLINER']
-        if not outliners:
-            self.report(
-                {'ERROR'}, "This operation requires an Outliner to be present somewhere on the screen.")
-            return {'CANCELLED'}
-
-        active_ob = context.object
-        old_hierarchy_root = active_ob.override_library.hierarchy_root
+        id = self.get_id(context)
+        old_hierarchy_root = id.override_library.hierarchy_root
         linked_hierarchy_root = old_hierarchy_root.override_library.reference
 
         parent_colls = collection_unlink_from_parents(old_hierarchy_root)
@@ -92,14 +97,15 @@ class OUTLINER_OT_relink_overridden_asset(bpy.types.Operator):
                     if old_con.name not in pb_new.constraints:
                         pb_new.constraints.copy(pb_old.constraints[idx])
 
-        # We need to remap users from the old to the new objects, but doing 
+        # We need to remap users from the old to the new objects, but doing
         # that in a straight forward way causes a crash.
-        # So, let's create placeholder objects for each old object, that will 
+        # So, let's create placeholder objects for each old object, that will
         # get user remapped to, then delete all the old stuff, then user remap from the placeholders to the new objects.
 
         empty_map = {}
 
-        old_objs = list(old_hierarchy_root.all_objects) + get_objects_in_override_hidden(new_hierarchy_root)
+        old_objs = list(old_hierarchy_root.all_objects) + \
+            get_objects_in_override_hidden(new_hierarchy_root)
 
         for old_obj in old_objs:
             if not old_obj.override_library:
@@ -146,6 +152,12 @@ def better_purge(context, clear_coll_fake_users=True):
     Otherwise, linked IDs essentially do not get purged properly.
     """
 
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            break
+    else:
+        assert False, "Error: This operation requires a 3D view to be present."
+
     if clear_coll_fake_users:
         for coll in bpy.data.collections:
             coll.use_fake_user = False
@@ -155,8 +167,9 @@ def better_purge(context, clear_coll_fake_users=True):
         if id.library:
             id.use_fake_user = False
 
-    bpy.ops.outliner.orphans_purge(
-        do_local_ids=True, do_linked_ids=True, do_recursive=True)
+    with context.temp_override(area=area):
+        bpy.ops.outliner.orphans_purge(
+            do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
 
 def rename_override_objects():
@@ -272,6 +285,7 @@ def restore_names(override_root: bpy.types.Collection):
         if coll.override_library:
             coll.name = coll.override_library.reference.name
 
+
 def __cleanup_override_hidden(override_root: bpy.types.Collection):
     """This sadly doesn't work.
     It was meant to unlink only those objects from the OVERRIDE_HIDDEN collection,
@@ -282,9 +296,9 @@ def __cleanup_override_hidden(override_root: bpy.types.Collection):
     override_hidden = bpy.data.collections.get('OVERRIDE_HIDDEN')
     if not override_hidden:
         return
-    
+
     link_map = map_objects_of_linked_to_override_hierarchy(
-            override_hidden)
+        override_hidden)
 
     print("LINK MAP:")
     for key, value in link_map.items():
@@ -304,11 +318,12 @@ def __cleanup_override_hidden(override_root: bpy.types.Collection):
     for obj in objs_to_remove:
         override_hidden.objects.unlink(obj)
 
+
 def nuke_override_hidden():
-    override_hidden = bpy.data.collections.get('OVERRIDE_HIDDEN')
-    if not override_hidden:
-        return
-    bpy.data.collections.remove(override_hidden)
+    nukelist = [c for c in bpy.data.collections if 'OVERRIDE_HIDDEN' in c.name]
+    for coll in nukelist:
+        bpy.data.collections.remove(coll)
+
 
 def get_objects_in_override_hidden(linked_collection: bpy.types.Collection) -> List[bpy.types.Object]:
     override_hidden = bpy.data.collections.get('OVERRIDE_HIDDEN')
@@ -329,7 +344,9 @@ def get_objects_in_override_hidden(linked_collection: bpy.types.Collection) -> L
 
 def draw_relink_ui(self, context):
     self.layout.separator()
-    self.layout.operator(OUTLINER_OT_relink_overridden_asset.bl_idname, text="Purge & Re-link")
+    self.layout.operator(
+        OUTLINER_OT_relink_overridden_asset.bl_idname, text="Purge & Re-link")
+
 
 def draw_purge_ui(self, context):
     layout = self.layout
@@ -348,6 +365,7 @@ def register():
 
     bpy.types.VIEW3D_MT_object_liboverride.append(draw_relink_ui)
     bpy.types.OUTLINER_MT_liboverride.append(draw_relink_ui)
+
 
 def unregister():
     bpy.types.TOPBAR_MT_file_cleanup.remove(draw_purge_ui)
