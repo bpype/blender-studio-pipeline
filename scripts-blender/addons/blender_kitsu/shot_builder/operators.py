@@ -229,11 +229,10 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
                     f"{addon_prefs.shot_builder_action_prefix}{base_name}.{self.shot_id}.v001")
                 new_action.use_fake_user = True
                 obj.animation_data.action = new_action
-        
-        # Set Shot Frame Range  
-        frame_length = shot.get('nb_frames')
-        context.scene.frame_start = addon_prefs.shot_builder_frame_offset
-        context.scene.frame_end = frame_length + addon_prefs.shot_builder_frame_offset
+
+        # Set Shot Frame Range
+        context.scene.frame_start = int(shot.data["3d_start"])
+        context.scene.frame_end = int(shot.data["3d_start"]) + int(shot.nb_frames) - 1
 
         # Run User Script
         exec(addon_prefs.user_exec_code)
