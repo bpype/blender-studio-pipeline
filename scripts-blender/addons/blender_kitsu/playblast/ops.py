@@ -452,8 +452,6 @@ def load_post_handler_check_frame_range(dummy: Any) -> None:
     """
     active_shot = cache.shot_active_get()
     if not active_shot:
-        bpy.ops.kitsu.con_detect_context()
-    if not active_shot:
         return
 
     # Pull update for shot.
