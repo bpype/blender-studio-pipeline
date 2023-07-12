@@ -231,8 +231,10 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
                 obj.animation_data.action = new_action
 
         # Set Shot Frame Range
-        context.scene.frame_start = int(shot.data["3d_start"])
-        context.scene.frame_end = int(shot.data["3d_start"]) + int(shot.nb_frames) - 1
+        context.scene.frame_start = int(shot["data"].get("3d_start"))
+        context.scene.frame_end = (
+            int(shot["data"].get("3d_start")) + shot.get('nb_frames') - 1
+        )
 
         # Run User Script
         exec(addon_prefs.user_exec_code)
