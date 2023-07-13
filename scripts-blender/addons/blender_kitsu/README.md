@@ -263,6 +263,14 @@ blender-kitsu has different checks that are performed during file load or during
 
 ![image info](/media/addons/blender_kitsu/error_animation.jpg)
 
+## Development
+### Update Dependencies
+To update the dependencies of `Blender_Kitsu` please follow these steps.
+ 1. `cd scripts-blender/addons/blender_kitsu/wheels` To enter the directory of dependant modules
+ 2. `rm -r *.whl` To remove any existing packages (or manually remove .whl files if you are on windows)
+ 3. `pip download gazu` to get the latest gazu and it's dependencies as wheels
+ 4. `rm certifi* charset_normalizer* idna* requests* urllib3* websocket_client*` to remove the modules that are already included in blender
+
 ## Troubleshoot
 blender-kitsu makes good use of logging and status reports. Most of the operators report information in the blender info bar. More detailed logs can be found in the blender system console. If you feel like anything went wrong, consider opening a console and check the logs.
 

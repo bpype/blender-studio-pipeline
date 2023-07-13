@@ -26,8 +26,8 @@ from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple, Any
 import datetime
 import bpy
-
-from blender_kitsu import gazu, cache, util, prefs, bkglobals
+import gazu
+from blender_kitsu import cache, util, prefs, bkglobals
 from blender_kitsu.sqe import push, pull, checkstrip, opsdata, checksqe
 
 from blender_kitsu.logger import LoggerFactory
@@ -2407,9 +2407,8 @@ class KITSU_OT_vse_publish_edit_revision(bpy.types.Operator):
         sorted_edits = []
         active_project = cache.project_active_get()
 
-        for edit in gazu.edit.get_all_edits_with_tasks():
-            if (edit["project_id"] == active_project.id) and not edit['canceled']:
-                sorted_edits.append(edit)
+        for edit in gazu.edit.all_edits_for_project(active_project.id):
+            sorted_edits.append(edit)
 
         return [
             (
@@ -2456,7 +2455,8 @@ class KITSU_OT_vse_publish_edit_revision(bpy.types.Operator):
     def invoke(self, context, event):
         # Ensure user has permissions to access edit data
         try:
-            edits = gazu.edit.get_all_edits_with_tasks()
+            active_project = cache.project_active_get()
+            edits = gazu.edit.all_edits_for_project(active_project.id)
         except gazu.exception.NotAllowedException:
             self.report(
                 {"ERROR"}, "Kitsu User doesn't have permissions to access edit data."
@@ -2499,7 +2499,7 @@ class KITSU_OT_vse_publish_edit_revision(bpy.types.Operator):
 
         active_project = cache.project_active_get()
 
-        existing_previews = gazu.edit.get_all_previews_for_edit(self.edit_entry)
+        existing_previews = gazu.edit.all_previews_for_edit(self.edit_entry)
         len_previews = get_dict_len(existing_previews)
         revision = str(set_revision_int(len_previews)).zfill(3)
 
@@ -2538,7 +2538,7 @@ class KITSU_OT_vse_publish_edit_revision(bpy.types.Operator):
             edit_entity_update = set_entity_data(
                 edit_entry, 'frame_start', self.frame_start
             )
-            updated_edit_entity = gazu.entity.update_entity(
+            updated_edit_entity = gazu.edit.update_edit(
                 edit_entity_update
             )  # TODO add a generic function to update entites
 

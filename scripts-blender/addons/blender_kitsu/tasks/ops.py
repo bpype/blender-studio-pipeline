@@ -22,8 +22,8 @@ from typing import Dict, List, Set, Optional, Tuple, Any
 from blender_kitsu import tasks
 
 import bpy
-
-from blender_kitsu import cache, prefs, gazu, util
+import gazu
+from blender_kitsu import cache, prefs, util
 
 from blender_kitsu.tasks import opsdata
 from blender_kitsu.logger import LoggerFactory

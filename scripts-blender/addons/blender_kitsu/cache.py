@@ -38,7 +38,7 @@ from blender_kitsu.types import (
     User,
 )
 from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.gazu.exception import RouteNotFoundException
+import gazu
 
 logger = LoggerFactory.getLogger()
 
@@ -411,7 +411,6 @@ def get_user_all_tasks() -> List[Task]:
 def _init_cache_entity(
     entity_id: str, entity_type: Any, cache_variable_name: Any, cache_name: str
 ) -> None:
-
     if entity_id:
         try:
             globals()[cache_variable_name] = entity_type.by_id(entity_id)
@@ -420,7 +419,7 @@ def _init_cache_entity(
                 cache_name,
                 globals()[cache_variable_name].name,
             )
-        except RouteNotFoundException:
+        except gazu.exception.RouteNotFoundException:
             logger.error(
                 "Failed to initialize active %s cache. ID not found on server: %s",
                 cache_name,

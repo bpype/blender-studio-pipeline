@@ -23,7 +23,7 @@ import inspect
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Union, Tuple, TypeVar
 
-from blender_kitsu import gazu
+import gazu
 from blender_kitsu.logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
@@ -619,7 +619,6 @@ class Asset(Entity):
         asset_name: str,
         asset_type: Optional[AssetType] = None,
     ) -> Optional[Asset]:
-
         # Convert args to dict for api call.
         project_dict = asdict(project)
         asset_type_dict = asdict(asset_type) if asset_type else asset_type
@@ -693,12 +692,19 @@ class TaskType(Entity):
 
     @classmethod
     def all_shot_task_types(cls) -> List[TaskType]:
-        return [cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Shot"]
+        return [
+            cls.from_dict(t)
+            for t in gazu.task.all_task_types()
+            if t["for_entity"] == "Shot"
+        ]
 
     @classmethod
     def all_asset_task_types(cls) -> List[TaskType]:
         return [
-            cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Asset"]
+            cls.from_dict(t)
+            for t in gazu.task.all_task_types()
+            if t["for_entity"] == "Asset"
+        ]
 
     def __bool__(self) -> bool:
         return bool(self.id)
@@ -777,7 +783,6 @@ class Task(Entity):
         task_type: TaskType,
         name: str = "main",
     ) -> Optional[Task]:
-
         # Convert args to dict for api call.
         asset_shotdict = asdict(asset_shot)
         task_type_dict = asdict(task_type)
@@ -804,7 +809,6 @@ class Task(Entity):
         assigner: Optional[Person] = None,
         assignees: Optional[List[Person]] = None,
     ) -> Task:
-
         # Convert args.
         assigner = asdict(assigner) if assigner else assigner
         task_status = asdict(task_status) if task_status else task_status
@@ -857,7 +861,6 @@ class Task(Entity):
         # I think attachements is equal to attachment_files in Comment class.
         created_at: Optional[str] = None,
     ) -> Comment:
-
         # Convert args.
         person = asdict(user) if user else user
 
@@ -909,7 +912,6 @@ class TaskStatus(Entity):
 
     @classmethod
     def by_short_name(cls, short_name: str) -> Optional[TaskStatus]:
-
         # Can return None if task status does not exist.
         task_status_dict = gazu.task.get_task_status_by_short_name(short_name)
 
@@ -919,7 +921,6 @@ class TaskStatus(Entity):
 
     @classmethod
     def by_name(cls, name: str) -> Optional[TaskStatus]:
-
         # Can return None if task status does not exist.
         task_status_dict = gazu.task.get_task_status_by_name(name)
 

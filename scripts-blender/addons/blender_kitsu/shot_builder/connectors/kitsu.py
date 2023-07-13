@@ -26,8 +26,7 @@ from blender_kitsu.shot_builder.render_settings import RenderSettings
 from blender_kitsu.shot_builder.connectors.connector import Connector
 import requests
 from blender_kitsu import cache
-from blender_kitsu.gazu.asset import all_assets_for_shot
-from blender_kitsu.gazu.shot import all_shots_for_project, all_sequences_for_project
+import gazu
 
 import typing
 import logging
@@ -168,7 +167,7 @@ class KitsuConnector(Connector):
 
     def get_shots(self) -> typing.List[ShotRef]:
         project = cache.project_active_get()
-        kitsu_sequences = all_sequences_for_project(project.id)
+        kitsu_sequences = gazu.shot.all_sequences_for_project(project.id)
 
         sequence_lookup = {
             sequence_data['id']: KitsuSequenceRef(
@@ -179,7 +178,7 @@ class KitsuConnector(Connector):
             for sequence_data in kitsu_sequences
         }
 
-        kitsu_shots = all_shots_for_project(project.id)
+        kitsu_shots = gazu.shot.all_shots_for_project(project.id)
         shots: typing.List[ShotRef] = []
 
         for shot_data in kitsu_shots:
@@ -230,7 +229,7 @@ class KitsuConnector(Connector):
         return shots
 
     def get_assets_for_shot(self, shot: Shot) -> typing.List[AssetRef]:
-        kitsu_assets = all_assets_for_shot(shot.kitsu_id)
+        kitsu_assets = gazu.asset.all_assets_for_shot(shot.kitsu_id)
 
         return [
             AssetRef(name=asset_data['name'], code=asset_data['code'])

@@ -20,37 +20,59 @@
 import pathlib
 from typing import *
 import bpy
+import gazu
 from blender_kitsu.shot_builder.shot import ShotRef
-from blender_kitsu.shot_builder.project import ensure_loaded_production, get_active_production
+from blender_kitsu.shot_builder.project import (
+    ensure_loaded_production,
+    get_active_production,
+)
 from blender_kitsu.shot_builder.builder import ShotBuilder
 from blender_kitsu.shot_builder.task_type import TaskType
-from blender_kitsu import prefs, cache, gazu
-from blender_kitsu.shot_builder.anim_setup.core import  animation_workspace_delete_others, animation_workspace_vse_area_add
+from blender_kitsu import prefs, cache
+from blender_kitsu.shot_builder.anim_setup.core import (
+    animation_workspace_delete_others,
+    animation_workspace_vse_area_add,
+)
 from blender_kitsu.shot_builder.editorial.core import editorial_export_get_latest
 from blender_kitsu.shot_builder.builder.save_file import save_shot_builder_file
 
 
 _production_task_type_items: List[Tuple[str, str, str]] = []
 
-def production_task_type_items(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
+
+def production_task_type_items(
+    self: Any, context: bpy.types.Context
+) -> List[Tuple[str, str, str]]:
     global _production_task_type_items
     return _production_task_type_items
 
+
 _production_seq_id_items: List[Tuple[str, str, str]] = []
 
-def production_seq_id_items(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
+
+def production_seq_id_items(
+    self: Any, context: bpy.types.Context
+) -> List[Tuple[str, str, str]]:
     global _production_seq_id_items
     return _production_seq_id_items
 
+
 _production_shots: List[ShotRef] = []
 
-def production_shots(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
+
+def production_shots(
+    self: Any, context: bpy.types.Context
+) -> List[Tuple[str, str, str]]:
     global _production_shots
     return _production_shots
 
+
 _production_shot_id_items_for_seq: List[Tuple[str, str, str]] = []
 
-def production_shot_id_items_for_seq(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
+
+def production_shot_id_items_for_seq(
+    self: Any, context: bpy.types.Context
+) -> List[Tuple[str, str, str]]:
     global _production_shot_id_items_for_seq
     global _production_shot_id_items
 
@@ -58,23 +80,27 @@ def production_shot_id_items_for_seq(self: Any, context: bpy.types.Context) -> L
         return []
 
     shots_for_seq: List[Tuple(str, str, str)] = [
-        (s.name, s.name, "") for s in _production_shots
+        (s.name, s.name, "")
+        for s in _production_shots
         if s.sequence.name == self.seq_id
-        ]
+    ]
 
     _production_shot_id_items_for_seq.clear()
     _production_shot_id_items_for_seq.extend(shots_for_seq)
 
     return _production_shot_id_items_for_seq
 
-def reset_shot_id_enum(self : Any, context: bpy.types.Context) -> None:
+
+def reset_shot_id_enum(self: Any, context: bpy.types.Context) -> None:
     production_shot_id_items_for_seq(self, context)
     global _production_shot_id_items_for_seq
     if _production_shot_id_items_for_seq:
         self.shot_id = _production_shot_id_items_for_seq[0][0]
 
+
 class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
     """Build a new shot file"""
+
     bl_idname = "shotbuilder.new_shot_file"
     bl_label = "New Production Shot File"
 
@@ -84,14 +110,13 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
     _file_path = ''
 
     production_root: bpy.props.StringProperty(  # type: ignore
-        name="Production Root",
-        description="Root of the production",
-        subtype='DIR_PATH')
+        name="Production Root", description="Root of the production", subtype='DIR_PATH'
+    )
 
     production_name: bpy.props.StringProperty(  # type: ignore
         name="Production",
         description="Name of the production to create a shot file for",
-        options=set()
+        options=set(),
     )
 
     seq_id: bpy.props.EnumProperty(  # type: ignore
@@ -110,7 +135,7 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
     task_type: bpy.props.EnumProperty(  # type: ignore
         name="Task",
         description="Task to create the shot file for",
-        items=production_task_type_items
+        items=production_task_type_items,
     )
     auto_save: bpy.props.BoolProperty(
         name="Save after building.",
@@ -119,16 +144,16 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
     )
 
     def modal(self, context, event):
-
         if event.type == 'TIMER' and not self._add_vse_area:
             # Show Storyboard/Animatic from VSE
             """Running as Modal Event because functions within execute() function like
             animation_workspace_delete_others() changed UI context that needs to be refreshed.
-            https://docs.blender.org/api/current/info_gotcha.html#no-updates-after-changing-ui-context"""
-            #TODO this is a hack, should be inherient to above builder
-            #TODO fix during refactor
+            https://docs.blender.org/api/current/info_gotcha.html#no-updates-after-changing-ui-context
+            """
+            # TODO this is a hack, should be inherient to above builder
+            # TODO fix during refactor
             if self.task_type == 'anim':
-                animation_workspace_vse_area_add(context) 
+                animation_workspace_vse_area_add(context)
             self._add_vse_area = True
 
         if self._built_shot and self._add_vse_area:
@@ -136,14 +161,19 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
                 file_path = pathlib.Path()
                 try:
                     save_shot_builder_file(self._file_path)
-                    self.report({"INFO"}, f"Saved Shot{self.shot_id} at {self._file_path}")   
+                    self.report(
+                        {"INFO"}, f"Saved Shot{self.shot_id} at {self._file_path}"
+                    )
                     return {'FINISHED'}
                 except FileExistsError:
-                    self.report({"ERROR"}, f"Cannot create a file/folder when that file/folder already exists {file_path}") 
+                    self.report(
+                        {"ERROR"},
+                        f"Cannot create a file/folder when that file/folder already exists {file_path}",
+                    )
                     return {'CANCELLED'}
-            self.report({"INFO"}, f"Built Shot {self.shot_id}, file is not saved!") 
+            self.report({"INFO"}, f"Built Shot {self.shot_id}, file is not saved!")
             return {'FINISHED'}
-        
+
         return {'PASS_THROUGH'}
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
@@ -152,35 +182,39 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
 
         if addon_prefs.session.is_auth() is False:
             self.report(
-                {'ERROR'}, "Must be logged into Kitsu to continue. \nCheck login status in 'Blender Kitsu' addon preferences.") 
+                {'ERROR'},
+                "Must be logged into Kitsu to continue. \nCheck login status in 'Blender Kitsu' addon preferences.",
+            )
             return {'CANCELLED'}
-        
+
         if project.id == "":
             self.report(
-                {'ERROR'}, "Operator is not able to determine the Kitsu production's name. \nCheck project is selected in 'Blender Kitsu' addon preferences.") 
+                {'ERROR'},
+                "Operator is not able to determine the Kitsu production's name. \nCheck project is selected in 'Blender Kitsu' addon preferences.",
+            )
             return {'CANCELLED'}
-        
+
         if not addon_prefs.is_project_root_valid:
             self.report(
-                {'ERROR'}, "Operator is not able to determine the project root directory. \nCheck project root directiory is configured in 'Blender Kitsu' addon preferences.")
+                {'ERROR'},
+                "Operator is not able to determine the project root directory. \nCheck project root directiory is configured in 'Blender Kitsu' addon preferences.",
+            )
             return {'CANCELLED'}
-        
 
-        
         self.production_root = addon_prefs.project_root_dir
         self.production_name = project.name
 
-
         if not ensure_loaded_production(context):
             self.report(
-                {'ERROR'}, "Shot builder configuration files not found in current project directory. \nCheck addon preferences to ensure project root contains shot_builder config.")
+                {'ERROR'},
+                "Shot builder configuration files not found in current project directory. \nCheck addon preferences to ensure project root contains shot_builder config.",
+            )
             return {'CANCELLED'}
 
         production = get_active_production()
 
         global _production_task_type_items
-        _production_task_type_items = production.get_task_type_items(
-            context=context)
+        _production_task_type_items = production.get_task_type_items(context=context)
 
         global _production_seq_id_items
         _production_seq_id_items = production.get_seq_items(context=context)
@@ -188,7 +222,9 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
         global _production_shots
         _production_shots = production.get_shots(context=context)
 
-        return cast(Set[str], context.window_manager.invoke_props_dialog(self, width=400))
+        return cast(
+            Set[str], context.window_manager.invoke_props_dialog(self, width=400)
+        )
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         addon_prefs = bpy.context.preferences.addons["blender_kitsu"].preferences
@@ -197,36 +233,44 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
         wm.modal_handler_add(self)
         if not self.production_root:
             self.report(
-                {'ERROR'}, "Shot builder can only be started from the File menu. Shortcuts like CTRL-N don't work")
+                {'ERROR'},
+                "Shot builder can only be started from the File menu. Shortcuts like CTRL-N don't work",
+            )
             return {'CANCELLED'}
-        
+
         if self._built_shot:
             return {'RUNNING_MODAL'}
         ensure_loaded_production(context)
         production = get_active_production()
         shot_builder = ShotBuilder(
-            context=context, production=production, shot_name=self.shot_id, task_type=TaskType(self.task_type))
+            context=context,
+            production=production,
+            shot_name=self.shot_id,
+            task_type=TaskType(self.task_type),
+        )
         shot_builder.create_build_steps()
         shot_builder.build()
-        
+
         # Build Kitsu Context
-        sequence = gazu.shot.get_sequence_by_name(production.config['KITSU_PROJECT_ID'], self.seq_id)
+        sequence = gazu.shot.get_sequence_by_name(
+            production.config['KITSU_PROJECT_ID'], self.seq_id
+        )
         shot = gazu.shot.get_shot_by_name(sequence, self.shot_id)
 
-        #TODO this is a hack, should be inherient to above builder
-        #TODO fix during refactor
+        # TODO this is a hack, should be inherient to above builder
+        # TODO fix during refactor
         if self.task_type == 'anim':
-            #Load EDIT
-            editorial_export_get_latest(context, shot)      
+            # Load EDIT
+            editorial_export_get_latest(context, shot)
             # Load Anim Workspace
             animation_workspace_delete_others()
 
             # Initilize armatures
             for obj in [obj for obj in bpy.data.objects if obj.type == "ARMATURE"]:
-                base_name = obj.name.split(
-                    addon_prefs.shot_builder_armature_prefix)[-1]
+                base_name = obj.name.split(addon_prefs.shot_builder_armature_prefix)[-1]
                 new_action = bpy.data.actions.new(
-                    f"{addon_prefs.shot_builder_action_prefix}{base_name}.{self.shot_id}.v001")
+                    f"{addon_prefs.shot_builder_action_prefix}{base_name}.{self.shot_id}.v001"
+                )
                 new_action.use_fake_user = True
                 obj.animation_data.action = new_action
 
@@ -239,10 +283,9 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
         # Run User Script
         exec(addon_prefs.user_exec_code)
 
-        self._file_path = shot_builder.build_context.shot.file_path   
+        self._file_path = shot_builder.build_context.shot.file_path
         self._built_shot = True
         return {'RUNNING_MODAL'}
-
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout

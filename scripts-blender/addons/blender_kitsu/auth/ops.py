@@ -22,8 +22,8 @@ from typing import Dict, List, Set, Optional, Tuple, Any
 
 import bpy
 import threading
-
-from blender_kitsu import cache, prefs, gazu
+import gazu
+from blender_kitsu import cache, prefs
 
 # TODO: restructure this to not access ops_playblast_data.
 from blender_kitsu.playblast import opsdata as ops_playblast_data
@@ -33,6 +33,7 @@ from blender_kitsu.logger import LoggerFactory
 logger = LoggerFactory.getLogger()
 
 active_thread = False
+
 
 class KITSU_OT_session_start(bpy.types.Operator):
     """
@@ -134,6 +135,7 @@ def auto_login_on_file_open():
     session = prefs.session_get(context)
     if not session.is_auth():
         bpy.ops.kitsu.session_start()
+
 
 # ---------REGISTER ----------.
 

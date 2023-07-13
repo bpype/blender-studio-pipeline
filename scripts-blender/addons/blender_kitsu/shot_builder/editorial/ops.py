@@ -1,7 +1,8 @@
 import bpy
 from typing import Set
 from blender_kitsu.shot_builder.editorial.core import editorial_export_get_latest
-from blender_kitsu import cache, gazu
+from blender_kitsu import cache
+import gazu
 
 
 class ANIM_SETUP_OT_load_latest_editorial(bpy.types.Operator):
