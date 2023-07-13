@@ -29,6 +29,7 @@ from collections import OrderedDict
 import bpy
 
 from render_review import vars, prefs, opsdata, util, kitsu
+
 if prefs.is_blender_kitsu_enabled():
     from blender_kitsu import types as kitsu_types
     from blender_kitsu import cache
@@ -68,7 +69,9 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
             or opsdata.is_sequence_dir(render_dir)
         )
 
-    def load_strip_from_img_seq(self, context, directory, idx: int, frame_start: int = 0):
+    def load_strip_from_img_seq(
+        self, context, directory, idx: int, frame_start: int = 0
+    ):
         try:
             # Get best preview files sequence.
             image_sequence = opsdata.get_best_preview_sequence(directory)
@@ -99,11 +102,11 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
             # Create new image strip.
             strip = context.scene.sequence_editor.sequences.new_image(
-                name = directory.name,
-                filepath = image_sequence[0].as_posix(),
-                channel = idx + 1,
-                frame_start = frame_start,
-                fit_method = 'ORIGINAL'
+                name=directory.name,
+                filepath=image_sequence[0].as_posix(),
+                channel=idx + 1,
+                frame_start=frame_start,
+                fit_method='ORIGINAL',
             )
 
             # Extend strip elements with all the available frames.
@@ -115,7 +118,6 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
             return strip
 
-
     def execute(self, context: bpy.types.Context) -> Set[str]:
         # Clear existing strips and markers
         context.scene.sequence_editor_clear()
@@ -124,19 +126,18 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
         render_dir = Path(context.scene.rr.render_dir_path)
         shot_version_folders_dict = self.get_shot_folder_dict(
-            render_dir = render_dir, 
-            max_versions_per_shot = addon_prefs.versions_max_count, 
+            render_dir=render_dir,
+            max_versions_per_shot=addon_prefs.versions_max_count,
         )
 
         prev_frame_end: int = 1
         for shot_name, shot_version_folders in shot_version_folders_dict.items():
-
             logger.info("Loading versions of shot %s", shot_name)
             imported_strips = self.import_shot_versions_as_strips(
                 context,
                 shot_version_folders,
-                frame_start = prev_frame_end,
-                shot_name = shot_name,
+                frame_start=prev_frame_end,
+                shot_name=shot_name,
             )
 
             if not imported_strips:
@@ -174,8 +175,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         render_resolution_y = vars.RESOLUTION[1]
         # If Kitsu add-on is enabled, fetch the resolution from the online project
         if (
-                addon_prefs.enable_blender_kitsu
-                and prefs.is_blender_kitsu_enabled()
+            addon_prefs.enable_blender_kitsu and prefs.is_blender_kitsu_enabled()
         ) and kitsu.is_active_project():
             # TODO: make the resolution fetching a bit more robust
             # Assume resolution is a string '<str:width>x<str:height>'
@@ -209,12 +209,11 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
         return {"FINISHED"}
 
-
     def get_shot_folder_dict(
-            self, 
-            render_dir: str, 
-            max_versions_per_shot = 32, 
-        ) -> OrderedDict[str, List[Path]]:
+        self,
+        render_dir: str,
+        max_versions_per_shot=32,
+    ) -> OrderedDict[str, List[Path]]:
         shot_version_folders: List[Path] = []
 
         # If render is sequence folder user wants to review whole sequence.
@@ -237,47 +236,54 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
         # Sort versions by date
         for shot_name, shot_folder in shot_version_folders_dict.items():
-            shot_version_folders_dict[shot_name] = sorted(shot_folder, key=lambda dir: dir.stat().st_mtime)
+            shot_version_folders_dict[shot_name] = sorted(shot_folder, reverse=False)
             # Limit list to max number of versions
-            shot_version_folders_dict[shot_name] = shot_version_folders_dict[shot_name][:max_versions_per_shot]
+            shot_version_folders_dict[shot_name] = shot_version_folders_dict[shot_name][
+                -max_versions_per_shot:
+            ]
 
         # Sort shots by name
         sorted_dict = OrderedDict(sorted(shot_version_folders_dict.items()))
 
         return sorted_dict
 
-
     def import_shot_versions_as_strips(
-        self, 
-        context: bpy.types.Context, 
-        shot_version_folders: List[Path], 
-        frame_start: int, 
-        shot_name: str
+        self,
+        context: bpy.types.Context,
+        shot_version_folders: List[Path],
+        frame_start: int,
+        shot_name: str,
     ) -> List[bpy.types.Sequence]:
         addon_prefs = prefs.addon_prefs_get(context)
         imported_strips: bpy.types.Sequence = []
 
-        for idx, shot_folder in enumerate(shot_version_folders):
-            if addon_prefs.shot_name_filter and addon_prefs.shot_name_filter not in shot_folder.parent.name:
-                # If there is a filter specified, and the shot doesn't match, skip it.
-                continue
+        shots_folder_to_add = []
+
+        if addon_prefs.shot_name_filter == "":
+            shots_folder_to_add = shot_version_folders
+        else:
+            for shot_folder in shot_version_folders:
+                if addon_prefs.shot_name_filter in shot_folder.parent.name:
+                    shots_folder_to_add.append(shot_folder)
+
+        for idx, shot_folder in enumerate(shots_folder_to_add):
             logger.info("Processing %s", shot_folder.name)
 
-            use_video = addon_prefs.use_video and \
-                not (shot_folder != shot_version_folders[-1] and addon_prefs.use_video_latest_only)
+            use_video = addon_prefs.use_video and not (
+                shot_folder != shot_version_folders[-1]
+                and addon_prefs.use_video_latest_only
+            )
 
             shot_strip = self.import_shot_as_strip(
-                context, 
-                frame_start = frame_start, 
-                channel_idx = idx, 
-                shot_folder = shot_folder, 
-                shot_name = shot_name,
-                use_video = use_video
+                context,
+                frame_start=frame_start,
+                channel_idx=idx,
+                shot_folder=shot_folder,
+                shot_name=shot_name,
+                use_video=use_video,
             )
             imported_strips.append(shot_strip)
-
         return imported_strips
-
 
     def import_shot_as_strip(
         self,
@@ -286,7 +292,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         channel_idx: int,
         shot_folder: Path,
         shot_name: str,
-        use_video = False,
+        use_video=False,
     ) -> bpy.types.Sequence:
         context.scene.timeline_markers.new(shot_name, frame=frame_start)
 
@@ -305,14 +311,16 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
                 logger.warning("%s found no .mp4 preview sequence", shot_folder.name)
                 video_path = shot_folder
             strip = context.scene.sequence_editor.sequences.new_movie(
-                name = shot_folder.name,
-                filepath = video_path.as_posix(),
-                channel = channel_idx + 1,
-                frame_start = frame_start,
-                fit_method = 'ORIGINAL'
+                name=shot_folder.name,
+                filepath=video_path.as_posix(),
+                channel=channel_idx + 1,
+                frame_start=frame_start,
+                fit_method='ORIGINAL',
             )
         else:
-            strip = self.load_strip_from_img_seq(context, shot_folder, channel_idx, frame_start)
+            strip = self.load_strip_from_img_seq(
+                context, shot_folder, channel_idx, frame_start
+            )
 
         shot_datetime = datetime.fromtimestamp(shot_folder.stat().st_mtime)
         time_str = shot_datetime.strftime("%B %d, %I:%M")
@@ -342,15 +350,15 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
         return [("None", "None", "None")] + cache.get_sequences_enum_list(self, context)
 
     sequence: bpy.props.EnumProperty(
-        name = "Sequence",
-        description = "Select which sequence to review",
-        items = sequences_enum_items if prefs.is_blender_kitsu_enabled() else []
+        name="Sequence",
+        description="Select which sequence to review",
+        items=sequences_enum_items if prefs.is_blender_kitsu_enabled() else [],
     )
 
     @staticmethod
     def delayed_setup_review_workspace():
         """This function can be used as a bpy.app.timer.
-        It is necessary to delay certain UI changing operations that rely 
+        It is necessary to delay certain UI changing operations that rely
         on previous UI changing operations, because Blender."""
 
         context = bpy.context
@@ -367,16 +375,18 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
                 if area.spaces.active.type == 'SEQUENCE_EDITOR':
                     area.spaces.active.timeline_overlay.show_strip_source = False
                     area.spaces.active.timeline_overlay.show_strip_duration = False
-                
+
                     if area.spaces.active.view_type == 'PREVIEW':
                         area.spaces.active.show_overlays = False
 
     def invoke(self, context, _event):
-        if not prefs.is_blender_kitsu_enabled() or \
-            not prefs.addon_prefs_get(context).enable_blender_kitsu or \
-            not kitsu.is_auth_and_project():
+        if (
+            not prefs.is_blender_kitsu_enabled()
+            or not prefs.addon_prefs_get(context).enable_blender_kitsu
+            or not kitsu.is_auth_and_project()
+        ):
             return self.execute(context)
-        
+
         return context.window_manager.invoke_props_dialog(self)
 
     def draw(self, context):
@@ -393,7 +403,6 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
             if addon_prefs.use_video:
                 row.prop(addon_prefs, 'use_video_latest_only')
 
-
     def execute(self, context: bpy.types.Context) -> Set[str]:
         scripts_path = bpy.utils.script_paths(use_user=False)[0]
         template_path = "/startup/bl_app_templates_system/Video_Editing/startup.blend"
@@ -402,7 +411,6 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
             idname="Video Editing",
             filepath=ws_filepath.as_posix(),
         )
-
 
         # Pre-fill render directory with farm output shots directory.
         addon_prefs = prefs.addon_prefs_get(bpy.context)
@@ -440,10 +448,8 @@ class RR_OT_sqe_inspect_exr_sequence(bpy.types.Operator):
     def poll(cls, context: bpy.types.Context) -> bool:
         active_strip = context.scene.sequence_editor.active_strip
         image_editor = opsdata.get_image_editor(context)
-        
-        if not (active_strip
-                and active_strip.rr.is_render
-                and image_editor):
+
+        if not (active_strip and active_strip.rr.is_render and image_editor):
             return False
 
         output_dir = opsdata.get_strip_folder(active_strip)
@@ -507,7 +513,6 @@ class RR_OT_sqe_clear_exr_inspect(bpy.types.Operator):
 
     @classmethod
     def _get_image_editor(self, context: bpy.types.Context) -> Optional[bpy.types.Area]:
-
         image_editor = None
 
         for area in bpy.context.screen.areas:
@@ -551,7 +556,6 @@ class RR_OT_sqe_approve_render(bpy.types.Operator):
 
         # Create Shot Frames path if not exists yet.
         if shot_frames_dir.exists():
-
             # Delete backup if exists.
             if shot_frames_backup_path.exists():
                 shutil.rmtree(shot_frames_backup_path)
@@ -671,7 +675,6 @@ class RR_OT_open_path(bpy.types.Operator):
     )
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-
         if not self.filepath:
             self.report({"ERROR"}, "Can't open empty path in explorer")
             return {"CANCELLED"}
@@ -714,7 +717,6 @@ class RR_OT_sqe_isolate_strip_exit(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-
         for i in context.scene.rr.isolate_view:
             try:
                 strip = context.scene.sequence_editor.sequences[i.name]
@@ -742,7 +744,6 @@ class RR_OT_sqe_isolate_strip_enter(bpy.types.Operator):
         return bool(active_strip)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-
         sequences = list(context.scene.sequence_editor.sequences_all)
 
         if context.scene.rr.isolate_view.items():
@@ -964,7 +965,6 @@ addon_keymap_items = []
 
 
 def register():
-
     for cls in classes:
         bpy.utils.register_class(cls)
 
