@@ -109,16 +109,20 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
     )
     wrong: List[Tuple[bpy.types.Action, str]] = []
     created: List[bpy.types.Action] = []
-    cleanup_empty_actions: bpy.props.BoolProperty(name="Delete Empty Action Data-Blocks", default=False, description="Remove any empty action data-blocks, actions that have 0 Fcurves/Keyframes")
-    
+    cleanup_empty_actions: bpy.props.BoolProperty(
+        name="Delete Empty Action Data-Blocks",
+        default=False,
+        description="Remove any empty action data-blocks, actions that have 0 Fcurves/Keyframes",
+    )
+
     # List of tuples that contains the action on index 0 with the wrong name
     # and the name it should have on index 1.
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         return bool(cache.shot_active_get())
-    
-    def get_action(self, action_name:str):
+
+    def get_action(self, action_name: str):
         if bpy.data.actions.get(action_name):
             return bpy.data.actions.get(action_name)
         else:
@@ -135,16 +139,16 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
         succeeded = []
         removed = []
 
-
         if self.cleanup_empty_actions:
             for action in bpy.data.actions:
-                if len(action.fcurves) == 0 and action.use_fake_user and action.users == 1:
+                if (
+                    len(action.fcurves) == 0
+                    and action.use_fake_user
+                    and action.users == 1
+                ):
                     removed.append(action.name)
                     action.use_fake_user = False
                     bpy.data.actions.remove(action)
-
-
-        
 
         for obj in [obj for obj in bpy.data.objects if obj.type == "ARMATURE"]:
             # Cerate Action if None Exists
@@ -185,8 +189,6 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
             report_str += f" | Rename Failed: {len(failed)}"
         if len(self.created) != 0:
             report_str += f" | Created Actions: {len(self.created)}"
-        
-        
 
         self.report(
             {report_state},
@@ -397,6 +399,15 @@ class KITSU_OT_unlink_collection_with_string(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class KITSU_PG_anim_exclude_coll(bpy.types.PropertyGroup):
+    exclude: bpy.props.BoolProperty(
+        name="Exclude",
+        description="",
+        default=False,
+        override={"LIBRARY_OVERRIDABLE"},
+    )
+
+
 class KITSU_OT_anim_update_output_coll(bpy.types.Operator):
     bl_idname = "kitsu.anim_update_output_coll"
     bl_label = "Update Output Collection"
@@ -404,6 +415,8 @@ class KITSU_OT_anim_update_output_coll(bpy.types.Operator):
     bl_description = (
         "Scans scene for any collections that are not yet in the output collection"
     )
+    output_coll = None
+    asset_colls = None
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -416,40 +429,48 @@ class KITSU_OT_anim_update_output_coll(bpy.types.Operator):
 
         return bool(active_shot and output_coll)
 
-    def execute(self, context: bpy.types.Context) -> Set[str]:
+    def invoke(self, context, event):
         active_shot = cache.shot_active_get()
         output_coll_name = opsdata.get_output_coll_name(active_shot)
-        output_coll = bpy.data.collections[output_coll_name]
+        self.output_coll = bpy.data.collections[output_coll_name]
+        return context.window_manager.invoke_props_dialog(self, width=500)
 
-        # Clear Out Output Collection before Starting
-        for collection in output_coll.children:
-            output_coll.children.unlink(collection)
-        bpy.context.view_layer.update()
-
-        asset_colls = opsdata.find_asset_collections_in_scene(context.scene)
-        missing: List[bpy.types.Collection] = []
-        output_coll_childs = list(opsdata.traverse_collection_tree(output_coll))
-
-        # Check if all found asset colls are in output coll.
-        for coll in asset_colls:
-            if coll in output_coll_childs:
-                continue
-            missing.append(coll)
-
+    def get_collections(self, context):
+        self.asset_colls = opsdata.find_asset_collections_in_scene(context.scene)
         # Only take parent colls.
         childs = []
-        for i in range(len(missing)):
-            coll = missing[i]
+        for i in range(len(self.asset_colls)):
+            coll = self.asset_colls[i]
             coll_childs = list(opsdata.traverse_collection_tree(coll))
-            for j in range(i + 1, len(missing)):
-                coll_comp = missing[j]
+            for j in range(i + 1, len(self.asset_colls)):
+                coll_comp = self.asset_colls[j]
                 if coll_comp in coll_childs:
                     childs.append(coll_comp)
 
-        parents = [coll for coll in missing if coll not in childs]
+        return [coll for coll in self.asset_colls if coll not in childs]
+
+    def draw(self, context):
+        parents = self.get_collections(context)
+        # Must display collections that already exist in output collection so user can exclude them
+        for col in self.output_coll.children:
+            parents.append(col)
+        layout = self.layout
+        box = layout.box()
+        box.label(text="Select Collection to Exclude", icon="OUTLINER_COLLECTION")
+        column = box.column(align=True)
+        for col in parents:
+            column.prop(col.anim_output, "exclude", text=col.name)
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+        # Clear Out Output Collection before Starting
+        for collection in self.output_coll.children:
+            self.output_coll.children.unlink(collection)
+        bpy.context.view_layer.update()
+        parents = self.get_collections(context)
+        parents = [col for col in parents if not col.anim_output.exclude]
         for coll in parents:
-            output_coll.children.link(coll)
-            logger.info("%s linked in %s", coll.name, output_coll.name)
+            self.output_coll.children.link(coll)
+            logger.info("%s linked in %s", coll.name, self.output_coll.name)
 
         # Ensure Camera Rig is Linked
         for coll in [col for col in bpy.data.collections]:
@@ -457,11 +478,11 @@ class KITSU_OT_anim_update_output_coll(bpy.types.Operator):
                 if (
                     coll.override_library.hierarchy_root.name == "CA-camera_rig"
                 ):  # TODO Fix this hack to be generic
-                    output_coll.children.link(coll)
+                    self.output_coll.children.link(coll)
 
         self.report(
             {"INFO"},
-            f"Found Asset Collections: {len(asset_colls)} | Added to output collection: {len(parents)}",
+            f"Found Asset Collections: {len(self.asset_colls)} | Added to output collection: {len(parents)}",
         )
         return {"FINISHED"}
 
@@ -474,14 +495,19 @@ classes = [
     KITSU_OT_anim_update_output_coll,
     KITSU_OT_anim_enforce_naming_convention,
     KITSU_OT_unlink_collection_with_string,
+    KITSU_PG_anim_exclude_coll,
 ]
 
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+    bpy.types.Collection.anim_output = bpy.props.PointerProperty(
+        type=KITSU_PG_anim_exclude_coll
+    )
 
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+    del bpy.types.Collection.anim_output
