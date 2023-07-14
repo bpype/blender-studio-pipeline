@@ -58,7 +58,12 @@ class SVN_addon_preferences(AddonPreferences):
             self.idx_updating = False
             return
 
-        if not active_repo.authenticated and not active_repo.auth_failed and active_repo.is_cred_entered:
+        if (
+            active_repo and
+            not active_repo.authenticated and
+            not active_repo.auth_failed and
+            active_repo.is_cred_entered
+        ):
             active_repo.authenticate(context)
 
         self.idx_updating = False
@@ -99,7 +104,7 @@ class SVN_addon_preferences(AddonPreferences):
 
     @property
     def active_repo(self) -> SVN_repository:
-        if 0 < len(self.repositories) < self.active_repo_idx-1:
+        if 0 <= self.active_repo_idx <= len(self.repositories)-1:
             return self.repositories[self.active_repo_idx]
 
     debug_mode: BoolProperty(
