@@ -280,7 +280,7 @@ def addon_package(directory: Path, commit_prefix: str, is_major=False, force=Fal
         init_file, version = addon_version_bump(directory, is_major)
         change_log = changelog_generate(commits_in_folder, version)
         change_log_file = changelog_file_write(
-            directory.joinpath("CHANGELOG.MD"), change_log
+            directory.joinpath("CHANGELOG.md"), change_log
         )
         cli_command(f'git reset')
         cli_command(f'git stage {change_log_file}')
