@@ -50,10 +50,10 @@ def draw_error_invalid_playblast_root_dir(
 def draw_error_frame_range_outdated(
     box: bpy.types.UILayout,
 ) -> bpy.types.UILayout:
-
     row = box.row(align=True)
+    row.alert = True
     row.label(text="Frame Range Outdated")
-    row.operator("kitsu.pull_frame_range", icon="FILE_REFRESH")
+    row.operator("kitsu.pull_frame_range", icon="TRIA_DOWN")
 
 
 def draw_error_invalid_render_preset_dir(

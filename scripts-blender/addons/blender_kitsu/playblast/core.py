@@ -3,9 +3,10 @@ from pathlib import Path
 
 import contextlib
 
-from blender_kitsu import (
-    prefs,
-)
+from blender_kitsu import prefs, cache
+from blender_kitsu.logger import LoggerFactory
+
+logger = LoggerFactory.getLogger()
 
 
 @contextlib.contextmanager
@@ -255,3 +256,49 @@ def playblast_user_shading_settings(self, context, file_path):
                     # Make opengl render.
                     bpy.ops.render.opengl(animation=True)
                     return output_path
+
+
+def set_frame_range_in(frame_in: int) -> dict:
+    shot = cache.shot_active_pull_update()
+    shot.data["3d_start"] = frame_in
+    shot.update()
+    return shot
+
+
+def get_frame_range():  # TODO return type
+    active_shot = cache.shot_active_get()
+    if not active_shot:
+        return
+
+    # Pull update for shot.
+    cache.shot_active_pull_update()
+    if "3d_start" not in active_shot.data:
+        logger.warning(
+            "Failed to check frame range. Shot %s missing '3d_start' attribute on server",
+            active_shot.name,
+        )
+        return
+    frame_in = int(active_shot.data["3d_start"])
+    frame_out = int(active_shot.data["3d_start"]) + int(active_shot.nb_frames) - 1
+    return frame_in, frame_out
+
+
+def check_frame_range(context) -> bool:
+    """
+    Compare the current scene's frame range with that of the active shot on kitsu.
+    If there's a mismatch, set kitsu_error.frame_range -> True. This will enable
+    a warning in the Animation Tools Tab UI.
+    """
+    try:
+        frame_in, frame_out = get_frame_range()
+    except TypeError:
+        return
+    scene = context.scene
+
+    if frame_in == scene.frame_start and frame_out == scene.frame_end:
+        scene.kitsu_error.frame_range = False
+        return True
+
+    scene.kitsu_error.frame_range = True
+    logger.warning("Current frame range is outdated!")
+    return False
