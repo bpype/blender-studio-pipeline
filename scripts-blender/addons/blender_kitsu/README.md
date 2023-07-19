@@ -132,7 +132,7 @@ This will import a metastrip.mp4 (1000 frame black video) file which is saved in
 
     3.3 Type in the name of the new shot in the `Shot` field
 
-    3.4 Execute the `Submit New Shot` operator in the `Push` Panel (Will warn you if the shot already exists on Kitsu)
+    3.4 Execute the `Submit New Shot` operator in the `Push` Panel (Will warn you if the shot already exists on Kitsu). This operator can optionally populate each 'Shot' with a task set to the project's default task status.
 
 >**Note**: Most of the operator are selection sensitive. So you can do these operations for a batch of sequence strips. If you have nothing selected it will usually try to operate on all strips in the sequence editor. <br/>
 ![image info](/media/addons/blender_kitsu/sqe_init_selection.jpg)

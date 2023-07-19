@@ -152,6 +152,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
     bl_description = "Creates a new shot for each selected sequence strip on server. Checks if shot already exists"
 
     confirm: bpy.props.BoolProperty(name="confirm")
+    add_tasks: bpy.props.BoolProperty(name="Add Default Tasks")
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -238,7 +239,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
             opsdata.push_sequence_color(context, seq)
 
             # Push update to shot.
-            shot = push.new_shot(strip, seq, project_active)
+            shot = push.new_shot(strip, seq, project_active, add_tasks=self.add_tasks)
             pull.shot_meta(strip, shot)
             succeeded.append(strip)
 
@@ -307,6 +308,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
             text="Submit %s to server. Will skip shots if they already exist"
             % (noun.lower()),
         )
+        col.prop(self, "add_tasks", text="Add Tasks with the default status to shot(s)")
 
 
 class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):

@@ -25,6 +25,7 @@ import bpy
 from blender_kitsu import bkglobals
 from blender_kitsu.types import Sequence, Project, Shot
 from blender_kitsu.logger import LoggerFactory
+import gazu
 
 logger = LoggerFactory.getLogger()
 
@@ -60,9 +61,7 @@ def shot_meta(strip: bpy.types.Sequence, shot: Shot) -> None:
 
 
 def new_shot(
-    strip: bpy.types.Sequence,
-    sequence: Sequence,
-    project: Project,
+    strip: bpy.types.Sequence, sequence: Sequence, project: Project, add_tasks=False
 ) -> Shot:
     frame_range = (strip.frame_final_start, strip.frame_final_end)
     shot = project.create_shot(
@@ -75,6 +74,10 @@ def new_shot(
             "fps": bkglobals.FPS,
         },
     )
+
+    if add_tasks:
+        create_intial_tasks(shot, project)
+
     # Update description, no option to pass that on create.
     if strip.kitsu.shot_description:
         shot.description = strip.kitsu.shot_description
@@ -105,3 +108,10 @@ def delete_shot(strip: bpy.types.Sequence, shot: Shot) -> str:
     )
     strip.kitsu.clear()
     return result
+
+
+def create_intial_tasks(shot: Shot, project: Project):
+    shot_entity = gazu.shot.get_shot(shot.id)
+    for task_type in gazu.task.all_task_types_for_project(project.id):
+        if task_type["for_entity"] == "Shot":
+            gazu.task.new_task(shot_entity, task_type)
