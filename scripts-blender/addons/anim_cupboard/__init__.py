@@ -7,6 +7,7 @@ from .operators import select_similar_curves
 from .operators import lock_curves
 from .operators import bake_anim_across_armatures
 from .operators import relink_overridden_asset
+from .operators import id_management_pie
 from . import easy_constraints
 from . import warn_about_broken_libraries
 from . import bone_selection_sets
@@ -29,7 +30,8 @@ modules = (
     easy_constraints,
     warn_about_broken_libraries,
     bone_selection_sets,
-    relink_overridden_asset
+    relink_overridden_asset,
+    id_management_pie,
 )
 
 
