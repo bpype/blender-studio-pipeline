@@ -144,7 +144,7 @@ class RelationshipOperatorMixin:
                 name_row.prop(
                     user.library,
                     'filepath',
-                    icon=get_library_icon(user.library),
+                    icon=get_library_icon(user.library.filepath),
                     text="",
                 )
 
@@ -248,8 +248,15 @@ class OUTLINER_OT_remap_users(bpy.types.Operator):
                     lib_entry = remap_target_libraries.add()
                     lib_entry.name = lib.filepath
                     break
-
-        self.library_path = "Local Data"
+        if source_id.name[-4] == ".":
+            storage = get_id_storage(self.id_type)
+            suggestion = storage.get(source_id.name[:-4])
+            if suggestion:
+                self.id_name_target = suggestion.name
+                if suggestion.library:
+                    self.library_path = suggestion.library.filepath
+        else:
+            self.library_path = "Local Data"
 
         return context.window_manager.invoke_props_dialog(self, width=800)
 
@@ -277,7 +284,7 @@ class OUTLINER_OT_remap_users(bpy.types.Operator):
                 'library_path',
                 scene,
                 'remap_target_libraries',
-                icon=get_library_icon(get_library_by_filepath(self.library_path)),
+                icon=get_library_icon(self.library_path),
             )
         col.prop_search(
             self,
@@ -406,21 +413,15 @@ def get_id(id_name: str, id_type: str, lib_path="") -> bpy.types.ID:
 
 
 ### Library utilities
-def get_library_icon(library: bpy.types.Library) -> str:
+def get_library_icon(lib_path: str) -> str:
     """Return the library or the broken library icon, as appropriate."""
-    if not library:
-        return 'NONE'
-    icon = 'LIBRARY_DATA_DIRECT'
-    filepath = os.path.abspath(bpy.path.abspath(library.filepath))
+    if lib_path == 'Local Data':
+        return 'FILE_BLEND'
+    filepath = os.path.abspath(bpy.path.abspath(lib_path))
     if not os.path.exists(filepath):
-        icon = 'LIBRARY_DATA_BROKEN'
-    return icon
+        return 'LIBRARY_DATA_BROKEN'
 
-
-def get_library_by_filepath(filepath: str):
-    for lib in bpy.data.libraries:
-        if lib.filepath == filepath:
-            return lib
+    return 'LIBRARY_DATA_DIRECT'
 
 
 registry = [
