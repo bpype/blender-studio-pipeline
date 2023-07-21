@@ -24,7 +24,7 @@ def get_svn_info(path: Path or str) -> Tuple[str, str]:
             parent = path.parent
             if parent == path:
                 return None, None
-            svn_info = get_svn_info(path.parent)
+            return get_svn_info(path.parent)
         else:
             raise e
 
