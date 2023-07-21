@@ -5,3 +5,5 @@ The complete collection of documents, add-ons, scripts and tools that make up th
 ## Development Setup
 
 Before checking out this repo, ensure that you have `git-lfs` installed and enabled (use `git lfs install` to verify this).
+
+To learn more see https://git-lfs.com/
