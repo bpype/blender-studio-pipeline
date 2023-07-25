@@ -2204,6 +2204,175 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class KITSU_OT_shot_image_sequence(bpy.types.Operator):
+    bl_idname = "kitsu.shot_image_sequence"
+    bl_label = "Shot as Image Sequence"
+    bl_description = "Import image sequences for selected clips"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def get_used_channels(
+        self: Any, context: bpy.types.Context
+    ) -> List[Tuple[str, str, str]]:
+        used_channels = []
+        for seq in context.scene.sequence_editor.sequences_all:
+            used_channels.append(seq.channel)
+
+        aval_channels = []
+        for channel in range(1, 100):
+            if channel not in used_channels:
+                aval_channels.append(channel)
+
+        return [
+            (
+                f"{channel}",
+                f"{channel}",
+                f"{channel}",
+            )
+            for channel in aval_channels
+        ]
+
+    channel_selection: bpy.props.EnumProperty(
+        name="Channel",
+        description="Choose an empty target channel to place image sequences onto",
+        items=get_used_channels,
+    )
+    file_type: bpy.props.EnumProperty(
+        name="File Type",
+        description="Choose an empty target channel to place image sequences onto",
+        items=[
+            ('.jpg', 'JPG', '', '', 0),
+            ('.exr', 'EXR', '', '', 1),
+        ],
+    )
+
+    set_color_space: bpy.props.BoolProperty(
+        name="Match Scene Color",
+        description="Match scene color space to image sequence file type. \n JPG: sGRB with no look, EXR: Linear with Medium Contrast look",
+        default=True,
+    )
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sqe = context.scene.sequence_editor
+        if not sqe:
+            return False
+        if not cache.project_active_get():
+            cls.poll_message_set("No Kitsu Project Found check Add-on Preferences")
+            return False
+        for sqe in context.selected_sequences:
+            if sqe.type != 'MOVIE':
+                cls.poll_message_set("Selected strips must be 'MOVIE'")
+                return False
+        if len(bpy.context.selected_sequences) == 0:
+            cls.poll_message_set("Please select a 'MOVIE' strip")
+            return False
+        return True
+
+    def set_scene_colorspace(self, context):
+        scene = context.scene
+        if self.file_type == ".jpg":
+            scene.sequencer_colorspace_settings.name = "sRGB"
+            scene.view_settings.look = "None"
+            scene.view_settings.view_transform = 'Standard'
+        if self.file_type == ".exr":
+            scene.sequencer_colorspace_settings.name = "Linear"
+            scene.view_settings.look = 'Medium High Contrast'
+            scene.view_settings.view_transform = 'Filmic'
+
+    def invoke(self, context, event):
+        channels = [int(x[1]) for x in self.get_used_channels(context)]
+        self.get_used_channels(context)
+        strip = context.selected_sequences[0]
+        channel = min(channels, key=lambda x: abs(x - strip.channel))
+        self.channel_selection = f"{channel}"
+        return context.window_manager.invoke_props_dialog(self, width=500)
+
+    def draw(self, context: bpy.types.Context) -> None:
+        layout = self.layout
+        layout.prop(self, "channel_selection")
+        layout.prop(self, "file_type")
+        layout.prop(self, "set_color_space")
+
+    def get_shot_name(self, strip):
+        return strip.name.split(".")[0]
+
+    def get_metastrip(self, context, strip):
+        name = self.get_shot_name(strip)
+        for strip in context.scene.sequence_editor.sequences_all:
+            if strip.name == name:
+                return strip
+
+    def import_strip(self, context, strip, directory, channel):
+        # https://blender.stackexchange.com/questions/286946/how-to-add-image-sequence-in-sequencer-via-python
+        frame_start = strip.frame_final_start
+        frame_end = strip.frame_final_end
+
+        files = []
+        metastrip = self.get_metastrip(context, strip)
+        shot = gazu.shot.get_shot(metastrip.kitsu.shot_id)
+        start_frame = shot["data"].get("3d_start")
+        for file in sorted(list(directory.iterdir())):
+            frame_number = int(file.name.split(".")[0])
+            duration = strip.frame_duration + start_frame
+            if self.file_type in file.name and frame_number < duration:
+                files.append({"name": file.name})
+
+        area_type = 'SEQUENCE_EDITOR'
+        areas = [
+            area for area in bpy.context.window.screen.areas if area.type == area_type
+        ]
+
+        with bpy.context.temp_override(
+            window=bpy.context.window,
+            area=areas[0],
+            regions=[region for region in areas[0].regions if region.type == 'WINDOW'][
+                0
+            ],
+            screen=bpy.context.window.screen,
+        ):
+            bpy.ops.sequencer.image_strip_add(
+                directory=directory._str,
+                files=files,
+                relative_path=True,
+                show_multiview=False,
+                frame_start=frame_start,
+                frame_end=frame_end,
+                channel=channel,
+                fit_method='FIT',
+            )
+        new_strip = context.selected_sequences[0]
+
+        new_strip.animation_offset_end = strip.animation_offset_end
+        new_strip.animation_offset_start = strip.animation_offset_start
+
+        new_strip.frame_offset_end = strip.frame_offset_end
+        new_strip.frame_offset_start = strip.frame_offset_start
+        new_strip.frame_start = strip.frame_start
+        new_strip.channel = channel
+        new_strip.name = f"{self.get_shot_name(strip)}{self.file_type.lower()}"
+        new_strip.colorspace_settings.name = new_strip.colorspace_settings.name
+
+    def get_shot_seq_directory(self, context, strip):
+        path_string = os.path.realpath(bpy.path.abspath(strip.filepath))
+        path = Path(path_string.replace("shot_previews", "shot_frames"))
+        return path.parent
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+        # Get closest empty channel
+        channel = int(self.channel_selection)
+
+        if self.set_color_space:
+            self.set_scene_colorspace(context)
+
+        for strip in context.selected_sequences:
+            directory = self.get_shot_seq_directory(context, strip)
+            if not directory.exists():
+                self.report({"ERROR"}, f"{directory._str} does not exist")
+                return {"CANCELLED"}
+            self.import_strip(context, strip, directory, channel)
+        return {"FINISHED"}
+
+
 class KITSU_OT_sqe_clear_update_indicators(bpy.types.Operator):
     bl_idname = "kitsu.sqe_clear_update_indicators"
     bl_label = "Clear Update Indicators"
@@ -2578,6 +2747,7 @@ classes = [
     KITSU_OT_sqe_change_strip_source,
     KITSU_OT_sqe_clear_update_indicators,
     KITSU_OT_vse_publish_edit_revision,
+    KITSU_OT_shot_image_sequence,
 ]
 
 
