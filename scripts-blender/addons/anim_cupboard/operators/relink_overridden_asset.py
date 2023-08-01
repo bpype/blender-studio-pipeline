@@ -26,9 +26,9 @@ class OUTLINER_OT_relink_overridden_asset(bpy.types.Operator):
 
     @staticmethod
     def get_id(context) -> Optional[bpy.types.ID]:
-        if context.area.type == 'OUTLINER' and len(context.selected_ids) > 0 and \
-                context.selected_ids[0].override_library:
-            return context.selected_ids[0]
+        if context.area.type == 'OUTLINER' and context.id and \
+                context.id.override_library:
+            return context.id
         else:
             if context.object and context.object.override_library:
                 return context.object
