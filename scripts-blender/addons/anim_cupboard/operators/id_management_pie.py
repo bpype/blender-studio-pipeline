@@ -17,8 +17,8 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
 
     @staticmethod
     def get_id(context) -> Optional[bpy.types.ID]:
-        if context.area.type == 'OUTLINER' and len(context.selected_ids) > 0:
-            return context.selected_ids[-1]
+        if context.area.type == 'OUTLINER' and context.id:
+            return context.id
 
     @classmethod
     def poll(cls, context):
@@ -75,12 +75,12 @@ class RelationshipOperatorMixin:
             storage = getattr(bpy.data, self.datablock_storage)
             lib_path = self.library_filepath or None
             return storage.get((self.datablock_name, lib_path))
-        elif context.area.type == 'OUTLINER' and len(context.selected_ids) > 0:
-            return context.selected_ids[-1]
+        elif context.area.type == 'OUTLINER' and context.id:
+            return context.id
 
     @classmethod
     def poll(cls, context):
-        return context.area.type == 'OUTLINER' and len(context.selected_ids) > 0
+        return context.area.type == 'OUTLINER' and context.id
 
     def invoke(self, context, _event):
         return context.window_manager.invoke_props_dialog(self, width=600)
