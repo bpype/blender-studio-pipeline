@@ -307,7 +307,12 @@ def register():
         options={'LIBRARY_EDITABLE'},
         override={'LIBRARY_OVERRIDABLE', 'USE_INSERTION'},
     )
-    bpy.types.PoseBone.easy_constraints_active_index = IntProperty()
+    bpy.types.PoseBone.easy_constraints_active_index = IntProperty(
+        name = "Easy Constraints",
+        description = "Manage separate Copy Loc/Rot/Scale constraints in a compact UI",
+        options={'LIBRARY_EDITABLE'},
+        override={'LIBRARY_OVERRIDABLE'},
+    )
 
 
 def unregister():
