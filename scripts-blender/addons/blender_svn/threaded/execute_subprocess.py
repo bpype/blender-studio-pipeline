@@ -4,7 +4,6 @@
 import subprocess
 from typing import List
 
-
 def get_credential_commands(context) -> List[str]:
     repo = context.scene.svn.get_repo(context)
     assert (repo.is_cred_entered), "No username or password entered for this repository. The UI shouldn't have allowed you to get into a state where you can press an SVN operation button without having your credentials entered, so this is a bug!"
@@ -29,6 +28,9 @@ def execute_svn_command(context, command: List[str], *, ignore_errors=False, pri
     SVN root.
     """
     repo = context.scene.svn.get_repo(context)
+    if "svn" not in command:
+        command.insert(0, "svn")
+
     if use_cred:
         command += get_credential_commands(context)
 
@@ -46,3 +48,7 @@ def execute_svn_command(context, command: List[str], *, ignore_errors=False, pri
                 print(f"Command returned error: {command}")
                 print(err_msg)
             raise error
+
+def check_svn_installed():
+    code, message = subprocess.getstatusoutput('svn')
+    return code != 127

@@ -4,7 +4,7 @@
 from bpy.types import Panel
 
 from ..util import get_addon_prefs
-from .ui_file_list import draw_repo_file_list, draw_process_info
+from .ui_file_list import draw_file_list, draw_process_info
 
 
 class VIEW3D_PT_svn_credentials(Panel):
@@ -16,12 +16,7 @@ class VIEW3D_PT_svn_credentials(Panel):
 
     @classmethod
     def poll(cls, context):
-        prefs = get_addon_prefs(context)
-        if prefs.active_repo_mode == 'CURRENT_BLEND':
-            repo = context.scene.svn.get_scene_repo(context)
-        else:
-            repo = context.scene.svn.get_repo(context)
-
+        repo = context.scene.svn.get_repo(context)
         return repo and not repo.authenticated
 
     def draw(self, context):
@@ -58,9 +53,8 @@ class VIEW3D_PT_svn_files(Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        repo = context.scene.svn.get_repo(context)
         draw_process_info(context, layout)
-        draw_repo_file_list(context, layout, repo)
+        draw_file_list(context, layout)
 
 
 registry = [

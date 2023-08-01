@@ -3,12 +3,13 @@
 # (c) 2022, Blender Foundation - Demeter Dzadik
 
 from typing import Optional, Any, Set, Tuple, List
+import platform
 
 import bpy
 from bpy.props import IntProperty, CollectionProperty, BoolProperty, EnumProperty
 from bpy.types import AddonPreferences
 
-from .ui import ui_prefs
+from .ui.ui_repo_list import draw_checkout, draw_repo_list
 from .repository import SVN_repository
 from .svn_info import get_svn_info
 import json
@@ -19,7 +20,24 @@ from .threaded.background_process import Processes
 class SVN_addon_preferences(AddonPreferences):
     bl_idname = __package__
 
+    is_svn_installed: BoolProperty(
+        name="Is SVN Installed",
+        description="Whether the `svn` command works at all in the user's command line. If not, user needs to install SVN",
+        default=False
+    )
+
     repositories: CollectionProperty(type=SVN_repository)
+
+    def init_repo_list(self):
+        # If we have any repository entries, make sure at least one is active.
+        self.sync_repo_info_file()
+
+        if self.active_repo_idx == -1 and len(self.repositories) > 0:
+            self.active_repo_idx = 0
+        elif self.active_repo_idx > len(self.repositories)-1:
+            self.active_repo_idx = 0
+        else:
+            self.active_repo_idx = self.active_repo_idx
 
     def init_repo(self, context, repo_path: Path or str):
         """Attempt to initialize a repository based on a directory.
@@ -40,39 +58,9 @@ class SVN_addon_preferences(AddonPreferences):
 
         repo = self.repositories.add()
         repo.initialize(root_dir, base_url)
+        self.active_repo_idx = len(self.repositories)-1
 
         return repo
-
-    def update_active_repo_idx(self, context):
-        if self.idx_updating or len(self.repositories) == 0:
-            return
-        self.idx_updating = True
-        active_repo = self.active_repo
-        if self.active_repo_mode == 'CURRENT_BLEND':
-            scene_svn = context.scene.svn
-            scene_svn_idx = self.repositories.find(scene_svn.svn_directory)
-            if scene_svn_idx == -1:
-                self.idx_updating = False
-                return
-            self.active_repo_idx = scene_svn_idx
-            self.idx_updating = False
-            return
-
-        if (
-            active_repo and
-            not active_repo.authenticated and
-            not active_repo.auth_failed and
-            active_repo.is_cred_entered
-        ):
-            active_repo.authenticate(context)
-
-        self.idx_updating = False
-
-    def update_active_repo_mode(self, context):
-        if self.active_repo_mode == 'CURRENT_BLEND':
-            scene_svn = context.scene.svn
-            scene_svn_idx = self.repositories.find(scene_svn.svn_directory)
-            self.active_repo_idx = scene_svn_idx
 
     checkout_mode: BoolProperty(
         name="Checkout In Progress",
@@ -80,30 +68,35 @@ class SVN_addon_preferences(AddonPreferences):
         default=False
     )
 
-    active_repo_mode: EnumProperty(
-        name="Choose Repository",
-        description="Whether the add-on should communicate with the repository of the currently opened .blend file, or the repository selected in the list below",
-        items=[
-            ('CURRENT_BLEND', "Current Blend", "Check if the current .blend file is in an SVN repository, and communicate with that if that is the case. The file list will display only the files of the repository of the current .blend file. If the current .blend is not in a repository, do nothing"),
-            ('SELECTED_REPO', "Selected Repo",
-             "Communicate with the selected repository")
-        ],
-        default='CURRENT_BLEND',
-        update=update_active_repo_mode
-    )
+    def update_active_repo_idx(self, context):
+        if len(self.repositories) == 0:
+            return
+        active_repo = self.active_repo
+
+        # Authenticate when switching repos.
+        if (
+            active_repo and
+            not active_repo.auth_failed and
+            active_repo.is_cred_entered
+        ):
+            Processes.start('Redraw Viewport')
+            if active_repo.authenticated:
+                Processes.restart('Status')
+            else:
+                active_repo.authenticate()
+        else:
+            Processes.kill('Status')
 
     active_repo_idx: IntProperty(
         name="SVN Repositories",
         options=set(),
         update=update_active_repo_idx
     )
-    idx_updating: BoolProperty(
-        name="Index is Updating",
-        description="Helper flag to avoid infinite looping update callbacks",
-    )
 
     @property
-    def active_repo(self) -> SVN_repository:
+    def active_repo(self) -> Optional[SVN_repository]:
+        if not self.is_svn_installed:
+            return
         if 0 <= self.active_repo_idx <= len(self.repositories)-1:
             return self.repositories[self.active_repo_idx]
 
@@ -163,7 +156,33 @@ class SVN_addon_preferences(AddonPreferences):
         self.load_repo_info_from_file()
         self.save_repo_info_to_file()
 
-    draw = ui_prefs.draw_prefs
+    def draw(self, context):
+        if not self.is_svn_installed:
+            draw_prefs_no_svn(self, context)
+            return
+
+        if self.checkout_mode:
+            draw_checkout(self, context)
+        else:
+            draw_repo_list(self, context)
+
+
+def draw_prefs_no_svn(self, context):
+    terminal, url = "terminal", "https://subversion.apache.org/packages.html"
+    system = platform.system()
+    if system == "Windows":
+        terminal = "command line (cmd.exe)"
+        url = "https://subversion.apache.org/packages.html#windows"
+    elif system == "Darwin":
+        terminal = "Mac terminal"
+        url = "https://subversion.apache.org/packages.html#osx"
+
+    layout = self.layout
+    col = layout.column()
+    col.alert=True
+    col.label(text="Please ensure that Subversion (aka. SVN) is installed on your system.")
+    col.label(text=f"Typing `svn` into the {terminal} should yield a result.")
+    layout.operator("wm.url_open", icon='URL', text='Open Subversion Distribution Page').url=url
 
 
 registry = [

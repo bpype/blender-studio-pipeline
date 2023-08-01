@@ -28,7 +28,6 @@ class SVN_OT_checkout_initiate(Operator):
 
     def execute(self, context):
         prefs = get_addon_prefs(context)
-        prefs.active_repo_mode = 'SELECTED_REPO'
         if self.create:
             prefs.repositories.add()
             prefs.active_repo_idx = len(prefs.repositories)-1

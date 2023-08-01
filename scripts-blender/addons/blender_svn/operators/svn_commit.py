@@ -40,6 +40,8 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
     bl_options = {'INTERNAL'}
     bl_property = "first_line"  # Focus the text input box
 
+    popup_width = 600
+
     # The first line of the commit message needs to be an operator property in order
     # for us to be able to focus the input box automatically when the window pops up
     # (see bl_property above)
@@ -92,7 +94,8 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
         for f in repo.external_files:
             f.include_in_commit = False
         for f in self.get_committable_files(context):
-            f.include_in_commit = True
+            if not f.will_conflict:
+                f.include_in_commit = True
 
         return super().invoke(context, event)
 
@@ -108,20 +111,30 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
         row.label(text="Status")
         for file in files:
             row = layout.row()
-            row.prop(file, "include_in_commit", text=file.name)
+            split = row.split()
+            checkbox_ui = split.row()
+            status_ui = split.row()
+            checkbox_ui.prop(file, "include_in_commit", text=file.name)
             text = file.status_name
             icon = file.status_icon
-            if file == repo.current_blend_file and self.is_file_really_dirty:
-                split = row.split(factor=0.7)
-                row = split.row()
-                row.alert = True
+            if file.will_conflict:
+                # We don't want to conflict-resolve during a commit, it's 
+                # confusing. User should resolve this as a separate step.
+                checkbox_ui.enabled = False
+                text = "Conflicting"
+                status_ui.alert = True
+                icon = 'ERROR'
+            elif file == repo.current_blend_file and self.is_file_really_dirty:
+                split = status_ui.split(factor=0.7)
+                status_ui = split.row()
+                status_ui.alert = True
                 text += " but not saved!"
                 icon = 'ERROR'
                 op_row = split.row()
                 op_row.alignment = 'LEFT'
                 op_row.operator('svn.save_during_commit',
                                 icon='FILE_BLEND', text="Save")
-            row.label(text=text, icon=icon)
+            status_ui.label(text=text, icon=icon)
 
         row = layout.row()
         row.label(text="Commit message:")
@@ -142,7 +155,6 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
     def execute(self, context: Context) -> Set[str]:
         committable_files = self.get_committable_files(context)
         files_to_commit = [f for f in committable_files if f.include_in_commit]
-        prefs = get_addon_prefs(context)
         repo = context.scene.svn.get_repo(context)
 
         if not files_to_commit:

@@ -44,11 +44,14 @@ class SVN_OT_update_all(May_Modifiy_Current_Blend, Operator):
         current_blend = repo.current_blend_file
         if self.revision == 0:
             if current_blend and current_blend.repos_status != 'none':
+                # If the current file will be modified, warn user.
                 self.file_rel_path = current_blend.svn_path
                 return context.window_manager.invoke_props_dialog(self, width=500)
         else:
             for f in repo.external_files:
                 if f.status in ['modified', 'added', 'conflicted', 'deleted', 'missing', 'unversioned']:
+                    # If user wants to check out an older version of the repo but 
+                    # there are uncommitted local changes to any files, warn user.
                     return context.window_manager.invoke_props_dialog(self, width=500)
 
         return self.execute(context)

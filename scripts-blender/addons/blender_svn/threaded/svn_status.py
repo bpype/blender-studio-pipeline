@@ -4,7 +4,7 @@
 from ..svn_info import get_svn_info
 from ..util import get_addon_prefs
 from .. import constants
-from .execute_subprocess import execute_svn_command
+from .execute_subprocess import execute_svn_command, check_svn_installed
 from .background_process import BackgroundProcess, Processes
 from bpy.types import Operator
 from bpy.props import StringProperty
@@ -55,49 +55,44 @@ class SVN_OT_explain_status(Operator):
 
 
 @bpy.app.handlers.persistent
-def init_svn_of_current_file(_scene=None):
-    """When opening or saving a .blend file:
-    - Initialize SVN Scene info
-    - Initialize Repository
-    - Try to authenticate
+def ensure_svn_of_current_file(_scene=None):
+    """When opening or saving a .blend file, it's possible that the new .blend
+    is part of an SVN repository. If this is the case, do the following:
+    - Check if this file's repository is already in our database
+    - If not, create it
+    - Switch to that repo
     """
-
     context = bpy.context
+    prefs = get_addon_prefs(context)
+    prefs.is_svn_installed = check_svn_installed()
+    if not prefs.is_svn_installed:
+        return
+
     scene_svn = context.scene.svn
 
-    prefs = get_addon_prefs(context)
-    prefs.sync_repo_info_file()
+    old_active_repo = prefs.active_repo
+    prefs.init_repo_list()
 
-    for repo in prefs.repositories:
-        # This would ideally only run when opening Blender for the first
-        # time, but there is no app handler for that, sadly.
-        repo.authenticated = False
-        repo.auth_failed = False
+    # If the file is unsaved, nothing more to do.
+    if not bpy.data.filepath:
+        scene_svn.svn_url = ""
+        return
 
-    if prefs.active_repo_mode == 'CURRENT_BLEND':
-        if not bpy.data.filepath:
-            scene_svn.svn_url = ""
-            return
+    # If file is not in a repo, nothing more to do.
+    is_in_repo = set_scene_svn_info(context)
+    if not is_in_repo:
+        return
 
-        is_in_repo = set_scene_svn_info(context)
-        if not is_in_repo:
-            return
-
-        repo = scene_svn.get_scene_repo(context)
-        if not repo:
-            repo = prefs.init_repo(context, scene_svn.svn_directory)
-
-        for i, other_repo in enumerate(prefs.repositories):
-            if other_repo == repo:
-                prefs.active_repo_idx = i
-
+    # If file is in an existing repo, we should switch over to that repo.
+    for i, existing_repo in enumerate(prefs.repositories):
+        if (    existing_repo.url == scene_svn.svn_url and 
+                existing_repo.directory == scene_svn.svn_directory and
+                existing_repo != old_active_repo
+        ):
+            prefs.active_repo_idx = i
     else:
-        repo = prefs.active_repo
-        if not repo:
-            return
-
-    if repo.is_cred_entered:
-        repo.authenticate(context)
+        # If file is in a non-existing repo, initialize that repo.
+        prefs.init_repo(context, scene_svn.svn_directory)
 
 
 def set_scene_svn_info(context) -> bool:
@@ -233,21 +228,6 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
             if not file_entry.exists:
                 new_files_on_repo.add((file_entry.svn_path, repos_status))
 
-        # if file_entry.status_prediction_type == 'SKIP_ONCE':
-        #     # File status was predicted by a local svn file operation,
-        #     # so we should ignore this status update and reset the flag.
-        #     # The file status will be updated on the next status update.
-        #     # This is because this status update was initiated before the file's
-        #     # status was predicted, so the prediction is likely to be correct,
-        #     # and the status we have here is likely to be outdated.
-        #     file_entry.status_prediction_type = 'SKIPPED_ONCE'
-        #     continue
-        # elif file_entry.status_prediction_type not in {'NONE', 'SKIPPED_ONCE'}:
-        #     # We wait for `svn up/commit` background processes to finish and
-        #     # set the predicted flag to SKIP_ONCE. Until then, we ignore status
-        #     # updates on files that are being updated or committed.
-        #     continue
-
         if entry_existed and (file_entry.repos_status == 'none' and repos_status != 'none'):
             new_files_on_repo.add((file_entry.svn_path, repos_status))
 
@@ -277,8 +257,7 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
         if file_entry.svn_path not in svn_paths:
             repo.remove_file_entry(file_entry)
 
-    repo.update_file_filter(context)
-    repo.force_good_active_index(context)
+    repo.refresh_ui_lists(context)
 
 
 def get_repo_file_statuses(svn_status_str: str) -> Dict[str, Tuple[str, str, int]]:
@@ -339,22 +318,22 @@ def mark_current_file_as_modified(_dummy1=None, _dummy2=None):
 
 
 def delayed_init_svn(delay=1):
-    bpy.app.timers.register(init_svn_of_current_file, first_interval=delay)
+    bpy.app.timers.register(ensure_svn_of_current_file, first_interval=delay)
 
 
 def register():
-    bpy.app.handlers.load_post.append(init_svn_of_current_file)
+    bpy.app.handlers.load_post.append(ensure_svn_of_current_file)
 
-    bpy.app.handlers.save_post.append(init_svn_of_current_file)
+    bpy.app.handlers.save_post.append(ensure_svn_of_current_file)
     bpy.app.handlers.save_post.append(mark_current_file_as_modified)
 
     delayed_init_svn()
 
 
 def unregister():
-    bpy.app.handlers.load_post.remove(init_svn_of_current_file)
+    bpy.app.handlers.load_post.remove(ensure_svn_of_current_file)
 
-    bpy.app.handlers.save_post.remove(init_svn_of_current_file)
+    bpy.app.handlers.save_post.remove(ensure_svn_of_current_file)
     bpy.app.handlers.save_post.remove(mark_current_file_as_modified)
 
 

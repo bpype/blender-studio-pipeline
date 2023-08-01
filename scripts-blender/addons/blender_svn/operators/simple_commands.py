@@ -20,7 +20,7 @@ class SVN_Operator:
     @staticmethod
     def update_file_list(context):
         repo = context.scene.svn.get_repo(context)
-        repo.update_file_filter(context)
+        repo.refresh_ui_lists(context)
 
     def execute_svn_command(self, context, command: List[str], use_cred=False) -> str:
         # Since a status update might already be being requested when an SVN operator is run,
@@ -51,9 +51,8 @@ class SVN_Operator_Single_File(SVN_Operator):
         ret = self._execute(context)
 
         file = self.get_file(context)
-        if file:
-            Processes.start('Status')
-            redraw_viewport()
+        Processes.start('Status')
+        redraw_viewport()
 
         self.update_file_list(context)
         return ret
@@ -107,7 +106,7 @@ class May_Modifiy_Current_Blend(SVN_Operator_Single_File, Warning_Operator):
         return current_blend and current_blend.svn_path == self.file_rel_path
 
     reload_file: BoolProperty(
-        name="Reload File",
+        name="Reload File (Keep UI)",
         description="Reload the file after the operation is completed. The UI layout will be preserved",
         default=False,
     )
@@ -133,6 +132,8 @@ class May_Modifiy_Current_Blend(SVN_Operator_Single_File, Warning_Operator):
         super().execute(context)
         if self.reload_file:
             bpy.ops.wm.open_mainfile(filepath=bpy.data.filepath, load_ui=False)
+        else:
+            context.scene.svn.file_is_outdated = True
         return {'FINISHED'}
 
 
@@ -178,7 +179,7 @@ class SVN_OT_download_file_revision(May_Modifiy_Current_Blend, Operator):
 
     missing_file_allowed = True
 
-    revision: IntProperty()
+    revision: IntProperty(default=0)
 
     def invoke(self, context, event):
         file_entry = context.scene.svn.get_repo(
@@ -199,17 +200,23 @@ class SVN_OT_download_file_revision(May_Modifiy_Current_Blend, Operator):
                         "Cancelled: You have local modifications to this file. You must revert or commit it first!")
             return {'CANCELLED'}
 
-        self.execute_svn_command(
-            context,
-            ["svn", "up", f"-r{self.revision}",
-                f"{self.file_rel_path}", "--accept", "postpone"],
-            use_cred=True
-        )
+        self.svn_download_file_revision(context, self.file_rel_path, self.revision)
 
         self.report({'INFO'},
                     f"Checked out revision {self.revision} of {self.file_rel_path}")
 
         return {"FINISHED"}
+
+    def svn_download_file_revision(self, context, svn_file_path: str, revision=0):
+        commands = ["svn", "up", f"{self.file_rel_path}", "--accept", "postpone"]
+        if self.revision > 0:
+            commands.insert(2, f"-r{self.revision}")
+
+        self.execute_svn_command(
+            context,
+            commands,
+            use_cred=True
+        )
 
     def set_predicted_file_status(self, repo, file_entry: "SVN_file"):
         file_entry['revision'] = self.revision
@@ -230,13 +237,14 @@ class SVN_OT_restore_file(May_Modifiy_Current_Blend, Operator):
 
     missing_file_allowed = True
 
-    def _execute(self, context: Context) -> Set[str]:
+    def svn_revert(self, context, svn_file_path):
         self.execute_svn_command(
             context,
-            ["svn", "revert", f"{self.file_rel_path}"]
+            ["svn", "revert", f"{svn_file_path}"]
         )
 
-        f = self.get_file(context)
+    def _execute(self, context: Context) -> Set[str]:
+        self.svn_revert(context, self.file_rel_path)
         return {"FINISHED"}
 
     def set_predicted_file_status(self, repo, file_entry: "SVN_file"):
@@ -251,13 +259,33 @@ class SVN_OT_revert_file(SVN_OT_restore_file):
 
     missing_file_allowed = False
 
-    def _execute(self, context: Context) -> Set[str]:
-        super()._execute(context)
-
-        return {"FINISHED"}
-
     def get_warning_text(self, context) -> str:
         return "You will irreversibly and permanently lose the changes you've made to this file:\n    " + self.file_rel_path
+
+
+class SVN_OT_revert_and_update(SVN_OT_download_file_revision, SVN_OT_revert_file):
+    """Convenience operator for the "This file is outdated" warning message. Normally, these two operations should be done separately!"""
+    bl_idname = "svn.revert_and_update_file"
+    bl_label = "Revert And Update File"
+    bl_description = "A different version of this file was downloaded while it was open. This warning will persist until the file is updated and reloaded, or committed. Click to PERMANENTLY DISCARD local changes to this file and update it to the latest revision. Cannot be undone"
+    bl_options = {'INTERNAL'}
+
+    missing_file_allowed = False
+
+    def invoke(self, context, event):
+        return super(May_Modifiy_Current_Blend, self).invoke(context, event)
+
+    def get_warning_text(self, context) -> str:
+        if self.get_file(context).status != 'normal':
+            return "You will irreversibly and permanently lose the changes you've made to this file:\n    " + self.file_rel_path
+        else:
+            return "File will be updated to latest revision."
+
+    def _execute(self, context: Context) -> Set[str]:
+        self.svn_revert(context, self.file_rel_path)
+        self.svn_download_file_revision(context, self.file_rel_path, self.revision)
+
+        return {"FINISHED"}
 
 
 class SVN_OT_add_file(SVN_Operator_Single_File, Operator):
@@ -305,6 +333,7 @@ class SVN_OT_trash_file(SVN_Operator_Single_File, Warning_Operator, Operator):
     bl_options = {'INTERNAL'}
 
     file_rel_path: StringProperty()
+    missing_file_allowed = False
 
     def get_warning_text(self, context):
         return "Are you sure you want to move this file to the recycle bin?\n    " + self.file_rel_path
@@ -369,6 +398,7 @@ class SVN_OT_resolve_conflict(May_Modifiy_Current_Blend, Operator):
         col.alert = True
         col.label(text="Choose which version of the file to keep.")
         col.row().prop(self, 'resolve_method', expand=True)
+        col.separator()
         if self.resolve_method == 'mine-full':
             col.label(text="Local changes will be kept.")
             col.label(
@@ -411,15 +441,14 @@ class SVN_OT_cleanup(SVN_Operator, Operator):
         self.execute_svn_command(context, ["svn", "cleanup"])
         repo.reload_svn_log(context)
 
-        Processes.kill('Status')
-        Processes.kill('Log')
         Processes.kill('Commit')
         Processes.kill('Update')
         Processes.kill('Authenticate')
         Processes.kill('Activate File')
 
-        Processes.start('Status')
-        Processes.start('Log')
+        Processes.restart('Status')
+        Processes.restart('Log')
+        Processes.restart('Redraw Viewport')
 
         self.report({'INFO'}, "SVN Cleanup complete.")
 
@@ -428,13 +457,14 @@ class SVN_OT_cleanup(SVN_Operator, Operator):
 
 registry = [
     SVN_OT_update_single,
-    SVN_OT_download_file_revision,
-    SVN_OT_revert_file,
+    SVN_OT_revert_and_update,
     SVN_OT_restore_file,
-    SVN_OT_unadd_file,
+    SVN_OT_revert_file,
+    SVN_OT_download_file_revision,
     SVN_OT_add_file,
+    SVN_OT_unadd_file,
     SVN_OT_trash_file,
     SVN_OT_remove_file,
-    SVN_OT_cleanup,
     SVN_OT_resolve_conflict,
+    SVN_OT_cleanup,
 ]

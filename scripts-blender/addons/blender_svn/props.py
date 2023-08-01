@@ -3,10 +3,9 @@
 # (c) 2022, Blender Foundation - Demeter Dzadik
 
 from .util import get_addon_prefs
-from bpy.props import StringProperty, PointerProperty
+from bpy.props import StringProperty, PointerProperty, BoolProperty
 from bpy.types import PropertyGroup
 import bpy
-from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple, Set
 from . import wheels
 # This will load the dateutil and BAT wheel files.
@@ -27,26 +26,16 @@ class SVN_scene_properties(PropertyGroup):
         description="Absolute directory path of the SVN repository's root in the file system",
     )
 
-    def get_repo(self, context):
-        """Return the current repository.
-        Depending on preferences, this is either the repo the current .blend file is in, 
-        or whatever repo is selected in the preferences UI.
-        """
+    file_is_outdated: BoolProperty(
+        name="File Is Outdated",
+        description="Set to True when downloading a newer version of this file without reloading it, so that the warning in the UI can persist. This won't work in some cases involving multiple running Blender instances",
+        default=False
+    )
+
+    def get_repo(self, context) -> Optional['SVN_repository']:
+        """Return the active repository."""
         prefs = get_addon_prefs(context)
-
-        if prefs.active_repo_mode == 'CURRENT_BLEND':
-            return self.get_scene_repo(context)
-        else:
-            return prefs.active_repo
-
-    def get_scene_repo(self, context) -> Optional['SVN_repository']:
-        if not self.svn_url or not self.svn_directory:
-            return
-
-        prefs = get_addon_prefs(context)
-        for repo in prefs.repositories:
-            if (repo.url == self.svn_url) and (Path(repo.directory) == Path(self.svn_directory)):
-                return repo
+        return prefs.active_repo
 
 
 registry = [

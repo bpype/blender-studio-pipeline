@@ -17,9 +17,6 @@ def draw_outdated_file_warning(self, context):
         # If the current file is not in an SVN repository.
         return
 
-    if current_file.status == 'normal' and current_file.repos_status == 'none':
-        return
-
     layout = self.layout
     row = layout.row()
     row.alert = True
@@ -27,15 +24,14 @@ def draw_outdated_file_warning(self, context):
     if current_file.status == 'conflicted':
         row.operator('svn.resolve_conflict',
                      text="SVN: This .blend file is conflicted.", icon='ERROR')
-    elif current_file.repos_status != 'none':
-        warning = row.operator(
-            'svn.custom_tooltip', text="SVN: This .blend file is outdated.", icon='ERROR')
-        warning.tooltip = "The currently opened .blend file has a newer version available on the remote repository. This means any changes in this file will result in a conflict, and potential loss of data. See the SVN panel for info"
+    elif current_file.repos_status != 'none' or context.scene.svn.file_is_outdated:
+        op = row.operator('svn.revert_and_update_file', text="SVN: This .blend file may be outdated.", icon='ERROR')
+        op.file_rel_path = repo.current_blend_file.svn_path
 
 
 def register():
-    bpy.types.VIEW3D_HT_header.prepend(draw_outdated_file_warning)
+    bpy.types.TOPBAR_MT_editor_menus.append(draw_outdated_file_warning)
 
 
 def unregister():
-    bpy.types.VIEW3D_HT_header.remove(draw_outdated_file_warning)
+    bpy.types.TOPBAR_MT_editor_menus.remove(draw_outdated_file_warning)

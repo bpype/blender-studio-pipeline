@@ -3,6 +3,7 @@
 
 from bpy.props import IntProperty, BoolProperty
 from bpy.types import UIList, Panel, Operator
+from ..util import get_addon_prefs
 
 
 class SVN_UL_log(UIList):
@@ -21,9 +22,7 @@ class SVN_UL_log(UIList):
 
         num, auth, date, msg = layout_log_split(layout.row())
 
-        is_filebrowser = context.space_data.type == 'FILE_BROWSER'
-        active_file = svn.get_filebrowser_active_file(
-            context) if is_filebrowser else svn.active_file
+        active_file = svn.active_file
         num.label(text=str(log_entry.revision_number))
         if item.revision_number == active_file.revision:
             num.operator('svn.tooltip_log', text="", icon='LAYER_ACTIVE',
@@ -88,8 +87,15 @@ class SVN_UL_log(UIList):
                       toggle=True, icon='ALIGN_JUSTIFY')
 
 
-def is_log_useful(context):
-    repo = context.scene.svn.get_repo(context)
+def is_log_useful(context) -> bool:
+    """Return whether the log has any useful info to display."""
+
+    prefs = get_addon_prefs(context)
+    repo = prefs.active_repo
+
+    if not repo or not repo.authenticated:
+        return False
+
     if len(repo.log) == 0 or len(repo.external_files) == 0:
         return False
     active_file = repo.active_file
@@ -121,7 +127,7 @@ class VIEW3D_PT_svn_log(Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        draw_svn_log(context, layout, file_browser=False)
+        draw_svn_log(context, layout)
 
 
 def layout_log_split(layout):
@@ -140,23 +146,25 @@ def layout_log_split(layout):
     return num, auth, date, msg
 
 
-def draw_svn_log(context, layout, file_browser: bool):
+def draw_svn_log(context, layout):
     num, auth, date, msg = layout_log_split(layout.row())
     num.label(text="Rev. #")
     auth.label(text="Author")
     date.label(text="Date")
     msg.label(text="Message")
-    repo = context.scene.svn.get_repo(context)
+
+    prefs = get_addon_prefs(context)
+    repo = prefs.active_repo
     layout.template_list(
         "SVN_UL_log",
         "svn_log",
         repo,
         "log",
         repo,
-        "log_active_index_filebrowser" if file_browser else "log_active_index",
+        "log_active_index",
     )
 
-    active_log = repo.active_log_filebrowser if file_browser else repo.active_log
+    active_log = repo.active_log
     if not active_log:
         return
     layout.label(text="Revision Date: " + active_log.revision_date)
@@ -187,10 +195,7 @@ def execute_tooltip_log(self, context):
     repo = context.scene.svn.get_repo(context)
     tup = repo.get_log_by_revision(self.log_rev)
     if tup:
-        if context.area.type == 'FILE_BROWSER':
-            repo.log_active_index_filebrowser = tup[0]
-        else:
-            repo.log_active_index = tup[0]
+        repo.log_active_index = tup[0]
     return {'FINISHED'}
 
 

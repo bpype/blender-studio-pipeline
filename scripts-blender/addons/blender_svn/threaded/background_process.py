@@ -44,7 +44,7 @@ class BackgroundProcess:
     # Displayed in the tooltip on mouse-hover in the error message when an error occurs.
     error_description = "SVN Error:"
 
-    debug = True
+    debug = False
 
     def debug_print(self, msg: str):
         if self.debug:
@@ -82,7 +82,7 @@ class BackgroundProcess:
     def handle_error(self, context, error):
         self.output = ""
         self.error = error.stderr.decode()
-        self.is_running = False
+        self.stop()
 
     def process_output(self, context, prefs):
         """
@@ -113,7 +113,7 @@ class BackgroundProcess:
         repo = context.scene.svn.get_repo(context)
         if not repo:
             self.debug_print("Shutdown: Not in repo.")
-            self.is_running = False
+            self.stop()
             return
 
         prefs = get_addon_prefs(context)
@@ -127,7 +127,7 @@ class BackgroundProcess:
 
         if self.needs_authentication and not repo.authenticated:
             self.debug_print("Shutdown: Authentication needed.")
-            self.is_running = False
+            self.stop()
             return
 
         if not self.thread or not self.thread.is_alive() and not self.output and not self.error:
@@ -146,15 +146,14 @@ class BackgroundProcess:
             self.output = ""
             redraw_viewport()
             if self.repeat_delay == 0:
-                self.debug_print(
-                    "Shutdown: Output was processed, repeat_delay==0.")
-                self.is_running = False
+                self.debug_print("Shutdown: Output was processed, repeat_delay==0.")
+                self.stop()
                 return
             self.debug_print(f"Processed output. Waiting {self.repeat_delay}")
             return self.repeat_delay
         elif not self.thread and not self.thread.is_alive() and self.repeat_delay == 0:
             self.debug_print("Shutdown: Finished.\n")
-            self.is_running = False
+            self.stop()
             return
 
         self.debug_print(f"Tick delay: {self.tick_delay}")
@@ -188,6 +187,7 @@ class BackgroundProcess:
 
     def stop(self):
         """Stop the process if it isn't running, by unregistering its timer function"""
+        self.debug_print("stop() function was called.")
         self.is_running = False
         if bpy.app.timers.is_registered(self.timer_function):
             # This won't work if the timer has returned None at any point, as that
@@ -214,6 +214,7 @@ class ProcessManager:
     def processes(self):
         # I tried to implement this thing as a Singleton that inherits from the `dict` class,
         # I tried having the `processes` dict on the class level,
+        # I tried having it on the instance level,
         # and it just refuses to work properly. I add an instance to the dictionary,
         # I print it, I can see that it's there, I make sure it absolutely doesn't get removed,
         # but when I try to access it from anywhere, it's just empty. My mind is boggled.
@@ -238,6 +239,8 @@ class ProcessManager:
         process = self.processes.get(proc_name, None)
         if process:
             process.start()
+            for key, value in kwargs.items():
+                setattr(process, key, value)
             return
         else:
             for subcl in get_recursive_subclasses(BackgroundProcess):
@@ -260,6 +263,12 @@ class ProcessManager:
         if process:
             process.stop()
             del self.processes[proc_name]
+    
+    def restart(self, proc_name: str):
+        """Destroy a process, then start it again. 
+        Useful to skip the repeat_delay timer of infinite processes like Status or Log."""
+        self.kill(proc_name)
+        self.start(proc_name)
 
 
 # I named this variable with title-case, to indicate that it's a Singleton.

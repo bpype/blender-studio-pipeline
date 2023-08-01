@@ -7,6 +7,7 @@ class BGP_SVN_Redraw_Viewport(BackgroundProcess):
     repeat_delay = 1
     debug = False
     tick_delay = 1
+    needs_authentication = False
 
     def tick(self, context, prefs):
         redraw_viewport()

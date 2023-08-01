@@ -114,6 +114,7 @@ class SVN_UL_file_list(UIList):
             explainer.status = status
             explainer.file_rel_path = file_entry.svn_path
 
+
     @classmethod
     def cls_filter_items(cls, context, data, propname):
         """By moving all of this logic to a classmethod (and all the filter 
@@ -148,8 +149,10 @@ class SVN_UL_file_list(UIList):
 
         row.prop(self, 'show_file_paths', text="",
                  toggle=True, icon="FILE_FOLDER")
-        row.prop(context.scene.svn.get_repo(context),
-                 'file_search_filter', text="")
+
+        repo = context.scene.svn.get_repo(context)
+        if repo:
+            row.prop(repo, 'file_search_filter', text="")
 
 
 def draw_process_info(context, layout):
@@ -183,18 +186,19 @@ def draw_process_info(context, layout):
                   ", ".join([p.name for p in Processes.running_processes]))
 
 
-def draw_repo_file_list(context, layout, repo):
+def draw_file_list(context, layout):
+    prefs = get_addon_prefs(context)
+    repo = prefs.active_repo
     if not repo:
         return
 
+    if not repo.authenticated:
+        row = layout.row()
+        row.alert=True
+        row.label(text="Repository is not authenticated.", icon='ERROR')
+        return
+
     main_col = layout.column()
-    main_col.enabled = False
-    status_proc = Processes.get('Status')
-    time_since_last_update = 1000
-    if status_proc:
-        time_since_last_update = time.time() - status_proc.timestamp_last_update
-        if time_since_last_update < 30:
-            main_col.enabled = True
     main_row = main_col.row()
     split = main_row.split(factor=0.6)
     filepath_row = split.row()
@@ -206,11 +210,6 @@ def draw_repo_file_list(context, layout, repo):
     ops_row = main_row.row()
     ops_row.alignment = 'RIGHT'
     ops_row.label(text="Operations")
-
-    timer_row = main_row.row()
-    timer_row.alignment = 'RIGHT'
-    timer_row.operator("svn.custom_tooltip", icon='BLANK1', text="",
-                       emboss=False).tooltip = "Time since last file status update: " + str(time_since_last_update) + 's'
 
     row = main_col.row()
     row.template_list(

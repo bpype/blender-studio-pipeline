@@ -48,6 +48,10 @@ class SVN_file(PropertyGroup):
         default="none",
         options=set()
     )
+    @property
+    def will_conflict(self):
+        return self.status != 'normal' and self.repos_status != 'none'
+
     status_prediction_type: EnumProperty(
         name="Status Predicted By Process",
         items=[
@@ -67,18 +71,6 @@ class SVN_file(PropertyGroup):
         default=False,
         options=set()
     )
-
-    @property
-    def absolute_path(self) -> Path:
-        """Return absolute path on the file system."""
-        scene = self.id_data
-        svn = scene.svn
-        return Path(svn.svn_directory).joinpath(Path(self.svn_path))
-
-    @property
-    def relative_path(self) -> str:
-        """Return relative path with Blender's path conventions."""
-        return bpy.path.relpath(self.absolute_path)
 
     @property
     def is_outdated(self):
@@ -247,6 +239,7 @@ class SVN_repository(PropertyGroup):
     @property
     def is_valid_svn(self):
         dir_path = Path(self.directory)
+        # TODO: This property is checked pretty often, so we run `svn info` pretty often. Might not be a big deal, but maybe it's a bit overkill?
         root_dir, base_url = get_svn_info(self.directory)
         return (
             dir_path.exists() and
@@ -282,10 +275,10 @@ class SVN_repository(PropertyGroup):
         if get_addon_prefs(context).loading:
             return
 
-        self.authenticate(context)
+        self.authenticate()
         self.update_repo_info_file(context)
 
-    def authenticate(self, context):
+    def authenticate(self):
         self.auth_failed = False
         if self.is_valid_svn and self.is_cred_entered:
             Processes.start('Authenticate')
@@ -305,9 +298,9 @@ class SVN_repository(PropertyGroup):
     )
 
     @property
-    def is_cred_entered(self):
+    def is_cred_entered(self) -> bool:
         """Check if there's a username and password entered at all."""
-        return self.username and self.password
+        return bool(self.username and self.password)
 
     authenticated: BoolProperty(
         name="Authenticated",
@@ -316,7 +309,7 @@ class SVN_repository(PropertyGroup):
     )
     auth_failed: BoolProperty(
         name="Authentication Failed",
-        description="Internal flag to mark whether the last entered credentials were denied by the repo",
+        description="Internal flag to mark whether the last entered credentials were rejected by the repo",
         default=False
     )
 
@@ -342,10 +335,6 @@ class SVN_repository(PropertyGroup):
         name="SVN Log",
         options=set()
     )
-    log_active_index_filebrowser: IntProperty(
-        name="SVN Log",
-        options=set()
-    )
 
     reload_svn_log = svn_log.reload_svn_log
 
@@ -360,19 +349,13 @@ class SVN_repository(PropertyGroup):
         except IndexError:
             return None
 
-    @property
-    def active_log_filebrowser(self):
-        try:
-            return self.log[self.log_active_index_filebrowser]
-        except IndexError:
-            return None
-
     def get_log_by_revision(self, revision: int) -> Tuple[int, SVN_log]:
         for i, log in enumerate(self.log):
             if log.revision_number == revision:
                 return i, log
 
     def get_latest_revision_of_file(self, svn_path: str) -> int:
+        """Return the revision number of the last log entry that affects the given file."""
         svn_path = str(svn_path)
         for log in reversed(self.log):
             for changed_file in log.changed_files:
@@ -442,33 +425,43 @@ class SVN_repository(PropertyGroup):
 
     def update_active_file(self, context):
         """When user clicks on a different file, the latest log entry of that file
-        should become the active log entry."""
+        should become the active log entry.
+        NOTE: Try to only trigger this on explicit user actions!
+        """
 
-        latest_idx = self.get_latest_revision_of_file(
+        if self.external_files_active_index == self.prev_external_files_active_index:
+            return
+        self.prev_external_files_active_index = self.external_files_active_index
+
+        latest_rev = self.get_latest_revision_of_file(
             self.active_file.svn_path)
         # SVN Revisions are not 0-indexed, so we need to subtract 1.
-        self.log_active_index = latest_idx-1
+        self.log_active_index = latest_rev-1
 
         space = context.space_data
         if space and space.type == 'FILE_BROWSER':
-            # Set the active file in the file browser to whatever was selected in the SVN Files panel.
-            self.log_active_index_filebrowser = latest_idx-1
-
-            space.params.directory = self.active_file.absolute_path.parent.as_posix().encode()
+            space.params.directory = Path(self.active_file.absolute_path).parent.as_posix().encode()
             space.params.filename = self.active_file.name.encode()
 
             space.deselect_all()
-            space.activate_file_by_relative_path(
+            # Set the active file in the file browser to whatever was selected 
+            # in the SVN Files panel.
+            space.activate_file_by_relative_path(       # This doesn't actually work, due to what I assume is a bug.
                 relative_path=self.active_file.name)
-            Processes.start('Activate File')
+            Processes.start('Activate File')            # This is my work-around.
 
-        # Filter out log entries that did not affect the selected file.
+        # Set the filter flag of the log entries based on whether they affect the active file or not.
         self.log.foreach_set(
             'affects_active_file',
             [log_entry.changes_file(self.active_file)
              for log_entry in self.log]
         )
 
+    prev_external_files_active_index: IntProperty(
+        name="Previous Active Index",
+        description="Internal value to avoid triggering the update callback unnecessarily",
+        options=set()
+    )
     external_files_active_index: IntProperty(
         name="File List",
         description="Files tracked by SVN",
@@ -513,28 +506,10 @@ class SVN_repository(PropertyGroup):
         return self.get_file_by_absolute_path(bpy.data.filepath)
 
     ### File List UIList filter properties ###
-    # Filtering properties are normally stored on the UIList,
-    # but then they cannot be accessed from anywhere else,
-    # since template_list() does not return the UIList instance.
-    # We need to be able to access them outside of drawing code, to be able to
-    # ensure that a filtered out entry can never be the active one.
-
-    def force_good_active_index(self, context) -> bool:
-        """
-        We want to avoid having the active file entry be invisible due to filtering.
-        If the active element is being filtered out, set the active element to 
-        something that is visible.
-        """
-        if len(self.external_files) == 0:
-            return
-        if not self.active_file.show_in_filelist:
-            for i, file in enumerate(self.external_files):
-                if file.show_in_filelist:
-                    self.external_files_active_index = i
-                    return
-
-    def update_file_filter(self, context):
-        """Should run when any of the SVN file list search filters are changed."""
+    def refresh_ui_lists(self, context):
+        """Refresh the file UI list based on filter settings.
+        Also triggers a refresh of the SVN UIList, through the update callback of
+        external_files_active_index."""
 
         UI_LIST = bpy.types.UI_UL_list
         if self.file_search_filter:
@@ -555,12 +530,20 @@ class SVN_repository(PropertyGroup):
 
                 file.show_in_filelist = not file.has_default_status
 
-        self.force_good_active_index(context)
+        if len(self.external_files) == 0:
+            return
+
+        # Make sure the active file isn't now being filtered out.
+        # If it is, change the active file to the first visible one.
+        for i, file in enumerate(self.external_files):
+            if file.show_in_filelist:
+                self.external_files_active_index = i
+                return
 
     file_search_filter: StringProperty(
         name="Search Filter",
         description="Only show entries that contain this string",
-        update=update_file_filter
+        update=refresh_ui_lists
     )
 
 
