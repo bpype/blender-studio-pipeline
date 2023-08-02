@@ -4,9 +4,6 @@
 - Fix Changelog Rendering (#125)
 - Fix line ends from DOS to UNIX (#68)
 
-### UN-CATEGORIZED 
-- Cleanup Add-on Changelogs
-
 ## 0.1.1 - 2023-06-02 
  
 ### FIXED 
