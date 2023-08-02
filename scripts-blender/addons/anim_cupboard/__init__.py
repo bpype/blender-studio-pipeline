@@ -15,7 +15,7 @@ from . import bone_selection_sets
 bl_info = {
     'name': "Animation Cupboard",
     'author': "Demeter Dzadik",
-    "version": (0, 0, 3),
+    "version": (0, 0, 4),
     'blender': (3, 2, 0),
     'description': "Tools to improve animation workflows",
     'location': "Various",
