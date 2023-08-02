@@ -1,7 +1,7 @@
 # Character Pipeline Assistant
 
 ::: warning Legacy Documentation
-This is a legacy document originally written by Andy in 2019 as part of the Spring production retrospective.
+This is a legacy document originally written by Simon in 2020.
 :::
 
 ![Character Pipeline](/media/archive/pipeline-proposal-2019/char_pipeline_01.png)
