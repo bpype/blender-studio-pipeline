@@ -27,7 +27,7 @@ This addon adds some Lattice-based utilities to Blender.
 ## Tweak Lattice
 Tweak Lattice lets you create a lattice setup at the 3D cursor to make deformation adjustments to the selected objects.  
 
-![How to Tweak Lattice](/media/addons/lattice_magic/tweak_lattice.gif)
+![How to Tweak Lattice](/media/addons/lattice_magic/tweak_lattice.mp4)
 
 ### Parenting
 This is meant to be possible to be used in conjunction with a character rig: Before pressing the "Create Tweak Lattice" button, simply select the desired parent rig object and bone in the UI.
@@ -47,7 +47,7 @@ With the lattice control selected, you can see a "Helper Objects" section in the
 ## Camera Lattice
 Camera Lattice lets you create a lattice in a camera's view frame and deform a character (or any collection) with the lattice.
 
-![Camera Lattice Demo](/media/addons/lattice_magic/camera_lattice.gif)
+![Camera Lattice Demo](/media/addons/lattice_magic/camera_lattice.mp4)
 
 ### Creation
 Add an entry to the Camera Lattice list with the + icon. Each entry corresponds to deforming a single collection with a single lattice object from the perspective of a single camera.  
