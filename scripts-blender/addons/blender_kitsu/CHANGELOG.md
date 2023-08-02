@@ -22,20 +22,13 @@
 - Fix Keep existing actions during `Check Action Names` (#75)
 - Fix bug in frame range calculation (#72)
 - Fix line ends from DOS to UNIX (#68)
+- Shot Builder Add Directory Layout to README
+- Rename 'Render Thumbnail' to 'Render Still' (#86)
+- Fix hang when using Kitsu Server is not found during login (#79)
 
 ### REMOVED 
 - Remove dependence on Editorial Export Path
 - Remove Metastrip Filepath (#80)
-
-### UN-CATEGORIZED 
-- Shot Builder Add Directory Layout to README
-- Shot Builder move config to standard directory (#88)"
-- Shot Builder move config to standard directory (#88)
-- blender_kitsu 0.1.2
-- Rename 'Render Thumbnail' to 'Render Still' (#86)
-- Use Background  Thread for Kitsu Login (#79)
-- Set Custom Thumbnail during Playblast (#77)
-- Cleanup Add-on Changelogs
 
 ## 0.1.2 - 2023-06-19 
  
