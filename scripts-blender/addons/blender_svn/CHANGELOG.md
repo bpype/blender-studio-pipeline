@@ -1,3 +1,30 @@
+## 1.0.1 - 2023-08-02 
+ 
+### ADDED 
+- Add svn checkout workflow
+
+### FIXED 
+- Fix error initializing in a fresh folder
+- Fix minor error
+- Fix Changelog Rendering (#125)
+- Fix Gazu Module out of sync (#119)
+- Fix UI error when cancelling a checkout
+- Fix some errors when initializing the addon
+- Fix process not set is_running=False on error
+- Fix line ends from DOS to UNIX (#68)
+
+### UN-CATEGORIZED 
+- UX improvements (#136)
+- Checkout, Multi-Repo, Optimizations & Clean-up' (#104) from Mets/blender-studio-pipeline:SVN-improvements into main
+- autopep8
+- Allow downloading repo version in bg
+- Improve UX when moving between repositories
+- Optimize log filtering
+- Massive UI drawing performance boost
+- Better msgs on why repo isn't authenticating
+- Don't auth if repo non-existent
+- Cleanup Add-on Changelogs
+
 ## 0.2.1 - 2023-06-02 
  
 ### ADDED 
