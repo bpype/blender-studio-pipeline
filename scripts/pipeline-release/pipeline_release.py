@@ -43,6 +43,17 @@ TYPES: dict[str, str] = {
     "breaking": "Breaking",
 }
 
+# GITEA LOGIN SETTINGS
+api_token_file = Path(__file__).parent.joinpath("api_token.env")
+if not api_token_file.exists():
+    print("API Token File not Found")
+api_token = open(api_token_file, 'r').read()
+base_url = 'https://projects.blender.org'
+api_path = f"{base_url}/api/v1"
+repo_path = '/studio/blender-studio-pipeline'
+release_path = f'/repos{repo_path}/releases'
+tag_path = f'/repos{repo_path}/tags'
+
 
 def parse_commit(commit_message: str) -> dict[str, str]:
     """
@@ -77,8 +88,8 @@ def parse_commit(commit_message: str) -> dict[str, str]:
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "-m",
-    "--msg",
+    "-c",
+    "--commit",
     help="Find commit with this message and use it as the last version.",
     type=str,
 )
@@ -90,11 +101,26 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "-b",
-    "--bump",
+    "-o",
+    "--output",
+    help="Provide a string for the output path of generated zips",
+    type=str,
+)
+
+parser.add_argument(
+    "-m",
+    "--major",
     help="Bump the major version number, otherwise bump minor version number",
     action="store_true",
 )
+
+parser.add_argument(
+    "-t",
+    "--test",
+    help="Test release system by only running locally and skip committing",
+    action="store_true",
+)
+
 
 parser.add_argument(
     "-f",
@@ -122,6 +148,17 @@ def write_file(file_path: Path, content):
     file = open(file_path, 'w')
     file.writelines(content)
     file.close()
+
+
+def replace_line(file_path: Path, new_line: str, line_number: int):
+    file = open(
+        file_path,
+    )
+    lines = file.readlines()
+    lines[line_number] = new_line
+    out = open(file_path, 'w')
+    out.writelines(lines)
+    out.close()
 
 
 def get_directory(repo_root: Path, folder_name: str) -> Path:
@@ -263,7 +300,37 @@ def changelog_file_write(file_path: Path, content: str):
     return file_path
 
 
-def addon_package(directory: Path, commit_prefix: str, is_major=False, force=False):
+def update_release_table(addon_dir: Path, version: str, release_version: str):
+    template_file = addon_dir.parent.parent.joinpath("README.md.template")
+    table_file = addon_dir.parent.parent.joinpath("README.md")
+    with open(template_file, 'r') as readme_template:
+        for num, line in enumerate(readme_template):
+            if addon_dir.name in line:
+                line_to_replace = num
+                break  # Use first line found
+    line = line.replace("<VERSION>", f"{version}")
+    line = line.replace(
+        "<ZIP_URL>",
+        f"{base_url}{repo_path}/releases/download/{release_version}/{addon_dir.name}-{version}.zip",
+    )
+    new_line = line.replace(
+        "<CHECKSUM_URL>",
+        f"{base_url}{repo_path}/releases/download/{release_version}/{addon_dir.name}-{version}.sha256",
+    )
+    replace_line(table_file, new_line, line_to_replace)
+    return table_file
+
+
+def addon_package(
+    directory: Path,
+    commit_prefix: str,
+    is_major=False,
+    force=False,
+    test=False,
+    output_path=None,
+    to_upload=[],
+    release_version="",
+):
     """
     For a give directory, if new commits are found after the commit matching 'commit_prefix',
      bump addon version, generate a changelog, commit changes and package addon into an archive.
@@ -276,37 +343,50 @@ def addon_package(directory: Path, commit_prefix: str, is_major=False, force=Fal
     commit_msg = 'Version Bump:' if commit_prefix is None else commit_prefix
     commits_in_folder = changelog_commits_get(directory, commit_msg)
     dist_dir = get_directory(REPO_ROOT_DIR, "dist")
+
     if commits_in_folder or force:
         init_file, version = addon_version_bump(directory, is_major)
         change_log = changelog_generate(commits_in_folder, version)
+        table_file = update_release_table(directory, version, release_version)
         change_log_file = changelog_file_write(
             directory.joinpath("CHANGELOG.md"), change_log
         )
-        cli_command(f'git reset')
-        cli_command(f'git stage {change_log_file}')
-        cli_command(f'git stage {init_file}')
-        subprocess.run(
-            ['git', 'commit', '-m', f"Version Bump: {directory.name} {version}"],
-            capture_output=True,
-            encoding="utf-8",
-        )
-        print(f"Version Bump: {directory.name} {version}")
+        if not test:
+            cli_command(f'git reset')
+            cli_command(f'git stage {change_log_file}')
+            cli_command(f'git stage {init_file}')
+            cli_command(f'git stage {table_file}')
+            subprocess.run(
+                ['git', 'commit', '-m', f"Version Bump: {directory.name} {version}"],
+                capture_output=True,
+                encoding="utf-8",
+            )
+            print(f"Version Bump: {directory.name} {version}")
         name = directory.name
-        addon_output_dir = get_directory(dist_dir, directory.name)
+        if output_path is None:
+            addon_output_dir = get_directory(dist_dir, directory.name)
+        else:
+            addon_output_dir = get_directory(Path(output_path), directory.name)
 
         zipped_addon = shutil.make_archive(
-            addon_output_dir.joinpath(f"{name}-{version}"), 'zip', directory
+            addon_output_dir.joinpath(f"{name}-{version}"),
+            'zip',
+            directory.parent,
+            directory.name,
         )
         checksum = generate_checksum(zipped_addon)
+        checksum_path = addon_output_dir.joinpath(f"{name}-{version}.sha256")
         checksum_file = write_file(
-            addon_output_dir.joinpath(f"{name}-{version}.sha256"),
+            checksum_path,
             f"{checksum} {name}-{version}.zip",
         )
+        to_upload.append(zipped_addon)
+        to_upload.append(checksum_path._str)
     else:
         print(f"No New Version: {directory.name}")
 
 
-def addon_version_get(version_line: str, is_major: bool) -> str:
+def addon_version_set(version_line: str, is_major: bool) -> str:
     """
     Read bl_info within addon's __init__.py file to get new version number
     Arguments:
@@ -350,22 +430,101 @@ def addon_version_bump(directory: Path, is_major: bool):
         init_file,
     )
     lines = file.readlines()
-    version = addon_version_get(lines[version_line], is_major)
+    version = addon_version_set(lines[version_line], is_major)
     repl_str = f'    "version": ({version}),\n'
-    lines[version_line] = repl_str
-    out = open(init_file, 'w')
-    out.writelines(lines)
-    out.close()
+    replace_line(init_file, repl_str, version_line)
     return init_file, version.replace(', ', '.').replace(',', '.')
+
+
+### GITEA UPLOAD RELEASE
+import requests
+import json
+
+"""
+API token must be created under user>settings>application
+ - Use browser to 'INSPECT' the Generate Token button
+ - Find the property 'GTHidden Display' and remove the element of 'None' to nothing
+ - Then Set the correct scope for the key using the new dropdown menu before creating tag
+
+"""
+
+
+def upload_file_to_release(url, api_token, release_id, file):
+    file_name = Path(file.name).name
+    file_content = [
+        ('attachment', (file_name, file, 'application/zip')),
+    ]
+    response = requests.post(
+        url=f"{url}/{release_id}/assets?name={file_name}&token={api_token}",
+        files=file_content,
+    )
+    if not response.status_code == 201:
+        print(f"{file_name} failed to upload")
+    else:
+        print(f"Uploaded {file_name}")
+
+
+def send_post_request(url, api_token, data):
+    header_cont = {
+        'Content-type': 'application/json',
+    }
+    response = requests.post(
+        url=f"{url}?token={api_token}",
+        headers=header_cont,
+        data=json.dumps(data),
+    )
+    response_json = response.json()
+    if response.status_code != 201:
+        print(response_json["message"])
+    return response_json
+
+
+def create_new_release(tag_url, base_release_url, release_version, api_token):
+    release_description = "Latest Release of Blender Studio Pipeline"
+    # Create New Tag
+    tag_content = {
+        "message": f"{release_description}",
+        "tag_name": f"{release_version}",
+        "target": f"main",
+    }
+
+    send_post_request(tag_url, api_token, tag_content)
+
+    # Create New Release
+    release_content = {
+        "body": f"{release_description}",
+        "draft": False,
+        "name": f"Pipeline Release {release_version}",
+        "prerelease": False,
+        "tag_name": f"{release_version}",
+        "target_commitish": "string",  # will default to latest
+    }
+
+    return send_post_request(base_release_url, api_token, release_content)
 
 
 def main() -> int:
     args = parser.parse_args()
-    msg = args.msg
-    bump = args.bump
+    commit = args.commit
+    major = args.major
+    test = args.test
     user_names = args.name
+    output_path = args.output
     force = args.force
     addon_folder = REPO_ROOT_DIR.joinpath(REPO_ROOT_DIR, "scripts-blender/addons")
+    addon_to_upload = []
+    base_release_url = f"{api_path}{release_path}"
+    base_tag_url = f"{api_path}{tag_path}"
+    latest_release = requests.get(url=f"{base_release_url}/latest?token={api_token}")
+    # Exception for intial release
+    if latest_release.status_code == 404:
+        release_version = '0.0.1'
+    else:
+        latest_tag = latest_release.json()["tag_name"]
+        release_version = latest_tag.replace(
+            latest_tag[-1], str(int(latest_tag[-1]) + 1)
+        )
+
     addon_dirs = [
         name
         for name in os.listdir(addon_folder)
@@ -377,9 +536,36 @@ def main() -> int:
             for name in os.listdir(addon_folder)
             if os.path.isdir(addon_folder.joinpath(name)) and name in user_names
         ]
+
     for dir in addon_dirs:
         addon_to_package = addon_folder.joinpath(addon_folder, dir)
-        addon_package(addon_to_package, msg, bump, force)
+        addon_package(
+            addon_to_package,
+            commit,
+            major,
+            force,
+            test,
+            output_path,
+            addon_to_upload,
+            release_version,
+        )
+
+    if not test:
+        # Release Script
+
+        response = create_new_release(
+            base_tag_url, base_release_url, release_version, api_token
+        )
+        release_id = response["id"]
+
+        for file in addon_to_upload:
+            payload = open(file, 'rb')
+            upload_file_to_release(
+                base_release_url,
+                api_token,
+                release_id,
+                payload,
+            )
     return 0
 
 

@@ -22,10 +22,11 @@ This folder contains a command line tool that doesn't require installation to us
 
 | Command      | Description |
 | ----------- | ----------- |
-|  -b, --bump|Bump the major version number, otherwise bump minor version|
+|  -m, --major|Bump the major version number, otherwise bump minor version|
 | -n --name| Name of addon(s) folder to update. All addons will be checked if flag is not provided|
-| -m  --msg| Title of commit to consider basis of latest release, otherwise the last commit called 'Version Bump:' will be used|
+| -c  --commit| Title of commit to consider basis of latest release, otherwise the last commit called 'Version Bump:' will be used|
 | -f  --force|Bump version even if no commits are found|
+| -t, --test |Test release system by only running locally and skip committing|
 | -h, --help| show the above help message and exit|
 
 
@@ -41,7 +42,7 @@ This folder contains a command line tool that doesn't require installation to us
 |BREAKING|breaking|
 
 
-This tool will automatically generate changelog messages based on the "changelog categories" below. Commit's subject line convention is `{Name of Addon}: {category} commit content` for example:
+This tool will automatically generate changelog messages based on the "changelog categories" below. Commit's subject line convention is `{Name of Addon}: {category} commit content` for example: 
 ### Commit Subject Line: 
 ```
 Blender Kitsu: Fix naming conventions
@@ -57,7 +58,7 @@ Blender Kitsu: Fix naming conventions
 | Action | Command |
 | ----------- | ----------- |
 |Create a new minor version if available of all addons|`python -m pipeline_release`|
-|Create a new major version if available of all addons|`python -m pipeline_release -b`|
+|Create a new major version if available of all addons|`python -m pipeline_release -m`|
 |Create a new version even no new commits are found|`python -m pipeline_release` -f|
 |Only check if addon has this name(s) |`python -m pipeline_release -n "blender_kitsu, blender_svn"`|
-|Find a commit that matches this message and uses as version basis otherwise the last commit called 'Version Bump:' will be used |`python -m pipeline_release -m "Commit MSG"`|
+|Find a commit that matches this message and uses as version basis otherwise the last commit called 'Version Bump:' will be used |`python -m pipeline_release -c "Commit MSG"`|
