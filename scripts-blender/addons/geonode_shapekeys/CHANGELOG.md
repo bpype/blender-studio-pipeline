@@ -1,3 +1,14 @@
+## 0.0.3 - 2023-08-02 
+ 
+### FIXED 
+- Fix Changelog Rendering (#125)
+- Fix error adding to objects with no animdata
+- Fix line ends from DOS to UNIX (#68)
+
+### UN-CATEGORIZED 
+- Improve visibility management' (#103) from Mets/blender-studio-pipeline:GNSK-fix-visibility-management-2 into main
+- Cleanup Add-on Changelogs
+
 ## 0.0.2 - 2023-06-02 
  
 ### FIXED 
