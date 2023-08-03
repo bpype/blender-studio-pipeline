@@ -673,7 +673,7 @@ def remove_all_objects_from_lattice(hook: Object) -> List[Object]:
     return remove_objects_from_lattice(hook, objs_to_remove)
 
 
-classes = [
+registry = [
     TWEAKLAT_OT_Create,
     TWEAKLAT_OT_Duplicate,
     TWEAKLAT_OT_Delete,
@@ -686,17 +686,9 @@ classes = [
 
 
 def register():
-    from bpy.utils import register_class
-    for c in classes:
-        register_class(c)
-
     Scene.tweak_lattice_parent_ob = PointerProperty(
         type=Object, name="Parent")
 
 
 def unregister():
-    from bpy.utils import unregister_class
-    for c in reversed(classes):
-        unregister_class(c)
-
     del Scene.tweak_lattice_parent_ob

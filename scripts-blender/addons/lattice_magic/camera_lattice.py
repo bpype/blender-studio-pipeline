@@ -557,7 +557,7 @@ def camera_lattice_frame_change(scene):
 	if ob.active_shape_key_index != most_recent_index:
 		ob.active_shape_key_index = most_recent_index
 
-classes = [
+registry = [
 	LatticeSlot
 	,CAMLAT_UL_lattice_slots
 
@@ -576,19 +576,11 @@ classes = [
 ]
 
 def register():
-	from bpy.utils import register_class
-	for c in classes:
-		register_class(c)
-
 	bpy.types.Scene.lattice_slots = CollectionProperty(type=LatticeSlot)
 	bpy.types.Scene.active_lattice_index = IntProperty()
 	bpy.app.handlers.frame_change_post.append(camera_lattice_frame_change)
 
 def unregister():
-	from bpy.utils import unregister_class
-	for c in reversed(classes):
-		unregister_class(c)
-	
 	del bpy.types.Scene.lattice_slots
 	del bpy.types.Scene.active_lattice_index
 	

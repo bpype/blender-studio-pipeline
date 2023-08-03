@@ -437,7 +437,7 @@ class SymmetrizeVertexGroups(Operator):
         return {'FINISHED'}
 
 
-classes = [
+registry = [
     DeleteEmptyDeformGroups,
     FocusDeformBones,
     DeleteUnselectedDeformGroups,
@@ -445,19 +445,3 @@ classes = [
     CreateMirrorGroups,
     SymmetrizeVertexGroups,
 ]
-
-
-def register():
-    from bpy.utils import register_class
-    for c in classes:
-        register_class(c)
-
-
-def unregister():
-    from bpy.utils import unregister_class
-    for c in classes:
-        try:
-            unregister_class(c)
-        except RuntimeError:
-            # TODO: Sometimes fails to unregister for literally no reason.
-            pass

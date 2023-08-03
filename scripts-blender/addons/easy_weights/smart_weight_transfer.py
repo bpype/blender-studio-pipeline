@@ -268,15 +268,15 @@ class EASYWEIGHT_OT_smart_weight_transfer(bpy.types.Operator):
         return {'FINISHED'}
 
 
+registry = [
+    EASYWEIGHT_OT_smart_weight_transfer
+]
+
 def register():
-    from bpy.utils import register_class
-    register_class(EASYWEIGHT_OT_smart_weight_transfer)
     bpy.types.VIEW3D_MT_paint_weight.append(
         EASYWEIGHT_OT_smart_weight_transfer.draw_smart_weight_transfer)
 
 
 def unregister():
-    from bpy.utils import unregister_class
-    unregister_class(EASYWEIGHT_OT_smart_weight_transfer)
     bpy.types.VIEW3D_MT_paint_weight.remove(
         EASYWEIGHT_OT_smart_weight_transfer.draw_smart_weight_transfer)

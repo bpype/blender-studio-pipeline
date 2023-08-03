@@ -1,0 +1,16 @@
+from bpy.types import AddonPreferences
+from bpy.props import BoolProperty
+
+
+class LatticeMagicPreferences(AddonPreferences):
+    bl_idname = __name__
+
+    update_active_shape_key: BoolProperty(
+        name='Update Active Shape Key',
+        description="Update the active shape key on frame change based on the current frame and the shape key's name",
+        default=False,
+    )
+
+registry = [
+	LatticeMagicPreferences
+]

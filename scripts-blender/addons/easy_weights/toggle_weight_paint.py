@@ -148,17 +148,16 @@ def draw_in_menu(self, context):
     self.layout.operator(EASYWEIGHT_OT_toggle_weight_paint.bl_idname)
 
 
-def register():
-    from bpy.utils import register_class
-    register_class(EASYWEIGHT_OT_toggle_weight_paint)
+registry = [
+    EASYWEIGHT_OT_toggle_weight_paint
+]
 
+
+def register():
     VIEW3D_MT_paint_weight.append(draw_in_menu)
     VIEW3D_MT_object.append(draw_in_menu)
 
 
 def unregister():
-    from bpy.utils import unregister_class
-    unregister_class(EASYWEIGHT_OT_toggle_weight_paint)
-
     VIEW3D_MT_paint_weight.remove(draw_in_menu)
     VIEW3D_MT_object.remove(draw_in_menu)

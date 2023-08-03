@@ -20,8 +20,7 @@ from . import weight_paint_context_menu
 from . import toggle_weight_paint
 from . import force_apply_mirror
 from . import smart_weight_transfer
-from typing import List
-from bpy.utils import register_class, unregister_class
+import bpy
 import importlib
 
 bl_info = {
@@ -49,12 +48,12 @@ modules = [
 ]
 
 
-def register_unregister_modules(modules: List, register: bool):
+def register_unregister_modules(modules, register: bool):
     """Recursively register or unregister modules by looking for either
-    un/register() functions or lists named `registry` which should be a list of 
+    un/register() functions or lists named `registry` which should be a list of
     registerable classes.
     """
-    register_func = register_class if register else unregister_class
+    register_func = bpy.utils.register_class if register else bpy.utils.unregister_class
 
     for m in modules:
         if register:
@@ -65,8 +64,7 @@ def register_unregister_modules(modules: List, register: bool):
                     register_func(c)
                 except Exception as e:
                     un = 'un' if not register else ''
-                    print(
-                        f"Warning: EasyWeight failed to {un}register class: {c.__name__}")
+                    print(f"Warning: Failed to {un}register class: {c.__name__}")
                     print(e)
 
         if hasattr(m, 'modules'):
@@ -82,39 +80,34 @@ def register():
     register_unregister_modules(modules, True)
 
     register_hotkey(
-        bl_idname = 'paint.weight_paint',
+        bl_idname='paint.weight_paint',
         km_name='Weight Paint',
-        key_id = 'LEFTMOUSE',
-        op_kwargs = {
-            'mode' : 'NORMAL'
-        }
-   )
-    register_hotkey(
-        bl_idname = 'paint.weight_paint',
-        km_name='Weight Paint',
-        key_id = 'LEFTMOUSE',
-        ctrl = True,
-        op_kwargs = {
-            'mode' : 'INVERT'
-        }
+        key_id='LEFTMOUSE',
+        op_kwargs={'mode': 'NORMAL'},
     )
     register_hotkey(
-        bl_idname = 'paint.weight_paint',
+        bl_idname='paint.weight_paint',
         km_name='Weight Paint',
-        key_id = 'LEFTMOUSE',
-        shift = True,
-        op_kwargs = {
-            'mode' : 'SMOOTH'
-        }
+        key_id='LEFTMOUSE',
+        ctrl=True,
+        op_kwargs={'mode': 'INVERT'},
+    )
+    register_hotkey(
+        bl_idname='paint.weight_paint',
+        km_name='Weight Paint',
+        key_id='LEFTMOUSE',
+        shift=True,
+        op_kwargs={'mode': 'SMOOTH'},
     )
 
     register_hotkey(
-        bl_idname = 'object.custom_weight_paint_context_menu',
+        bl_idname='object.custom_weight_paint_context_menu',
         km_name='Weight Paint',
-        key_id = 'W',
+        key_id='W',
     )
 
     print("Registered EasyWeight Hotkeys.")
+
 
 def unregister():
     register_unregister_modules(modules, False)

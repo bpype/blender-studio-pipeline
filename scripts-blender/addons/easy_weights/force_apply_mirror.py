@@ -242,12 +242,6 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
 
         return {'FINISHED'}
 
-
-def register():
-    from bpy.utils import register_class
-    register_class(EASYWEIGHT_OT_force_apply_mirror)
-
-
-def unregister():
-    from bpy.utils import unregister_class
-    unregister_class(EASYWEIGHT_OT_force_apply_mirror)
+registry = [
+    EASYWEIGHT_OT_force_apply_mirror
+]

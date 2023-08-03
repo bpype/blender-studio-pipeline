@@ -473,7 +473,7 @@ class EASYWEIGHT_PT_WeightIslands(Panel):
         )
 
 
-classes = [
+registry = [
     VertIndex,
     WeightIsland,
     IslandGroup,
@@ -488,22 +488,10 @@ classes = [
 
 
 def register():
-    from bpy.utils import register_class
-    for c in classes:
-        register_class(c)
-
     Object.island_groups = CollectionProperty(type=IslandGroup)
     Object.active_islands_index = IntProperty()
 
 
 def unregister():
-    from bpy.utils import unregister_class
-    for c in classes:
-        try:
-            unregister_class(c)
-        except RuntimeError:
-            # TODO: Sometimes fails to unregister for literally no reason.
-            pass
-
     del Object.island_groups
     del Object.active_islands_index

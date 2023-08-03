@@ -232,21 +232,24 @@ def start_cleaner(scene, depsgraph):
     bpy.app.handlers.depsgraph_update_pre.append(WeightCleaner.clean_weights)
     bpy.app.handlers.depsgraph_update_post.append(WeightCleaner.reset_flag)
 
+registry = [
+    EASYWEIGHT_OT_wp_context_menu
+]
+
 
 def register():
-    from bpy.utils import register_class
-    register_class(EASYWEIGHT_OT_wp_context_menu)
     bpy.types.Scene.easyweight_minimal = BoolProperty(
-        name="Minimal", description="Hide options that are less frequently used", default=False)
+        name="Minimal", 
+        description="Hide options that are less frequently used", 
+        default=False
+    )
     start_cleaner(None, None)
     bpy.app.handlers.load_post.append(start_cleaner)
 
     bpy.types.VIEW3D_MT_paint_weight.append(draw_menu_entry)
 
 def unregister():
-    from bpy.utils import unregister_class
     del bpy.types.Scene.easyweight_minimal
-    unregister_class(EASYWEIGHT_OT_wp_context_menu)
     bpy.app.handlers.load_post.remove(start_cleaner)
 
     bpy.types.VIEW3D_MT_paint_weight.remove(draw_menu_entry)

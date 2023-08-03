@@ -189,7 +189,7 @@ def draw_vertex_group_menu(self, context):
     layout.row().menu(menu='MESH_MT_vertex_group_weight', icon='MOD_VERTEX_WEIGHT')
 
 
-classes = [
+registry = [
     MESH_MT_vertex_group_batch_delete,
     MESH_MT_vertex_group_symmetry,
     MESH_MT_vertex_group_sort,
@@ -200,10 +200,6 @@ classes = [
 
 
 def register():
-    from bpy.utils import register_class
-    for c in classes:
-        register_class(c)
-
     bpy.types.MESH_MT_vertex_group_context_menu.old_draw = bpy.types.MESH_MT_vertex_group_context_menu.draw
     bpy.types.MESH_MT_vertex_group_context_menu.remove(
         bpy.types.MESH_MT_vertex_group_context_menu.draw)
@@ -213,12 +209,9 @@ def register():
 
 
 def unregister():
-    from bpy.utils import unregister_class
-
     bpy.types.MESH_MT_vertex_group_context_menu.draw = bpy.types.MESH_MT_vertex_group_context_menu.old_draw
     del bpy.types.MESH_MT_vertex_group_context_menu.old_draw
+
     bpy.types.MESH_MT_vertex_group_context_menu.remove(draw_vertex_group_menu)
     bpy.types.MESH_MT_vertex_group_context_menu.remove(draw_misc)
 
-    for c in classes:
-        unregister_class(c)

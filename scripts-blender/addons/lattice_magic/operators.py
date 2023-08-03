@@ -70,21 +70,14 @@ def draw_shape_key_reset(self, context):
 def draw_lattice_reset(self, context):
 	self.layout.operator(LATTICE_OT_Reset.bl_idname, text="Reset Point Positions", icon='FILE_REFRESH')
 
-classes = [
+registry = [
 	LATTICE_OT_Reset
 ]
 
 def register():
-	from bpy.utils import register_class
-	for c in classes:
-		register_class(c)
 	bpy.types.MESH_MT_shape_key_context_menu.append(draw_shape_key_reset)
 	bpy.types.VIEW3D_MT_edit_lattice.append(draw_lattice_reset)
 
 def unregister():
-	from bpy.utils import unregister_class
-	for c in reversed(classes):
-		unregister_class(c)
-
 	bpy.types.MESH_MT_shape_key_context_menu.remove(draw_shape_key_reset)
 	bpy.types.VIEW3D_MT_edit_lattice.remove(draw_lattice_reset)
