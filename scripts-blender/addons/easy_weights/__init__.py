@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from .utils.hotkeys import register_hotkey
+from .utils import hotkeys
 from . import rogue_weights
 from . import vertex_group_menu
 from . import vertex_group_operators
@@ -79,34 +79,32 @@ def register_unregister_modules(modules, register: bool):
 def register():
     register_unregister_modules(modules, True)
 
-    register_hotkey(
-        bl_idname='paint.weight_paint',
-        km_name='Weight Paint',
+    hotkeys.addon_hotkey_register(
+        op_idname='paint.weight_paint',
+        keymap_name='Weight Paint',
         key_id='LEFTMOUSE',
         op_kwargs={'mode': 'NORMAL'},
     )
-    register_hotkey(
-        bl_idname='paint.weight_paint',
-        km_name='Weight Paint',
+    hotkeys.addon_hotkey_register(
+        op_idname='paint.weight_paint',
+        keymap_name='Weight Paint',
         key_id='LEFTMOUSE',
         ctrl=True,
         op_kwargs={'mode': 'INVERT'},
     )
-    register_hotkey(
-        bl_idname='paint.weight_paint',
-        km_name='Weight Paint',
+    hotkeys.addon_hotkey_register(
+        op_idname='paint.weight_paint',
+        keymap_name='Weight Paint',
         key_id='LEFTMOUSE',
         shift=True,
         op_kwargs={'mode': 'SMOOTH'},
     )
 
-    register_hotkey(
-        bl_idname='object.custom_weight_paint_context_menu',
-        km_name='Weight Paint',
+    hotkeys.addon_hotkey_register(
+        op_idname='object.custom_weight_paint_context_menu',
+        keymap_name='Weight Paint',
         key_id='W',
     )
-
-    print("Registered EasyWeight Hotkeys.")
 
 
 def unregister():

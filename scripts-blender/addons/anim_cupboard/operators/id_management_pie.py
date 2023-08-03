@@ -433,13 +433,21 @@ registry = [
 ]
 
 
+addon_hotkeys = []
+
 def register():
-    hotkeys.register_hotkey(
-        bl_idname='wm.call_menu_pie',
-        km_name='Outliner',
-        key_id='Y',
-        op_kwargs={'name': IDMAN_MT_relationship_pie.bl_idname},
+    addon_hotkeys.append(
+        hotkeys.addon_hotkey_register(
+            op_idname='wm.call_menu_pie',
+            keymap_name='Outliner',
+            key_id='Y',
+            op_kwargs={'name': IDMAN_MT_relationship_pie.bl_idname},
+        )
     )
 
     bpy.types.Scene.remap_targets = CollectionProperty(type=RemapTarget)
     bpy.types.Scene.remap_target_libraries = CollectionProperty(type=RemapTarget)
+
+def unregister():
+    for keymap, kmi in addon_hotkeys:
+        keymap.keymap_items.remove(kmi)
