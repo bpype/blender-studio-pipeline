@@ -2,15 +2,19 @@ import importlib
 from bpy.utils import register_class, unregister_class
 from typing import List
 
-
-from .operators import select_similar_curves
-from .operators import lock_curves
-from .operators import bake_anim_across_armatures
-from .operators import relink_overridden_asset
-from .operators import id_management_pie
-from . import easy_constraints
-from . import warn_about_broken_libraries
-from . import bone_selection_sets
+from .operators import (
+    select_similar_curves,
+    lock_curves,
+    bake_anim_across_armatures,
+    relink_overridden_asset,
+    id_management_pie,
+)
+from . import (
+    easy_constraints,
+    warn_about_broken_libraries,
+    bone_selection_sets,
+    prefs,
+)
 
 bl_info = {
     'name': "Animation Cupboard",
@@ -32,6 +36,7 @@ modules = (
     bone_selection_sets,
     relink_overridden_asset,
     id_management_pie,
+    prefs,
 )
 
 
