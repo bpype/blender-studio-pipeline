@@ -15,6 +15,7 @@ from bpy.props import BoolProperty, PointerProperty, CollectionProperty, IntProp
 from mathutils.geometry import intersect_point_line
 
 from .utils import bounding_box_center_of_objects
+from .prefs import get_addon_prefs
 
 class CAMLAT_UL_lattice_slots(bpy.types.UIList):
 	def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -496,7 +497,7 @@ class CAMLAT_PT_Main(bpy.types.Panel):
 		row.operator(CAMLAT_OT_ShapeKey_Zero_All.bl_idname, text="", icon='RADIOBUT_OFF')
 		row.operator(CAMLAT_OT_ShapeKey_Keyframe_All.bl_idname, text="", icon='HANDLETYPE_FREE_VEC')
 		row.separator()
-		prefs = context.preferences.addons[__package__].preferences
+		prefs = get_addon_prefs(context)
 		row.prop(prefs, 'update_active_shape_key', toggle=True, text="", icon='TIME')
 
 		row = layout.row()
@@ -531,7 +532,7 @@ def camera_lattice_frame_change(scene):
 	# I wonder why this function doesn't recieve a context... should it not be relied on from here? o.0
 	context = bpy.context
 
-	prefs = context.preferences.addons[__package__].preferences
+	prefs = get_addon_prefs(context)
 	if not prefs.update_active_shape_key: return
 
 	ob = context.object

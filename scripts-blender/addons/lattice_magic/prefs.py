@@ -11,6 +11,9 @@ class LatticeMagicPreferences(AddonPreferences):
         default=False,
     )
 
+def get_addon_prefs(context=None):
+    return context.preferences.addons[__package__].preferences
+
 registry = [
 	LatticeMagicPreferences
 ]

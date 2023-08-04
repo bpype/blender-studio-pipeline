@@ -28,12 +28,15 @@ bl_info = {
 import importlib
 import bpy
 
-from . import camera_lattice
-from . import tweak_lattice
-from . import operators
-from . import utils
+from . import (
+    camera_lattice,
+    tweak_lattice,
+    operators,
+    utils,
+    prefs,
+)
 
-modules = [camera_lattice, tweak_lattice, operators, utils]
+modules = [camera_lattice, tweak_lattice, operators, utils, prefs]
 
 
 def register_unregister_modules(modules, register: bool):
