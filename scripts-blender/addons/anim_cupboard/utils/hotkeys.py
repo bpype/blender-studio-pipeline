@@ -106,6 +106,13 @@ class PyKeyMapItem:
 
     @staticmethod
     def new_from_keymap_item(kmi: KeyMapItem, context=None) -> "PyKeyMapItem":
+        op_kwargs = {}
+        try:
+            op_kwargs = {
+                key: getattr(kmi.properties, key) for key in kmi.properties.keys()
+            }
+        except:
+            pass
         return PyKeyMapItem(
             op_idname=kmi.idname,
             key_id=kmi.type,
@@ -118,9 +125,7 @@ class PyKeyMapItem:
             key_modifier=kmi.key_modifier,
             direction=kmi.direction,
             repeat=kmi.repeat,
-            op_kwargs={
-                key: getattr(kmi.properties, key) for key in kmi.properties.keys()
-            },
+            op_kwargs=op_kwargs,
         )
 
     def check_key_id(self):
@@ -208,7 +213,7 @@ class PyKeyMapItem:
             if error_on_conflict:
                 raise KeyMapException("Failed to register KeyMapItem." + message)
             if warn_on_conflict:
-                print("Warning: Conflicting KeyMapItems. " + message)
+                print("Warning: Conflicting KeyMapItems: \n" + str(self) + "\n" + message)
 
         return keymap, kmi
 
@@ -576,3 +581,17 @@ def check_event_type(event_type: str):
             f'"{event_type}" is not a valid event type. Must be one of the above.'
         )
     return is_valid
+
+
+def find_broken_items_of_keymap(keymap: bpy.types.KeyMap):
+    """I encountered one case where kmi.properties.keys() resulted in an error.
+    If that happens again, use this func to troubleshoot.
+    """
+    broken = []
+    for kmi in keymap.keymap_items:
+        try:
+            kmi.properties.keys()
+        except:
+            broken.append(kmi)
+
+    return broken
