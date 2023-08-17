@@ -129,6 +129,7 @@ export default defineConfig({
               { text: 'Overview', link: '/td-guide/workstations/overview'},
               { text: 'Installation', link: '/td-guide/workstations/installation'},
               { text: 'Maintenance', link: '/td-guide/workstations/maintaince'},
+              { text: 'Render Farm', link: '/td-guide/workstations/render_farm'},
 
             ]
           },

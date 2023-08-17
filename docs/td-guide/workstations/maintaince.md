@@ -11,16 +11,11 @@ To update Client Workstations; the Build Server will pull all of the latest chan
 
 ## Update Add-ons in `/shared/software/addons`
 
- The software inside the `shared/software/addons` directory are the [Blender Studio Pipeline Add-ons](/addons/overview), the [Flamenco](https://flamenco.blender.org/) Add-on and any other Add-ons that need to be distributed to all Blender Studio Users. These Add-ons are considered Live Packages. Live Packages are packages that fetch updates from the source repository directly and are not tied to a specific release. To update packages not included in `/shared/software/addons` see [Installing Software](/user-guide/workstations/installing-software)
-
-::: warning Temporary Solution
-This is a temporary solution that will be depreciated and replaced with project based Add-ons.
-::: 
+ The software inside the `shared/software/addons` directory are the [Blender Studio Pipeline Add-ons](/addons/overview) and any other Add-ons that need to be distributed to all Blender Studio Users. These Add-ons are considered Live Packages. Live Packages are packages that fetch updates from the source repository directly and are not tied to a specific release. To update packages not included in `/shared/software/addons` see [Installing Software](/user-guide/workstations/installing-software)
 
 1. `ssh user@build-server-addr` connect to your build server via ssh
 2. Use `su` to Login as root or login as root directly
 3. Run `emerge --oneshot {package-name}` to update a live package.
-    - Run `emerge --oneshot flamenco` to update the [Flamenco](https://flamenco.blender.org/) worker/add-on
     - Run `emerge --oneshot blender-studio-tools` to update the studio Add-ons
 4. Run `date -R > /var/cache/update_info/timestamp.chk` to mark this update as the latest
 
