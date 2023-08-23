@@ -24,6 +24,26 @@ con_icon = {
     'CHILD_OF': 'CON_CHILDOF',
 }
 
+def get_icon_value(icon_name: str) -> int:
+    icon_items = bpy.types.UILayout.bl_rna.functions["prop"].parameters["icon"].enum_items.items()
+    icon_dict = {tup[1].identifier : tup[1].value for tup in icon_items}
+
+    return icon_dict[icon_name]
+
+def draw_with_icon_fix(layout, prop_owner, prop_name, icon: str, offset=1, invert_checkbox=False, **kwargs):
+    """Drawing some booleans in the UI with a custom icon can be 
+    annoying because Blender might offset the icon based on the boolean state.
+    You can use this function to counter that offset. To find the offset, you have to 
+    trial and error, it's either 1 or -1. (Or 0 but then you don't need this)
+    """
+
+    bool_value = getattr(prop_owner, prop_name)
+    offset = offset * int(bool_value)
+    if invert_checkbox:
+        offset = 1 - offset
+    icon_value = get_icon_value(icon) + offset
+    layout.prop(prop_owner, prop_name, icon_value=icon_value, invert_checkbox=invert_checkbox, **kwargs)
+
 
 class EasyConstraint(bpy.types.PropertyGroup):
     con_type: EnumProperty(
@@ -248,8 +268,7 @@ class EC_UL_constraint_list(bpy.types.UIList):
             if not con:
                 continue
             icon = con_icon[con.type]
-            row.prop(con, 'mute', text="", icon_value=row.icon(
-                con)-con.mute+1, invert_checkbox=True)
+            draw_with_icon_fix(row, con, 'mute', icon=icon, offset=1, invert_checkbox=True, text="")
         row.prop(context.active_pose_bone,
                  f'["EC_influence_{easy_constraint.name}"]', text="", slider=True)
         row.operator(POSE_OT_easyconstraint_kill_influence.bl_idname,

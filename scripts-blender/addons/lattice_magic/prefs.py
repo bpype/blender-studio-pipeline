@@ -3,7 +3,7 @@ from bpy.props import BoolProperty
 
 
 class LatticeMagicPreferences(AddonPreferences):
-    bl_idname = __name__
+    bl_idname = __package__
 
     update_active_shape_key: BoolProperty(
         name='Update Active Shape Key',
