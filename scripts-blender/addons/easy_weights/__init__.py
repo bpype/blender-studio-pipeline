@@ -80,27 +80,6 @@ def register():
     register_unregister_modules(modules, True)
 
     hotkeys.addon_hotkey_register(
-        op_idname='paint.weight_paint',
-        keymap_name='Weight Paint',
-        key_id='LEFTMOUSE',
-        op_kwargs={'mode': 'NORMAL'},
-    )
-    hotkeys.addon_hotkey_register(
-        op_idname='paint.weight_paint',
-        keymap_name='Weight Paint',
-        key_id='LEFTMOUSE',
-        ctrl=True,
-        op_kwargs={'mode': 'INVERT'},
-    )
-    hotkeys.addon_hotkey_register(
-        op_idname='paint.weight_paint',
-        keymap_name='Weight Paint',
-        key_id='LEFTMOUSE',
-        shift=True,
-        op_kwargs={'mode': 'SMOOTH'},
-    )
-
-    hotkeys.addon_hotkey_register(
         op_idname='object.custom_weight_paint_context_menu',
         keymap_name='Weight Paint',
         key_id='W',
