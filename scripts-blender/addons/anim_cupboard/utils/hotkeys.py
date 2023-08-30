@@ -17,7 +17,6 @@ def addon_hotkey_register(
     direction='ANY',
     repeat=False,
     op_kwargs={},
-
     add_on_conflict=True,
     warn_on_conflict=True,
     error_on_conflict=False,
@@ -107,12 +106,8 @@ class PyKeyMapItem:
     @staticmethod
     def new_from_keymap_item(kmi: KeyMapItem, context=None) -> "PyKeyMapItem":
         op_kwargs = {}
-        try:
-            op_kwargs = {
-                key: getattr(kmi.properties, key) for key in kmi.properties.keys()
-            }
-        except:
-            pass
+        if kmi.properties:
+            op_kwargs = {key: value for key, value in kmi.properties.items()}
         return PyKeyMapItem(
             op_idname=kmi.idname,
             key_id=kmi.type,
@@ -141,26 +136,7 @@ class PyKeyMapItem:
 
     @property
     def key_string(self) -> str:
-        """A user-friendly description string of the keys needed to activate this hotkey.
-        Should be identical to what's displayed in Blender's Keymap preferences.
-        """
-        key_data = get_enum_values(bpy.types.KeyMapItem, 'type')
-        keys = []
-        if self.shift:
-            keys.append("Shift")
-        if self.ctrl:
-            keys.append("Ctrl")
-        if self.alt:
-            keys.append("Alt")
-        if self.oskey:
-            keys.append("OS")
-        if self.key_modifier != 'NONE':
-            keys.append(key_data[self.key_modifier][0])
-        keys.append(key_data[self.key_id][0])
-        final_string = " ".join(keys)
-        if not final_string:
-            return "Unassigned"
-        return final_string
+        return get_kmi_key_string(self)
 
     def register(
         self,
@@ -180,13 +156,20 @@ class PyKeyMapItem:
             context = bpy.context
 
         wm = context.window_manager
-        kconf = wm.keyconfigs.addon
-        if not kconf:
+        kconf_addon = wm.keyconfigs.addon
+        if not kconf_addon:
             # This happens when running Blender in background mode.
             return
 
         check_keymap_name(keymap_name)
-        conflicts = self.get_conflict_info(keymap_name, context)
+
+        # Find conflicts.
+        user_km = get_keymap_of_config(wm.keyconfigs.user, keymap_name)
+        if not user_km:
+            conflicts = []
+        else:
+            conflicts = self.find_in_keymap_conflicts(user_km)
+
         kmi = None
         keymap = None
         if not conflicts or add_on_conflict:
@@ -196,7 +179,7 @@ class PyKeyMapItem:
             # If this KeyMap already exists, new() will return the existing one,
             # which is confusing, but ideal.
             space_type, region_type = get_ui_types_of_keymap(keymap_name)
-            keymap = kconf.keymaps.new(
+            keymap = kconf_addon.keymaps.new(
                 name=keymap_name, space_type=space_type, region_type=region_type
             )
 
@@ -204,44 +187,16 @@ class PyKeyMapItem:
 
         # Warn or raise error about conflicts.
         if conflicts and (warn_on_conflict or error_on_conflict):
-            message = f"See conflicting hotkeys below.\n"
-            conflict_info = "\n".join(
-                [str(PyKeyMapItem.new_from_keymap_item(kmi)) for kmi in conflicts]
-            )
-            message += conflict_info
+            conflict_info = "\n".join(["Conflict: " + kmi_to_str(kmi) for kmi in conflicts])
 
             if error_on_conflict:
-                raise KeyMapException("Failed to register KeyMapItem." + message)
+                raise KeyMapException("Failed to register KeyMapItem due to conflicting items:" + conflict_info)
             if warn_on_conflict:
-                print("Warning: Conflicting KeyMapItems: \n" + str(self) + "\n" + message)
+                print(
+                    "Warning: Conflicting KeyMapItems: " + str(self) + "\n" + conflict_info
+                )
 
         return keymap, kmi
-
-    def get_conflict_info(
-        self,
-        keymap_name: str,
-        context=None,
-    ) -> List[bpy.types.KeyMapItem]:
-        """Return whether there are existing conflicting keymaps, or raise an error."""
-        if not context:
-            context = bpy.context
-
-        wm = context.window_manager
-        space_type, region_type = get_ui_types_of_keymap(keymap_name)
-
-        conflicts = []
-
-        kconfs = {('ADDON', wm.keyconfigs.addon), ('USER', wm.keyconfigs.user)}
-        for identifier, kconf in kconfs:
-            keymap = kconf.keymaps.find(
-                keymap_name, space_type=space_type, region_type=region_type
-            )
-            if not keymap:
-                continue
-
-            conflicts.extend(self.find_in_keymap_conflicts(keymap))
-
-        return conflicts
 
     def register_in_keymap(self, keymap: KeyMap) -> Optional[KeyMapItem]:
         """Lower-level function, for registering in a specific KeyMap."""
@@ -426,7 +381,7 @@ class PyKeyMapItem:
             if not op:
                 ret += " | " + self.op_idname + " (Unregistered)"
             else:
-                op_ui_name = op.name if hasattr(op, 'name') else op.bl_idname
+                op_ui_name = op.name if hasattr(op, 'name') else op.bl_label
                 op_class_name = op.bl_rna.identifier
                 ret += " | " + op_ui_name + f" | {self.op_idname} | {op_class_name}"
                 if self.op_kwargs:
@@ -457,6 +412,63 @@ class PyKeyMapItem:
             f"    op_kwargs={pretty_kwargs}\n"
             ")"
         )
+
+
+def kmi_to_str(kmi: KeyMapItem) -> str:
+    """Similar to PyKeyMapItem.__str__: Return a compact string representation of this KeyMapItem."""
+    ret = f"KeyMapItem: < {get_kmi_key_string(kmi)}"
+    if kmi.idname:
+        op = find_operator_class_by_bl_idname(kmi.idname)
+        if not op:
+            ret += " | " + kmi.idname + " (Unregistered)"
+        else:
+            op_ui_name = op.name if hasattr(op, 'name') else op.bl_label
+            op_class_name = op.bl_rna.identifier
+            ret += " | " + op_ui_name + f" | {kmi.idname} | {op_class_name}"
+            # if kmi.properties:    # TODO: This currently causes a crash: https://projects.blender.org/blender/blender/issues/111702
+            #     ret += " | " + str({key:value for key, value in kmi.properties.items()})
+    else:
+        ret += " | (No operator assigned.)"
+
+    return ret + " >"
+
+
+def get_kmi_key_string(kmi) -> str:
+    """A user-friendly description string of the keys needed to activate this hotkey.
+    Should be identical to what's displayed in Blender's Keymap preferences.
+    """
+    key_data = get_enum_values(bpy.types.KeyMapItem, 'type')
+    keys = []
+    if kmi.shift:
+        keys.append("Shift")
+    if kmi.ctrl:
+        keys.append("Ctrl")
+    if kmi.alt:
+        keys.append("Alt")
+    if kmi.oskey:
+        keys.append("OS")
+    if kmi.key_modifier != 'NONE':
+        keys.append(key_data[kmi.key_modifier][0])
+    keys.append(key_data[kmi.type][0])
+    final_string = " ".join(keys)
+    if not final_string:
+        return "Unassigned"
+    return final_string
+
+def get_keymap_of_config(keyconfig: KeyConfig, keymap_name: str) -> Optional[KeyMap]:
+    space_type, region_type = get_ui_types_of_keymap(keymap_name)
+    keymap = keyconfig.keymaps.find(
+        keymap_name, space_type=space_type, region_type=region_type
+    )
+    return keymap
+
+
+def ensure_keymap_in_config(keyconfig, keymap_name: str) -> KeyMap:
+    space_type, region_type = get_ui_types_of_keymap(keymap_name)
+    keymap = keyconfig.keymaps.new(
+        keymap_name, space_type=space_type, region_type=region_type
+    )
+    return keymap
 
 
 def get_enum_values(bpy_type, enum_prop_name: str) -> Dict[str, Tuple[str, str]]:

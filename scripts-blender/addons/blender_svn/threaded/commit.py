@@ -52,7 +52,7 @@ class BGP_SVN_Commit(BackgroundProcess):
         repo = context.scene.svn.get_repo(context)
         for f in repo.external_files:
             if f == repo.current_blend_file:
-                context.scene.file_is_outdated = False
+                context.scene.svn.file_is_outdated = False
             if f.status_prediction_type == 'SVN_COMMIT':
                 f.status_prediction_type = 'SKIP_ONCE'
         Processes.start('Log')

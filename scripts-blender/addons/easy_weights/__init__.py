@@ -75,15 +75,26 @@ def register_unregister_modules(modules, register: bool):
             m.unregister()
 
 
+addon_keymaps = []
+
 def register():
     register_unregister_modules(modules, True)
 
-    hotkeys.addon_hotkey_register(
-        op_idname='object.custom_weight_paint_context_menu',
-        keymap_name='Weight Paint',
-        key_id='W',
+    global addon_keymaps
+    addon_keymaps.append(
+        hotkeys.addon_hotkey_register(
+            op_idname='object.custom_weight_paint_context_menu',
+            keymap_name='Weight Paint',
+            key_id='W',
+            add_on_conflict=False,
+            warn_on_conflict=True,
+            error_on_conflict=False
+        )
     )
 
 
 def unregister():
     register_unregister_modules(modules, False)
+
+    for pykmi in addon_keymaps:
+        pykmi.unregister()
