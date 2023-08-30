@@ -1,7 +1,7 @@
 import bpy
 from bpy.props import BoolProperty, EnumProperty
 from bpy.app.handlers import persistent
-from .vertex_group_operators import DeleteEmptyDeformGroups, DeleteUnusedVertexGroups
+from .vertex_group_operators import EASYWEIGHTS_OT_delete_empty_deform_groups, EASYWEIGHTS_OT_delete_unused_vertex_groups
 
 class EASYWEIGHT_OT_wp_context_menu(bpy.types.Operator):
     """ Custom Weight Paint context menu """
@@ -66,9 +66,9 @@ class EASYWEIGHT_OT_wp_context_menu(bpy.types.Operator):
         row = layout.row()
         row.operator("object.vertex_group_clean", icon='BRUSH_DATA',
                      text="Clean 0").group_select_mode = 'ALL'
-        row.operator(DeleteEmptyDeformGroups.bl_idname,
+        row.operator(EASYWEIGHTS_OT_delete_empty_deform_groups.bl_idname,
                      text="Wipe Empty", icon='GROUP_BONE')
-        row.operator(DeleteUnusedVertexGroups.bl_idname,
+        row.operator(EASYWEIGHTS_OT_delete_unused_vertex_groups.bl_idname,
                      text="Wipe Unused", icon='BRUSH_DATA')
 
     def draw_minimal(self, layout, context):

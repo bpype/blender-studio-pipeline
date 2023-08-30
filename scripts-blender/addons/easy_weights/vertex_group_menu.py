@@ -2,10 +2,10 @@ import bpy
 from bpy.types import Menu
 
 from .vertex_group_operators import (
-    DeleteEmptyDeformGroups,
-    FocusDeformBones,
-    DeleteUnselectedDeformGroups,
-    DeleteUnusedVertexGroups,
+    EASYWEIGHTS_OT_delete_empty_deform_groups,
+    EASYWEIGHTS_OT_focus_deform_bones,
+    EASYWEIGHTS_OT_delete_unselected_deform_groups,
+    EASYWEIGHTS_OT_delete_unused_vertex_groups,
 )
 
 
@@ -25,11 +25,11 @@ class MESH_MT_vertex_group_batch_delete(Menu):
             icon='UNLOCKED'
         ).all_unlocked = True
         layout.separator()
-        layout.operator(DeleteEmptyDeformGroups.bl_idname,
+        layout.operator(EASYWEIGHTS_OT_delete_empty_deform_groups.bl_idname,
                         text="Empty Deform Groups", icon='GROUP_BONE')
-        layout.operator(DeleteUnusedVertexGroups.bl_idname,
+        layout.operator(EASYWEIGHTS_OT_delete_unused_vertex_groups.bl_idname,
                         text="Unused Non-Deform Groups", icon='BRUSH_DATA')
-        layout.operator(DeleteUnselectedDeformGroups.bl_idname,
+        layout.operator(EASYWEIGHTS_OT_delete_unselected_deform_groups.bl_idname,
                         text="Unselected Deform Groups", icon='RESTRICT_SELECT_ON')
 
 
@@ -171,7 +171,7 @@ class MESH_MT_vertex_group_weight(Menu):
 
 def draw_misc(self, context):
     layout = self.layout
-    layout.operator(FocusDeformBones.bl_idname, icon='ZOOM_IN')
+    layout.operator(EASYWEIGHTS_OT_focus_deform_bones.bl_idname, icon='ZOOM_IN')
 
     # TODO: Add an operator called "Smart Cleanup" that creates missing mirror groups,
     # Cleans 0 weights,

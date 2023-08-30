@@ -24,19 +24,18 @@ import bpy
 import importlib
 
 bl_info = {
-    "name": "Easy Weight",
+    "name": "Easy Weights",
     "author": "Demeter Dzadik",
-    "version": (0, 1, 2),
+    "version": (0, 1, 3),
     "blender": (2, 90, 0),
-    "location": "Weight Paint > Weights > Easy Weight",
+    "location": "Weight Paint > Weights > Easy Weights",
     "description": "Operators to make weight painting easier.",
     "category": "Rigging",
-    "doc_url": "https://gitlab.com/blender/easy_weight/-/blob/master/README.md",
-    "tracker_url": "https://gitlab.com/blender/easy_weight/-/issues/new",
+    "doc_url": "https://studio.blender.org/pipeline/addons/easy_weights",
+    "tracker_url": "https://projects.blender.org/studio/blender-studio-pipeline",
 }
 
 
-# Each module is expected to have a register() and unregister() function.
 modules = [
     smart_weight_transfer,
     force_apply_mirror,

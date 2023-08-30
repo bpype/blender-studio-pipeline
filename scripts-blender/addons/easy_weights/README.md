@@ -1,7 +1,7 @@
 # Easy Weights
 
 
-Easy Weight is an addon focused on quality of life improvements for weight painting in Blender.
+Easy Weights is an addon focused on quality of life improvements for weight painting in Blender.
 
 ## Table of Contents
 
@@ -20,8 +20,7 @@ Easy Weight is an addon focused on quality of life improvements for weight paint
 3. Navigate to the downloaded add-on and select `Install Add-on` 
 
 ## How to Use
-Easy Weight is an addon focused on quality of life improvements for weight painting in Blender.
-Read the entire ReadMe below, to find out how to set it up to boost your weight painting workflow and comfort.
+Read the paragraphs below to find out how to boost your weight painting workflow and comfort.
 
 ### Entering Weight Paint Mode
 An operator called "Toggle Weight Paint" is added under the "Object" and "Weight" menus in the 3D View. You can right-click the operator in either of these locations to assign a shortcut. I use pie menu object modes on Tab, so my Ctrl+Tab shortcut is available for this.
@@ -34,8 +33,8 @@ The add-on will override Blender's built-in "W" shortcut for the Context Menu in
 Simply enter Weight Paint mode and press W after installing the add-on.
 
 This pop-up panel provides quick access to commonly needed tools, whether they are part of core Blender or the addon:
-- Toggles for the Accumulate, Front Faces Only and Falloff Shape brush options, affecting all WP brushes.
-- WP Mode settings: Auto-Normalize, Multi-Paint, X-Mirror.
+- Toggles for the Accumulate, Front Faces Only and Falloff Shape brush options. These are normally per-brush, but these buttons will affect ALL Weight Paint brushes.
+- Weight Paint settings: Auto-Normalize, Multi-Paint, X-Mirror.
 - A new "Clean Weights" option. When enabled, this will remove 0-weights after every brush stroke.
 - Commonly used Overlay and Armature display settings.
 - Commonly used or [new](#vertex-group-operators) operators.
@@ -54,10 +53,10 @@ The Vertex Groups context menu is re-organized with more icons and better labels
 - **Delete Empty Deform Groups**: Delete deforming groups that don't have any weights.  
 - **Delete Unused Non-Deform Groups**: Delete non-deforming groups that aren't used anywhere, even if they do have weights.  
 - **Delete Unselected Deform Groups**: Delete all deforming groups that don't correspond to a selected pose bone. Only in Weight Paint mode.  
-- **Ensure Mirror Groups**: If your object has a Mirror modifier, this will create any missing vertex groups.  
 - **Focus Deforming Bones**: Reveal and select all bones deforming this mesh. Only in Weight Paint mode.  
+- **Symmetrize Vertex Groups**: Symmetrizes vertex groups from left to right side, creating missing groups as needed.  
+
 If you have any more suggestions, feel free to open an Issue with a feature request.
-- **Symmetrize Vertex Groups**: Symmetrizes vertex groups from left to right side, creating missing groups as needed.
 
 ### Force Apply Mirror Modifier
 In Blender, you cannot apply a mirror modifier to meshes that have shape keys.  
