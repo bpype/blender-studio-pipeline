@@ -1,0 +1,23 @@
+{
+    "../../": {
+        "shared": {
+            "artifacts": {}
+        },
+        "svn": {
+            "tools": {
+                "consistency_check.py": "file",
+                "folder_structure.json": "file",
+                "install_desktop_file.sh": "file",
+                "rollback_blender.py": "file",
+                "run_blender.py": "file",
+                "update_addons.py": "file",
+                "update_blender.py": "file"
+            }
+        },
+        "local": {
+            "blender": {},
+            "scripts": {},
+            "config": {}
+        }
+    }
+}
