@@ -6,7 +6,7 @@ from bpy_extras import id_map_utils
 
 import os
 from ..utils import hotkeys
-from .relink_overridden_asset import OUTLINER_OT_relink_overridden_asset
+from .relink_overridden_asset import OUTLINER_OT_relink_overridden_asset, outliner_get_active_id
 
 
 ### Pie Menu UI
@@ -17,8 +17,7 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
 
     @staticmethod
     def get_id(context) -> Optional[bpy.types.ID]:
-        if context.area.type == 'OUTLINER' and context.id:
-            return context.id
+        return outliner_get_active_id(context)
 
     @classmethod
     def poll(cls, context):
@@ -75,12 +74,12 @@ class RelationshipOperatorMixin:
             storage = getattr(bpy.data, self.datablock_storage)
             lib_path = self.library_filepath or None
             return storage.get((self.datablock_name, lib_path))
-        elif context.area.type == 'OUTLINER' and context.id:
-            return context.id
+        elif context.area.type == 'OUTLINER':
+            return outliner_get_active_id(context)
 
     @classmethod
     def poll(cls, context):
-        return context.area.type == 'OUTLINER' and context.id
+        return context.area.type == 'OUTLINER' and len(context.selected_ids) > 0
 
     def invoke(self, context, _event):
         return context.window_manager.invoke_props_dialog(self, width=600)
@@ -442,6 +441,8 @@ def register():
             keymap_name='Outliner',
             key_id='Y',
             op_kwargs={'name': IDMAN_MT_relationship_pie.bl_idname},
+            add_on_conflict=True,
+            warn_on_conflict=True,
         )
     )
 
@@ -449,5 +450,5 @@ def register():
     bpy.types.Scene.remap_target_libraries = CollectionProperty(type=RemapTarget)
 
 def unregister():
-    for keymap, kmi in addon_hotkeys:
-        keymap.keymap_items.remove(kmi)
+    for pykmi in addon_hotkeys:
+        pykmi.unregister()

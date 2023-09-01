@@ -1,18 +1,12 @@
 import importlib
 import bpy
 
-from .operators import (
-    select_similar_curves,
-    lock_curves,
-    bake_anim_across_armatures,
-    relink_overridden_asset,
-    id_management_pie,
-)
 from . import (
     easy_constraints,
     warn_about_broken_libraries,
     bone_selection_sets,
     prefs,
+    operators,
 )
 
 bl_info = {
@@ -27,15 +21,11 @@ bl_info = {
 }
 
 modules = (
-    select_similar_curves,
-    lock_curves,
-    bake_anim_across_armatures,
     easy_constraints,
     warn_about_broken_libraries,
     bone_selection_sets,
-    relink_overridden_asset,
-    id_management_pie,
     prefs,
+    operators,
 )
 
 
