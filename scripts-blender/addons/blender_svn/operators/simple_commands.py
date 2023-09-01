@@ -458,8 +458,8 @@ class SVN_OT_cleanup(SVN_Operator, Operator):
 registry = [
     SVN_OT_update_single,
     SVN_OT_revert_and_update,
-    SVN_OT_restore_file,
     SVN_OT_revert_file,
+    SVN_OT_restore_file,
     SVN_OT_download_file_revision,
     SVN_OT_add_file,
     SVN_OT_unadd_file,

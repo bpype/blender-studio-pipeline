@@ -267,30 +267,31 @@ def get_repo_file_statuses(svn_status_str: str) -> Dict[str, Tuple[str, str, int
 
     file_statuses = {}
     for file_info in file_infos:
-        filepath = file_info['@path']
+        filepath = file_info.get('@path')
+        assert filepath, f"Filepath was not found in an SVN status entry:\n{file_info}"
 
+        # Remote Repository status.
         repos_status = "none"
         if 'repos-status' in file_info:
-            repos_status_block = file_info['repos-status']
-            repos_status = repos_status_block['@item']
-            _repo_props = repos_status_block['@props']
-        # else:
-            # TODO: I commented this out for now, but it may be a necessary optimization
-            # if Blender starts stuttering due to the SVN status updates.
-            # continue
+            repos_status_block = file_info.get('repos-status')
+            if repos_status_block:
+                repos_status = repos_status_block.get('@item', "none")
+                # _repo_props = repos_status_block.get('@props')
 
+        # Working Copy status.
         wc_status_block = file_info.get('wc-status')
-        wc_status = wc_status_block['@item']
-        _revision = int(wc_status_block.get('@revision', 0))
-        _props = wc_status_block['@props']
+        wc_status = wc_status_block.get('@item', 'normal')
+        # _revision = int(wc_status_block.get('@revision', 0))
+        # _props = wc_status_block['@props']
 
         if 'commit' in wc_status_block:
             commit_block = wc_status_block['commit']
-            commit_revision = int(commit_block['@revision'])
-            _commit_author = commit_block['author']
-            _commit_date = commit_block['date']
-        else:
-            commit_revision = 0
+            if commit_block:
+                commit_revision = int(commit_block.get('@revision', 0))
+                # _commit_author = commit_block.get('author')
+                # _commit_date = commit_block.get('date')
+            else:
+                commit_revision = 0
 
         file_statuses[filepath] = (wc_status, repos_status, commit_revision)
 
