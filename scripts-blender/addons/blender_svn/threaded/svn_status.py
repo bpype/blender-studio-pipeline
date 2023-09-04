@@ -284,14 +284,13 @@ def get_repo_file_statuses(svn_status_str: str) -> Dict[str, Tuple[str, str, int
         # _revision = int(wc_status_block.get('@revision', 0))
         # _props = wc_status_block['@props']
 
+        commit_revision = 0
         if 'commit' in wc_status_block:
             commit_block = wc_status_block['commit']
             if commit_block:
                 commit_revision = int(commit_block.get('@revision', 0))
                 # _commit_author = commit_block.get('author')
                 # _commit_date = commit_block.get('date')
-            else:
-                commit_revision = 0
 
         file_statuses[filepath] = (wc_status, repos_status, commit_revision)
 
