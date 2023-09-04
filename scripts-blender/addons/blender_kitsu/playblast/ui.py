@@ -39,7 +39,7 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
     """
 
     bl_category = "Kitsu"
-    bl_label = "Playblast Tools"
+    bl_label = "Playblast"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_options = {"DEFAULT_CLOSED"}
@@ -80,12 +80,8 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
         if self.poll_error(context):
             self.draw_error(context)
 
-        # Playblast box.
-        box = layout.box()
-        box.label(text="Playblast")
-
         # Playblast version op.
-        row = box.row(align=True)
+        row = layout.row(align=True)
         row.operator(
             KITSU_OT_playblast_set_version.bl_idname,
             text=context.scene.kitsu.playblast_version,
@@ -99,12 +95,12 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
         )
 
         # Playblast op.
-        row = box.row(align=True)
+        row = layout.row(align=True)
         row.operator(KITSU_OT_playblast_create.bl_idname, icon="RENDER_ANIMATION")
 
         # Playblast path label.
         if Path(context.scene.kitsu.playblast_file).exists():
-            split = box.split(factor=1 - split_factor_small, align=True)
+            split = layout.split(factor=1 - split_factor_small, align=True)
             split.label(icon="ERROR")
             sub_split = split.split(factor=split_factor_small)
             sub_split.label(text=context.scene.kitsu.playblast_file)
@@ -112,7 +108,7 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
                 KITSU_OT_open_path.bl_idname, icon="FILE_FOLDER", text=""
             ).filepath = context.scene.kitsu.playblast_file
         else:
-            row = box.row(align=True)
+            row = layout.row(align=True)
             row.label(text=context.scene.kitsu.playblast_file)
             row.operator(
                 KITSU_OT_open_path.bl_idname, icon="FILE_FOLDER", text=""
