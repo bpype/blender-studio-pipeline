@@ -34,9 +34,9 @@ from blender_kitsu.generic.ops import KITSU_OT_open_path
 
 class KITSU_PT_vi3d_playblast(bpy.types.Panel):
     """
-        Panel in 3dview that exposes a set of tools that are useful for animation
-        tasks, e.G playblast
-        """
+    Panel in 3dview that exposes a set of tools that are useful for animation
+    tasks, e.G playblast
+    """
 
     bl_category = "Kitsu"
     bl_label = "Playblast Tools"
@@ -47,9 +47,7 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(
-            prefs.session_auth(context)
-        )
+        return bool(prefs.session_auth(context))
 
     @classmethod
     def poll_error(cls, context: bpy.types.Context) -> bool:
