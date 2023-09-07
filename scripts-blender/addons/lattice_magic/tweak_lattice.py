@@ -521,6 +521,8 @@ class TWEAKLAT_PT_Main(Panel):
             row = layout.row(align=True)
             row.prop(hook, f'["{key}"]', text="")
             mod = get_lattice_modifier_of_object(ob, lattice)
+            if not mod:
+                continue
             row.prop_search(mod, 'vertex_group', ob,
                             'vertex_groups', text="", icon='GROUP_VERTEX')
             op = row.operator(
@@ -605,6 +607,8 @@ def get_objects_of_lattice(hook: Object) -> List[Object]:
 
 def get_lattice_modifier_of_object(obj, lattice) -> Modifier:
     """Find the lattice modifier on the object that uses this lattice"""
+    if not obj:
+        return
     for m in obj.modifiers:
         if m.type == 'LATTICE' and m.object == lattice:
             return m
