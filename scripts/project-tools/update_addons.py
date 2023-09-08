@@ -39,8 +39,10 @@ download_folder_path = (current_file_folder_path / "../../shared/artifacts/addon
 # Ensure that the download directory exists
 os.makedirs(download_folder_path, exist_ok=True)
 
-download_file(
-    "https://projects.blender.org/studio/blender-studio-pipeline/archive/main.zip",
-    download_folder_path,
-    "blender-studio-pipeline-main.zip",
-)
+print("This script currently does nothing. If you want to update the 'studio-pipeline' addons, run the 'package_local.py' script in the studio-pipline repo.")
+
+#download_file(
+#    "https://projects.blender.org/studio/blender-studio-pipeline/archive/main.zip",
+#    download_folder_path,
+#    "blender-studio-pipeline-main.zip",
+#)

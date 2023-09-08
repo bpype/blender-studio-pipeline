@@ -101,7 +101,7 @@ def extract_zip(file_path: Path, dst_path: Path):
     shutil.rmtree(temp_dir)
 
 
-def update_addon(addon_zip_name, path_in_zip_to_extract=''):
+def update_addon(addon_zip_name):
     addon_zip_sha = addon_zip_name + '.sha256'
     # This is the file that records all toplevel folders/files installed by this addon
     # It is used to cleanup old files and folders when updating or removing addons
@@ -121,7 +121,7 @@ def update_addon(addon_zip_name, path_in_zip_to_extract=''):
 
     if local_checksum.exists():
         if filecmp.cmp(local_checksum, artifact_checksum):
-            logger.info("Already up to date")
+            logger.debug("Addon is up to date: " + addon_zip_name)
             return
 
     if not artifact_archive.exists():
@@ -129,15 +129,15 @@ def update_addon(addon_zip_name, path_in_zip_to_extract=''):
         logger.error("Could not update add-ons")
         return
 
+    logger.info("Updating addon from: " + addon_zip_name)
+
     # Extract the archive in a temp location and move the addons content to local
-    tmp_dir = Path(tempfile.mkdtemp())
+    src_path_base = Path(tempfile.mkdtemp())
 
     # Extract the zip file to the temporary directory
     with zipfile.ZipFile(artifact_archive, 'r') as zip_ref:
-        zip_ref.extractall(tmp_dir)
+        zip_ref.extractall(src_path_base)
 
-    # Get the path of the folder to copy
-    src_path_base = tmp_dir / path_in_zip_to_extract
     dst_path_base = PATH_LOCAL / 'scripts' / 'addons'
 
     # Remove all files previously installed by the archive
@@ -145,24 +145,26 @@ def update_addon(addon_zip_name, path_in_zip_to_extract=''):
     if local_installed_files.exists():
         with open(local_installed_files) as file:
             lines = [line.rstrip() for line in file]
-        for folder in lines:
-            shutil.rmtree(dst_path_base / folder)
+        for file in lines:
+            old_file = dst_path_base / file
+            if old_file.exists():
+                shutil.rmtree(old_file)
 
-    # Get a list of directories inside the given directory
-    addons = [subdir.name for subdir in src_path_base.iterdir() if subdir.is_dir()]
+    # Get a list of the top level content of the addon in case it doesn't just contain one folder
+    addon_top_level_files = [entry.name for entry in src_path_base.iterdir()]
 
     with open(local_installed_files, 'w') as f:
-        for addon_name in addons:
-            f.write("%s\n" % addon_name)
+        for addon_file in addon_top_level_files:
+            f.write("%s\n" % addon_file)
 
-    for addon_name in addons:
-        logger.debug("Moving %s" % addon_name)
-        src_dir_addon = src_path_base / addon_name
-        dst_dir_addon = dst_path_base / addon_name
+    for addon_file in addon_top_level_files:
+        logger.debug("Moving %s" % addon_file)
+        src_dir_addon = src_path_base / addon_file
+        dst_dir_addon = dst_path_base / addon_file
         shutil.move(src_dir_addon, dst_dir_addon)
 
     # Clean up the temporary directory
-    shutil.rmtree(tmp_dir)
+    shutil.rmtree(src_path_base)
 
     # Update the sha256 file
     shutil.copy(artifact_checksum, local_checksum)
@@ -206,7 +208,7 @@ def update_blender():
 
     if local_checksum.exists():
         if filecmp.cmp(local_checksum, blender_build_checksum):
-            logger.info("Already up to date")
+            logger.debug("Blender is already up to date")
             return
 
     src = artifacts_path / blender_build_archive
@@ -220,6 +222,9 @@ def update_blender():
         extract_dmg(src, 'Blender.app', dst)
     elif system_name == 'windows':
         extract_zip(src, dst)
+    else:
+        logger.fatal("Can't extract the blender binary archive, operating system: " + system_name)
+        sys.exit(1)
     shutil.copy(blender_build_checksum, local_checksum)
 
 
@@ -233,6 +238,11 @@ def launch_blender():
     elif system_name == 'windows':
         blender_path = blender_path_base / 'blender.exe'
     else:
+        logger.fatal("Can't run Blender! Unsupported operating system: " + system_name)
+        sys.exit(1)
+
+    if not blender_path.exists():
+        logger.fatal("Can't run Blender! No blender executable available for system: " + system_name)
         sys.exit(1)
 
     os.environ['BLENDER_USER_CONFIG'] = str(PATH_LOCAL / 'config')
@@ -241,8 +251,10 @@ def launch_blender():
 
 
 def update_addons():
-    path_in_zip_to_extract = Path('blender-studio-pipeline/scripts-blender/addons')
-    update_addon('blender-studio-pipeline-main.zip', path_in_zip_to_extract)
+    addon_artifacts_folder = PATH_ARTIFACTS / 'addons'
+    addons_list = [entry.name for entry in addon_artifacts_folder.iterdir() if entry.suffix == ".zip"]
+    for zip_name in addons_list:
+        update_addon(zip_name)
 
 
 if __name__ == '__main__':

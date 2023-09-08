@@ -131,4 +131,5 @@ if updated_current_files:
         folder_number -= 1
 else:
     shutil.rmtree(backup_folder_path)
-    print("Nothing downloaded, everything was up to date")
+    if not new_files_downloaded:
+        print("Nothing downloaded, everything was up to date")
