@@ -32,17 +32,19 @@ def create_folder_structure(cur_path, path_dict, source_folder):
     for path in path_dict:
         # Get next path to check for consistency
         next_path = (cur_path / path).resolve()
-        print("Checking path: %s" % next_path)
         nested_item = path_dict[path]
         if type(nested_item) is not dict:
+            print("Checking file: %s" % next_path)
             # This is a file we should copy over
             if next_path.exists():
                 continue
             print(f"Copying over: {next_path.name}")
             shutil.copy(source_folder / next_path.name, next_path)
         else:
-            print(f"Creating folder: {next_path}")
-            os.makedirs(next_path)
+            print("Checking path: %s" % next_path)
+            if not next_path.exists():
+                print(f"Creating folder: {next_path}")
+                os.makedirs(next_path)
             create_folder_structure(next_path, nested_item, source_folder)
 
 
