@@ -7,6 +7,7 @@
             "tools": {
                 "consistency_check.py": "file",
                 "folder_structure.json": "file",
+                "init_project_folder_structure.py": "file",
                 "install_desktop_file.sh": "file",
                 "rollback_blender.py": "file",
                 "run_blender.py": "file",
