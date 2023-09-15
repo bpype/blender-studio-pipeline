@@ -53,6 +53,8 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
         id = OUTLINER_OT_relink_overridden_asset.get_id(context)
         if id:
             pie.operator('object.relink_overridden_asset', icon='LIBRARY_DATA_OVERRIDE')
+        else:
+            pie.separator()
 
         # <^
         if id and id.override_library:
@@ -61,6 +63,14 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
                 icon='UV_SYNC_SELECT',
                 text="Resync Override Hierarchy",
             ).type = 'OVERRIDE_LIBRARY_RESYNC_HIERARCHY_ENFORCE'
+        else:
+            pie.separator()
+
+        # v>
+        if OUTLINER_OT_instancer_empty_to_collection.should_draw(context):
+            pie.operator(OUTLINER_OT_instancer_empty_to_collection.bl_idname, icon='LINKED')
+        else:
+            pie.separator()
 
 
 ### Relationship visualization operators
@@ -303,6 +313,37 @@ class OUTLINER_OT_remap_users(bpy.types.Operator):
         return {'FINISHED'}
 
 
+### Instance Collection To Scene
+class OUTLINER_OT_instancer_empty_to_collection(bpy.types.Operator):
+    """Replace an Empty that instances a collection, with the collection itself"""
+    bl_idname = "outliner.instancer_empty_to_collection"
+    bl_label = "Instancer Empty To Collection"
+    bl_options = {'UNDO'}
+
+    @staticmethod
+    def should_draw(context):
+        return (
+            context.area.ui_type == 'OUTLINER' and \
+            context.id and \
+            type(context.id) == bpy.types.Object and \
+            context.id.type == 'EMPTY' and \
+            context.id.instance_type == 'COLLECTION' and \
+            context.id.instance_collection and \
+            context.id.instance_collection not in set(context.scene.collection.children)
+        )
+
+    @classmethod
+    def poll(cls, context):
+        return cls.should_draw(context)
+
+    def execute(self, context):
+        coll = context.id.instance_collection
+        bpy.data.objects.remove(context.id)
+        context.scene.collection.children.link(coll)
+
+        return {'FINISHED'}
+
+
 ### ID utilities
 # (ID Python type, identifier string, database name)
 ID_INFO = [
@@ -429,6 +470,7 @@ registry = [
     OUTLINER_OT_list_dependencies_of_datablock,
     RemapTarget,
     OUTLINER_OT_remap_users,
+    OUTLINER_OT_instancer_empty_to_collection
 ]
 
 
