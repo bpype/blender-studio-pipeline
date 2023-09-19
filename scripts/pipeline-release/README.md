@@ -9,8 +9,20 @@ Pipeline release is a script to package addons in the pipeline repo.
 
 ## Prerequisite
 In order to use this tool you need:
-- Python 3.5+
 - GIT
+- Python 3.11+
+- [Requests Module](https://requests.readthedocs.io/en/latest/)
+
+## Generate Token
+A Gitea API token is required to generate a pipeline release.
+1. Navigate to https://projects.blender.org/user/settings/applications while logged in
+2. **TEMP WORK AROUND for GITEA 1.20.0** 
+     - Right-Click on the Generate Token button and select your browser's INSPECT tool.
+     - Find an element named `<details class="gt-hidden ui optional field"> ==$0`
+     - Rename element to `<details class=""> ==$0`
+     - A drop down named Select Scopes will appear above generate token version
+     - Enable `repo` and `package` scopes
+3. Save the provided API key in the root of the pipeline-release directory with the name `api_token.env`
 
 ## Run 
 This folder contains a command line tool that doesn't require installation to use properly. To run `pipeline_release` without installation follow the steps below.

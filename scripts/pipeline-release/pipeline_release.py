@@ -301,8 +301,9 @@ def changelog_file_write(file_path: Path, content: str):
 
 
 def update_release_table(addon_dir: Path, version: str, release_version: str):
-    template_file = addon_dir.parent.parent.joinpath("README.md.template")
-    table_file = addon_dir.parent.parent.joinpath("README.md")
+    directory = Path(__file__).parent
+    template_file = directory.joinpath("overview.md.template")
+    table_file = directory.joinpath("overview.md")
     with open(template_file, 'r') as readme_template:
         for num, line in enumerate(readme_template):
             if addon_dir.name in line:
@@ -437,7 +438,7 @@ def addon_version_bump(directory: Path, is_major: bool):
 
 
 ### GITEA UPLOAD RELEASE
-import requests
+import requests  # TODO ADD PRINT STATEMENT IF UNABLE TO IMPORT
 import json
 
 """
