@@ -252,6 +252,10 @@ def launch_blender():
 
 def update_addons():
     addon_artifacts_folder = PATH_ARTIFACTS / 'addons'
+    if not addon_artifacts_folder.exists():
+        logger.info("Addon articats folder not found at: " + str(addon_artifacts_folder))
+        logger.info("Skipping addon updates.")
+        return
     addons_list = [entry.name for entry in addon_artifacts_folder.iterdir() if entry.suffix == ".zip"]
     for zip_name in addons_list:
         update_addon(zip_name)
