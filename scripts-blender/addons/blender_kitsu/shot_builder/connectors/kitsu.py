@@ -143,7 +143,7 @@ class KitsuShotRef(ShotRef):
 
 
 class KitsuConnector(Connector):
-    PRODUCTION_KEYS = {'KITSU_PROJECT_ID'}
+    # PRODUCTION_KEYS = {'KITSU_PROJECT_ID'}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

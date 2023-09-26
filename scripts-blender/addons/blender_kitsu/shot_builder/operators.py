@@ -251,9 +251,11 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
         shot_builder.create_build_steps()
         shot_builder.build()
 
+        active_project = cache.project_active_get()
+
         # Build Kitsu Context
         sequence = gazu.shot.get_sequence_by_name(
-            production.config['KITSU_PROJECT_ID'], self.seq_id
+            active_project.id, self.seq_id
         )
         shot = gazu.shot.get_shot_by_name(sequence, self.shot_id)
 
