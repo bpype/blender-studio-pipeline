@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import pathlib
 import json
+
+
+parser = argparse.ArgumentParser(description="Check if the folder structure matches that one in folder_structure.json")
+parser.add_argument(
+    '--create_json_file',
+    help="Instead of checking, create a json file with the folder structure from the specified path",
+    nargs=2,
+    metavar=('<path_to_parse>', '<output_json_file>')
+)
 
 
 def create_path_dict(startpath, max_depth):
@@ -60,12 +70,21 @@ def check_if_structure_is_consistent(cur_path, path_dict, error_list):
             error_list += ["ERROR: %s doesn't exist!" % next_path]
 
 
-current_file_folder = pathlib.Path(__file__).parent
-start_search_path = current_file_folder.parent.parent.resolve()
-# path_dict = create_path_dict(str(start_search_path), 5)
+args = parser.parse_args()
+
+if args.create_json_file:
+
+    start_search_path = args.create_json_file[0]
+    output_file = args.create_json_file[1]
+    path_dict = create_path_dict(start_search_path, 5)
+    json_data = json.dumps(path_dict, indent=4)
+    with open(output_file, "w") as outfile:
+        outfile.write(json_data)
+    exit(0)
 
 # path_dict pre-generated. This is the stucture the consistency check will ensure is there
 path_dict = {}
+current_file_folder = pathlib.Path(__file__).parent
 with open(current_file_folder / "folder_structure.json") as json_file:
     path_dict = json.load(json_file)
 
