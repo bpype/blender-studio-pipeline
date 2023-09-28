@@ -949,7 +949,7 @@ class MV_OT_next_media_file(bpy.types.Operator):
             area_fb = opsdata.find_area(context, "FILE_BROWSER")
             ctx = opsdata.get_context_for_area(area_fb)
             with context.temp_override(**ctx):
-                bpy.ops.file.select_walk(ctx, "INVOKE_DEFAULT", direction=self.direction)
+                bpy.ops.file.select_walk("INVOKE_DEFAULT", direction=self.direction)
             return {"FINISHED"}
 
         # Get all files and folders and sort them alphabetically.
