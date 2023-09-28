@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import filecmp
 import glob
 import logging
@@ -13,6 +14,16 @@ import zipfile
 
 from pathlib import Path
 
+
+parser = argparse.ArgumentParser(description="Run Blender for the local project.")
+parser.add_argument(
+    'blender_path',
+    metavar='<blender_path>',
+    nargs='?',
+    help="If a path to a blender binary is supplied, skip all update logic and run that blender binary with the project environmental variables.",
+    type=str,
+    default='no_alt_binary',
+)
 
 # The project base path (where shared, local and svn are located)
 PATH_BASE = Path(__file__).resolve().parent.parent.parent
@@ -170,12 +181,11 @@ def update_addon(addon_zip_name):
     shutil.copy(artifact_checksum, local_checksum)
 
 
-def update_blender():
+def update_blender(artifacts_path = PATH_ARTIFACTS / 'blender', local_blender_path = PATH_LOCAL / 'blender'):
     system_name = platform.system().lower()
     architecture = platform.machine()
 
     # Check if we have the latest blender archive from shared
-    artifacts_path = PATH_ARTIFACTS / 'blender'
     archive_name_pattern = "blender*" + system_name + "." + architecture + "*.sha256"
 
     # Look for the appropriate Blender archive for this system
@@ -204,7 +214,7 @@ def update_blender():
         logger.error("Could not update blender")
         return
 
-    local_checksum = PATH_LOCAL / 'blender' / f"{system_name}.sha256"
+    local_checksum = local_blender_path / f"{system_name}.sha256"
 
     if local_checksum.exists():
         if filecmp.cmp(local_checksum, blender_build_checksum):
@@ -212,7 +222,7 @@ def update_blender():
             return
 
     src = artifacts_path / blender_build_archive
-    dst = PATH_LOCAL / 'blender' / system_name
+    dst = local_blender_path / system_name
     if dst.exists():
         shutil.rmtree(dst)
 
@@ -226,11 +236,20 @@ def update_blender():
         logger.fatal("Can't extract the blender binary archive, operating system: " + system_name)
         sys.exit(1)
     shutil.copy(blender_build_checksum, local_checksum)
+    download_date_file = artifacts_path / 'download_date'
+    if download_date_file.exists():
+        shutil.copy(download_date_file, local_blender_path / 'download_date')
 
 
-def launch_blender():
+def run_blender(blender_path):
+    os.environ['BLENDER_USER_CONFIG'] = str(PATH_LOCAL / 'config')
+    os.environ['BLENDER_USER_SCRIPTS'] = str(PATH_LOCAL / 'scripts')
+    subprocess.run([blender_path])
+
+
+def launch_blender(local_blender_path = PATH_LOCAL / 'blender'):
     system_name = platform.system().lower()
-    blender_path_base = PATH_LOCAL / 'blender' / system_name
+    blender_path_base = local_blender_path / system_name
     if system_name == 'linux':
         blender_path = blender_path_base / 'blender'
     elif system_name == 'darwin':
@@ -245,9 +264,7 @@ def launch_blender():
         logger.fatal("Can't run Blender! No blender executable available for system: " + system_name)
         sys.exit(1)
 
-    os.environ['BLENDER_USER_CONFIG'] = str(PATH_LOCAL / 'config')
-    os.environ['BLENDER_USER_SCRIPTS'] = str(PATH_LOCAL / 'scripts')
-    subprocess.run([blender_path])
+    run_blender(blender_path)
 
 
 def update_addons():
@@ -262,6 +279,16 @@ def update_addons():
 
 
 if __name__ == '__main__':
+
+    args = parser.parse_args()
+
+    if args.blender_path != "no_alt_binary":
+        blender_path = Path(args.blender_path)
+        if not blender_path.exists():
+            logger.fatal("Can't run Blender! The supplied path does not exist!")
+            sys.exit(1)
+        run_blender(blender_path)
+
     logger.info('Updating Add-ons')
     update_addons()
     logger.info('Updating Blender')
