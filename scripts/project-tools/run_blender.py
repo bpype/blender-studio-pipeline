@@ -288,6 +288,7 @@ if __name__ == '__main__':
             logger.fatal("Can't run Blender! The supplied path does not exist!")
             sys.exit(1)
         run_blender(blender_path)
+        sys.exit(0)
 
     logger.info('Updating Add-ons')
     update_addons()
