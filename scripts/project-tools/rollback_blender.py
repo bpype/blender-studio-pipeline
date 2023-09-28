@@ -4,6 +4,7 @@ from pathlib import Path
 import filecmp
 import os
 import shutil
+import sys
 
 # The project base path (where shared, local and svn are located)
 PATH_BASE = Path(__file__).resolve().parent.parent.parent
@@ -37,8 +38,13 @@ for index, path in enumerate(paths):
     else:
         print("\033[1mID:\033[0m%3i (%s)" % (index, date))
 
-input_error_mess = "Please select an index between 0 and " + str(len(paths) - 1)
+num_prev_versions = len(paths)
+input_error_mess = "Please select an index between 0 and " + str(num_prev_versions - 1)
 selected_index = 0
+
+if num_prev_versions == 0:
+    print("No versions available to rollback to!")
+    sys.exit(1)
 
 while True:
     index_str = input("Select which Blender build number to switch to. (press ENTER to confirm): ")
@@ -46,7 +52,7 @@ while True:
         print(input_error_mess)
         continue
     index = int(index_str)
-    if index >= 0 and index < len(paths):
+    if index >= 0 and index < num_prev_versions:
         selected_index = index
         break
     print(input_error_mess)
