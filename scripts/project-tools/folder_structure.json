@@ -17,6 +17,9 @@
             }
         },
         "local": {
+            "artifacts": {
+                "addons": {}
+            },
             "blender": {},
             "scripts": {},
             "config": {}

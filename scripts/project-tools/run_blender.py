@@ -128,7 +128,7 @@ def update_addon(addon_zip_name):
         logger.error("Could not update add-ons")
         return
 
-    local_checksum = PATH_LOCAL / addon_zip_sha
+    local_checksum = PATH_LOCAL / 'artifacts' / 'addons' / addon_zip_sha
 
     if local_checksum.exists():
         if filecmp.cmp(local_checksum, artifact_checksum):
@@ -152,7 +152,7 @@ def update_addon(addon_zip_name):
     dst_path_base = PATH_LOCAL / 'scripts' / 'addons'
 
     # Remove all files previously installed by the archive
-    local_installed_files = PATH_LOCAL / addon_zip_files
+    local_installed_files = PATH_LOCAL / 'artifacts' / 'addons' / addon_zip_files
     if local_installed_files.exists():
         with open(local_installed_files) as file:
             lines = [line.rstrip() for line in file]
@@ -270,7 +270,7 @@ def launch_blender(local_blender_path = PATH_LOCAL / 'blender'):
 def update_addons():
     addon_artifacts_folder = PATH_ARTIFACTS / 'addons'
     if not addon_artifacts_folder.exists():
-        logger.info("Addon articats folder not found at: " + str(addon_artifacts_folder))
+        logger.info("Addon artifacts folder not found at: " + str(addon_artifacts_folder))
         logger.info("Skipping addon updates.")
         return
     addons_list = [entry.name for entry in addon_artifacts_folder.iterdir() if entry.suffix == ".zip"]
