@@ -122,13 +122,18 @@ def update_addon(addon_zip_name):
     addon_artifacts_folder = PATH_ARTIFACTS / 'addons'
     artifact_archive = addon_artifacts_folder / addon_zip_name
     artifact_checksum = addon_artifacts_folder / addon_zip_sha
+    local_artifact_dir = PATH_LOCAL / 'artifacts' / 'addons'
+
+    # Sanity check
+    if not local_artifact_dir.exists():
+        local_artifact_dir.mkdir(parents=True, exist_ok=True)
 
     if not artifact_checksum.exists():
         logger.error("Missing file %s" % artifact_checksum)
         logger.error("Could not update add-ons")
         return
 
-    local_checksum = PATH_LOCAL / 'artifacts' / 'addons' / addon_zip_sha
+    local_checksum = local_artifact_dir / addon_zip_sha
 
     if local_checksum.exists():
         if filecmp.cmp(local_checksum, artifact_checksum):
@@ -152,7 +157,7 @@ def update_addon(addon_zip_name):
     dst_path_base = PATH_LOCAL / 'scripts' / 'addons'
 
     # Remove all files previously installed by the archive
-    local_installed_files = PATH_LOCAL / 'artifacts' / 'addons' / addon_zip_files
+    local_installed_files = local_artifact_dir / addon_zip_files
     if local_installed_files.exists():
         with open(local_installed_files) as file:
             lines = [line.rstrip() for line in file]
@@ -242,9 +247,19 @@ def update_blender(artifacts_path = PATH_ARTIFACTS / 'blender', local_blender_pa
 
 
 def run_blender(blender_path):
-    os.environ['BLENDER_USER_CONFIG'] = str(PATH_LOCAL / 'config')
-    os.environ['BLENDER_USER_SCRIPTS'] = str(PATH_LOCAL / 'scripts')
-    subprocess.run([blender_path])
+    config_path = PATH_LOCAL / 'config'
+    script_path = PATH_LOCAL / 'scripts'
+
+    # Sanity check
+    if not config_path.exists():
+        config_path.mkdir(parents=True, exist_ok=True)
+    if not script_path.exists():
+        script_path.mkdir(parents=True, exist_ok=True)
+
+    os.environ['BLENDER_USER_CONFIG'] = str(config_path)
+    os.environ['BLENDER_USER_SCRIPTS'] = str(script_path)
+    proc = subprocess.run([blender_path])
+    sys.exit(proc.returncode)
 
 
 def launch_blender(local_blender_path = PATH_LOCAL / 'blender'):
@@ -288,7 +303,6 @@ if __name__ == '__main__':
             logger.fatal("Can't run Blender! The supplied path does not exist!")
             sys.exit(1)
         run_blender(blender_path)
-        sys.exit(0)
 
     logger.info('Updating Add-ons')
     update_addons()
