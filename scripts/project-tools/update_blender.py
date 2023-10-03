@@ -44,8 +44,8 @@ os.makedirs(download_folder_path, exist_ok=True)
 os.makedirs(backup_folder_path, exist_ok=True)
 
 for f in os.listdir(download_folder_path):
-    if os.path.isfile(f):
-        path_to_file = f / download_folder_path
+    path_to_file = download_folder_path / f
+    if path_to_file.is_file():
         shutil.copy(path_to_file, backup_folder_path)
 
 # Get all urls for the blender builds
@@ -120,14 +120,15 @@ if updated_current_files:
     folders_to_remove = len(backup_dirs) - 10
     if folders_to_remove > 0:
         for dir in backup_dirs[:folders_to_remove]:
-            shutil.rmtree(dir)
+            shutil.rmtree(backup_path / dir)
         backup_dirs = backup_dirs[folders_to_remove:]
 
     # Bump all folder names
     # Assign a number to each file, reverse the processing order to not overwrite any files.
     folder_number = len(backup_dirs)
     for dir in backup_dirs:
-        os.rename(dir, backup_path / str(folder_number).zfill(2))
+        old_dir = backup_path / dir
+        os.rename(old_dir, backup_path / str(folder_number).zfill(2))
         folder_number -= 1
 else:
     shutil.rmtree(backup_folder_path)
