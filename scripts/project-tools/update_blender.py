@@ -37,16 +37,19 @@ def shasum_matches(file, sha_sum):
 current_file_folder_path = pathlib.Path(__file__).parent
 download_folder_path = (current_file_folder_path / "../../shared/artifacts/blender").resolve()
 backup_folder_path = download_folder_path / "previous/current_snapshot"
+# This can happen if someone has run the rollback script, so we need to check for it.
+backup_exists = (download_folder_path / "previous/00").exists()
 
 os.makedirs(download_folder_path, exist_ok=True)
 
-# Backup the old files
-os.makedirs(backup_folder_path, exist_ok=True)
+if not backup_exists:
+    # Backup the old files
+    os.makedirs(backup_folder_path, exist_ok=True)
 
-for f in os.listdir(download_folder_path):
-    path_to_file = download_folder_path / f
-    if path_to_file.is_file():
-        shutil.copy(path_to_file, backup_folder_path)
+    for f in os.listdir(download_folder_path):
+        path_to_file = download_folder_path / f
+        if path_to_file.is_file():
+            shutil.copy(path_to_file, backup_folder_path)
 
 # Get all urls for the blender builds
 platforms_dict = {
@@ -111,8 +114,9 @@ if new_files_downloaded:
 
 if updated_current_files:
     backup_path = download_folder_path / "previous"
-    # Put the current backup first in the directory listing
-    os.rename(backup_folder_path, backup_path / "00")
+    if not backup_exists:
+        # Put the current backup first in the directory listing
+        os.rename(backup_folder_path, backup_path / "00")
     backup_dirs = os.listdir(backup_path)
     backup_dirs.sort(reverse=True)
 
@@ -131,6 +135,7 @@ if updated_current_files:
         os.rename(old_dir, backup_path / str(folder_number).zfill(2))
         folder_number -= 1
 else:
-    shutil.rmtree(backup_folder_path)
+    if not backup_exists:
+        shutil.rmtree(backup_folder_path)
     if not new_files_downloaded:
         print("Nothing downloaded, everything was up to date")
