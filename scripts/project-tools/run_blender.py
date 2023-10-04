@@ -106,7 +106,6 @@ def extract_zip(file_path: Path, dst_path: Path):
         logger.fatal("The archive %s does not contain any directory" % file_path.name)
         sys.exit(1)
 
-    dst_path.mkdir(parents=True, exist_ok=True)
     shutil.move(src_path, dst_path)
 
     shutil.rmtree(temp_dir)
