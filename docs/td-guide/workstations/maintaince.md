@@ -8,11 +8,19 @@ To update Client Workstations; the Build Server will pull all of the latest chan
 3. `cd` to change directory to the root home folder
 4. Run `./update_build_server.sh`
 
+## Update custom package recipes on Build Server
+Some applications on Blender Studio workstations are not included in the main Gentoo repository
+and are instead sourced from an external repository. To learn more about how external repositories
+are used in Gentoo see the [Gentoo Handbook](https://wiki.gentoo.org/wiki/Ebuild_repository#Repository_synchronization). This is known as an overlay repository 
+[Blender Studio Overlay Repo](https://projects.blender.org/ZedDB/blender-studio-overlay). To update the recipe for an existing package in an overlay repo follow the steps below. 
+1. Commit changes to the package recipes on the [Blender Studio Overlay Repo](https://projects.blender.org/ZedDB/blender-studio-overlay)
+2. `ssh user@build-server-addr` connect to your build server via ssh
+3. Update the package recipes on the Build Server  `emaint sync --repo blender-studio-overlay`
 
-## Update Add-ons in `/shared/software/addons`
+Once an update of the recipe is complete any affected packages can be installed our updated by following the [Installing Packages on Build Server](/td-guide/workstations/maintaince#installing-packages-on-build-server) guide.
 
- The software inside the `shared/software/addons` directory are the [Blender Studio Pipeline Add-ons](/addons/overview) and any other Add-ons that need to be distributed to all Blender Studio Users. These Add-ons are considered Live Packages. Live Packages are packages that fetch updates from the source repository directly and are not tied to a specific release. To update packages not included in `/shared/software/addons` see [Installing Software](/user-guide/workstations/installing-software)
-
+## Installing Packages on Build Server
+Packages need to be compiled on the Build Server and marked with a date to be able to discovered by the workstations. Follow the below steps to install/update a package on the build server.
 1. `ssh user@build-server-addr` connect to your build server via ssh
 2. Use `su` to Login as root or login as root directly
 3. Run `emerge --oneshot {package-name}` to update a live package.
@@ -22,6 +30,12 @@ To update Client Workstations; the Build Server will pull all of the latest chan
 ::: info Info
 The command `emerge --oneshot {package-name}` compiles package, but does not add the packages to the [@world](https://wiki.gentoo.org/wiki/World_set_(Portage)), this means these packages will be removed when running `--depclean`.. We add this because these packages are already pulled in by another set. So we don’t want to add it again to the @world set. To learn more visit the [Gentoo  Handbook](https://wiki.gentoo.org/wiki/Emerge#:~:text=fetchonly%20%2D%2Demptytree%20%40world-,Do%20not%20add%20dependencies%20to%20the%20world%20file,-If%20a%20dependency) 
 ::: 
+## Update Add-ons in `/shared/software/addons`
+
+ The software inside the `shared/software/addons` directory are the [Blender Studio Pipeline Add-ons](/addons/overview) and any other Add-ons that need to be distributed to all Blender Studio Users. These Add-ons are considered Live Packages. Live Packages are packages that fetch updates from the source repository directly and are not tied to a specific release. To update packages not included in `/shared/software/addons` see [Installing Software](/user-guide/workstations/installing-software)
+
+1. Follow the instructions in [Installing Packages on Build Server](/td-guide/workstations/maintaince#installing-packages-on-build-server) using `blender-studio-tools` as the package name.
+
 
 ### How to update to specific version?
 In some cases, users may want to specify what version of an add-on to deploy into the `/shared/software/addons` folder. Users can accomplish this using `eclass` variables found in the [Gentoo Devmanual](https://devmanual.gentoo.org/eclass-reference/git-r3.eclass/index.html#:~:text=more%20creative%20ways.-,EGIT_BRANCH,-The%20branch%20name).  
