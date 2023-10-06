@@ -53,7 +53,6 @@ export default defineConfig({
           { text: 'Design Principles', link: '/pipeline-overview/design-principles'},
           { text: 'Infrastructure', link: '/pipeline-overview/infrastructure'},
           { text: 'Task Review', link: '/pipeline-overview/task-review'},
-          { text: 'Publishing', link: '/pipeline-overview/publishing'},
           { 
             text: 'Pre-Production', 
             collapsed: true,
@@ -88,6 +87,7 @@ export default defineConfig({
               { text: 'Coloring', link: '/pipeline-overview/shot-production/coloring'},
             ]
           },
+          { text: 'Publishing', link: '/pipeline-overview/publishing'},
         ]
       },
       {
