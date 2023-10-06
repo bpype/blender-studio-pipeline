@@ -51,9 +51,15 @@ export default defineConfig({
         items: [
           { text: 'Introduction', link: '/pipeline-overview/introduction'},
           { text: 'Design Principles', link: '/pipeline-overview/design-principles'},
-          { text: 'Infrastructure', link: '/pipeline-overview/infrastructure'},
-          { text: 'Task Review', link: '/pipeline-overview/task-review'},
           { 
+            text: 'Organization', 
+            collapsed: true,
+            items: [
+              { text: 'Infrastructure', link: '/pipeline-overview/organization/infrastructure'},
+              { text: 'Task Review', link: '/pipeline-overview/organization/task-review'},
+            ]
+          },
+          {             
             text: 'Pre-Production', 
             collapsed: true,
             items: [
