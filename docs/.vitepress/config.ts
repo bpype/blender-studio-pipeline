@@ -132,22 +132,32 @@ export default defineConfig({
         text: 'User Guide',
         collapsed: false,
         items: [
-          {text: 'Project Setup', link: '/user-guide/project-setup'},
+          text: 'Project Setup',
+          collapsed: true,
+          items: [
+            {text: 'Intro', link: '/user-guide/project-setup/intro'},
+            {text: 'SVN', link: '/user-guide/project-setup/svn'},
+            {
+              text: 'Workstation',
+              collapsed: true,
+              items: [
+                { text: 'Introduction', link: '/user-guide/project-setup/workstations/introduction'},
+                { text: 'Installing Software', link: '/user-guide/project-setup/workstations/installing-software'},
+                { text: 'Running Blender', link: '/user-guide/project-setup/workstations/running-blender'},
+                { text: 'Troubleshooting', link: '/user-guide/project-setup/workstations/troubleshooting'},
+              ]
+            },
+          ],
           {
-            text: 'Workstation',
+            text: 'Organization',
             collapsed: true,
             items: [
-              { text: 'Introduction', link: '/user-guide/workstations/introduction'},
-              { text: 'Installing Software', link: '/user-guide/workstations/installing-software'},
-              { text: 'Running Blender', link: '/user-guide/workstations/running-blender'},
-              { text: 'Troubleshooting', link: '/user-guide/workstations/troubleshooting'},
-
+              { text: 'Planning', link: '/user-guide/organization/planning'},
+              { text: 'Task Review', link: '/user-guide/organization/task-review'},
             ]
           },
-          {text: 'SVN', link: '/user-guide/svn'},
           {text: 'Debugging', link: '/user-guide/debugging'},
           {text: 'Kitsu', link: '/user-guide/kitsu'}
-
         ]
       },
       {
