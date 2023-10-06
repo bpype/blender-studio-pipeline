@@ -52,13 +52,40 @@ export default defineConfig({
           { text: 'Introduction', link: '/pipeline-overview/introduction'},
           { text: 'Design Principles', link: '/pipeline-overview/design-principles'},
           { text: 'Infrastructure', link: '/pipeline-overview/infrastructure'},
-          { text: 'Editorial and Previz', link: '/pipeline-overview/editorial-and-previz'},
+          { text: 'Task Review', link: '/pipeline-overview/task-review'},
+          { text: 'Publishing', link: '/pipeline-overview/publishing'},
+          { 
+            text: 'Pre-Production', 
+            collapsed: true,
+            items: [
+              { text: 'Storyboard', link: '/pipeline-overview/pre-production/storyboard'},
+              { text: 'Editorial and Previz', link: '/pipeline-overview/pre-production/editorial-and-previz'},
+              { text: 'Research and Development', link: '/pipeline-overview/pre-production/research-and-development'},
+              { text: 'Concept and Design', link: '/pipeline-overview/pre-production/concept-and-design'},
+            ]
+          },
           { 
             text: 'Asset Creation', 
             collapsed: true,
             items: [
-              { text: 'Modeling', link: '/pipeline-overview/asset-creation/modeling'},
+              { text: 'Modeling and Sculpting', link: '/pipeline-overview/asset-creation/modeling'},
+              { text: 'Shading', link: '/pipeline-overview/asset-creation/shading'},
               { text: 'Rigging', link: '/pipeline-overview/asset-creation/rigging'},
+              { text: 'Animation Testing', link: '/pipeline-overview/asset-creation/animation-testing'},
+              { text: '2D Assets', link: '/pipeline-overview/asset-creation/2d-assets'},
+            ]
+          },
+          { 
+            text: 'Shot Production', 
+            collapsed: true,
+            items: [
+              { text: 'Shot Assembly', link: '/pipeline-overview/shot-production/shot-assembly'},
+              { text: 'Layout', link: '/pipeline-overview/shot-production/layout'},
+              { text: 'Animation', link: '/pipeline-overview/shot-production/animation'},
+              { text: 'Lighting', link: '/pipeline-overview/shot-production/lighting'},
+              { text: 'Effects', link: '/pipeline-overview/shot-production/effects'},
+              { text: 'Rendering', link: '/pipeline-overview/shot-production/rendering'},
+              { text: 'Coloring', link: '/pipeline-overview/shot-production/coloring'},
             ]
           },
         ]

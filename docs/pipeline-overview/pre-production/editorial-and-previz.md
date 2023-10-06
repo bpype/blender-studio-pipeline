@@ -1,5 +1,9 @@
 # Editorial and Previsualization
 
+::: warning
+6 October 2023 - The content of this page is currently being edited/updated.
+:::
+
 At Blender Studio we use the Blender VSE to create and maintain a story edit. A couple of reference links for now:
 
 * [Charge Previsualization](https://studio.blender.org/blog/charge-previsualization/)
