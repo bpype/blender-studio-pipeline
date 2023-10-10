@@ -32,7 +32,7 @@ The command `emerge --oneshot {package-name}` compiles package, but does not add
 ::: 
 ## Update Add-ons in `/shared/software/addons`
 
- The software inside the `shared/software/addons` directory are the [Blender Studio Pipeline Add-ons](/addons/overview) and any other Add-ons that need to be distributed to all Blender Studio Users. These Add-ons are considered Live Packages. Live Packages are packages that fetch updates from the source repository directly and are not tied to a specific release. To update packages not included in `/shared/software/addons` see [Installing Software](/user-guide/workstations/installing-software)
+ The software inside the `shared/software/addons` directory are the [Blender Studio Pipeline Add-ons](/addons/overview) and any other Add-ons that need to be distributed to all Blender Studio Users. These Add-ons are considered Live Packages. Live Packages are packages that fetch updates from the source repository directly and are not tied to a specific release. To update packages not included in `/shared/software/addons` see [Installing Software](/user-guide/project-setup/workstations/installing-software)
 
 1. Follow the instructions in [Installing Packages on Build Server](/td-guide/workstations/maintaince#installing-packages-on-build-server) using `blender-studio-tools` as the package name.
 
