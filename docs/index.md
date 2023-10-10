@@ -11,7 +11,7 @@ hero:
       link: /pipeline-overview/introduction
     - theme: alt
       text: User Guide
-      link: /user-guide/project-setup
+      link: /user-guide/project-setup/intro
 
 features:
   - title: Free Software

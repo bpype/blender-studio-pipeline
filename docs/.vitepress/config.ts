@@ -132,34 +132,37 @@ export default defineConfig({
         text: 'User Guide',
         collapsed: false,
         items: [
-          text: 'Project Setup',
-          collapsed: true,
-          items: [
-            {text: 'Intro', link: '/user-guide/project-setup/intro'},
-            {text: 'SVN', link: '/user-guide/project-setup/svn'},
-            {
-              text: 'Workstation',
-              collapsed: true,
-              items: [
-                { text: 'Introduction', link: '/user-guide/project-setup/workstations/introduction'},
-                { text: 'Installing Software', link: '/user-guide/project-setup/workstations/installing-software'},
-                { text: 'Running Blender', link: '/user-guide/project-setup/workstations/running-blender'},
-                { text: 'Troubleshooting', link: '/user-guide/project-setup/workstations/troubleshooting'},
-              ]
-            },
-          ],
+          {
+            text: 'Project Setup',
+            collapsed: true,
+            items: [
+              { text: 'Intro', link: '/user-guide/project-setup/intro' },
+              { text: 'SVN', link: '/user-guide/project-setup/svn' },
+              {
+                text: 'Workstation',
+                collapsed: true,
+                items: [
+                  { text: 'Introduction', link: '/user-guide/project-setup/workstations/introduction' },
+                  { text: 'Installing Software', link: '/user-guide/project-setup/workstations/installing-software' },
+                  { text: 'Running Blender', link: '/user-guide/project-setup/workstations/running-blender' },
+                  { text: 'Troubleshooting', link: '/user-guide/project-setup/workstations/troubleshooting' },
+                ],
+              },
+            ],
+          },
           {
             text: 'Organization',
             collapsed: true,
             items: [
-              { text: 'Planning', link: '/user-guide/organization/planning'},
-              { text: 'Task Review', link: '/user-guide/organization/task-review'},
-            ]
+              { text: 'Planning', link: '/user-guide/organization/planning' },
+              { text: 'Task Review', link: '/user-guide/organization/task-review' },
+            ],
           },
-          {text: 'Debugging', link: '/user-guide/debugging'},
-          {text: 'Kitsu', link: '/user-guide/kitsu'}
-        ]
+          { text: 'Debugging', link: '/user-guide/debugging' },
+          { text: 'Kitsu', link: '/user-guide/kitsu' },
+        ],
       },
+      
       {
         text: 'TD Guide',
         collapsed: false,
