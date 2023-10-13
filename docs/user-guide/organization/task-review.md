@@ -1,5 +1,5 @@
 # Task Review - in practice
 
-::: work in progress
-October 6th 2023 - The content of this page is currently being edited/updated.
+::: Work in pr
+October 13th 2023 - The content of this page is currently being edited/updated.
 :::
