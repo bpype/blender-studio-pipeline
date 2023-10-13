@@ -1,7 +1,7 @@
 # In-file Prefixes
 
 ::: warning Work in Progress
-30 Apr. 2023 - The content of this page is currently being edited/updated.
+Oct 13th 2023 - The content of this page is currently being edited/updated.
 :::
 
 ## Collection names
@@ -10,7 +10,7 @@ We use prefixes only for top level collections of an asset. This is important to
 
 - `CH` : Character
 - `PR` : Prop
-- `EN` : Environment asset
+- `LI` : Library asset
 - `SE` : set
 - `LG` : light rig
 

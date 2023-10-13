@@ -1,30 +1,36 @@
 # Naming Conventions
 
-Naming things well is notoriousy difficult, mostly because a name that works well within one context does not communicate as well in another. Here are the guidelines that we try to follow at Blender Studio when it comes to file naming.
+Naming things well is notoriousy difficult, mostly because a name that works well within one context, does not communicate as well in another. Here are the guidelines that we try to follow at Blender Studio when it comes to file naming.
 
-* No caps, no gaps: Name files with lowercase letter and avoid whitespaces.
-* Retain a sense of hierarchy within the file name, from wide to narrow context
+* No caps, no gaps: name files with lowercase letter and avoid whitespaces.
+* Underscores are allowed as spacing, dashes to separate items.
+* Retain a sense of hierarchy within the file name, from wide to narrow context.
+* We use dot notations to specify a different representation or variant of an asset.
 
 ## Versions and variations for file naming
 
-`{show_prefix:optional}-{name}-v{version:optional}.{variant:optional}.{representation:optional}.{extension}`
+`{show_prefix:optional}-{type:only for assets}-{name}.{variant:optional}-{task}-v{version:optional}_{representation:optional}.{extension}`
 
-- version (v001, v002)
+- type (char, set, lib, props) of asset - not for shots
     - variant (voice, red, blurry) changes meaning of the content
-        - representation (720p, lowres, cache) the content is the same
+        - version (v001, v002) only for renders and exports, not for work files as they have a history on the SVN
+            - representation (720p, lowres, cache) the content is the same
 
 
 ## Asset file names
 
-Examples: **gabby.blend, gabby.shading.blend, gabby.rigging.blend**
+Examples: **char-gabby-concept.blend, char-gabby-shading-v001.mp4, char-gabby.red-rigging.blend**
+**lib-sea_shells-design-v001_line.kra, lib-sea_shells.broken-modeling-v006.png**
 
-The main asset files should be as simple as possible: {asset name}.blend. These main asset files are meant to be written by our asset pipeline, but should rarely be touched by hand (other than solving errors). Data is consolidated 
+The main asset files should be as simple as possible, however we have decided to make it longer than our previous system, to better classify and structure them: `{type}-{asset name}-{task}.blend`
 
-We use task identifiers to distinguish between the different stages of the asset. {asset name}.{task identifier}.blend. 
+These main asset files are meant to be written by our asset pipeline, but should rarely be touched by hand (other than solving errors).
 
-task identifiers: 
+We use task identifiers to distinguish between the different stages of the asset:
 
+- reference
 - concept
+- design
 - sculpting
 - modeling
 - shading
@@ -32,60 +38,58 @@ task identifiers:
 
 ## Shot identifier
 
-E.g. `**010_0030_A** {scene number}_{shot number}_{variant}`
+E.g. `**010_0030** {scene number}_{shot number}`
 
 **Scene:** 3 digits, incremented by 10 at first creation
 
 **Shot number:** 4 digits, incremented by 10 at first creation
 
-**Variant:** Letters A - Z
+No more variant (A, B, C...) - the incrementation should suffice.
 
 ## Shot file name
 
-- No uppercase letters except for naming shot file takes (100_0002_A.anim.blend)
+- No uppercase letters
 - No special characters like +=#^*&^$()?!
-- Underscores are allowed as spacing, no actual spaces or - as separators (no caps, no gaps!)
-- We use dot notations to specify a different representation or variant of an asset (hairdryer.more_ugly.blend)
+- Same logic of no caps, no gaps!
 
-Example: `**140_0010_B.anim.blend**`
+Example: `**140_0010-anim.blend**`
 
 - **140** : scene
 - **0010** : shot
-- **A**: variant (only one variant per shot is picked in the edit)
-- **anim**: task (layout, anim, lighting, comp, sim_hair, sim_fluid, sim_smoke)
+- **anim**: task (layout, anim, lighting, comp, fx, sim_hair, sim_fluid, sim_smoke)
 
 Its position in the repository would be at:
 
-`pro/**shots/140_credits/140_0010_A/140_0010_A.anim.blend**`
+`pro/**shots/140_credits/140_0010/140_0010-anim.blend**`
 
 Output for the animation playblasts at:
 
-`/render/**shots/140_credits/140_0010_A/140_0010_A.anim/140_0010_A.anim.v001.mp4**`
+`/render/**shots/140_credits/140_0010/140_0010-anim/140_0010-anim-v001.mp4**`
 
-`/render/**shots/140_credits/140_0010_A/140_0010_A.anim/140_0010_A.anim.v002.mp4**`
+`/render/**shots/140_credits/140_0010/140_0010-anim/140_0010-anim-v002.mp4**`
 
 ...
 
 Output of the rendered frames:
 
-`/render/**shots/140_credits/140_0010_A/140_0010_A.lighting/000001.exr**`
+`/render/**shots/140_credits/140_0010/140_0010-lighting/000001.exr**`
 
 Generated previews from frames:
 
-`/render/**shots/140_credits/140_0010_A/140_0010_A.lighting/140_0010_A.lighting.mp4**`
+`/render/**shots/140_credits/140_0010/140_0010-lighting/140_0010-lighting.mp4**`
 
 Example of a Backup copy of frames:
 
 ```
-/render/**shots/140_credits/140_0010_A/140_0010_A.lighting_bak/140_0010_A.lighting.mp4**
+/render/**shots/140_credits/140_0010/140_0010-lighting_bak/140_0010_A.lighting.mp4**
 
-pro/**shots/110_rextoria/110_0010_A/110_0010_A.anim.blend**
+pro/**shots/110_rextoria/110_0010/110_0010-anim.blend**
 
-pro/**shots/110_rextoria/110_0010_A/110_0010_A.layout.blend**
+pro/**shots/110_rextoria/110_0010/110_0010-layout.blend**
 
-pro/**shots/110_rextoria/110_0010_A/110_0010_A.fx.blend**
+pro/**shots/110_rextoria/110_0010/110_0010-fx.blend**
 
-pro/**shots/110_rextoria/110_0010_A/110_0010_A.comp.blend**
+pro/**shots/110_rextoria/110_0010/110_0010-comp.blend**
 
 pro/**shots/110_rextoria/110_rextoria.layout.blend**
 
