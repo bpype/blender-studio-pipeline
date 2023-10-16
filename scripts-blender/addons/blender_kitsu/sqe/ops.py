@@ -2269,13 +2269,19 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         return True
 
     def set_scene_colorspace(self, context):
+        if bpy.app.version_string.split('.')[0] == '3':
+            color_space_name = "Linear"
+        else:
+            color_space_name = "Linear Rec.709"
+        
+        
         scene = context.scene
         if self.file_type == ".jpg":
             scene.sequencer_colorspace_settings.name = "sRGB"
             scene.view_settings.look = "None"
             scene.view_settings.view_transform = 'Standard'
         if self.file_type == ".exr":
-            scene.sequencer_colorspace_settings.name = "Linear"
+            scene.sequencer_colorspace_settings.name = color_space_name
             scene.view_settings.look = 'Medium High Contrast'
             scene.view_settings.view_transform = 'Filmic'
 
