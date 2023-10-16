@@ -481,11 +481,16 @@ class RR_OT_sqe_inspect_exr_sequence(bpy.types.Operator):
         for img in img_to_rm:
             bpy.data.images.remove(img)
 
+        if bpy.app.version_string.split('.')[0] == '3':
+            color_space_name = "Linear"
+        else:
+            color_space_name = "Linear Rec.709"
+
         # Create new image datablock.
         image = bpy.data.images.load(exr_seq[0].as_posix(), check_existing=True)
         image.name = exr_seq[0].parent.name + "_RENDER"
         image.source = "SEQUENCE"
-        image.colorspace_settings.name = "Linear"
+        image.colorspace_settings.name = color_space_name
 
         # Set active image.
         image_editor.spaces.active.image = image
