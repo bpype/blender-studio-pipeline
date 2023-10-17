@@ -36,7 +36,7 @@ Sets are more tricky to define, since they can differ even on a shot level. In p
 
 **Location:** `{project root}/pro/shots/{sequence number}/{shot identifier}/{shot identifier}-{task identifier}.blend`
 
-
+##
 Example: `prop-dresser_wood.faded-modeling.png`
 
 - As for all other files, format the entire name in lowercase, separated by `_` instead of spaces.
