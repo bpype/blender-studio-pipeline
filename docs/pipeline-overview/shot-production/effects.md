@@ -42,5 +42,5 @@ Of course, this technique does not allow for 'proper' motion blur.
 * There are different file formates viable for caching data to disk. Usually it is best to stick to Blender's native caching formats, when possible to make absolutely sure no data is lost.
 
 ## Integration into Lighting File
-* The FX collection(s) need to be linked back into the lighting file and integrated properly into the view layer setup and comp.
+* The FX collection(s) need to be linked back into the lighting file and integrated properly into the view layer setup and comp. **It is important that the collection is directly linked into the lighting scene, not instanced. This allows proper visibility control.**
 * For FX that affect the lighting, either by casting additional light (e.g. sparks) or obscuring it, the lighting needs to be adjusted accordingly.
