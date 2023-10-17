@@ -126,6 +126,8 @@ export default defineConfig({
           { text: 'File Types', link: '/naming-conventions/file-types'},
           { text: 'In-file Prefixes', link: '/naming-conventions/in-file-prefixes'},
           { text: 'Examples', link: '/naming-conventions/examples'},
+          { text: 'Shared Folder Structure,' link: '/naming-conventions/shared-folder-structure'},
+          { text: 'SVN Folder Structure,' link: '/naming-conventions/svn-folder-structure'},
         ]
       },
       {

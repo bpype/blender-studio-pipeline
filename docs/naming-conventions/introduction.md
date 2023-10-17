@@ -9,18 +9,23 @@ Naming things well is notoriousy difficult, mostly because a name that works wel
 
 ## Versions and variations for file naming
 
-`{show_prefix:optional}-{type:only for assets}-{name}.{variant:optional}-{task}-v{version:optional}_{representation:optional}.{extension}`
+`{show_prefix:optional}-{type:only for assets}-{name}.{variant:optional}-{task}-v{version:optional}_{version_info:optional}.{extension}`
 
-- type (char, set, lib, props) of asset - not for shots
-    - variant (voice, red, blurry) changes meaning of the content
-        - version (v001, v002) only for renders and exports, not for work files as they have a history on the SVN
-            - representation (720p, lowres, cache) the content is the same
+- **type** (char, set, lib, props) of asset - not for shots
+    - **variant** (voice, red, blurry) changes meaning of the content > only for exports and renders, not for work files
+        - **version** (v001, v002) only for renders and exports, not for work files as they have a history on the SVN
+            - **version_info** (720p, lowres, cache) the content is the same
 
 
 ## Asset file names
 
-Examples: **char-gabby-concept.blend, char-gabby-shading-v001.mp4, char-gabby.red-rigging.blend**
-**lib-sea_shells-design-v001_line.kra, lib-sea_shells.broken-modeling-v006.png**
+Examples:
+* **char-gabby-concept.blend**
+* **char-gabby-shading-v001.mp4** > we add the `{version}` because it is an export/render, like a turntable
+* **char-gabby-rigging.blend**
+* **char-gabby.red-shading-v006.png** > we can include the `.{variant}` because it is an export/render
+* **lib-sea_shells-design-v001.kra**
+* **lib-sea_shells.broken-modeling-v006.png** > we can include the `.{variant}` because it is an export/render
 
 The main asset files should be as simple as possible, however we have decided to make it longer than our previous system, to better classify and structure them: `{type}-{asset name}-{task}.blend`
 
@@ -60,39 +65,36 @@ Example: `**140_0010-anim.blend**`
 
 Its position in the repository would be at:
 
-`pro/**shots/140_credits/140_0010/140_0010-anim.blend**`
+`pro/shots/140_credits/140_0010/140_0010-anim.blend`
 
 Output for the animation playblasts at:
 
-`/render/**shots/140_credits/140_0010/140_0010-anim/140_0010-anim-v001.mp4**`
+`/render/shots/140_credits/140_0010/140_0010-anim/140_0010-anim-v001.mp4`
 
-`/render/**shots/140_credits/140_0010/140_0010-anim/140_0010-anim-v002.mp4**`
+`/render/shots/140_credits/140_0010/140_0010-anim/140_0010-anim-v002.mp4`
 
 ...
 
 Output of the rendered frames:
 
-`/render/**shots/140_credits/140_0010/140_0010-lighting/000001.exr**`
+`/render/shots/140_credits/140_0010/140_0010-lighting/000001.exr`
 
 Generated previews from frames:
 
-`/render/**shots/140_credits/140_0010/140_0010-lighting/140_0010-lighting.mp4**`
+`/render/shots/140_credits/140_0010/140_0010-lighting/140_0010-lighting.mp4`
 
 Example of a Backup copy of frames:
 
 ```
-/render/**shots/140_credits/140_0010/140_0010-lighting_bak/140_0010_A.lighting.mp4**
+/render/shots/140_credits/140_0010/140_0010-lighting_bak/140_0010-lighting.mp4
 
-pro/**shots/110_rextoria/110_0010/110_0010-anim.blend**
+pro/shots/110_rextoria/110_0010/110_0010-anim.blend
 
-pro/**shots/110_rextoria/110_0010/110_0010-layout.blend**
+pro/shots/110_rextoria/110_0010/110_0010-layout.blend
 
-pro/**shots/110_rextoria/110_0010/110_0010-fx.blend**
+pro/shots/110_rextoria/110_0010/110_0010-fx.blend
 
-pro/**shots/110_rextoria/110_0010/110_0010-comp.blend**
+pro/shots/110_rextoria/110_0010/110_0010-comp.blend
 
-pro/**shots/110_rextoria/110_rextoria.layout.blend**
-
-pro/**shots/110_rextoria/110_rextoria.scene.blend**
-
+pro/shots/110_rextoria/110_rextoria-layout.blend
 ```

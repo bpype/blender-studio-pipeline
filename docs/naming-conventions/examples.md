@@ -3,11 +3,11 @@
 ## Assets
 
 ```plaintext
-- bark_oak.normal.png
-- maps/bark/bark_oak.normal.png
-- maps/bark/bark_oak.albedo.png
-- maps/bark/bark_birch.normal.png
-- bark_oak.albedo.png
+- bark_oak_normal.png
+- maps/bark/bark_oak_normal.png
+- maps/bark/bark_oak_albedo.png
+- maps/bark/bark_birch_normal.png
+- bark_oak_albedo.png
 - spring-anim_test.blend
 ```
 
@@ -29,7 +29,7 @@
 ## Edit
 
 ```plaintext
-- sf-edit-v002-voice_recording.blend
+- sf-edit-v002_voice_recording.blend
 - sf-edit-v002.blend
 - sf-edit-v002.mov
 - sf-edit-v002_noblur.mkv

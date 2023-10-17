@@ -8,27 +8,34 @@ A character asset is a collection which contains shaded geometry, rigs, rigging 
 
 ## Props
 
-**Location:** `{project root}/pro/assets/prop/{prop subfolder}/{prop name}.blend`
+**Location:** `{project root}/pro/assets/prop/{prop subfolder}/{type}-{prop name}-{task}.blend`
 
 A prop in real life is a rigged, animatable object which characters interact with or can be constrained to. An environment library asset can sometimes be turned into a prop (e.g. Autumn picks up a branch from the ground and breaks it into pieces).
+
+## Libraries
+
+**Location:** `{project root}/pro/assets/lib/{lib subfolder}/{type}-{lib name}-{task}.blend`
+
+A library is a collection of assets that form a coherent group and are supposed to be used in sets. They are **non-rigged**. A lib file can have one asset or multiples.
+Ask yourself the question: not a set, not a char, no rig? → library asset
+
+### Textures and maps
+
+**Location:**
+- `{project root}/pro/assets/maps/` for general textures which are used across the entire project
+- `{asset folder}/maps/` for specific textures related to an asset
 
 
 ## Sets
 
-**Location:** `{project root}/pro/assets/set/{set subfolder}/{set name}.blend`
+**Location:** `{project root}/pro/assets/set/{set subfolder}/{type}-{set name}-{task}.blend`
 
 Sets are more tricky to define, since they can differ even on a shot level. In practice they are formed by a ground plane and dressed with environment assets. They can also contain individually created assets (*Spring* example: `riverbed.blend` contained two non-library trees which were modelled and shaded uniquely in this set). Sets can be connected together to build a larger world if necessary. Sets are contained in a main collection which has sub-collections for visibility management)
 
 ## Shots
 
-**Location:** `{project root}/pro/**/**shots**/**{sequence number}**/**{shot identifier}/{shot identifier}.{task identifier}.blend`
+**Location:** `{project root}/pro/shots/{sequence number}/{shot identifier}/{shot identifier}-{task identifier}.blend`
 
-## Textures and maps
-
-**Location:** 
-
-- `{project root}/pro/assets/maps/` for general textures which are used across the entire project
-- `{asset folder}/maps/` for specific textures related to an asset
 
 
 
