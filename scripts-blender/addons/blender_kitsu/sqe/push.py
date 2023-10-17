@@ -37,7 +37,8 @@ def shot_meta(strip: bpy.types.Sequence, shot: Shot) -> None:
     try:
         kitsu_3d_start = shot.data["3d_start"]
     except:
-        kitsu_3d_start = bkglobals.FRAME_START
+        kitsu_3d_start = 101  # TODO REPLACE WITH BAKED GLOBAL VALUE
+
     shot.name = strip.kitsu.shot_name
     shot.description = strip.kitsu.shot_description
     shot.data["frame_in"] = strip.frame_final_start
@@ -69,7 +70,9 @@ def new_shot(
         nb_frames=strip.frame_final_duration,
         frame_in=frame_range[0],
         frame_out=frame_range[1],
-        data={"fps": bkglobals.FPS, "3d_start": bkglobals.FRAME_START},
+        data={
+            "fps": bkglobals.FPS,
+        },
     )
 
     if add_tasks:

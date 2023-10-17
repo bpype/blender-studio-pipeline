@@ -8,32 +8,24 @@ import shutil
 import sys
 
 
-def folder(path_string):
-    """Determine if the value is a valid directory"""
-    filepath = Path(path_string)
-
-    if filepath.exists() and not filepath.is_dir():
-        msg = f"Error! This is not a directory: {path_string}"
-        raise argparse.ArgumentTypeError(msg)
-    else:
-        return filepath
-
-
 parser = argparse.ArgumentParser(description="Generate project structure.")
 parser.add_argument(
     'target_folder',
     metavar='<target_folder>',
     help="The target folder to initialize the project structure in.",
-    type=folder
+    type=str,
 )
-parser.add_argument(
-    '--json_file',
-    help="The json file with the folder structure. Will default to folder_structure.json",
-    nargs='?',
-    metavar='<json file>',
-    default=Path(__file__).parent / "folder_structure.json",
-    type=str
-)
+
+
+def valid_dir_arg(value):
+    """Determine if the value is a valid directory"""
+    filepath = Path(value)
+
+    if not filepath.exists() or not filepath.is_dir():
+        msg = f"Error! This is not a directory: {value}"
+        raise argparse.ArgumentTypeError(msg)
+    else:
+        return filepath
 
 
 def create_folder_structure(cur_path, path_dict, source_folder):
@@ -57,9 +49,9 @@ def create_folder_structure(cur_path, path_dict, source_folder):
 
 
 args = parser.parse_args()
+folder_structure = Path(__file__).parent / "folder_structure.json"
 
-with open(args.json_file) as json_file:
+with open(folder_structure) as json_file:
     path_dict = json.load(json_file)
-    first_key = list(path_dict.keys())[0]
-    create_folder_structure(Path(args.target_folder), path_dict[first_key], Path(__file__).parent)
+    create_folder_structure(Path(args.target_folder), path_dict["../../"], folder_structure.parent)
     print("Done!")

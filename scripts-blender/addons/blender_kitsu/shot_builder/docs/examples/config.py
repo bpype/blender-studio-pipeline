@@ -9,5 +9,4 @@ RENDER_SETTINGS = KitsuConnector
 # ----------------
 
 # The name of the scene in blender where the shot is build in.
-SCENE_NAME_FORMAT = "{shot.name}.{task_type}"
-SHOT_NAME_FORMAT = "{shot.name}"
+# SCENE_NAME_FORMAT = "{shot.sequence_code}_{shot.code}.{task_type}"

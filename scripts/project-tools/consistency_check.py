@@ -5,8 +5,6 @@ import os
 import pathlib
 import json
 
-from pathlib import Path
-
 
 parser = argparse.ArgumentParser(description="Check if the folder structure matches that one in folder_structure.json")
 parser.add_argument(
@@ -17,12 +15,12 @@ parser.add_argument(
 )
 
 
-def create_path_dict(start_path, max_depth):
+def create_path_dict(startpath, max_depth):
     path_structure_dict = {}
-    start_folder_name = start_path.name
-    for root, dirs, files in os.walk(start_path, followlinks=True):
+    start_folder_name = os.path.basename(start_search_path)
+    for root, dirs, files in os.walk(startpath, followlinks=True):
         # We are only interested in the files and folders inside the start path.
-        cur_path = root.replace(str(start_path), start_folder_name)
+        cur_path = root.replace(startpath, start_folder_name)
         level = cur_path.count(os.sep)
         # Sanity check. We don't expect the directory tree to be too deep.
         # Therefore, we will stop if we go too deep.
@@ -76,8 +74,7 @@ args = parser.parse_args()
 
 if args.create_json_file:
 
-    # Use "Path" here to make sure that /folder/ is the same as /folder
-    start_search_path = Path(args.create_json_file[0])
+    start_search_path = args.create_json_file[0]
     output_file = args.create_json_file[1]
     path_dict = create_path_dict(start_search_path, 5)
     json_data = json.dumps(path_dict, indent=4)
