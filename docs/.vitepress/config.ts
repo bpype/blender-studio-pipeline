@@ -51,6 +51,13 @@ export default defineConfig({
         items: [
           { text: 'Introduction', link: '/pipeline-overview/introduction'},
           { text: 'Design Principles', link: '/pipeline-overview/design-principles'},
+          {text: 'Quick Start', 
+            collapsed: true,
+            items: [
+              { text: 'Pipeline Setup', link: '/pipeline-overview/quick-start/setup'},
+              { text: 'Pipeline Usage', link: '/pipeline-overview/quick-start/usage'},
+            ]
+          },  
           { 
             text: 'Organization', 
             collapsed: true,
