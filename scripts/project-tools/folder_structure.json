@@ -9,6 +9,8 @@
                 "folder_structure.json": "file",
                 "init_project_folder_structure.py": "file",
                 "install_desktop_file.sh": "file",
+                "launch_blender_mac.command": "file",
+                "launch_blender_win.bat": "file",
                 "rollback_blender.py": "file",
                 "rollback_blender_local.py": "file",
                 "run_blender.py": "file",
