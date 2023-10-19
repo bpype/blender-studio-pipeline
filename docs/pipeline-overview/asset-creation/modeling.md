@@ -131,20 +131,9 @@ Adding smaller details like screws, cables, insets and more to increase believab
 
 ### Sets
 
-**Blocking** based on Previz & Concept -> Layout 
-* Making sure layout can be easily linked for reference
-* Working with messy Previz & Layout and their workarounds
-
-**Environment Asset Libraries**
-* Focus on modularity and procedural systems (geo & shader nodes)
-
-**Set dressing** (Assets, geo node scattering, layout reference)
-* [https://studio.blender.org/blog/sprite-fright-set-dressing-tips/](https://studio.blender.org/blog/sprite-fright-set-dressing-tips/) 
-* Sectioning of complex and reused sets (For assembling only needed parts for shots)
-    * Detail collections for specific shots (only if repeatedly used)
-* Ground contact
-* Fix specific details later in shot files
-* Goal: Version for rendering and version for animation (performant)
+::: warning Work in Progress
+October 17th 2023 - The content of this page is currently being edited/updated.
+:::
 
 
 ## Delivery
