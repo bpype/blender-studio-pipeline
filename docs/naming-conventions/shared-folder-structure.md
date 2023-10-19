@@ -11,14 +11,14 @@ TODO Add logic & Introduction
 ```bash
 shared
 ├── artifacts # Where Global Blender & Add-Ons are stored
-└── editorial   
+└── editorial
     ├── audio # Audio
     ├── deliver # Delivery for script
     ├── export # Renders coming out of edit
     │   ├── _archive
     │   │   └── gold-edit-v001_storyboard.mp4
     │   ├── gold-edit-v001_previs.mp4
-    └── footage 
+    └── footage
         ├── sequences # Sequence Playblasts / Renders
         │   ├── 010_intro
         │   │   ├── 010_intro-beats
@@ -29,7 +29,7 @@ shared
         │       └── ...
         ├── shots # Playblasts and Render Previews
         │   ├── 010_intro
-        │   │   └── 010_0010  
+        │   │   └── 010_0010
         │   │       ├── 010_0010-previs
         │   │       │   └── 010_0010-previs-v001.mp4
         │   │       │       └── ...
