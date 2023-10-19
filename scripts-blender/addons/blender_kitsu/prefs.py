@@ -203,6 +203,13 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         update=init_playblast_file_model,
     )
 
+    frames_root_dir: bpy.props.StringProperty(  # type: ignore
+        name="Frames Root Directory",
+        description="Directory path to playblast root folder. Should point to: ./Blender Dropbox/render/sprites/shots/",
+        default="",
+        subtype="DIR_PATH",
+    )
+
     project_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Project Root Directory",
         description=(
@@ -379,6 +386,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         box = layout.box()
         box.label(text="Animation Tools", icon="RENDER_ANIMATION")
         box.row().prop(self, "playblast_root_dir")
+        box.row().prop(self, "frames_root_dir")
         box.row().prop(self, "pb_open_webbrowser")
         box.row().prop(self, "pb_open_vse")
 

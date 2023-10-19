@@ -2353,13 +2353,27 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         new_strip.colorspace_settings.name = new_strip.colorspace_settings.name
 
     def get_shot_seq_directory(self, context, strip):
+        addon_prefs = prefs.addon_prefs_get(context)
         path_string = os.path.realpath(bpy.path.abspath(strip.filepath))
-        path = Path(path_string.replace("shot_previews", "shot_frames"))
+        path = Path(
+            path_string.replace(
+                addon_prefs.playblast_root_dir, addon_prefs.frames_root_dir
+            )
+        )
         return path.parent
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         # Get closest empty channel
         channel = int(self.channel_selection)
+        addon_prefs = prefs.addon_prefs_get(context)
+        if not (
+            Path(addon_prefs.frames_root_dir).is_dir()
+            and addon_prefs.frames_root_dir != ''
+        ):
+            self.report(
+                {"ERROR"}, f"Frames Directory does not exist, check add-on preferences"
+            )
+            return {"CANCELLED"}
 
         if self.set_color_space:
             self.set_scene_colorspace(context)
