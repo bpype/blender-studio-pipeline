@@ -26,10 +26,11 @@ class Asset:
     path: absolute path to the blend file containing this asset.
 
     """
+
     asset_type = ""
     code = ""
     name = ""
-    path = "{production.path}/lib/{asset.asset_type}/{asset.code}/{asset.code}.blend"
+    path = "{production.path}/assets/{asset.asset_type}/{asset.code}/{asset.code}.blend"
     collection = "{asset.code}"
 
     def __str__(self) -> str:

@@ -212,7 +212,7 @@ settings about the production, including:
 ``` bash
 └── project-name/ # Project Root Directory
     └── pro/
-        ├── lib/
+        ├── assets/
         ├── shot-builder/
         │   ├── assets.py
         │   ├── config.py

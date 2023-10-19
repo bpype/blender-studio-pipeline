@@ -26,7 +26,7 @@ VERSION_PATTERN = r"v\d\d\d"
 FRAME_START = 101
 
 SHOT_DIR_NAME = "shots"
-ASSET_DIR_NAME = "lib"
+ASSET_DIR_NAME = "assets"
 
 ASSET_TASK_MAPPING = {
     "geometry": "Geometry",

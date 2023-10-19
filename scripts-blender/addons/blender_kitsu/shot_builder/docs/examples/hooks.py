@@ -21,12 +21,14 @@ def set_cycles_render_engine(scene: bpy.types.Scene, **kwargs):
 
 # ---------- Overrides for animation files ----------
 
+
 @hook(match_task_type='anim')
 def task_type_anim_set_workbench(scene: bpy.types.Scene, **kwargs):
     """
     Override of the render engine to Workbench when building animation files.
     """
     scene.render.engine = 'BLENDER_WORKBENCH'
+
 
 # ---------- Create output collection for animation files ----------
 
@@ -41,7 +43,7 @@ def _add_camera_rig(
     of the shot and the camera will be set as active camera.
     """
     # Load camera rig.
-    path = f"{production.path}/lib/cam/camera_rig.blend"
+    path = f"{production.path}/assets/cam/camera_rig.blend"
     collection_name = "CA-camera_rig"
     bpy.ops.wm.link(
         filepath=path,
@@ -64,7 +66,9 @@ def _add_camera_rig(
 
 
 @hook(match_task_type='anim')
-def task_type_anim_output_collection(scene: bpy.types.Scene, production: Production, shot: Shot, task_type: str, **kwargs):
+def task_type_anim_output_collection(
+    scene: bpy.types.Scene, production: Production, shot: Shot, task_type: str, **kwargs
+):
     """
     Animations are stored in an output collection. This collection will be linked
     by the lighting file.
@@ -72,7 +76,8 @@ def task_type_anim_output_collection(scene: bpy.types.Scene, production: Product
     Also loads the camera rig.
     """
     output_collection = bpy.data.collections.new(
-        name=shot.get_output_collection_name(shot=shot, task_type=task_type))
+        name=shot.get_output_collection_name(shot=shot, task_type=task_type)
+    )
     shot.output_collection = output_collection
     output_collection.use_fake_user = True
 
@@ -80,7 +85,9 @@ def task_type_anim_output_collection(scene: bpy.types.Scene, production: Product
 
 
 @hook(match_task_type='lighting')
-def link_anim_output_collection(scene: bpy.types.Scene, production: Production, shot: Shot, **kwargs):
+def link_anim_output_collection(
+    scene: bpy.types.Scene, production: Production, shot: Shot, **kwargs
+):
     """
     Link in the animation output collection from the animation file.
     """
@@ -88,13 +95,14 @@ def link_anim_output_collection(scene: bpy.types.Scene, production: Production, 
     scene.collection.children.link(anim_collection)
     anim_file_path = shot.get_anim_file_path(production, shot)
     anim_output_collection_name = shot.get_output_collection_name(
-        shot=shot, task_type="anim")
+        shot=shot, task_type="anim"
+    )
     result = bpy.ops.wm.link(
         filepath=anim_file_path,
         directory=anim_file_path + "/Collection",
         filename=anim_output_collection_name,
     )
-    assert (result == {'FINISHED'})
+    assert result == {'FINISHED'}
 
     # Move the anim output collection from scene collection to the animation collection.
     anim_output_collection = bpy.data.objects[anim_output_collection_name]
@@ -109,7 +117,7 @@ def link_anim_output_collection(scene: bpy.types.Scene, production: Production, 
 # ---------- Asset loading and linking ----------
 
 
-@hook(match_task_type='anim', match_asset_type=['char', 'props'])
+@hook(match_task_type='anim', match_asset_type=['chars', 'props'])
 def link_char_prop_for_anim(scene: bpy.types.Scene, shot: Shot, asset: Asset, **kwargs):
     """
     Loading a character or prop for an animation file.
