@@ -43,7 +43,7 @@ The Blender add-on also needs to be reloaded, make sure that Blender is restarte
 
 This section will only provide a quick rundown of how to update the Flamenco package that is part of the Render Farm setup.
 
-For more details and how to update other packages, see the [Maintenance](/td-guide/workstations/maintaince) page.
+For more details and how to update other packages, see the [Maintenance](/gentoo/td/maintaince) page.
 
 ::: info Note
 The Flamenco package should already have the correct [USE flags](https://wiki.gentoo.org/wiki/Handbook:AMD64/Working/USE) configured.

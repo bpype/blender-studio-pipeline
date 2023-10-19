@@ -16,11 +16,11 @@ _If successful, you will be greated with the following screen_
 ![IPXE Boot Menu](/media/user-guide/workstations/gentoo_boot_menu.png)
 
 ## Run MEM Test
-1. [Boot into IPXE](/user-guide/project-setup/workstations/troubleshooting.md#run-mem-test)
+1. [Boot into IPXE](/gentoo/user/troubleshooting.md#run-mem-test)
 2. Select “Run MemTest”
 
 ## Chrooting into the root drive (for recovery)
-1. [Boot into IPXE](/user-guide/project-setup/workstations/troubleshooting.md#run-mem-test)
+1. [Boot into IPXE](/gentoo/user/troubleshooting.md#run-mem-test)
 2. Select Gentoo Installer (Blender Institute Customized)
 3. Wait for Gentoo Installer to boot ![Gentoo Installer](/media/user-guide/workstations/gentoo_installer_boot.png)
 4. Use CTR+C to cancel Installer
@@ -30,7 +30,7 @@ _If successful, you will be greated with the following screen_
 
 
 ## Recovery/Inspection of Linux Kernel 
-1. [Follow steps in Chrooting into the root drive](/user-guide/project-setup/workstations/troubleshooting.md#chrooting-into-the-root-drive-for-recovery)
+1. [Follow steps in Chrooting into the root drive](/gentoo/user/troubleshooting.md#chrooting-into-the-root-drive-for-recovery)
 2. Ensure the mount the boot drive is mounted **`mount /boot`**
 3. Go into the kernel source dir **`cd /usr/src/linux`**
 4. Use `make menuconfig` to enter linux kernel configuration

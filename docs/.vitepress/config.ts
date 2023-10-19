@@ -51,13 +51,6 @@ export default defineConfig({
         items: [
           { text: 'Introduction', link: '/pipeline-overview/introduction'},
           { text: 'Design Principles', link: '/pipeline-overview/design-principles'},
-          {text: 'Quick Start', 
-            collapsed: true,
-            items: [
-              { text: 'Pipeline Setup', link: '/pipeline-overview/quick-start/setup'},
-              { text: 'Pipeline Usage', link: '/pipeline-overview/quick-start/usage'},
-            ]
-          },  
           { 
             text: 'Organization', 
             collapsed: true,
@@ -142,23 +135,15 @@ export default defineConfig({
         collapsed: false,
         items: [
           {
-            text: 'Project Setup',
+            text: 'Project Tools',
             collapsed: true,
             items: [
-              { text: 'Intro', link: '/user-guide/project-setup/intro' },
-              { text: 'SVN', link: '/user-guide/project-setup/svn' },
-              {
-                text: 'Workstation',
-                collapsed: true,
-                items: [
-                  { text: 'Introduction', link: '/user-guide/project-setup/workstations/introduction' },
-                  { text: 'Installing Software', link: '/user-guide/project-setup/workstations/installing-software' },
-                  { text: 'Running Blender', link: '/user-guide/project-setup/workstations/running-blender' },
-                  { text: 'Troubleshooting', link: '/user-guide/project-setup/workstations/troubleshooting' },
-                ],
-              },
+              { text: 'Project Overview', link: '/user-guide/project_tools/project-overview' },
+              { text: 'Project Usage', link: '/user-guide/project_tools/project-usage'},
+              { text: 'Project Blender', link: '/user-guide/project_tools/project-blender' },
             ],
           },
+
           {
             text: 'Organization',
             collapsed: true,
@@ -174,20 +159,9 @@ export default defineConfig({
       
       {
         text: 'TD Guide',
-        collapsed: false,
-        items: [
-          {text: 'Project Setup', link: '/td-guide/project-setup'},
-          {
-            text: 'Workstation',
-            collapsed: true,
-            items: [
-              { text: 'Overview', link: '/td-guide/workstations/overview'},
-              { text: 'Installation', link: '/td-guide/workstations/installation'},
-              { text: 'Maintenance', link: '/td-guide/workstations/maintaince'},
-              { text: 'Render Farm', link: '/td-guide/workstations/render_farm'},
-
-            ]
-          },
+        collapsed: true,
+        items: [       
+          {text: 'Project Tools Setup', link: '/td-guide/project-tools-setup'},
         ]
       },
       {
@@ -207,7 +181,36 @@ export default defineConfig({
           {text: 'Asset Publishing', link: '/archive/pipeline-proposal-2019/asset-publishing/introduction'},
           {text: 'Character Pipeline Assistant', link: '/archive/pipeline-proposal-2019/asset-publishing/character-pipeline-assistant'},
         ],
-      }
+      },
+      {
+        text: 'Gentoo',
+        collapsed: true,
+        items: [
+          {
+            text: 'TD',
+            collapsed: false,
+            items: [
+              { text: 'Overview', link: '/gentoo/td/overview'},
+              { text: 'Installation', link: '/gentoo/td/installation'},
+              { text: 'Maintenance', link: '/gentoo/td/maintaince'},
+              { text: 'Render Farm', link: '/gentoo/td/render_farm'},
+            ],
+          },
+
+          {
+            text: 'User',
+            collapsed: false,
+            items: [
+              { text: 'Introduction', link: '/gentoo/user/introduction' },
+              { text: 'Installing Software', link: '/gentoo/user/installing-software' },
+              { text: 'Running Blender', link: '/gentoo/user/running-blender' },
+              { text: 'SVN', link: '/gentoo/user/svn' },
+              { text: 'Troubleshooting', link: '/gentoo/user/troubleshooting' },
+
+            ]
+          },
+        ],
+      },
     ],
   },
   markdown: {

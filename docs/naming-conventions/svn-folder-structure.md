@@ -15,32 +15,32 @@ October 17th 2023 - The content of this page is currently being edited/updated.
     * `maps` folder
 
 ## Proposal adopted in October 2023:
-```
-pro  
-├── assets
-│   ├── chars
+``` bash
+pro  # All files from the production
+├── assets # All assets from the production
+│   ├── chars # Characters & character variations
 │   │   ├── dog
 │   │   ├── cat
 │   │   └── ..
-│   ├── props
+│   ├── props # Rigged props that can have animation
 │   │   ├── rocket_exterior
 │   │   ├── wings
 │   │   └── ...
-│   ├── sets
+│   ├── sets # Static background elements
 │   │   ├── barn
 │   │   ├── rocket_interior
 │   │   └── ...
-│   ├── lib
+│   ├── lib # Libraries of smaller assets
 │   │   ├── rocks
 │   │   ├── trees
 │   │   ├── crates
 │   │   └── ...
-│   ├── maps
-│   ├── lgt
-│   ├── cam
-│   ├── fx
-│   ├── poses
-│   ├── nodes
+│   ├── maps # General textures and HDRIs
+│   ├── lgt # Lighting setups
+│   ├── cam # Camera rig 
+│   ├── fx # Effects
+│   ├── poses # Pose libraries for animation
+│   ├── nodes # General Node groups
 │   └── scripts
 ├── shots
 │   ├── 000_titles
@@ -50,17 +50,19 @@ pro
 │   ├── 900_animtest
 │   └── 990_promo
 └── config
-pre
-├── shots
+pre # For pre-production
+├── shots # Structured into sequences
 └── assets
     ├── cam
     ├── char
     └── ...
-dev
+dev # Anything related to early development or tests
 ├── concepts
 ├── boards
 ├── tests
 └── ...
+edit # Where the editorial .blend file lives
+└── my_project_edit_v001.blend
 .blender_project
 promo
 tools

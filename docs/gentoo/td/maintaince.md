@@ -17,7 +17,7 @@ are used in Gentoo see the [Gentoo Handbook](https://wiki.gentoo.org/wiki/Ebuild
 2. `ssh user@build-server-addr` connect to your build server via ssh
 3. Update the package recipes on the Build Server  `emaint sync --repo blender-studio-overlay`
 
-Once an update of the recipe is complete any affected packages can be installed our updated by following the [Installing Packages on Build Server](/td-guide/workstations/maintaince#installing-packages-on-build-server) guide.
+Once an update of the recipe is complete any affected packages can be installed our updated by following the [Installing Packages on Build Server](/gentoo/td/maintaince#installing-packages-on-build-server) guide.
 
 ## Installing Packages on Build Server
 Packages need to be compiled on the Build Server and marked with a date to be able to discovered by the workstations. Follow the below steps to install/update a package on the build server.
@@ -30,11 +30,16 @@ Packages need to be compiled on the Build Server and marked with a date to be ab
 ::: info Info
 The command `emerge --oneshot {package-name}` compiles package, but does not add the packages to the [@world](https://wiki.gentoo.org/wiki/World_set_(Portage)), this means these packages will be removed when running `--depclean`.. We add this because these packages are already pulled in by another set. So we don’t want to add it again to the @world set. To learn more visit the [Gentoo  Handbook](https://wiki.gentoo.org/wiki/Emerge#:~:text=fetchonly%20%2D%2Demptytree%20%40world-,Do%20not%20add%20dependencies%20to%20the%20world%20file,-If%20a%20dependency) 
 ::: 
-## Update Add-ons in `/shared/software/addons`
+## Update Local Add-Ons
 
- The software inside the `shared/software/addons` directory are the [Blender Studio Pipeline Add-ons](/addons/overview) and any other Add-ons that need to be distributed to all Blender Studio Users. These Add-ons are considered Live Packages. Live Packages are packages that fetch updates from the source repository directly and are not tied to a specific release. To update packages not included in `/shared/software/addons` see [Installing Software](/user-guide/project-setup/workstations/installing-software)
+Add-Ons are locally stored in the following directories; `/usr/share/flamenco` and `/usr/share/blender_studio_tools`. These are updated by running the following commands. These directories are automatically updated daily by the Gentoo package manager.
 
-1. Follow the instructions in [Installing Packages on Build Server](/td-guide/workstations/maintaince#installing-packages-on-build-server) using `blender-studio-tools` as the package name.
+```bash
+emerge -1 blender-studio-tools
+emerge -1 flamenco
+```
+
+
 
 
 ### How to update to specific version?

@@ -1,6 +1,9 @@
 # Working with Blender
 
 ## Launch Blender from Taskbar/Start Menu
+This will launch the Blender that is pre-installed on your workstation and updated daily via the  package manager. Your Blender configuration including add-ons is stored at `$HOME/.config/blender/{version}/`
+
+
 1. Search for Blender in your Application Launcher
 2. The application with the exact name `blender` without any suffix is the latest build.
 ![Image of Blender Icon in KDE Taskbar/Start Menu](/media/user-guide/launch_blender.mp4)
@@ -9,6 +12,9 @@
 1. Open a new Terminal window
 2. Type command `blender`
 ## Roll Back Blender Build
+
+Your workstation's package manager will update blender daily, to roll back to a previous version follow the guide below.
+
 1. Login as ********root******** user using `su`
 2. Run `rollback_blender.sh` from any folder
     
@@ -28,7 +34,7 @@
     ```
 3. Select a build by enter a number and pressing Enter to confirm
 
-## Build Blender Locallly
+## Build Blender Locally
 
 1. Download Git repo
     
@@ -47,3 +53,11 @@
     ```
     
 3. Find your built blender `cd ../build_linux`
+
+## Debug Build
+1. Search for Blender in your Application Launcher
+2. The application with the exact name `blender debug` without any suffix is the latest build, it should have a grey icon.
+
+<!---
+TODO Add Image of Debug Build on Gentoo
+--->
