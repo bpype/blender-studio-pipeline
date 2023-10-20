@@ -16,7 +16,7 @@ Which renderer we use depends very much on the style of the production. That cho
 
 The workflow is highly dependent on the production requirements and its art style. In general, we try to identify the key shots in a sequence first and set up their lighting first. When there is an establishing shot or a wide angle view of the scene, we derive close ups and inserts from that as a starting point.
 
-## Eye highlights
+## Shot Continuity
 
 A large part of lighting is making characters appealing. Eye highlights are an important aspect of that appeal, so extra care is given to them. We used a variety of different approaches for eye highlights in the past, each of them is perfectly valid so the technique is dependent on the art style of the production. For example, “Spring” and “Agent 327: Operation Barbershop” both use the real reflections of the scene's lights plus additional hand-placed highlight lights. “Sprite Fright”, being more cartoony in style, utilizes eye highlights which are placed by the animators using the character rig.
 Maintaining continuity
