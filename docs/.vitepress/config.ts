@@ -64,7 +64,8 @@ export default defineConfig({
             collapsed: true,
             items: [
               { text: 'Storyboard', link: '/pipeline-overview/pre-production/storyboard'},
-              { text: 'Editorial and Previz', link: '/pipeline-overview/pre-production/editorial-and-previz'},
+              { text: 'Editorial', link: '/pipeline-overview/pre-production/editorial'},
+              { text: 'Previz', link: '/pipeline-overview/pre-production/previz'},
               { text: 'Research and Development', link: '/pipeline-overview/pre-production/research-and-development'},
               { text: 'Concept and Design', link: '/pipeline-overview/pre-production/concept-and-design'},
             ]
