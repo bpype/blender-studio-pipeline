@@ -1,6 +1,6 @@
 # Shot Assembly
 
-::: warning
+::: warning Work in Progress
 October 10th 2023 - The content of this page is currently being edited/updated.
 :::
 
