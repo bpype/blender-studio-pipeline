@@ -41,9 +41,10 @@ Lights and all other objects necessary to illuminate the shot are placed in a se
 
 ## Syncing updates from animation
 
-Whenever the animator updates their file, the changes automatically trickle down to the lighting file. 
-How much to get from animation vs. additional geo (set extensions)
-Modifying linked data 
+Whenever the animator updates their file, the changes automatically trickle down to the lighting file through the output collection. We have to ensure that all animated elements are included in the output at all times. Whenever the animator adds additional objects (helpers, extra props, etc) they need to be linked to it as well.
+
+## Modifying linked data 
+
 Since a big part of the shot comes from the animation file, we often need to adjust the data that flows into the lighting file. This can be done in a variety of ways and depends on the project's setup and complexity.
 
 The most basic level of control is changing visibility: Often a specific asset is made to be fast in animation playback, but we might want to see a more complex representation of it in the lighting file. In that case we want to split the asset's geometry into several different representations which could be controlled by switches in the rig or are simply placed in different collections.
