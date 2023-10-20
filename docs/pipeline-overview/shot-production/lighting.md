@@ -16,16 +16,20 @@ Which renderer we use depends very much on the style of the production. That cho
 
 The workflow is highly dependent on the production requirements and its art style. In general, we try to identify the key shots in a sequence first and set up their lighting first. When there is an establishing shot or a wide angle view of the scene, we derive close ups and inserts from that as a starting point.
 
-## Shot Continuity
+## Eye highlights
 
 A large part of lighting is making characters appealing. Eye highlights are an important aspect of that appeal, so extra care is given to them. We used a variety of different approaches for eye highlights in the past, each of them is perfectly valid so the technique is dependent on the art style of the production. For example, “Spring” and “Agent 327: Operation Barbershop” both use the real reflections of the scene's lights plus additional hand-placed highlight lights. “Sprite Fright”, being more cartoony in style, utilizes eye highlights which are placed by the animators using the character rig.
-Maintaining continuity
+
+
+## Maintaining Continuity
+
 There are different methods for maintaining the continuity between each shot in a film. They all need to link up to the adjacent shots in the sequence in terms of light intensity, color and style. We use different techniques for that.
 
 In cases where there is a strong emphasis on spatial continuity (like a dialogue scene, or a fast action set piece) we have to ensure that the light direction is consistent across a sequence. In outdoor shots it can be helpful to draw a top-down view of the scene to discuss the camera angles and general light direction.
 In “Sprite Fright” we used a simple [light direction chart](https://studio.blender.org/films/sprite-fright/391c5d112594c2/?asset=5023) which showed colored arrows on a grid of viewport rendered shots to indicate the direction of each shot's key light. The same chart was also used by the animators to match the (cheated) eye highlights to the actual lighting of each shot. Whenever the light direction was changed, the corresponding shot was updated in the chart and the animator knew how to re-align the eye highlight.
 
 It is vital to match the color values for each type of light across shots. In recent productions we tried to simplify the light types down to four: Key, key-soft, fill and rim. Each type had a corresponding RGB value for each scene. We store these values in a library file. For Cycles they can simply be added to a node group which can be linked into each shot. Thus, whenever the value in the central file changes, all the shots automatically get the update and simply have to be re-rendered.
+
 
 ## File hierarchy
 
