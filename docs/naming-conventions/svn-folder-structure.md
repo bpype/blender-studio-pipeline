@@ -63,7 +63,7 @@ svn
 │   ├── tests
 │   └── ...
 ├── edit # Where the editorial .blend file lives
-│   └── my_project_edit_v001.blend
+│   └── my_project_edit-v001.blend
 ├── .blender_project
 ├── promo
 └── tools
