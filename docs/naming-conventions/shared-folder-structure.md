@@ -1,12 +1,14 @@
 # Shared Folder Structure
 
 ::: warning Work in Progress
-October 17th 2023 - The content of this page is currently being edited/updated.
+October 20th 2023 - The content of this page is currently being edited/updated.
 :::
 
-<!---
-TODO Add logic & Introduction
---->
+The shared folder is manly meant for content that should not be stored in SVN. In particular,
+the `footage` folder contains all the previews and renders for the work being done on sequences
+and shots. The data inside those folders is grouped according to the type of deliverable.
+For example, sequences are delivered in the `sequences` directory, shots are delivered in the
+`shots` directory.
 
 ```bash
 shared
@@ -41,6 +43,5 @@ shared
         └── frames # Render Review Output
             └── 010_intro
                 └── 010_0010
-
 
 ```
