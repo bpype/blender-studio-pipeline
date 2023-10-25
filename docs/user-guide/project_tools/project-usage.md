@@ -23,7 +23,7 @@ Repeat steps 4-6 for each shot in the sequence. Multiple metastrips can be made 
 ## Creating your first Asset
 The next step is to create an asset and store that information into the Kitsu Server.
 
-1. Launch Blender via [Launching Software] Guide
+1. Launch Blender via [Project Blender](/user-guide/project_tools/project-blender.md) Guide
 2. Under `Edit>Preferences>Add-Ons` ensure `Asset Pipeline` is enabled
 3. Follow the[ asset pipeline guide](https://studio.blender.org/pipeline/addons/asset_pipeline#how-to-get-started) to create a new asset (optional)
 4. Save the above asset within the directory `{my_project}/svn/pro/assets/char`
@@ -40,7 +40,7 @@ Inside your production’s directory the Shot Builder configuration files need t
 3. Ensure your camera rig is present at the path `{my_project}/svn/pro/assets/cam/camera_rig.blend`
 4. Open a new Blender File, select `File>New>Shot File`
 5. Select the desired Sequence/Shot from Kitsu and select OK to start Building
-6. New file will be saved to  `{my_project}/svn/pro/shots/{sequence}/{shot}/{shot}.blend
+6. New file will be saved to  `{my_project}/svn/pro/shots/{sequence}/{shot}/{shot}.blend`
 
 ## Playblast your First Shot
 Once your first shot is animated you are ready to render a playblast of this shot, which will be later imported into your edit .blend file. 
