@@ -3,12 +3,15 @@ from blender_kitsu.shot_builder.hooks import hook, Wildcard
 from blender_kitsu.shot_builder.asset import Asset
 from blender_kitsu.shot_builder.shot import Shot
 from blender_kitsu.shot_builder.project import Production
-
+from pathlib import Path
 import logging
 
 logger = logging.getLogger(__name__)
 
 # ---------- Global Hook ----------
+
+
+CAMERA_NAME = 'CAM-camera'
 
 
 @hook()
@@ -44,6 +47,13 @@ def _add_camera_rig(
     """
     # Load camera rig.
     path = f"{production.path}/assets/cam/camera_rig.blend"
+
+    if not Path(path).exists():
+        camera_data = bpy.data.cameras.new(name=CAMERA_NAME)
+        camera_object = bpy.data.objects.new(name=CAMERA_NAME, object_data=camera_data)
+        shot.output_collection.objects.link(camera_object)
+        return
+
     collection_name = "CA-camera_rig"
     bpy.ops.wm.link(
         filepath=path,
@@ -61,7 +71,7 @@ def _add_camera_rig(
     shot.output_collection.children.link(asset_collection)
 
     # Set the camera of the camera rig as active scene camera.
-    camera = bpy.data.objects['CAM-camera']
+    camera = bpy.data.objects[CAMERA_NAME]
     scene.camera = camera
 
 
@@ -80,6 +90,7 @@ def task_type_anim_output_collection(
     )
     shot.output_collection = output_collection
     output_collection.use_fake_user = True
+    scene.collection.children.link(output_collection)
 
     _add_camera_rig(scene, production, shot)
 
