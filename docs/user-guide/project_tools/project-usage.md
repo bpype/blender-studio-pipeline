@@ -37,10 +37,9 @@ Inside your production’s directory the Shot Builder configuration files need t
 
 1. Copy Configuration Files from [examples](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/docs/examples) to `{my_project}/svn/pro/shot-builder/`
 2. Update `assets.py` file with each asset you have in your `assets` folder see the [Shot Builder API](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/docs#api)
-3. Ensure your camera rig is present at the path `{my_project}/svn/pro/assets/cam/camera_rig.blend`
-4. Open a new Blender File, select `File>New>Shot File`
-5. Select the desired Sequence/Shot from Kitsu and select OK to start Building
-6. New file will be saved to  `{my_project}/svn/pro/shots/{sequence}/{shot}/{shot}.blend`
+3. Open a new Blender File, select `File>New>Shot File`
+4. Select the desired Sequence/Shot from Kitsu and select OK to start Building
+5. New file will be saved to  `{my_project}/svn/pro/shots/{sequence}/{shot}/{shot}.blend`
 
 ## Playblast your First Shot
 Once your first shot is animated you are ready to render a playblast of this shot, which will be later imported into your edit .blend file. 
