@@ -1,3 +1,13 @@
+## 1.0.2 - 2023-10-31 
+ 
+### FIXED 
+- Fix some assumptions about SVN status
+- Fix a crash in hotkeys.py
+
+### UN-CATEGORIZED 
+- Silly mistake (referenced before assignment)
+- Use consistent registration pattern
+
 ## 1.0.1 - 2023-08-02 
  
 ### ADDED 
