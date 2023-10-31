@@ -1,3 +1,28 @@
+## 0.1.4 - 2023-10-31 
+ 
+### FIXED 
+- Fix Drawing Sequence Line (#157)
+- Fix Scene Name in Shot Builder Config File
+- Fix EXR Colorspace Name
+- Fix Bug "3d_start" missing on new shots
+- Fix EXR Colorspace Name
+- Fix Scene Name in Shot Builder Config File
+- Fix Bug "3d_start" missing on new shots
+- Fix Shot Builder example `assets.py`
+- Fix Shot Builder example `shots.py`
+- Fix Get Project ID from Kitsu Server in Shot Builder
+- Fix Context Override Error in Shot Builder
+
+### REMOVED 
+- remove "boxed" ui for playblast
+
+### UN-CATEGORIZED 
+- Update Shot Builder Hook Example
+- Use New Shared Folder Structure
+- Make Frames directory customizable
+- update commits
+- Black formatting
+
 ## 0.1.3 - 2023-08-02 
  
 ### ADDED 
