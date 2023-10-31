@@ -2,17 +2,14 @@
  
 ### ADDED 
 - Add "Instancer Empty to Collection" op
+- Use consistent registration pattern
+- Expose preference about library warning pop-ups
 
 ### FIXED 
 - Fix a crash in hotkeys.py
-
-### UN-CATEGORIZED 
-- Prod file cleaning utils
-- EasyWeight console warnings & more
 - Catch an error (not sure of cause yet)
+- Prod file cleaning utils
 - Update hotkey registration code
-- Use consistent registration pattern
-- Expose preference about library warning pop-ups
 
 ## 0.0.4 - 2023-08-02 
  

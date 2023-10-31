@@ -1,6 +1,6 @@
 ## 0.0.4 - 2023-10-31 
  
-### UN-CATEGORIZED 
+### FIXED 
 - Use consistent registration pattern
 
 ## 0.0.3 - 2023-08-02 

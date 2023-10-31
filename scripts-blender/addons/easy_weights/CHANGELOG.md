@@ -2,16 +2,14 @@
  
 ### FIXED 
 - Fix a crash in hotkeys.py
-
-### REMOVED 
-- Remove hotkeys for painting.
-
-### UN-CATEGORIZED 
 - Upgrade to Blender 4.0
 - EasyWeight console warnings & more
 - Catch an error (not sure of cause yet)
 - Update hotkey registration code
 - Use consistent registration pattern
+
+### REMOVED 
+- Remove hotkeys for painting.
 
 ## 0.1.2 - 2023-08-02 
  

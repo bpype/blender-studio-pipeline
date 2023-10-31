@@ -3,8 +3,6 @@
 ### FIXED 
 - Fix some assumptions about SVN status
 - Fix a crash in hotkeys.py
-
-### UN-CATEGORIZED 
 - Silly mistake (referenced before assignment)
 - Use consistent registration pattern
 
