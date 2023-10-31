@@ -23,7 +23,6 @@
 import typing
 
 import bpy
-import bgl
 import gpu
 from gpu_extras.batch import batch_for_shader
 
@@ -31,7 +30,7 @@ from gpu_extras.batch import batch_for_shader
 # Shaders and batches
 
 rect_coords = ((0, 0), (1, 0), (1, 1), (0, 1))
-
+indices = ((0, 1, 2), (2, 3, 0))
 # Setup shaders only if Blender runs in the foreground.
 # If running in the background, no handles are registered, as drawing extra UI
 # elements does not make sense.
@@ -41,9 +40,9 @@ if bpy.app.version_string.split('.')[0] == '3':
 else:
     color_key = "UNIFORM_COLOR"
 if not bpy.app.background:
-    ucolor_2d_shader = gpu.shader.from_builtin(color_key) 
+    ucolor_2d_shader = gpu.shader.from_builtin(color_key)
     ucolor_2d_rect_batch = batch_for_shader(
-        ucolor_2d_shader, "TRI_FAN", {"pos": rect_coords}
+        ucolor_2d_shader, "TRIS", {"pos": rect_coords}, indices=indices
     )
 
 
@@ -54,17 +53,15 @@ Float4 = typing.Tuple[float, float, float, float]
 
 def draw_line(position: Float2, size: Float2, color: Float4):
     with gpu.matrix.push_pop():
-        bgl.glEnable(bgl.GL_BLEND)
+        gpu.state.blend_set("ALPHA")
 
         gpu.matrix.translate(position)
         gpu.matrix.scale(size)
 
-        # Render a colored rectangle
-        ucolor_2d_shader.bind()
         ucolor_2d_shader.uniform_float("color", color)
         ucolor_2d_rect_batch.draw(ucolor_2d_shader)
 
-        bgl.glDisable(bgl.GL_BLEND)
+        gpu.state.blend_set("NONE")
 
 
 def get_strip_rectf(strip) -> Float4:
