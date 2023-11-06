@@ -1,10 +1,6 @@
 # Shared Folder Structure
 
-::: warning Work in Progress
-October 20th 2023 - The content of this page is currently being edited/updated.
-:::
-
-The shared folder is manly meant for content that should not be stored in SVN. In particular,
+The shared folder is mainly meant for content that should not be stored in SVN. In particular,
 the `footage` folder contains all the previews and renders for the work being done on sequences
 and shots. The `footage` folder contains directories named after the different produciton
 stages (dev, pre, pro and post). This helps to keep track of data depending on its production
