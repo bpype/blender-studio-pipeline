@@ -33,8 +33,8 @@ shared
         ├── pre
         │   ├── 010_intro
         │   │   ├── thumbnails
-        │   │   │   ├── 010_intro-001.jpg
-        │   │   │   ├── 010_intro-002.jpg
+        │   │   │   ├── 010_intro-previs-001.jpg
+        │   │   │   ├── 010_intro-previs-002.jpg
         │   │   │   └── ...
         │   │   ├── sequence_previews
         │   │   │   ├── 010_intro-previs-v001.mp4
