@@ -14,6 +14,7 @@ import time
 from pathlib import Path
 from typing import List, Dict, Union, Any, Set, Optional, Tuple
 from .. import wheels
+
 # This will load the xmltodict wheel file.
 wheels.preload_dependencies()
 
@@ -43,7 +44,7 @@ class SVN_OT_explain_status(Operator):
         self.layout.label(text=self.get_explanation(self.status))
 
     def execute(self, context):
-        """Set the index on click, to act as if this operator button was 
+        """Set the index on click, to act as if this operator button was
         click-through in the UIList."""
         if not self.file_rel_path:
             return {'FINISHED'}
@@ -85,9 +86,10 @@ def ensure_svn_of_current_file(_scene=None):
 
     # If file is in an existing repo, we should switch over to that repo.
     for i, existing_repo in enumerate(prefs.repositories):
-        if (    existing_repo.url == scene_svn.svn_url and 
-                existing_repo.directory == scene_svn.svn_directory and
-                existing_repo != old_active_repo
+        if (
+            existing_repo.url == scene_svn.svn_url
+            and existing_repo.directory == scene_svn.svn_directory
+            and existing_repo != old_active_repo
         ):
             prefs.active_repo_idx = i
     else:
@@ -99,7 +101,7 @@ def set_scene_svn_info(context) -> bool:
     """Check if the current .blend file is in an SVN repository.
     If it is, use `svn info` to grab the SVN URL and directory and store them in the Scene.
 
-    The rest of the add-on will use this stored URL & Dir to find the corresponding 
+    The rest of the add-on will use this stored URL & Dir to find the corresponding
     SVN repository data stored in the user preferences.
 
     Returns whether initialization was successful or not.
@@ -116,6 +118,7 @@ def set_scene_svn_info(context) -> bool:
     scene_svn.svn_directory = root_dir
     scene_svn.svn_url = base_url
     return True
+
 
 ################################################################################
 ############## AUTOMATICALLY KEEPING FILE STATUSES UP TO DATE ##################
@@ -137,7 +140,7 @@ class BGP_SVN_Status(BackgroundProcess):
         self.output = execute_svn_command(
             context,
             ["svn", "status", "--show-updates", "--verbose", "--xml"],
-            use_cred=True
+            use_cred=True,
         )
 
     def process_output(self, context, prefs):
@@ -165,7 +168,12 @@ class BGP_SVN_Authenticate(BGP_SVN_Status):
 
     def acquire_output(self, context, prefs):
         repo = context.scene.svn.get_repo(context)
-        if not repo or not repo.is_valid_svn or not repo.is_cred_entered or repo.authenticated:
+        if (
+            not repo
+            or not repo.is_valid_svn
+            or not repo.is_cred_entered
+            or repo.authenticated
+        ):
             return
 
         super().acquire_output(context, prefs)
@@ -202,9 +210,11 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
         svn_path = Path(filepath_str)
         svn_path_str = str(svn_path.as_posix())
         suffix = svn_path.suffix
-        if (suffix.startswith(".r") and suffix[2:].isdecimal()) \
-                or (suffix.startswith(".blend") and suffix[6:].isdecimal()) \
-                or suffix.endswith("blend@"):
+        if (
+            (suffix.startswith(".r") and suffix[2:].isdecimal())
+            or (suffix.startswith(".blend") and suffix[6:].isdecimal())
+            or suffix.endswith("blend@")
+        ):
             # Do not add certain file extensions, ever:
             # .r### files are from SVN conflicts waiting to be resolved.
             # .blend@ is the Blender filesave temp file.
@@ -222,13 +232,16 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
             file_entry = repo.external_files.add()
             file_entry.svn_path = svn_path_str
             file_entry.absolute_path = str(
-                repo.svn_to_absolute_path(svn_path).as_posix())
+                repo.svn_to_absolute_path(svn_path).as_posix()
+            )
 
             file_entry['name'] = svn_path.name
             if not file_entry.exists:
                 new_files_on_repo.add((file_entry.svn_path, repos_status))
 
-        if entry_existed and (file_entry.repos_status == 'none' and repos_status != 'none'):
+        if entry_existed and (
+            file_entry.repos_status == 'none' and repos_status != 'none'
+        ):
             new_files_on_repo.add((file_entry.svn_path, repos_status))
 
         file_entry.revision = revision
@@ -240,13 +253,12 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
         # File entry status has changed between local and repo.
         file_strings = []
         for svn_path, repos_status in new_files_on_repo:
-            status_char = constants.SVN_STATUS_NAME_TO_CHAR.get(
-                repos_status, " ")
+            status_char = constants.SVN_STATUS_NAME_TO_CHAR.get(repos_status, " ")
             file_strings.append(f"{status_char}    {svn_path}")
         print(
             "SVN: Detected file changes on remote:\n",
             "\n".join(file_strings),
-            "\nUpdating log...\n"
+            "\nUpdating log...\n",
         )
         Processes.start('Log')
 
@@ -335,6 +347,8 @@ def unregister():
 
     bpy.app.handlers.save_post.remove(ensure_svn_of_current_file)
     bpy.app.handlers.save_post.remove(mark_current_file_as_modified)
+
+    Processes.kill('Status')
 
 
 registry = [SVN_OT_explain_status]
