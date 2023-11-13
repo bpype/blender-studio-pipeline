@@ -176,6 +176,11 @@ def other_vert_of_edge(
 def transfer_vertex_groups(obj_from, obj_to, vert_influence_map, src_vgroups):
     """Transfer src_vgroups in obj_from to obj_to using a pre-calculated vert_influence_map."""
 
+    for src_vg in src_vgroups:
+        target_vg = obj_to.vertex_groups.get(src_vg.name)
+        if target_vg == None:
+            target_vg = obj_to.vertex_groups.new(name=src_vg.name)
+
     for i, dest_vert in enumerate(obj_to.data.vertices):
         source_verts = vert_influence_map[i]
 
@@ -186,7 +191,7 @@ def transfer_vertex_groups(obj_from, obj_to, vert_influence_map, src_vgroups):
             for group in obj_from.data.vertices[src_vert_idx].groups:
                 group_idx = group.group
                 vg = obj_from.vertex_groups[group_idx]
-                if vg.name not in src_vgroups:
+                if vg not in src_vgroups:
                     continue
                 if vg.name not in vgroup_weights:
                     vgroup_weights[vg.name] = 0
@@ -195,8 +200,6 @@ def transfer_vertex_groups(obj_from, obj_to, vert_influence_map, src_vgroups):
         # Assign final weights of this vertex in the vertex groups.
         for vg_name in vgroup_weights.keys():
             target_vg = obj_to.vertex_groups.get(vg_name)
-            if target_vg == None:
-                target_vg = obj_to.vertex_groups.new(name=vg_name)
             target_vg.add([dest_vert.index], vgroup_weights[vg_name], 'REPLACE')
 
 
