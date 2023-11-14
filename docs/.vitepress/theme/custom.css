@@ -47,7 +47,12 @@ a:hover {
   text-decoration: none;
 }
 
-.nav-global-logo {
+.nav-global .nav-global-logo {
   display: flex;
 }
 
+@media (max-width: 767px) {
+  .nav-global button.nav-global-logo {
+    display: flex;
+  }
+}
