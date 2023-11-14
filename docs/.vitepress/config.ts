@@ -1,9 +1,8 @@
-import { defineConfig } from 'vitepress'
-import { html5Media } from 'markdown-it-html5-media'
-
 // Imports for overriding internal components
 import { fileURLToPath, URL } from 'node:url'
+
 import { defineConfig } from 'vitepress'
+import { html5Media } from 'markdown-it-html5-media'
 
 const studioURL = 'https://studio.blender.org'
 
@@ -40,6 +39,7 @@ export default defineConfig({
     search: {
       provider: 'local'
     },
+    // TODO: cleanup redundant config nav if nav-global is ok
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Films', link: `${studioURL}/films` },
