@@ -18,6 +18,11 @@
   position: relative !important;
 }
 
+.VPNav-fixed {
+  position: fixed !important;
+  z-index: 2;
+}
+
 /* .VPNavBar {
   background-color: var(--vp-c-bg);
 }

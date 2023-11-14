@@ -137,6 +137,18 @@ export default {
     var VPNav = document.querySelector('.VPNav');
     VPNav.removeAttribute('data-v-14f22a90');
     VPNav.removeAttribute('data-v-702a693e');
+
+    // Make header position fixed if page has sidebar
+    // TODO: change to Vue route change
+    setInterval(function() {
+      var VPContent = document.querySelector('.VPContent');
+
+      if (VPContent.classList.contains('has-sidebar')) {
+        VPNav.classList.add('VPNav-fixed');
+      } else {
+        VPNav.classList.remove('VPNav-fixed');
+      }
+    }, 1000);
   }
 };
 </script>
