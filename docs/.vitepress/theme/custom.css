@@ -14,13 +14,17 @@
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
-.VPNavBar {
+.VPNav {
+  position: relative !important;
+}
+
+/* .VPNavBar {
   background-color: var(--vp-c-bg);
 }
 
 .VPNavBar.has-sidebar {
   background-color: transparent;
-}
+} */
 
 .VPHero {
   background-image: url("/media/images/hero_banner.jpg");
@@ -33,4 +37,13 @@
 .VPHero .text {
   color: white;
   -webkit-text-fill-color: white;
+}
+
+/* Web Assets overrides */
+a:hover {
+  text-decoration: none;
+}
+
+.nav-global-logo {
+  display: flex;
 }
