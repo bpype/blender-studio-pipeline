@@ -1,6 +1,10 @@
 import { defineConfig } from 'vitepress'
 import { html5Media } from 'markdown-it-html5-media'
 
+// Imports for overriding internal components
+import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vitepress'
+
 const studioURL = 'https://studio.blender.org'
 
 // https://vitepress.dev/reference/site-config
@@ -51,16 +55,16 @@ export default defineConfig({
         items: [
           { text: 'Introduction', link: '/pipeline-overview/introduction'},
           { text: 'Design Principles', link: '/pipeline-overview/design-principles'},
-          { 
-            text: 'Organization', 
+          {
+            text: 'Organization',
             collapsed: true,
             items: [
               { text: 'Infrastructure', link: '/pipeline-overview/organization/infrastructure'},
               { text: 'Task Review', link: '/pipeline-overview/organization/task-review'},
             ]
           },
-          {             
-            text: 'Pre-Production', 
+          {
+            text: 'Pre-Production',
             collapsed: true,
             items: [
               { text: 'Storyboard', link: '/pipeline-overview/pre-production/storyboard'},
@@ -70,8 +74,8 @@ export default defineConfig({
               { text: 'Concept and Design', link: '/pipeline-overview/pre-production/concept-and-design'},
             ]
           },
-          { 
-            text: 'Asset Creation', 
+          {
+            text: 'Asset Creation',
             collapsed: true,
             items: [
               { text: 'Modeling and Sculpting', link: '/pipeline-overview/asset-creation/modeling'},
@@ -81,8 +85,8 @@ export default defineConfig({
               { text: '2D Assets', link: '/pipeline-overview/asset-creation/2d-assets'},
             ]
           },
-          { 
-            text: 'Shot Production', 
+          {
+            text: 'Shot Production',
             collapsed: true,
             items: [
               { text: 'Shot Assembly', link: '/pipeline-overview/shot-production/shot-assembly'},
@@ -157,11 +161,11 @@ export default defineConfig({
           { text: 'Kitsu', link: '/user-guide/kitsu' },
         ],
       },
-      
+
       {
         text: 'TD Guide',
         collapsed: true,
-        items: [       
+        items: [
           {text: 'Project Tools Setup', link: '/td-guide/project-tools-setup'},
         ]
       },
@@ -219,6 +223,18 @@ export default defineConfig({
       // Enable the markdown-it-html5-media plugin
       md.use(html5Media)
     }
+  },
+  // Override internal component 'VPNavBar'
+  vite: {
+    resolve: {
+      alias: [
+        {
+          find: /^.*\/VPNavBar\.vue$/,
+          replacement: fileURLToPath(
+            new URL('./components/NavBarGlobal.vue', import.meta.url)
+          )
+        }
+      ]
+    }
   }
-
 })
