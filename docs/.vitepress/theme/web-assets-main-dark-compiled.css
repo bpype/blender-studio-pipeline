@@ -9587,7 +9587,7 @@ body.is-scrolled .whoosh-container {
 
 @font-face {
   font-family: "Heebo";
-  src: url("../assets/fonts/Heebo-VariableFont_wght.ttf") format("truetype-variations");
+  src: url("../assets_shared/assets/fonts/Heebo-VariableFont_wght.ttf") format("truetype-variations");
   font-weight: normal;
   font-variation-settings: "wght" var(--font-weight);
   font-style: normal;
