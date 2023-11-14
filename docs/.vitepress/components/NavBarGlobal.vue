@@ -40,7 +40,6 @@
               <button
                 class="js-nav-global-dropdown-toggle"
                 data-dropdown-id="nav-global-apps-menu"
-                @click="toggleDropdown('nav-global-apps-menu')"
               >
                 <svg class="nav-global-icon" height="100px" width="100px" viewBox="0 0 1000 1000">
                   <path d="m 150.5,899 a 50,50 0 0 1 -49,-50 V 749 a 50,50 0 0 1 49,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z m 299,0 a 50,50 0 0 1 -50,-50 V 749 a 50,50 0 0 1 50,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z m 299,0 a 50,50 0 0 1 -50,-50 V 749 a 50,50 0 0 1 50,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z m -598,-299 a 50,50 0 0 1 -49,-50 V 450 a 50,50 0 0 1 49,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z m 299,0 a 50,50 0 0 1 -50,-50 V 450 a 50,50 0 0 1 50,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z m 299,0 a 50,50 0 0 1 -50,-50 V 450 a 50,50 0 0 1 50,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z m -598,-299 a 50,50 0 0 1 -49,-50 V 151 a 50,50 0 0 1 49,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z m 299,0 a 50,50 0 0 1 -50,-50 V 151 a 50,50 0 0 1 50,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z m 299,0 a 50,50 0 0 1 -50,-50 V 151 a 50,50 0 0 1 50,-50 h 100 a 50,50 0 0 1 50,50 v 100 a 50,50 0 0 1 -50,50 z"></path>
@@ -208,7 +207,6 @@ export default {
         }
       }
     },
-    // TODO: fix js methods dropdown in Web Assets?
     hideAllDropdowns() {
       const dropdownMenus = document.getElementsByClassName("js-nav-global-dropdown");
 
@@ -219,19 +217,10 @@ export default {
       }
 
       this.removeActiveStyling();
-      console.log('Test function hideAllDropdowns');
     },
     showDropdown(el) {
-      var self = this;
-
       this.hideAllDropdowns();
-
-      // Make showDropdown function run last
-      // TODO: add conditional is-active
-      setTimeout(function() {
-        el.classList.add(self.isVisibleClass);
-      }, 100);
-
+      el.classList.add(this.isVisibleClass);
       this.addActiveStyling();
     },
     removeActiveStyling() {
