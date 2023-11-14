@@ -18,8 +18,7 @@
           </svg>
         </button>
 
-        <!-- TODO: add js nav-global-nav-links is-visible sm -->
-        <ul class="nav-global-nav-links nav-global-dropdown" :class="{ 'is-visible': isDropdownVisible }">
+        <ul class="js-nav-global-dropdown nav-global-nav-links nav-global-dropdown" id="nav-global-nav-links">
           <!-- TODO: use constant studioURL for links -->
           <li>
             <a href="https://studio.blender.org/films">Films</a>
