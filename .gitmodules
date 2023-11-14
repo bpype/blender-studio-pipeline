@@ -1,0 +1,3 @@
+[submodule "docs/.vitepress/assets_shared"]
+	path = docs/.vitepress/assets_shared
+	url = git@projects.blender.org:infrastructure/web-assets.git
