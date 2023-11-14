@@ -47,7 +47,7 @@
                 </svg>
               </button>
 
-              <div class="nav-global-apps-menu nav-global-dropdown js-dropdown-menu" id="nav-global-apps-menu">
+              <div class="js-nav-global-dropdown nav-global-apps-menu nav-global-dropdown js-dropdown-menu" id="nav-global-apps-menu">
                 <a href="https://www.blender.org/?utm_medium=nav-global" target="_blank">
                   <h3>BLENDER.ORG</h3>
                 </a>
@@ -208,6 +208,7 @@ export default {
         }
       }
     },
+    // TODO: fix js methods dropdown in Web Assets?
     hideAllDropdowns() {
       const dropdownMenus = document.getElementsByClassName("js-nav-global-dropdown");
 
@@ -218,10 +219,19 @@ export default {
       }
 
       this.removeActiveStyling();
+      console.log('Test function hideAllDropdowns');
     },
     showDropdown(el) {
+      var self = this;
+
       this.hideAllDropdowns();
-      el.classList.add(this.isVisibleClass);
+
+      // Make showDropdown function run last
+      // TODO: add conditional is-active
+      setTimeout(function() {
+        el.classList.add(self.isVisibleClass);
+      }, 100);
+
       this.addActiveStyling();
     },
     removeActiveStyling() {
