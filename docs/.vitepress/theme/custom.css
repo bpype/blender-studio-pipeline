@@ -44,11 +44,23 @@
   -webkit-text-fill-color: white;
 }
 
-/* Web Assets overrides */
+/* Web Assets overrides. */
+/* Map custom property --font-family-base to --vp-font-family-base */
+:root {
+  --font-family-base: var(--vp-font-family-base);
+}
+
 a:hover {
   text-decoration: none;
+}
+
+/* TODO: check variable font Heebo */
+b,
+strong {
+  font-variation-settings: "wght" 500;
 }
 
 .nav-global-logo {
   display: flex;
 }
+
