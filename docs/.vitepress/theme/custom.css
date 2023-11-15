@@ -45,29 +45,42 @@
   }
 }
 
-.VPNav-fixed {
-  position: fixed !important;
-  z-index: 2;
-}
-
-/* .VPNavBar {
-  background-color: var(--vp-c-bg);
-}
-
-.VPNavBar.has-sidebar {
-  background-color: transparent;
-} */
-
 @media (min-width: 1200px) {
   .VPNavBar .container {
     max-width: 1170px !important;
   }
 }
 
+.VPNavBar.has-sidebar {
+  height: 0;
+}
+
+@media (min-width: 768x) {
+  .VPNavBar.has-sidebar {
+    height: auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .VPNavBar.has-sidebar .container {
+    max-width: none !important;
+  }
+}
+
+.VPNavBar.has-sidebar .curtain {
+  display: none;
+}
+
+
 /* Reset background colour change on scroll */
 .VPNavBar:not(.top),
 .VPNavBar:not(.top) .content-body {
   background-color: var(--background-color) !important;
+}
+
+.VPNavBar.has-sidebar:not(.top),
+.VPNavBar.has-sidebar:not(.top) .content-body {
+  background-color: transparent !important;
 }
 
 .VPNavBarExtra,
@@ -77,6 +90,10 @@
 
 .VPNavBarSearch {
   padding-left: 0;
+}
+
+.VPContent.has-sidebar .aside-curtain {
+  display: none;
 }
 
 .VPHero {
