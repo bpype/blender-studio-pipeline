@@ -284,8 +284,3 @@ export default {
   }
 };
 </script>
-
-<style>
-/* This style block should contain a copy of _navigation_global.scss.
- * Custom styling for this website should be inside a <style> block right after. */
-</style>
