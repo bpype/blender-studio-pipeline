@@ -1,16 +1,18 @@
 {
-    "": {},
-    "artifacts": {},
-    "editorial": {
-        "export": {
-            "_archive": {}
-        },
-        "deliver": {},
-        "footage": {
-            "frames": {},
-            "shots": {},
-            "sequences": {}
-        },
-        "audio": {}
+    "": {
+        "artifacts": {},
+        "editorial": {
+            "export": {
+                "_archive": {}
+            },
+            "deliver": {},
+            "footage": {
+                "dev": {},
+                "pre": {},
+                "pro": {},
+                "post": {}
+            },
+            "audio": {}
+        }
     }
 }

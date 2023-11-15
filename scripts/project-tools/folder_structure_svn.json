@@ -1,31 +1,32 @@
 {
-    "": {},
-    "dev": {
-        "concepts": {},
-        "tests": {},
-        "boards": {}
-    },
-    "edit": {},
-    "pro": {
-        "shots": {},
-        "config": {},
-        "assets": {
-            "chars": {},
-            "fx": {},
-            "scripts": {},
-            "cam": {},
-            "props": {},
-            "poses": {},
-            "maps": {},
-            "nodes": {},
-            "lgt": {},
-            "sets": {},
-            "lib": {}
-        }
-    },
-    "pre": {
-        "shots": {},
-        "assets": {}
-    },
-    "tools": {}
+    "": {
+        "dev": {
+            "concepts": {},
+            "tests": {},
+            "boards": {}
+        },
+        "edit": {},
+        "pro": {
+            "shots": {},
+            "config": {},
+            "assets": {
+                "chars": {},
+                "fx": {},
+                "scripts": {},
+                "cam": {},
+                "props": {},
+                "poses": {},
+                "maps": {},
+                "nodes": {},
+                "lgt": {},
+                "sets": {},
+                "lib": {}
+            }
+        },
+        "pre": {
+            "shots": {},
+            "assets": {}
+        },
+        "tools": {}
+    }
 }
