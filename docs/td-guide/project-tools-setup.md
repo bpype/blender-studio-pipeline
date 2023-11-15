@@ -81,8 +81,8 @@ shared
     └── footage 
         ├── dev # Early Development
         ├── pre # Pre-Production steps like previs
-        └── pro # Main Production .blend files
-
+        ├── pro # Playblast from Production
+        └── post # Image Sequences/Final Renders
 ```
 
 ### Populating `SVN`
@@ -186,14 +186,14 @@ October 19th 2023 -This feature is only available on linux at this time. Mac & W
         - Select Production: Choose the current Production
         - Project Root Directory: `/data/{my_project}/svn`
     - Animation Tools
-        - Playblast directory: `/data/{my_project}/shared/editorial/footage/shots/`
-        - Frames Directory: `/data/{my_project}/shared/editorial/footage/frames/`
+        - Playblast directory: `/data/{my_project}/shared/editorial/footage/pro/`
+        - Frames Directory: `/data/{my_project}/shared/editorial/footage/post/`
     - Editorial Export Directory (Optional)
         - `/data/{my_project}/shared/editorial/export/`
 <!--
 TODO Replace Image
 -->
-![Blender Kitsu Preferences](/media/td-guide/kitsu_pref.png)
+![Blender Kitsu Preferences](/media/td-guide/kitsu_pref.jpg)
 
 ## Render Review Add-On Preferences
  1. Open Blender and Select `Edit>Preferences>Add-Ons`
@@ -201,10 +201,10 @@ TODO Replace Image
  3. Set the following settings in the add-on preferences
     - Ensure `Enable Blender Kitsu` is Enabled
     - Render Farm: `/data/{my_project}/render/`
-    - Shot Frames: `/data/{my_project}/shared/editorial/footage/frames/`
-    - Shot Previews: `/data/{my_project}/shared/editorial/footage/shots/`
+    - Shot Frames: `/data/{my_project}/shared/editorial/footage/post/`
+    - Shot Previews: `/data/{my_project}/shared/editorial/footage/pro/`
 
-![Render Review Preferences](/media/td-guide/render_review_pref.png)
+![Render Review Preferences](/media/td-guide/render_review_pref.jpg)
 <!--
 TODO Replace Image
 -->

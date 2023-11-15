@@ -58,7 +58,7 @@ Returning to your edit .blend file, we can now load the playblast from the anima
 
 1. Open your edit .blend file inside the directory `/{my_project}/svn/edit`
 2. From the Sequencer Header select `Add>Movie`
-3. Navigate to the directory of the playblast for your shot's .blend file `{my_project}/shared/footage/shots/{sequence_name}/{shot_name}/{file_name}` and select the `.mp4` file
+3. Navigate to the directory of the playblast for your shot's .blend file `{my_project}/shared/footage/pro/{sequence_name}/{shot_name}/{file_name}` and select the `.mp4` file
 4. Place the new shot at the same timing as the corresponding metastrip
 
 ## Adjusting a Shot's Frame Range
@@ -118,7 +118,7 @@ Once the approved image sequences have been loaded into the main edit you are re
 	2. In the Side Panel select Container `.wav`
 	3. Set the output directory to `{my_project}/shared/editorial/deliver/audio/`
 4. Run Deliver script
-	1. Copy the `delivery.py` from `{my_project}/blender-studio-pipeline/film-delivery/` to the directory `/{my_project}/shared/editorial/deliver/`
+	1. Copy the `delivery.py` from `{my_project}/blender-studio-pipeline/film-delivery/` to the directory `{my_project}/shared/editorial/deliver/`
 	2. Enter delivery directory `cd /{my_project}/shared/editorial/deliver/ 
 	3. Encode audio with `./deliver.py --encode_audio audio/{name_of_audio}.wav`
 	4. Encode video with `.deliver.py --encode_video frames/`
