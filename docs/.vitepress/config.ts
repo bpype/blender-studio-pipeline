@@ -1,6 +1,3 @@
-// Imports for overriding internal components
-import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vitepress'
 import { html5Media } from 'markdown-it-html5-media'
 
@@ -222,19 +219,6 @@ export default defineConfig({
     config: (md) => {
       // Enable the markdown-it-html5-media plugin
       md.use(html5Media)
-    }
-  },
-  // Override internal component 'VPNavBar'
-  vite: {
-    resolve: {
-      alias: [
-        {
-          find: /^.*\/VPNavBar\.vue$/,
-          replacement: fileURLToPath(
-            new URL('./components/NavBarGlobal.vue', import.meta.url)
-          )
-        }
-      ]
     }
   }
 })
