@@ -195,6 +195,13 @@ The `Multi Edit` panel only appears when you select multiple metastrips that are
 
 It is meant to be way to quickly setup lots of shots if they don't exist on Kitsu yet. You specify the sequence all shots should belong to and adjust the `Shot Counter Start` value. In the preview property you can see how all shots will be named when you execute the `Multi Edit Strip` operator. <br/>
 
+##### Shot as Image Sequence
+The `Shot as Image Sequence` Operator will replace a playblast from your Playblast Root directory with an image sequence located in the Frames Root directory. The Shots Directory and the Frames Directory should have matching folder structures. Typically the format is `/{sequence_name}/{shot_name}/{shot_name}-{shot_task}/`
+
+![Shot as Image Sequence](/media/addons/blender_kitsu/Shot_as_Image_Sequence.jpg)
+
+Use this operator to replace playblasts with image sequences that have been approved via the [Render Review Add-On](/addons/render_review) Image Sequences can be loaded as either `EXR` or `JPG` sequences.
+
 ###### Advanced Settings
 If you check the `Advanced` checkbox next to the counter value, you have access to advance settings to customize the operator even more.
 
