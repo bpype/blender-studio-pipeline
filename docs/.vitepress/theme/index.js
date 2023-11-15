@@ -1,5 +1,5 @@
 import DefaultTheme from 'vitepress/theme-without-fonts'
-// TODO: consider adding Sass compile instead
+// Import style Web Assets dark compiled
 import './web-assets-main-dark-compiled.css'
 import './custom.css'
 import LayoutNavBarGlobal from './LayoutNavBarGlobal.vue'

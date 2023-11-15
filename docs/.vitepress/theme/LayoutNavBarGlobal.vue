@@ -274,11 +274,6 @@ export default {
         this.hideAllDropdowns();
       }
     });
-
-    // Cleanup VPNav Vitepress attributes to make links work
-    var VPNav = document.querySelector('.VPNav');
-    VPNav.removeAttribute('data-v-14f22a90');
-    VPNav.removeAttribute('data-v-702a693e');
   }
 };
 </script>
