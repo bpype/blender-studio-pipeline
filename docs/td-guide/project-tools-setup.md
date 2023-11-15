@@ -64,7 +64,7 @@ This is the folder that should be shared over the network. (By using Syncthing, 
 2. Use the following commands to generate the below folder structure.
     ```bash
     cd /data/blender-studio-pipeline/scripts/project-tools
-    ./init_folder_structure /data/{my_project}/shared --json_file folder_structure_shared.json
+    init_project_folder_structure.py /data/{my_project}/shared --json_file folder_structure_shared.json
     ```
 
 #### Add Existing Directory to User Workstation
@@ -93,7 +93,7 @@ This is the folder that should contain a version controlled file system to be sh
 2. Use the following commands to generate the below folder structure.
     ```bash
     cd /data/blender-studio-pipeline/scripts/project-tools
-    ./init_folder_structure /data/{my_project}/svn --json_file folder_structure_svn.json
+    init_project_folder_structure.py /data/{my_project}/svn --json_file folder_structure_svn.json
     ```
 
 #### Add Existing Directory to User Workstation
