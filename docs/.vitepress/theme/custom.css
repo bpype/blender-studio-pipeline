@@ -12,8 +12,37 @@
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
+/* Default theme overrides. */
+#local-search {
+  transform: translateY(-60px);
+  z-index: 10000;
+}
+
+@media (min-width: 768px) {
+  #local-search {
+    transform: none;
+    z-index: 0;
+  }
+}
+
+.shell {
+  padding: 64px 12px 12px !important;
+}
+
+@media (min-width: 768px) {
+  .shell {
+    padding: 12px !important;
+  }
+}
+
 .VPNav {
   position: relative !important;
+}
+
+@media (min-width: 768px) {
+  .VPNav {
+    background-color: var(--background-color);
+  }
 }
 
 .VPNav-fixed {
@@ -29,6 +58,27 @@
   background-color: transparent;
 } */
 
+@media (min-width: 1200px) {
+  .VPNavBar .container {
+    max-width: 1170px !important;
+  }
+}
+
+/* Reset background colour change on scroll */
+.VPNavBar:not(.top),
+.VPNavBar:not(.top) .content-body {
+  background-color: var(--background-color) !important;
+}
+
+.VPNavBarExtra,
+.VPNavBarHamburger {
+  display: none !important;
+}
+
+.VPNavBarSearch {
+  padding-left: 0;
+}
+
 .VPHero {
   background-image: url("/media/images/hero_banner.jpg");
   background-size: cover;
@@ -40,6 +90,10 @@
 .VPHero .text {
   color: white;
   -webkit-text-fill-color: white;
+}
+
+.VPSwitch {
+  display: none !important;
 }
 
 /* Web Assets overrides. */
