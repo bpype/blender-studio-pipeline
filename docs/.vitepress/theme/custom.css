@@ -141,6 +141,12 @@ a:hover {
   text-decoration: none;
 }
 
+@media (min-width: 768px) {
+  .nav-global {
+    z-index: 10002;
+  }
+}
+
 .nav-global .nav-global-logo {
   display: flex;
 }
