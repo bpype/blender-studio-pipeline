@@ -5,12 +5,11 @@ import glob
 import hashlib
 import os
 import pathlib
-import re
 import requests
 import shutil
+import json
 
-
-HOMEPAGE = "https://builder.blender.org/download/"
+HOMEPAGE = "https://builder.blender.org/download/daily/?format=json&v=1"
 
 BLENDER_BRANCH = "main"
 
@@ -54,22 +53,24 @@ if not backup_exists:
 # Get all urls for the blender builds
 platforms_dict = {
     "windows": "zip",
-    "darwin.x86_64": "dmg",
-    "darwin.arm64": "dmg",
-    "linux": "tar.xz",
+    "darwin": "dmg",
+    "linux": "xz",
 }
 
 download_info = []
 branch_string = "+" + BLENDER_BRANCH
 reqs = requests.get(HOMEPAGE)
-for match in re.findall('<a href=[' "'" '"][^"' "'" ']*[' "'" '"]', reqs.text):
-    if branch_string in match:
-        # Strip href and quotes around the url
-        download_url = match[9:-1]
-        for platform in platforms_dict:
-            file_extension = platforms_dict[platform]
-            if re.search(platform + ".*" + file_extension + "$", download_url):
-                download_info.append((platform, download_url))
+available_downloads = json.loads(reqs.text)
+for download in available_downloads:
+    if download["branch"] != BLENDER_BRANCH:
+        continue
+    for platform in platforms_dict:
+        if download["platform"] != platform:
+            continue
+        file_extension = platforms_dict[platform]
+        if download["file_extension"] != file_extension:
+            continue
+        download_info.append((platform, download["url"]))
 
 updated_current_files = False
 new_files_downloaded = False
