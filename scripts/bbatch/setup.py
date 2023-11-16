@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""The setup script for blender-crawl."""
+"""The setup script for bbatch."""
 
 from setuptools import setup
 
@@ -24,10 +24,13 @@ setup(
     description="Command line tool to perform recursive crawl blend files from the console",
     long_description=readme,
     include_package_data=True,
-    keywords="blender_crawl",
-    name="blender_crawl",
-    packages=["blender_crawl", "blender_crawl.default_scripts",],
+    keywords="bbatch",
+    name="bbatch",
+    packages=[
+        "bbatch",
+        "bbatch.default_scripts",
+    ],
     version="0.1.1",
-    entry_points={"console_scripts": ["blender_crawl = blender_crawl.__main__:main"]},
-    package_data={'blender_crawl.default_scripts': ['*']}, #TODO Verify this is working correctly after install
+    entry_points={"console_scripts": ["bbatch = bbatch.__main__:main"]},
+    package_data={'bbatch.default_scripts': ['*']},
 )

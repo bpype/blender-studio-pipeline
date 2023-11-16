@@ -33,9 +33,7 @@ import uuid
 # Command line arguments.
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "path",
-    help="Path to a file(s) or folder(s) on which to perform crawl.",
-    nargs='+'
+    "path", help="Path to a file(s) or folder(s) on which to perform crawl.", nargs='+'
 )
 
 parser.add_argument(
@@ -83,8 +81,6 @@ parser.add_argument(
     help="Run 'built-in function to purge data-blocks from all .blend files found in crawl, and saves them.",
     action="store_true",
 )
-
-
 
 
 def cancel_program(message: str):
@@ -137,7 +133,8 @@ def check_file_exists(file_path_str: str, error_msg: str) -> Path:
     else:
         cancel_program(error_msg)
 
-def script_append_save(script: Path, skip_save:bool):
+
+def script_append_save(script: Path, skip_save: bool):
     if skip_save:
         return script
     save_script = get_default_script("save.py", True)
@@ -150,22 +147,26 @@ def script_append_save(script: Path, skip_save:bool):
     script_data += "\n"
     script_data += save_data
     temp_dir = Path(tempfile.TemporaryDirectory().name).parent
-    new_temp_file = Path.joinpath(Path(temp_dir), f"blender_crawl_{uuid.uuid4()}.py")
+    new_temp_file = Path.joinpath(Path(temp_dir), f"bbatch_{uuid.uuid4()}.py")
     with open(new_temp_file, "w") as new_file:
         new_file.write(script_data)
     return new_temp_file
 
 
-def get_default_script(file_name:str, purge: bool):
+def get_default_script(file_name: str, purge: bool):
     # Cancel function if user has not supplied purge arg
     if not purge:
         return
-    scripts_directory =  Path((os.path.dirname(__file__))).joinpath("default_scripts/")
+    scripts_directory = Path((os.path.dirname(__file__))).joinpath("default_scripts/")
     purge_script = os.path.join(scripts_directory.resolve(), file_name)
-    return check_file_exists(str(purge_script), "Default scripts location may be invalid")
+    return check_file_exists(
+        str(purge_script), "Default scripts location may be invalid"
+    )
+
 
 def main() -> int:
     import sys
+
     """Crawl blender files in a directory and run a provided scripts"""
     # Parse arguments.
     args = parser.parse_args()
@@ -180,10 +181,10 @@ def main() -> int:
     if script_input:
         for script in script_input:
             script_path = check_file_exists(
-            script,
-            "No --script was not provided as argument, printed found .blend files, exiting program.",
-        )
-            scripts.append(script_append_save(script_path, args.nosave)) 
+                script,
+                "No --script was not provided as argument, printed found .blend files, exiting program.",
+            )
+            scripts.append(script_append_save(script_path, args.nosave))
 
     # Purge is optional so it can be none
     if purge_path is not None:
@@ -208,11 +209,15 @@ def main() -> int:
         if file_path.is_dir():
             if recursive:
                 blend_files = [
-                    f for f in file_path.glob("**/*") if f.is_file() and f.suffix == ".blend"
+                    f
+                    for f in file_path.glob("**/*")
+                    if f.is_file() and f.suffix == ".blend"
                 ]
             else:
                 blend_files = [
-                    f for f in file_path.iterdir() if f.is_file() and f.suffix == ".blend"
+                    f
+                    for f in file_path.iterdir()
+                    if f.is_file() and f.suffix == ".blend"
                 ]
             files.extend(blend_files)
         # If just one file.
@@ -247,25 +252,24 @@ def main() -> int:
             sys.exit(0)
 
     if not scripts:
-        cancel_program(
-            "No script files were provided to execute."
-        )
+        cancel_program("No script files were provided to execute.")
         sys.exit(0)
 
     for blend_file in files:
         for script in scripts:
             cmd_list = (
-            blender_exec.as_posix(),
-            blend_file.as_posix(),
-            "-b",
-            "-P",
-            script,
-            "--factory-startup",
+                blender_exec.as_posix(),
+                blend_file.as_posix(),
+                "-b",
+                "-P",
+                script,
+                "--factory-startup",
             )
             process = subprocess.Popen(cmd_list, shell=False)
             if process.wait() != 0:
                 cancel_program(f"Blender Crashed on file: {blend_file.as_posix()}")
     return 0
+
 
 if __name__ == "__main__":
     main()
