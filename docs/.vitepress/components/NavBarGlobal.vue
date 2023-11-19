@@ -1,3 +1,16 @@
+<script  setup>
+/* Import Vue components for search VPNavBarSearch default theme */
+/* TODO: check if import paths are correct */
+import VPNavBarAppearance from '../../node_modules/vitepress/dist/client/theme-default/components/VPNavBarAppearance.vue'
+import VPNavBarExtra from '../../node_modules/vitepress/dist/client/theme-default/components/VPNavBarExtra.vue'
+import VPNavBarHamburger from '../../node_modules/vitepress/dist/client/theme-default/components/VPNavBarHamburger.vue'
+import VPNavBarMenu from '../../node_modules/vitepress/dist/client/theme-default/components/VPNavBarMenu.vue'
+import VPNavBarSearch from '../../node_modules/vitepress/dist/client/theme-default/components/VPNavBarSearch.vue'
+import VPNavBarSocialLinks from '../../node_modules/vitepress/dist/client/theme-default/components/VPNavBarSocialLinks.vue'
+import VPNavBarTitle from '../../node_modules/vitepress/dist/client/theme-default/components/VPNavBarTitle.vue'
+import VPNavBarTranslations from '../../node_modules/vitepress/dist/client/theme-default/components/VPNavBarTranslations.vue'
+</script>
+
 <template>
   <div class="nav-global">
     <div class="nav-global-container">
@@ -38,6 +51,9 @@
         </ul>
 
         <ul class="nav-global-links-right">
+          <li>
+            <VPNavBarSearch class="search" />
+          </li>
           <li>
             <div class="nav-global-apps-dropdown-container">
               <button
