@@ -26,8 +26,11 @@ export default defineConfig({
   ],
   themeConfig: {
     logo: {
+      /*
+      Logo is injected from Vue component NavBarGlobal
       light: '/blender-studio-logo-black.svg',
       dark: '/blender-studio-logo-white.svg'
+      */
     },
     siteTitle: false,
     footer: {
@@ -39,14 +42,16 @@ export default defineConfig({
     search: {
       provider: 'local'
     },
-    // TODO: cleanup redundant config nav if nav-global is ok
     // https://vitepress.dev/reference/default-theme-config
     nav: [
+      /*
+      Nav is injected from Vue component NavBarGlobal
       { text: 'Films', link: `${studioURL}/films` },
-      { text: 'Training', link: `${studioURL}/training` },
-      { text: 'Blog', link: `${studioURL}/blog` },
-      { text: 'Pipeline', link: '/' },
-      { text: 'Characters', link: `${studioURL}/characters`, }
+            { text: 'Training', link: `${studioURL}/training` },
+            { text: 'Blog', link: `${studioURL}/blog` },
+            { text: 'Pipeline', link: '/' },
+            { text: 'Characters', link: `${studioURL}/characters`, }
+      */
     ],
 
     sidebar: [
