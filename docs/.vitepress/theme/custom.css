@@ -12,24 +12,22 @@
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
-/* Default theme overrides. */
-:root {
-  --vp-z-index-nav: 10000;
+.VPNav {
+  position: relative !important;
 }
 
-.shell {
-  padding: 64px 12px 12px !important;
+.VPNav-fixed {
+  position: fixed !important;
+  z-index: 2;
 }
 
-@media (min-width: 768px) {
-  .shell {
-    padding: 12px !important;
-  }
+/* .VPNavBar {
+  background-color: var(--vp-c-bg);
 }
 
-.VPContent.has-sidebar .aside-curtain {
-  display: none;
-}
+.VPNavBar.has-sidebar {
+  background-color: transparent;
+} */
 
 .VPHero {
   background-image: url("/media/images/hero_banner.jpg");
@@ -44,107 +42,9 @@
   -webkit-text-fill-color: white;
 }
 
-.VPLocalSearchBox {
-  z-index: 10001 !important;
-}
-
-.VPNav {
-  position: relative !important;
-}
-
-@media (min-width: 768px) {
-  .VPNav {
-    background-color: var(--background-color);
-  }
-}
-
-@media (min-width: 1200px) {
-  .VPNavBar .container {
-    max-width: 1170px !important;
-  }
-}
-
-.VPNavBar.has-sidebar {
-  height: 0;
-}
-
-@media (min-width: 768x) {
-  .VPNavBar.has-sidebar {
-    height: auto;
-  }
-}
-
-@media (min-width: 1200px) {
-  .VPNavBar.has-sidebar .container {
-    max-width: none !important;
-  }
-}
-
-.VPNavBar.has-sidebar .curtain {
-  display: none;
-}
-
-
-/* Reset background colour change on scroll */
-.VPNavBar:not(.top),
-.VPNavBar:not(.top) .content-body {
-  background-color: var(--background-color) !important;
-}
-
-.VPNavBar.has-sidebar:not(.top),
-.VPNavBar.has-sidebar:not(.top) .content-body {
-  background-color: transparent !important;
-}
-
-.VPNavBarExtra,
-.VPNavBarHamburger {
-  display: none !important;
-}
-
-.VPNavBarSearch {
-  padding-left: 0;
-}
-
-.VPNavBarSearch {
-  transform: translateY(-60px);
-}
-
-@media (min-width: 960px) {
-  .VPNavBarSearch {
-    margin-left: 0;
-  }
-}
-
-@media (min-width: 768px) {
-  .VPNavBarSearch {
-    margin-left: 64px;
-    transform: none;
-    z-index: 0;
-  }
-}
-
-.VPSidebar .group {
-  width: 100%;
-}
-
-.VPSwitch {
-  display: none !important;
-}
-
 /* Web Assets overrides. */
-:root {
-  --btn-bg-color: transparent;
-  --btn-bg-color-hover: var(--background-color-primary);
-}
-
 a:hover {
   text-decoration: none;
-}
-
-@media (min-width: 768px) {
-  .nav-global {
-    z-index: 10002;
-  }
 }
 
 .nav-global .nav-global-logo {

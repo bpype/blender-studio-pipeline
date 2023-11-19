@@ -1,3 +1,6 @@
+// Imports for overriding internal components
+import { fileURLToPath, URL } from 'node:url'
+
 import { defineConfig } from 'vitepress'
 import { html5Media } from 'markdown-it-html5-media'
 
@@ -23,11 +26,8 @@ export default defineConfig({
   ],
   themeConfig: {
     logo: {
-      /*
-      Logo is injected from Vue component LayoutNavBarGlobal
       light: '/blender-studio-logo-black.svg',
       dark: '/blender-studio-logo-white.svg'
-      */
     },
     siteTitle: false,
     footer: {
@@ -39,16 +39,14 @@ export default defineConfig({
     search: {
       provider: 'local'
     },
+    // TODO: cleanup redundant config nav if nav-global is ok
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      /*
-      Nav is injected from Vue component LayoutNavBarGlobal
       { text: 'Films', link: `${studioURL}/films` },
-            { text: 'Training', link: `${studioURL}/training` },
-            { text: 'Blog', link: `${studioURL}/blog` },
-            { text: 'Pipeline', link: '/' },
-            { text: 'Characters', link: `${studioURL}/characters`, }
-      */
+      { text: 'Training', link: `${studioURL}/training` },
+      { text: 'Blog', link: `${studioURL}/blog` },
+      { text: 'Pipeline', link: '/' },
+      { text: 'Characters', link: `${studioURL}/characters`, }
     ],
 
     sidebar: [
@@ -224,6 +222,19 @@ export default defineConfig({
     config: (md) => {
       // Enable the markdown-it-html5-media plugin
       md.use(html5Media)
+    }
+  },
+  // Override internal component 'VPNavBar'
+  vite: {
+    resolve: {
+      alias: [
+        {
+          find: /^.*\/VPNavBar\.vue$/,
+          replacement: fileURLToPath(
+            new URL('./components/NavBarGlobal.vue', import.meta.url)
+          )
+        }
+      ]
     }
   }
 })
