@@ -12,6 +12,11 @@
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
+/* Hide btn search txt */
+.DocSearch-Button .DocSearch-Button-Placeholder {
+  display: none;
+}
+
 .VPNav {
   position: relative !important;
 }
