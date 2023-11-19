@@ -43,8 +43,19 @@
 }
 
 /* Web Assets overrides. */
+:root {
+  --btn-bg-color: transparent;
+  --btn-bg-color-hover: var(--background-color-primary);
+}
+
 a:hover {
   text-decoration: none;
+}
+
+@media (min-width: 768px) {
+  .nav-global {
+    z-index: 10002;
+  }
 }
 
 .nav-global .nav-global-logo {
