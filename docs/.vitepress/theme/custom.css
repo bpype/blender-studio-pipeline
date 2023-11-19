@@ -7,7 +7,7 @@
   --vp-local-search-highlight-bg: var(--vp-c-brand-lighter);
 
   /* Map custom property --vp-font-family-base to --font-family-base */
-  --vp-font-family-base: var(--vp-font-family-base);
+  --vp-font-family-base: var(--font-family-base);
   --vp-font-family-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco,
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 }

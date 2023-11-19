@@ -9064,8 +9064,8 @@ body.is-scrolled .whoosh-container {
  * * replace the path '../font/' with '../assets/fonts''. */
 @font-face {
   font-family: "fontutti";
-  src: url("../assets/fonts/fontutti.eot?32524657");
-  src: url("../assets/fonts/fontutti.eot?32524657#iefix") format("embedded-opentype"), url("../assets/fonts/fontutti.woff2?32524657") format("woff2"), url("../assets/fonts/fontutti.woff?32524657") format("woff"), url("../assets/fonts/fontutti.ttf?32524657") format("truetype"), url("../assets/fonts/fontutti.svg?32524657#fontutti") format("svg");
+  src: url("../assets_shared/assets/fonts/fontutti.eot?32524657");
+  src: url("../assets_shared/assets/fonts/fontutti.eot?32524657#iefix") format("embedded-opentype"), url("../assets_shared/assets/fonts/fontutti.woff2?32524657") format("woff2"), url("../assets_shared/assets/fonts/fontutti.woff?32524657") format("woff"), url("../assets_shared/assets/fonts/fontutti.ttf?32524657") format("truetype"), url("../assets_shared/assets/fonts/fontutti.svg?32524657#fontutti") format("svg");
   font-weight: normal;
   font-style: normal;
 }
