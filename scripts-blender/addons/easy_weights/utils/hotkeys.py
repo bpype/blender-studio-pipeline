@@ -187,13 +187,21 @@ class PyKeyMapItem:
 
         # Warn or raise error about conflicts.
         if conflicts and (warn_on_conflict or error_on_conflict):
-            conflict_info = "\n".join(["Conflict: " + kmi_to_str(kmi) for kmi in conflicts])
+            conflict_info = "\n".join(
+                ["Conflict: " + kmi_to_str(kmi) for kmi in conflicts]
+            )
 
             if error_on_conflict:
-                raise KeyMapException("Failed to register KeyMapItem due to conflicting items:" + conflict_info)
+                raise KeyMapException(
+                    "Failed to register KeyMapItem due to conflicting items:"
+                    + conflict_info
+                )
             if warn_on_conflict:
                 print(
-                    "Warning: Conflicting KeyMapItems: " + str(self) + "\n" + conflict_info
+                    "Warning: Conflicting KeyMapItems: "
+                    + str(self)
+                    + "\n"
+                    + conflict_info
                 )
 
         return keymap, kmi
@@ -454,6 +462,7 @@ def get_kmi_key_string(kmi) -> str:
     if not final_string:
         return "Unassigned"
     return final_string
+
 
 def get_keymap_of_config(keyconfig: KeyConfig, keymap_name: str) -> Optional[KeyMap]:
     space_type, region_type = get_ui_types_of_keymap(keymap_name)

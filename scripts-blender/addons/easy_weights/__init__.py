@@ -13,20 +13,23 @@
 
 
 from .utils import hotkeys
-from . import rogue_weights
-from . import vertex_group_menu
-from . import vertex_group_operators
-from . import weight_paint_context_menu
-from . import toggle_weight_paint
-from . import force_apply_mirror
-from . import smart_weight_transfer
+from . import (
+    rogue_weights,
+    vertex_group_menu,
+    vertex_group_operators,
+    weight_paint_context_menu,
+    toggle_weight_paint,
+    force_apply_mirror,
+    smart_weight_transfer,
+    prefs,
+)
 import bpy
 import importlib
 
 bl_info = {
     "name": "Easy Weights",
     "author": "Demeter Dzadik",
-    "version": (0, 1, 4),
+    "version": (0, 1, 3),
     "blender": (2, 90, 0),
     "location": "Weight Paint > Weights > Easy Weights",
     "description": "Operators to make weight painting easier.",
@@ -44,6 +47,7 @@ modules = [
     vertex_group_operators,
     vertex_group_menu,
     rogue_weights,
+    prefs,
 ]
 
 
@@ -75,26 +79,29 @@ def register_unregister_modules(modules, register: bool):
             m.unregister()
 
 
-addon_keymaps = []
-
 def register():
     register_unregister_modules(modules, True)
 
-    global addon_keymaps
-    addon_keymaps.append(
+    prefs_class = bpy.types.AddonPreferences.bl_rna_get_subclass_py(
+        'EASYWEIGHT_addon_preferences'
+    )
+    prefs_class.hotkeys.append(
         hotkeys.addon_hotkey_register(
             op_idname='object.custom_weight_paint_context_menu',
             keymap_name='Weight Paint',
             key_id='W',
             add_on_conflict=False,
             warn_on_conflict=True,
-            error_on_conflict=False
+            error_on_conflict=False,
         )
     )
 
 
 def unregister():
-    register_unregister_modules(modules, False)
+    prefs_class = bpy.types.AddonPreferences.bl_rna_get_subclass_py(
+        'EASYWEIGHT_addon_preferences'
+    )
+    for py_kmi in prefs_class.hotkeys:
+        py_kmi.unregister()
 
-    for pykmi in addon_keymaps:
-        pykmi.unregister()
+    register_unregister_modules(modules, False)
