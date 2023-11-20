@@ -70,7 +70,7 @@ for download in available_downloads:
         file_extension = platforms_dict[platform]
         if download["file_extension"] != file_extension:
             continue
-        download_info.append((platform, download["url"]))
+        download_info.append((platform, download["url"], download["architecture"]))
 
 updated_current_files = False
 new_files_downloaded = False
@@ -81,8 +81,9 @@ for info in download_info:
     url = info[1]
     url_sha = url + ".sha256"
     sha = requests.get(url_sha).text.strip().lower()
+    arch = info[2]
 
-    current_platform_file = glob.glob(f"{download_folder_path}/*{platform}*{file_extension}")
+    current_platform_file = glob.glob(f"{download_folder_path}/*{platform}.{arch}*{file_extension}")
     if len(current_platform_file) > 1:
         print(
             f"Platform {platform} has multiple downloaded files in the artifacts directory, exiting!"
