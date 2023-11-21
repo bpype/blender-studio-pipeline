@@ -33,6 +33,7 @@ class SVN_Operator:
 
 class SVN_Operator_Single_File(SVN_Operator):
     """Base class for SVN operators operating on a single file."""
+
     file_rel_path: StringProperty()
 
     # Flag to differentiate operators that require that the file exists pre-execute.
@@ -42,7 +43,9 @@ class SVN_Operator_Single_File(SVN_Operator):
         if not self.file_exists(context) and not type(self).missing_file_allowed:
             # If the operator requires the file to exist and it doesn't, cancel.
             self.report(
-                {'ERROR'}, f'File is no longer on the file system: "{self.file_rel_path}"')
+                {'ERROR'},
+                f'File is no longer on the file system: "{self.file_rel_path}"',
+            )
             return {'CANCELLED'}
 
         status = Processes.get('Status')
@@ -65,7 +68,9 @@ class SVN_Operator_Single_File(SVN_Operator):
         return Path.joinpath(Path(repo.directory), Path(self.file_rel_path))
 
     def get_file(self, context) -> "SVN_file":
-        return context.scene.svn.get_repo(context).get_file_by_svn_path(self.file_rel_path)
+        return context.scene.svn.get_repo(context).get_file_by_svn_path(
+            self.file_rel_path
+        )
 
     def file_exists(self, context) -> bool:
         exists = self.get_file_full_path(context).exists()
@@ -81,11 +86,12 @@ class Popup_Operator:
     popup_width = 400
 
     def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(self, width=type(self).popup_width)
+        return context.window_manager.invoke_props_dialog(
+            self, width=type(self).popup_width
+        )
 
 
 class Warning_Operator(Popup_Operator):
-
     def draw(self, context):
         layout = self.layout.column(align=True)
 
@@ -100,7 +106,6 @@ class Warning_Operator(Popup_Operator):
 
 
 class May_Modifiy_Current_Blend(SVN_Operator_Single_File, Warning_Operator):
-
     def file_is_current_blend(self, context) -> bool:
         current_blend = context.scene.svn.get_repo(context).current_blend_file
         return current_blend and current_blend.svn_path == self.file_rel_path
@@ -132,7 +137,7 @@ class May_Modifiy_Current_Blend(SVN_Operator_Single_File, Warning_Operator):
         super().execute(context)
         if self.reload_file:
             bpy.ops.wm.open_mainfile(filepath=bpy.data.filepath, load_ui=False)
-        else:
+        elif self.file_is_current_blend(context):
             context.scene.svn.file_is_outdated = True
         return {'FINISHED'}
 
@@ -140,26 +145,28 @@ class May_Modifiy_Current_Blend(SVN_Operator_Single_File, Warning_Operator):
 class SVN_OT_update_single(May_Modifiy_Current_Blend, Operator):
     bl_idname = "svn.update_single"
     bl_label = "Update File"
-    bl_description = "Download the latest available version of this file from the remote repository"
+    bl_description = (
+        "Download the latest available version of this file from the remote repository"
+    )
     bl_options = {'INTERNAL'}
 
     missing_file_allowed = True
 
     def _execute(self, context: Context) -> Set[str]:
         self.will_conflict = False
-        file_entry = context.scene.svn.get_repo(
-            context).get_file_by_svn_path(self.file_rel_path)
+        file_entry = context.scene.svn.get_repo(context).get_file_by_svn_path(
+            self.file_rel_path
+        )
         if file_entry.status not in ['normal', 'none']:
             self.will_conflict = True
 
         self.execute_svn_command(
             context,
             ["svn", "up", f"{self.file_rel_path}", "--accept", "postpone"],
-            use_cred=True
+            use_cred=True,
         )
 
-        self.report({'INFO'},
-                    f'Updated "{self.file_rel_path}" to the latest version.')
+        self.report({'INFO'}, f'Updated "{self.file_rel_path}" to the latest version.')
 
     def set_predicted_file_status(self, repo, file_entry: "SVN_file"):
         if self.will_conflict:
@@ -182,28 +189,34 @@ class SVN_OT_download_file_revision(May_Modifiy_Current_Blend, Operator):
     revision: IntProperty(default=0)
 
     def invoke(self, context, event):
-        file_entry = context.scene.svn.get_repo(
-            context).get_file_by_svn_path(self.file_rel_path)
+        file_entry = context.scene.svn.get_repo(context).get_file_by_svn_path(
+            self.file_rel_path
+        )
         if self.file_is_current_blend(context) and file_entry.status != 'normal':
-            self.report({'ERROR'},
-                        'You must first revert or commit the changes to this file.')
+            self.report(
+                {'ERROR'}, 'You must first revert or commit the changes to this file.'
+            )
             return {'CANCELLED'}
         return super().invoke(context, event)
 
     def _execute(self, context: Context) -> Set[str]:
-        file_entry = context.scene.svn.get_repo(
-            context).get_file_by_svn_path(self.file_rel_path)
+        file_entry = context.scene.svn.get_repo(context).get_file_by_svn_path(
+            self.file_rel_path
+        )
         if file_entry.status == 'modified':
             # If file has local modifications, let's avoid a conflict by cancelling
             # and telling the user to resolve it in advance.
-            self.report({'ERROR'},
-                        "Cancelled: You have local modifications to this file. You must revert or commit it first!")
+            self.report(
+                {'ERROR'},
+                "Cancelled: You have local modifications to this file. You must revert or commit it first!",
+            )
             return {'CANCELLED'}
 
         self.svn_download_file_revision(context, self.file_rel_path, self.revision)
 
-        self.report({'INFO'},
-                    f"Checked out revision {self.revision} of {self.file_rel_path}")
+        self.report(
+            {'INFO'}, f"Checked out revision {self.revision} of {self.file_rel_path}"
+        )
 
         return {"FINISHED"}
 
@@ -212,11 +225,7 @@ class SVN_OT_download_file_revision(May_Modifiy_Current_Blend, Operator):
         if self.revision > 0:
             commands.insert(2, f"-r{self.revision}")
 
-        self.execute_svn_command(
-            context,
-            commands,
-            use_cred=True
-        )
+        self.execute_svn_command(context, commands, use_cred=True)
 
     def set_predicted_file_status(self, repo, file_entry: "SVN_file"):
         file_entry['revision'] = self.revision
@@ -238,10 +247,7 @@ class SVN_OT_restore_file(May_Modifiy_Current_Blend, Operator):
     missing_file_allowed = True
 
     def svn_revert(self, context, svn_file_path):
-        self.execute_svn_command(
-            context,
-            ["svn", "revert", f"{svn_file_path}"]
-        )
+        self.execute_svn_command(context, ["svn", "revert", f"{svn_file_path}"])
 
     def _execute(self, context: Context) -> Set[str]:
         self.svn_revert(context, self.file_rel_path)
@@ -260,11 +266,15 @@ class SVN_OT_revert_file(SVN_OT_restore_file):
     missing_file_allowed = False
 
     def get_warning_text(self, context) -> str:
-        return "You will irreversibly and permanently lose the changes you've made to this file:\n    " + self.file_rel_path
+        return (
+            "You will irreversibly and permanently lose the changes you've made to this file:\n    "
+            + self.file_rel_path
+        )
 
 
 class SVN_OT_revert_and_update(SVN_OT_download_file_revision, SVN_OT_revert_file):
     """Convenience operator for the "This file is outdated" warning message. Normally, these two operations should be done separately!"""
+
     bl_idname = "svn.revert_and_update_file"
     bl_label = "Revert And Update File"
     bl_description = "A different version of this file was downloaded while it was open. This warning will persist until the file is updated and reloaded, or committed. Click to PERMANENTLY DISCARD local changes to this file and update it to the latest revision. Cannot be undone"
@@ -277,7 +287,10 @@ class SVN_OT_revert_and_update(SVN_OT_download_file_revision, SVN_OT_revert_file
 
     def get_warning_text(self, context) -> str:
         if self.get_file(context).status != 'normal':
-            return "You will irreversibly and permanently lose the changes you've made to this file:\n    " + self.file_rel_path
+            return (
+                "You will irreversibly and permanently lose the changes you've made to this file:\n    "
+                + self.file_rel_path
+            )
         else:
             return "File will be updated to latest revision."
 
@@ -291,13 +304,14 @@ class SVN_OT_revert_and_update(SVN_OT_download_file_revision, SVN_OT_revert_file
 class SVN_OT_add_file(SVN_Operator_Single_File, Operator):
     bl_idname = "svn.add_file"
     bl_label = "Add File"
-    bl_description = "Mark this file for addition to the remote repository. It can then be committed"
+    bl_description = (
+        "Mark this file for addition to the remote repository. It can then be committed"
+    )
     bl_options = {'INTERNAL'}
 
     def _execute(self, context: Context) -> Set[str]:
         result = self.execute_svn_command(
-            context,
-            ["svn", "add", f"{self.file_rel_path}"]
+            context, ["svn", "add", f"{self.file_rel_path}"]
         )
 
         if result:
@@ -316,8 +330,7 @@ class SVN_OT_unadd_file(SVN_Operator_Single_File, Operator):
 
     def _execute(self, context: Context) -> Set[str]:
         self.execute_svn_command(
-            context,
-            ["svn", "rm", "--keep-local", f"{self.file_rel_path}"]
+            context, ["svn", "rm", "--keep-local", f"{self.file_rel_path}"]
         )
 
         return {"FINISHED"}
@@ -336,7 +349,10 @@ class SVN_OT_trash_file(SVN_Operator_Single_File, Warning_Operator, Operator):
     missing_file_allowed = False
 
     def get_warning_text(self, context):
-        return "Are you sure you want to move this file to the recycle bin?\n    " + self.file_rel_path
+        return (
+            "Are you sure you want to move this file to the recycle bin?\n    "
+            + self.file_rel_path
+        )
 
     def _execute(self, context: Context) -> Set[str]:
         send2trash([self.get_file_full_path(context)])
@@ -357,13 +373,14 @@ class SVN_OT_remove_file(SVN_Operator_Single_File, Warning_Operator, Operator):
     missing_file_allowed = True
 
     def get_warning_text(self, context):
-        return "This file will be deleted for everyone:\n    " + self.file_rel_path + "\nAre you sure?"
+        return (
+            "This file will be deleted for everyone:\n    "
+            + self.file_rel_path
+            + "\nAre you sure?"
+        )
 
     def _execute(self, context: Context) -> Set[str]:
-        self.execute_svn_command(
-            context,
-            ["svn", "remove", f"{self.file_rel_path}"]
-        )
+        self.execute_svn_command(context, ["svn", "remove", f"{self.file_rel_path}"])
 
         return {"FINISHED"}
 
@@ -381,11 +398,17 @@ class SVN_OT_resolve_conflict(May_Modifiy_Current_Blend, Operator):
         name="Resolve Method",
         description="Method to use to resolve the conflict",
         items=[
-            ('mine-full', 'Keep Mine',
-             'Overwrite the new changes downloaded from the remote, and keep the local changes instead'),
-            ('theirs-full', 'Keep Theirs',
-             'Overwrite the local changes with those downloaded from the remote'),
-        ]
+            (
+                'mine-full',
+                'Keep Mine',
+                'Overwrite the new changes downloaded from the remote, and keep the local changes instead',
+            ),
+            (
+                'theirs-full',
+                'Keep Theirs',
+                'Overwrite the local changes with those downloaded from the remote',
+            ),
+        ],
     )
 
     def invoke(self, context, event):
@@ -402,7 +425,8 @@ class SVN_OT_resolve_conflict(May_Modifiy_Current_Blend, Operator):
         if self.resolve_method == 'mine-full':
             col.label(text="Local changes will be kept.")
             col.label(
-                text="When committing, the changes someone else made will be overwritten.")
+                text="When committing, the changes someone else made will be overwritten."
+            )
         else:
             col.label(text="Local changes will be permanently lost.")
             super().draw(context)
@@ -410,8 +434,13 @@ class SVN_OT_resolve_conflict(May_Modifiy_Current_Blend, Operator):
     def _execute(self, context: Context) -> Set[str]:
         self.execute_svn_command(
             context,
-            ["svn", "resolve", f"{self.file_rel_path}",
-                "--accept", f"{self.resolve_method}"]
+            [
+                "svn",
+                "resolve",
+                f"{self.file_rel_path}",
+                "--accept",
+                f"{self.resolve_method}",
+            ],
         )
 
         return {"FINISHED"}
