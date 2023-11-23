@@ -117,10 +117,16 @@ parser.add_argument(
 parser.add_argument(
     "-t",
     "--test",
-    help="Test release system by only running locally and skip committing",
+    help="Test release system by only running locally and skip committing/uploading to release",
     action="store_true",
 )
 
+parser.add_argument(
+    "-r",
+    "--reuse_lastest_release",
+    help="Add new packages to the lastest avaliable release",
+    action="store_true",
+)
 
 parser.add_argument(
     "-f",
@@ -512,6 +518,7 @@ def main() -> int:
     user_names = args.name
     output_path = args.output
     force = args.force
+    reuse_latest_relase = args.reuse_lastest_release
     addon_folder = REPO_ROOT_DIR.joinpath(REPO_ROOT_DIR, "scripts-blender/addons")
     addon_to_upload = []
     base_release_url = f"{api_path}{release_path}"
@@ -553,11 +560,13 @@ def main() -> int:
 
     if not test:
         # Release Script
-
-        response = create_new_release(
-            base_tag_url, base_release_url, release_version, api_token
-        )
-        release_id = response["id"]
+        if reuse_latest_relase:
+            release_id = latest_release.json()["id"]
+        else:
+            response = create_new_release(
+                base_tag_url, base_release_url, release_version, api_token
+            )
+            release_id = response["id"]
 
         for file in addon_to_upload:
             payload = open(file, 'rb')
