@@ -8,7 +8,7 @@ It all starts with the directory layout, which should be deployed by a Technical
 
 ## Directory Layout
 
-Typically projects are stored at the following path `/data/{my_project}` where `data` is at the root of the filesystem. This is for consistency between computers at the Blender Studio. External studios can use a different root folder for their projects for example a user's home folder.
+Typically projects are stored at the following path `/data/your_project_name` where `data` is at the root of the filesystem. This is for consistency between computers at the Blender Studio. External studios can use a different root folder for their projects for example a user's home folder.
 
 The project folder contains all data related to a project including .blend files, playblasts, the blender that is used on the project for all operating systems and even preferences are stored within the project. 
 

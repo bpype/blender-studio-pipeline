@@ -4,11 +4,11 @@ Project Tools will store a version of Blender within the `shared` directory. Thi
 
 ## Create Blender Shortcut
 
-Once your project has been setup using the "Project Tools" scripts Blender should be available inside your application's native application launcher. The run Blender script will take the correct blender version for your operating system from `{my_project}/shared/artifacts/blender` and extract it to the local directory. Along with any add-ons in the `{my_project}/shared/artifacts/addons` folder. Your Blender preferences are stored on a per project basis in `{directory-path}`
+Once your project has been setup using the "Project Tools" scripts Blender should be available inside your application's native application launcher. The run Blender script will take the correct blender version for your operating system from `your_project_name/shared/artifacts/blender` and extract it to the local directory. Along with any add-ons in the `your_project_name/shared/artifacts/addons` folder. Your Blender preferences are stored on a per project basis in `{directory-path}`
 
 ### Create Linux Shortcut
 ```bash
-cd {my_project}/svn/tools
+cd your_project_name/svn/tools
 ./install_desktop_file.sh
 ```
 ::: info Available on Gentoo
@@ -20,7 +20,7 @@ You must run the Create Linux Shortcut step before running a custom build. This 
 
 1. Navigate to your custom Blender binary
 2. Right Click the binary
-3. Select `Open with > Blender {my_project}`
+3. Select `Open with > Blender your_project_name`
 
 
 
@@ -32,12 +32,12 @@ TODO Replace Image with Project-Tools version
 
 ### Create Windows Shortcut
 
-1. Open the directory `{my_project}/svn/tools` 
+1. Open the directory `your_project_name/svn/tools` 
 2. Create a shortcut to `launch_blender_win.bat` on your desktop
 
 ### Create Mac Shortcut
 
-1. Open the directory `{my_project}/svn/tools` 
+1. Open the directory `your_project_name/svn/tools` 
 2. In finder, select the `launch_blender_mac.command` and press `ctrl+shift+command+t` to add it to the dock.
 
 
@@ -46,7 +46,7 @@ TODO Replace Image with Project-Tools version
 To launch Blender from the terminal, open the tools directory within your project folder, and from the terminal use the run Blender script.
 
 ```bash
-cd /{my_project}/svn/tools
+cd /your_project_name/svn/tools
 ./run_blender.py
 ```
 
@@ -56,22 +56,22 @@ Note: Command Line Arguments also known as Flags are not supported by the `run_b
 
 ## Update Blender
 
-This script will fetch the latest Blender download from https://builder.blender.org/download/  The Blender download for Linux, Mac, and Windows will be downloaded into the `{my_project}/shared/artifacts/blender` folder. It will keep up to 10 previous downloaded versions for backup. This Blender doesn't update automatically, at least one user in the project must manually initiate an update, all users will receive this update because blender is stored within the `shared` directory. 
+This script will fetch the latest Blender download from https://builder.blender.org/download/  The Blender download for Linux, Mac, and Windows will be downloaded into the `your_project_name/shared/artifacts/blender` folder. It will keep up to 10 previous downloaded versions for backup. This Blender doesn't update automatically, at least one user in the project must manually initiate an update, all users will receive this update because blender is stored within the `shared` directory. 
 
 ::: info  Blender Studio Users
 Internally to the Blender Studio only, the blender inside your project is automatically updated overnight, not manual update is required. 
 :::
 
 ```bash
-cd /{my_project}/svn/tools
+cd /your_project_name/svn/tools
 ./update_blender.py
 ```
 ## Rollback Blender
 
-Use `rollback_blender.py` to switch the "current" version hosted in `{my_project}/shared/artifacts/blender` to one the older downloads, rolling back affects all users using your project. This is intended to be used to rollback to an older version in case of bugs in newer downloaded versions.
+Use `rollback_blender.py` to switch the "current" version hosted in `your_project_name/shared/artifacts/blender` to one the older downloads, rolling back affects all users using your project. This is intended to be used to rollback to an older version in case of bugs in newer downloaded versions.
 
 ```bash
-cd /{my_project}/svn/tools
+cd /your_project_name/svn/tools
 ./rollback_blender.py
 ```
 
@@ -81,7 +81,7 @@ cd /{my_project}/svn/tools
 In some cases user may want to roll their machine's local blender to a previous version without affecting other users. 
 
 ```bash
-cd /{my_project}/svn/tools
+cd /your_project_name/svn/tools
 ./rollback_blender_local.py
 ```
 
@@ -90,7 +90,7 @@ Blender Add-ons can be packaged directly from the [Blender Studio Pipeline](http
 
 ```bash
 cd /blender-studio-pipeline/scripts/pipeline-release
-./package_local.py /{my_project}/shared/artifacts/addons
+./package_local.py /your_project_name/shared/artifacts/addons
 ```
 
 
