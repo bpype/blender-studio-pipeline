@@ -3,9 +3,9 @@
 Naming objects in a Blender production can be quite non-trivial when trying to achieve stability, clarity, and the ability to easily make shot files fully local at the end of production, to create fully interactive demo files that can be shared with the world.
 
 ## Separators
-We try keep their meaning consistent across conventions:
-`-` : Separates prefixes (including the Namespace Identifier) from each other and from the rest of the name, eg. `GEO-esprite-head`. Also should be used for naming objects in a hierarchical way when possible, see "Indicating a hierarchy" below.
-`.` : Separates suffixes for symmetry sides, eg. `GEO-esprite-eye.L`, as well as asset variants, see below.
+We try keep their meaning consistent across conventions:  
+`-` : Separates prefixes (including the Namespace Identifier) from each other and from the rest of the name, eg. `GEO-esprite-head`. Also should be used for naming objects in a hierarchical way when possible, see "Indicating a hierarchy" below.  
+`.` : Separates suffixes for symmetry sides, eg. `GEO-esprite-eye.L`, as well as asset variants, see below.  
 `_` : Used to separate parts of the base name, eg. `wooden_wardrobe_032`. The base name of an ID never has any technical significance.
 
 ## Namespace Identifier
@@ -14,13 +14,13 @@ All datablocks across the entire production must have a unique name. To faciliat
 
 This also applies to datablocks which are not part of an asset, for example pose library poses and shared node groups that get linked into assets. Their namespace identifier should simply be the name of the .blend file that they're in, or a shortened version of it.
 
-This identifier will be present among the prefixes in the names of datablocks, to make sure all names are unique, not just in a single file, but across the whole production. This is necessary because Blender's Library Override system relies on making local copies of linked object hierarchies, meaning all assets need to be able to exist in the same namespace without name collisions.
+This is necessary because Blender's Library Override system relies on making local copies of linked object hierarchies, meaning all assets need to be able to exist in the same namespace without name collisions. It also helps when at the end of production we want to make fully local demo files.
 
 The identifier can also have underscores and numbers in it, which may be the case for library assets, eg. `LI-tree_birch_001`.
 
 ## Asset Collection Hierarchy
 
-We use prefixes for the root collections (and only the root) of assets to help distinguish different types of assets in the Outliner of a complex shot file. The name of the asset itself should be lowercase.
+We use prefixes for (only) the root collections of assets to help distinguish asset types in the Outliner in shots. The name of the asset itself should be lowercase.
 
 - `CH` : Character
 - `PR` : Rigged Prop
@@ -31,9 +31,7 @@ We use prefixes for the root collections (and only the root) of assets to help d
 
 Example root collection names: `CH-elder_sprite`, `LI-rock_large_013`
 
-Note that there's no technical distinction between different types of assets. This is purely for organizational purposes and comfort.
-
-The immediate sub-collections of the root collection should be named according to the Task Layers configured in our Asset Pipeline add-on, but this is not strictly required. Task Layers are the different data layers that make up an asset, such as Modeling, Rigging, and Shading. Collections nested beyond this can be named freely, as long as they still start with the namespace identifier.
+The immediate sub-collections of the root collection should ideally be named according to the Task Layers configured in our Asset Pipeline add-on. Task Layers are the different data layers that make up an asset, such as Modeling, Rigging, and Shading. Collections nested beyond this can be named freely, as long as they still start with the namespace identifier.
 
 So, here's what an asset's collection hierarchy might look like:
 ![Collection Hierarchy Naming Example](/media/naming-conventions/collection_hierarchy_naming_example.png)
@@ -51,17 +49,17 @@ All Object names (not just in Assets) must start with a prefix describing the ob
 - `HLP` : Empties and other helper objects that are not rendered
 - `TMP` : Any object used in pre-viz that should be replaced with final assets over the course of the production.
 
-All local datablocks of an asset (Object, Mesh, Material, Action, etc.) must also include either the asset's shortened or full name. Eg., `RIG-elder_sprite` or `GEO-esprite-eye.L`. This is enforced by the Asset Pipeline add-on.
-
 ## Base Names
-- Object Data and Shape Keys should be named the same as the containing Object. This is automated by the Asset Pipeline add-on.
+- Must include the long or short version of the namespace identifier, as described above.
+- Mesh and Shape Key datablocks should be named the same as the containing Object. This is automated by the Asset Pipeline add-on.
 - Words in all base names should be lower-case and separated by `_`.
-- All datablock names must not end with a `.00x` suffix. This is enforced by the Asset Pipeline add-on.
-    - When there's too many objects to manually name, like when building a house out of a hundred wooden plank objects, the **Batch Rename Datablocks Operator** should be used to give groups of objects the same name. Then replace the `.` in the `.00x` suffixes with an `_` instead, so `GEO-house-wooden_plank.023` becomes `GEO-house-wooden_plank_023`, making the number a part of the base name for the purposes of Library Overrides and duplication.
-    - This makes it so that when an asset is duplicated in a shot, every object in the same copy of the asset will have the same number suffix. The first copy will have no suffix, the second copy will have .001, etc. Without this step, this object would instead end up getting named `GEO-house-wooden_plank.024`, which would mean the suffix number has no correlation with which overridden copy of the asset this object belongs to. This could break Library Overrides.
+- Dashes can be used to indicate hierarchy among objects, see example below.
+- Datablock names must not end with a `.00x` suffix. This is enforced by the Asset Pipeline add-on.
+    - When there's too many objects to manually name, like when building a house out of a hundred wooden plank objects, the **Batch Rename Datablocks Operator** should be used to give groups of objects the same name. Then replace the `.` in the suffixes with an `_`.
+    - This makes it so that when an asset is duplicated in a shot, every object in the same copy of the asset will have the same number suffix. Without this step, an object could end up getting named `GEO-house-wooden_plank.024` when it gets duplicated, so the suffix number would have no correlation with which overridden copy of the asset this object belongs to. This can result in issues with Library Overrides.
 
-## Indicating Hierarchy
-For complex assets, try to use dashes to indicate a nested hierarchy of objects, eg:
+
+Here is an example of some object names:
 ![Indicating Hierarchy in names](/media/naming-conventions/hierarchy_name_example.png)
 
 
