@@ -47,12 +47,12 @@ If a script is provided, `bbatch` will automatically save after execution of the
 
 | Action | Command |
 | ----------- | ----------- |
-|Prints the names of .blends in Current Directory  | `bbatch ./` |
-|Print the names of .blends Recursively | `bbatch /my-folder/ --recursive` | 
-|Print only the names of .blends matching a provided string |`bbatch /my-folder/ --find string`|
-|Run default 'Purge' script on .blends in Current Directory |`bbatch /my-folder/ --purge`|
-|Run custom script on all .blends in Current Directory |`bbatch /my-folder/ --script /my-directory/my-script.py`|
-|Ask/Prompt before script execution|`bbatch /my-folder/ --script /my-directory/my-script.py --ask`|
-|Run script on .blends without saving |`bbatch /my-folder/ --script /my-directory/my-script.py --nosave` |
-|Run with a custom blender executable|`bbatch /my-folder/ --exec /path-to-blender-executable/blender`|
+|Prints the names of .blends in Current Directory  | `python -m bbatch ./` |
+|Print the names of .blends Recursively | `python -m bbatch /my-folder/ --recursive` | 
+|Print only the names of .blends matching a provided string |`python -m bbatch /my-folder/ --find string`|
+|Run default 'Purge' script on .blends in Current Directory |`python -m bbatch /my-folder/ --purge`|
+|Run custom script on all .blends in Current Directory |`python -m bbatch /my-folder/ --script /my-directory/my-script.py`|
+|Ask/Prompt before script execution|`python -m bbatch /my-folder/ --script /my-directory/my-script.py --ask`|
+|Run script on .blends without saving |`python -m bbatch /my-folder/ --script /my-directory/my-script.py --nosave` |
+|Run with a custom blender executable|`python -m bbatch /my-folder/ --exec /path-to-blender-executable/blender`|
 
