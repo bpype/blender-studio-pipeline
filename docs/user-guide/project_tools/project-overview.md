@@ -5,6 +5,8 @@
 
 It all starts with the directory layout, which should be deployed by a Technical Director following the [Project Tools Setup Guide](/td-guide/project-tools-setup.md). This standard directory layout defines where things like .blend files and playblasts are stored. It enables project tools the ability to ensure all users are running the same Blender and have a similar experience with minimal setup required by the individual users.
 
+Join the discussion at the [Blender Studio Pipeline Channel](https://blender.chat/channel/blender-studio-pipeline) on Blender Chat. The central hub for discussion about the Blender Studio Pipeline. 
+
 
 ## Directory Layout
 
