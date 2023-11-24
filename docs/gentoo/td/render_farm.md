@@ -23,7 +23,7 @@ Contact your Flamenco administrator to retrieve the SSH key.
 1. Run the `deploy.sh` script from the Flamenco [git repo](https://projects.blender.org/studio/flamenco) on the Flamenco Manager
 2. Go to the manager [webui](http://flamenco.farm.blender/app/workers)
 3. Select the workers you want to restart.
-4. Choose one of the "Shutdown" options in the menu, and press Apply.
+4. Choose one of the "Restart" options in the menu, and press Apply.
 5. The workers are configured to automatically start again after they've been shut down from the web interface.
 
 <details><summary>If that doesn't work, click here for an alternative method</summary>
@@ -66,7 +66,7 @@ You need to manually restart the workers from the webui after the Flamenco packa
 
 1. Go to the manager [webui](http://flamenco.farm.blender/app/workers)
 2. Select the workers you want to restart.
-3. Choose one of the "Shutdown" options in the menu, and press Apply.
+3. Choose one of the "Restart" options in the menu, and press Apply.
 4. The workers are configured to automatically start again after they've been shut down from the web interface.
 
 <details><summary>If that doesn't work, click here for an alternative method</summary>
