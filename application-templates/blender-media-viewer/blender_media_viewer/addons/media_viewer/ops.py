@@ -625,7 +625,9 @@ class MV_OT_set_media_area_type(bpy.types.Operator):
 
         # Set annotate tool as active.
         if area_media.type in ["SEQUENCE_EDITOR", "IMAGE_EDITOR"]:
-            bpy.ops.wm.tool_set_by_id({"area": area_media}, name="builtin.annotate")
+            ctx = opsdata.get_context_for_area(area_media)
+            with context.temp_override(**ctx):
+                bpy.ops.wm.tool_set_by_id(name="builtin.annotate")
 
         logger.info(f"Changed active media area to: {area_media.type}")
 

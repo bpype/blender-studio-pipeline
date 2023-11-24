@@ -88,7 +88,7 @@ class SpaceData:
 class FbParams:
     directory: str = ""
     display_type: str = "THUMBNAIL"
-    display_size: str = "NORMAL"
+    display_size_discrete: str = "NORMAL"
     use_filter: bool = True
     use_filter_image: bool = True
     use_filter_folder: bool = True

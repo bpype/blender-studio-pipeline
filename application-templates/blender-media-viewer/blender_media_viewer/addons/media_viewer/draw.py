@@ -16,7 +16,6 @@ from copy import copy
 
 import bpy
 import gpu
-import bgl
 import blf
 from gpu_extras.batch import batch_for_shader
 from bpy.app.handlers import persistent
@@ -94,7 +93,7 @@ def draw_toggle(region_name: str):
     bot_right = (top_left[0] + width, top_left[1] - height)
 
     coordinates = [top_left, top_right, bot_left, bot_right]
-    shader = gpu.shader.from_builtin("2D_UNIFORM_COLOR")
+    shader = gpu.shader.from_builtin("UNIFORM_COLOR")
     batch = batch_for_shader(
         shader,
         "TRIS",
@@ -114,7 +113,7 @@ def draw_text(region_name: str):
     y = region.height + offset_y
     x = 0 + offset_x
     font_id = 0
-    bgl.glEnable(bgl.GL_BLEND)
+    gpu.state.blend_set('ALPHA')
     blf.position(font_id, x, y, 0)
     blf.size(font_id, 12, 72)
     blf.color(font_id, 1, 1, 1, 0.9)
@@ -375,7 +374,7 @@ class ButtonDrawer:
     def __init__(
         self,
     ):
-        self._shader = gpu.shader.from_builtin("2D_UNIFORM_COLOR")
+        self._shader = gpu.shader.from_builtin("UNIFORM_COLOR")
         self.draw_arrow = True
         self.draw_rect = False
         self._arrow_direction = "UP"
@@ -398,8 +397,8 @@ class ButtonDrawer:
     def draw_button(
         self, button: Button, region: bpy.types.Region, color: Float4
     ) -> None:
-        bgl.glEnable(bgl.GL_BLEND)
-        bgl.glLineWidth(0)
+        gpu.state.blend_set('ALPHA')
+        gpu.state.line_width_set(0)
         coords = button.get_region_coords(region)
 
         # Draw rectangle.
@@ -441,7 +440,7 @@ class ButtonDrawer:
                 return
 
             # Create line batch and draw it.
-            bgl.glLineWidth(3)
+            gpu.state.line_width_set(3)
             self._shader.bind()
             self._shader.uniform_float("color", color)
             # print(f"Drawing points: {line_pos}")
