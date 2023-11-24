@@ -1,94 +1,48 @@
-# ***** BEGIN GPL LICENSE BLOCK *****
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-#
-# ***** END GPL LICENCE BLOCK *****
-#
-# (c) 2021, Blender Foundation - Paul Golter
-import logging
-from typing import Optional, Any, Set, Tuple, List
-from pathlib import Path
-
 import bpy
+from . import constants
 
 
-logger = logging.getLogger(name="BSP")
+def get_addon_prefs():
+    return bpy.context.preferences.addons[constants.ADDON_NAME].preferences
 
 
-class BSP_addon_preferences(bpy.types.AddonPreferences):
-
+class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    def get_prod_task_layers_module_path(self) -> str:
-        if not self.prod_config_dir:
-            return ""
-
-        return Path(self.prod_config_dir).joinpath("task_layers.py").as_posix()
-
-    prod_config_dir: bpy.props.StringProperty(  # type: ignore
-        name="Production Config Directory",
+    custom_task_layers_dir: bpy.props.StringProperty(  # type: ignore
+        name="Custom Task Layers",
+        description="Specify directory to add additonal Task Layer Presets to use as templates when cerating new assets",
         default="",
         subtype="DIR_PATH",
     )
 
-    prod_task_layers_module: bpy.props.StringProperty(  # type: ignore
-        name="Production Task Layers Module",
+    save_images_path: bpy.props.StringProperty(  # type: ignore
+        name="Save Images Path",
+        description="Path to save un-saved images to, if left blank images will save in a called 'images' folder relative to the asset",
         default="",
-        get=get_prod_task_layers_module_path,
+        subtype="DIR_PATH",
     )
 
-    def is_prod_task_layers_module_path_valid(self) -> bool:
-        path = self.get_prod_task_layers_module_path()
-        if not path:
-            return False
+    is_advanced_mode: bpy.props.BoolProperty(
+        name="Advanced Mode",
+        description="Show Advanced Options in Asset Pipeline Panels",
+        default=False,
+    )
 
-        if not Path(path).exists():
-            return False
-        return True
-
-    def draw(self, context: bpy.types.Context) -> None:
-        layout: bpy.types.UILayout = self.layout
-
-        # Production Settings.
-        box = layout.box()
-        box.label(text="Production", icon="FILEBROWSER")
-
-        # Production Config Dir.
-        row = box.row(align=True)
-        row.prop(self, "prod_config_dir")
-
-        # Production Task Layers Module.
-        icon = "NONE"
-        row = box.row(align=True)
-
-        if not self.is_prod_task_layers_module_path_valid():
-            icon = "ERROR"
-
-        row.prop(self, "prod_task_layers_module", icon=icon)
+    def draw(self, context):
+        self.layout.prop(self, "custom_task_layers_dir")
+        self.layout.prop(self, "save_images_path")
+        self.layout.prop(self, "is_advanced_mode")
 
 
-# ----------------REGISTER--------------.
-
-classes = [BSP_addon_preferences]
+classes = (ASSET_PIPELINE_addon_preferences,)
 
 
-def register() -> None:
+def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
-def unregister() -> None:
+def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

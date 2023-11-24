@@ -1,0 +1,47 @@
+{
+    "TASK_LAYER_TYPES": {
+        "Modeling": "MOD",
+        "Rigging": "RIG",
+        "Shading": "SHD"
+    },
+    "TRANSFER_DATA_DEFAULTS": {
+        "GROUP_VERTEX": {
+            "default_owner": "Rigging",
+            "auto_surrender": false
+        },
+        "MODIFIER": {
+            "default_owner": "Rigging",
+            "auto_surrender": false
+        },
+        "CONSTRAINT": {
+            "default_owner": "Rigging",
+            "auto_surrender": false
+        },
+        "MATERIAL": {
+            "default_owner": "Shading",
+            "auto_surrender": true
+        },
+        "SHAPE_KEY": {
+            "default_owner": "Modeling",
+            "auto_surrender": false
+        },
+        "ATTRIBUTE": {
+            "default_owner": "Rigging",
+            "auto_surrender": false
+        },
+        "PARENT": {
+            "default_owner": "Rigging",
+            "auto_surrender": false
+        }
+    },
+    "ATTRIBUTE_DEFAULTS": {
+        "sharp_face": {
+            "default_owner": "Modeling",
+            "auto_surrender": true
+        },
+        "UVMap": {
+            "default_owner": "Shading",
+            "auto_surrender": true
+        }
+    }
+}

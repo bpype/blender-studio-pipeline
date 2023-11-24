@@ -1,32 +1,110 @@
-# ***** BEGIN GPL LICENSE BLOCK *****
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-#
-# ***** END GPL LICENCE BLOCK *****
-#
-# (c) 2021, Blender Foundation - Paul Golter
+ADDON_NAME = "asset_pipeline"
 
-METADATA_EXT = ".xmp"
-VERSION_PATTERN = r"v(\d\d\d)"
-DELIMITER = "."
-TARGET_SUFFIX = ".TARGET"
-TASK_SUFFIX = ".TASK"
-PUBLISH_SUFFIX = ".PUBLISH"
-FULLY_OWNED_SUFFIX = ".FULLY_OWNED"
-TRANSFER_SETTINGS_NAME = "TransferSettings"
-DEFAULT_ROWS = 3
-TIME_FORMAT = r"%Y-%m-%dT%H:%M:%S"
-DEFAULT_ASSET_STATUS = "REVIEW"
-HOOK_ATTR_NAME = "_asset_builder_rules"
+# Delimiter used for naming data within Blender
+NAME_DELIMITER = "-"
+
+
+###################
+# MERGE
+###################
+
+# Delimiter used by suffixes in the merge process
+MERGE_DELIMITER = "."
+
+# Suffixes used when naming items to merge
+LOCAL_SUFFIX = "LOCAL"
+EXTERNAL_SUFFIX = "EXTERNAL"
+
+
+###################
+# Task Layers
+###################
+
+# Name of directory containing task layer prefixes internal to add-on
+TASK_LAYER_CONFIG_DIR_NAME = "task_layer_configs"
+
+# Name of task layer file found a the root of an asset
+TASK_LAYER_CONFIG_NAME = "task_layers.json"
+
+
+###################
+# Transferable Data
+###################
+
+# Keys for transferable data
+NONE_KEY = "NONE"
+VERTEX_GROUP_KEY = "GROUP_VERTEX"
+MODIFIER_KEY = "MODIFIER"
+CONSTRAINT_KEY = "CONSTRAINT"
+MATERIAL_SLOT_KEY = "MATERIAL"
+SHAPE_KEY_KEY = "SHAPE_KEY"
+ATTRIBUTE_KEY = "ATTRIBUTE"
+PARENT_KEY = "PARENT"
+
+# Information about supported transferable data.
+# UI Bools are defined in props.py file
+# {Key string : ("UI Name", 'ICON', "UI_BOOL_KEY")}
+TRANSFER_DATA_TYPES = {
+    NONE_KEY: ("None", "BLANK1", 'none'),
+    VERTEX_GROUP_KEY: ("Vertex Groups", 'GROUP_VERTEX', 'group_vertex_ui_bool'),
+    MODIFIER_KEY: ("Modifiers", 'MODIFIER', 'modifier_ui_bool'),
+    CONSTRAINT_KEY: ("Constraints", 'CONSTRAINT', 'constraint_ui_bool'),
+    MATERIAL_SLOT_KEY: ("Materials", 'MATERIAL', 'material_ui_bool'),
+    SHAPE_KEY_KEY: ("Shape Keys", 'SHAPEKEY_DATA', 'shapekey_ui_bool'),
+    ATTRIBUTE_KEY: ("Attributes", 'EVENT_A', 'attribute_ui_bool'),
+    PARENT_KEY: ("Parent", 'FILE_PARENT', 'file_parent_ui_bool'),
+}
+
+# Convert it to the format that EnumProperty.items wants:
+# List of 5-tuples; Re-use name as description at 3rd element, add index at 5th.
+TRANSFER_DATA_TYPES_ENUM_ITEMS = [
+    (tup[0], tup[1][0], tup[1][0], tup[1][1], i)
+    for i, tup in enumerate(TRANSFER_DATA_TYPES.items())
+]
+
+
+# Name used in all material transferable data
+MATERIAL_TRANSFER_DATA_ITEM_NAME = "All Materials"
+
+# Name used in parent transferable data
+PARENT_TRANSFER_DATA_ITEM_NAME = "Parent Relationship"
+
+MATERIAL_ATTRIBUTE_NAME = "material_index"
+
+
+###################
+# SHARED IDs
+###################
+
+# SHARED ID Icons
+GEO_NODE = "GEOMETRY_NODES"
+IMAGE = "IMAGE_DATA"
+BLANK = "BLANK1"
+
+
+###################
+# Publish
+###################
+
+# List of different states used when Publishing a Final Asset
+PUBLISH_TYPES = [
+    (
+        "publish",
+        "Active",
+        "Publish a new active version that will become the latest published version",
+    ),
+    (
+        "staged",
+        "Staged",
+        """Publish a staged version that will replace the last active version as the Push/Pull target.
+        Used for internal asset pipeline use only""",
+    ),
+    (
+        "review",
+        "Review",
+        "Test the results that will be published in the review area, will not be used as Push/Pull target",
+    ),
+]
+PUBLISH_KEYS = [pub_type[0] for pub_type in PUBLISH_TYPES]
+ACTIVE_PUBLISH_KEY = PUBLISH_KEYS[0]
+STAGED_PUBLISH_KEY = PUBLISH_KEYS[1]
