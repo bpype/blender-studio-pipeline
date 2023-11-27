@@ -244,6 +244,12 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         default="",
     )
 
+    episode_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Episode Active ID",
+        description="Server Id that refers to the active episode",
+        default="",
+    )
+
     enable_debug: bpy.props.BoolProperty(  # type: ignore
         name="Enable Debug Operators",
         description="Enables Operatots that provide debug functionality",
@@ -346,6 +352,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         project_active = cache.project_active_get()
+        episode_active = cache.episode_active_get()
 
         # Login.
         box = layout.box()
@@ -382,6 +389,24 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             icon="DOWNARROW_HLT",
         )
         box.row().prop(self, "project_root_dir")
+
+        # Episode.
+        box = layout.box()
+        box.label(text="Episode settings", icon="RENDER_ANIMATION")
+        row = box.row(align=True)
+
+        if not project_active:
+            ep_load_text = "--"
+        elif not episode_active:
+            ep_load_text = "Select Episode"
+        else:
+            ep_load_text = episode_active.name
+
+        row.operator(
+            KITSU_OT_con_episodes_load.bl_idname,
+            text=ep_load_text,
+            icon="DOWNARROW_HLT",
+        )
 
         # Anim tools settings.
         box = layout.box()

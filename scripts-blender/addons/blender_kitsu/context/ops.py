@@ -57,6 +57,7 @@ class KITSU_OT_con_productions_load(bpy.types.Operator):
         # Clear active shot when sequence changes.
         if self.enum_prop != project_prev_id:
             cache.sequence_active_reset(context)
+            cache.episode_active_reset(context)
             cache.asset_type_active_reset(context)
             cache.shot_active_reset(context)
             cache.asset_active_reset(context)
@@ -68,6 +69,43 @@ class KITSU_OT_con_productions_load(bpy.types.Operator):
         context.window_manager.invoke_search_popup(self)
         return {"FINISHED"}
 
+class KITSU_OT_con_episodes_load(bpy.types.Operator):
+    """
+    Gets all episodes that are available in server and let's user select. Invokes a search Popup (enum_prop) on click.
+    """
+
+    bl_idname = "kitsu.con_episodes_load"
+    bl_label = "Episodes Load"
+    bl_property = "enum_prop"
+    bl_description = "Set active episode for this Production"
+
+    enum_prop: bpy.props.EnumProperty(items=cache.get_episodes_enum_list)  # type: ignore
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        return bool(prefs.session_auth(context) and cache.project_active_get())
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+
+        # Store vars to check if project / seq / shot changed.
+        zep_prev_id = cache.episode_active_get().id
+
+        # Update kitsu metadata.
+        cache.episode_active_set_by_id(context, self.enum_prop)
+
+        # Clear active shot when sequence changes.
+        if self.enum_prop != zep_prev_id:
+            cache.sequence_active_reset(context)
+            cache.asset_type_active_reset(context)
+            cache.shot_active_reset(context)
+            cache.asset_active_reset(context)
+
+        util.ui_redraw()
+        return {"FINISHED"}
+
+    def invoke(self, context, event):
+        context.window_manager.invoke_search_popup(self)
+        return {"FINISHED"}
 
 class KITSU_OT_con_sequences_load(bpy.types.Operator):
     """
@@ -423,6 +461,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
 classes = [
     KITSU_OT_con_productions_load,
+    KITSU_OT_con_episodes_load,
     KITSU_OT_con_sequences_load,
     KITSU_OT_con_shots_load,
     KITSU_OT_con_asset_types_load,

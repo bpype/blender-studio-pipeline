@@ -293,6 +293,19 @@ class Project(Entity):
         project_dict = gazu.project.get_project(project_id)
         return cls.from_dict(project_dict)
 
+    # EPISODES
+    # ---------------
+    def get_episode(self, ep_id: str) -> Episode:
+        return Episode.by_id(ep_id)
+
+    def get_episodes_all(self) -> List[Episode]:
+        episodes = [
+            Episode.from_dict(s)
+            for s in gazu.shot.all_episodes_for_project(asdict(self))
+        ]
+        return sorted(episodes, key=lambda x: x.name)
+
+
     # SEQUENCES
     # ---------------
 
@@ -395,6 +408,51 @@ class Project(Entity):
     def __bool__(self) -> bool:
         return bool(self.id)
 
+@dataclass
+class Episode(Entity):
+    """
+    Class to get object-oriented representation of backend episode data structure.
+    Has multiple constructor functions (by_name, by_id, init>by_dict)
+    """
+    id: str = ""
+    name: str = ""
+    description: Optional[str] = None
+
+    @classmethod
+    def by_name(
+        cls,
+        project: Project,
+        ep_name: str
+    ) -> Optional[Episode]:
+        # Can return None if ep does not exist.
+        ep_dict = gazu.shot.get_episode_by_name(
+            asdict(project), ep_name
+        )
+        if ep_dict:
+            return cls.from_dict(ep_dict)
+        return None
+
+    @classmethod
+    def by_id(cls, ep_id: str) -> Episode:
+        ep_dict = gazu.shot.get_episode(ep_id)
+        return cls.from_dict(ep_dict)
+
+    def __bool__(self) -> bool:
+        return bool(self.id)
+    
+    def get_all_asset(self) -> List[Asset]:
+        assets = [
+            Asset.from_dict(at)
+            for at in gazu.asset.all_assets_for_episode(asdict(self))
+        ]
+        return sorted(assets, key=lambda x: x.name)
+
+    def get_sequences_all(self) -> List[Sequence]:
+        sequences = [
+            Sequence.from_dict(s)
+            for s in gazu.shot.all_sequences_for_episode(asdict(self))
+        ]
+        return sorted(sequences, key=lambda x: x.name)
 
 @dataclass
 class Sequence(Entity):
