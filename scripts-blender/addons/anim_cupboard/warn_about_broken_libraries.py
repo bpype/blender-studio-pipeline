@@ -84,11 +84,17 @@ def warn_about_incorrect_lib_paths(dummy=None):
     abs_libs = get_absolute_libraries()
     if len(invalid_libs) > 0:
         bpy.context.window_manager.popup_menu(
-            draw_invalid_library_warning, title="Warning: Saved with invalid library paths.", icon='ERROR'
+            draw_invalid_library_warning,
+            title="Warning: Saved with invalid library paths.",
+            icon='ERROR',
         )
     elif len(abs_libs) > 0:
+        if not bpy.context.preferences.addons[__package__].warn_about_absolute_libs:
+            return
         bpy.context.window_manager.popup_menu(
-            draw_absolute_library_warning, title="Warning: Saved with absolute library paths.", icon='ERROR'
+            draw_absolute_library_warning,
+            title="Warning: Saved with absolute library paths.",
+            icon='ERROR',
         )
 
     store_lib_paths()
