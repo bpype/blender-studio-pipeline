@@ -18,7 +18,8 @@ def get_shared_ids(collection: bpy.types.Collection) -> list[bpy.types.ID]:
     return [
         id
         for id in all_ids_of_coll
-        if isinstance(id, bpy.types.NodeTree) or isinstance(id, bpy.types.Image)
+        if (isinstance(id, bpy.types.NodeTree) or isinstance(id, bpy.types.Image))
+        and id.library is None
     ]
 
 
