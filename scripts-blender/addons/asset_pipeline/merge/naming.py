@@ -178,6 +178,14 @@ def task_layer_prefix_basename_get(name: str) -> str:
     return name
 
 
+def task_layer_prefix_legacy_basename(name) -> str:
+    if "." in name:
+        legacy_name = name.replace(".", "")
+        for task_layer_key in config.TASK_LAYER_TYPES:
+            if legacy_name.startswith(config.TASK_LAYER_TYPES[task_layer_key]):
+                return legacy_name.replace(config.TASK_LAYER_TYPES[task_layer_key], "")
+
+
 def task_layer_prefix_transfer_data_update(
     transfer_data_item: bpy.types.CollectionProperty,
 ) -> bool:
@@ -195,14 +203,25 @@ def task_layer_prefix_transfer_data_update(
     prefix_types = [constants.MODIFIER_KEY, constants.CONSTRAINT_KEY]
     if transfer_data_item.type not in prefix_types:
         return
-
     obj = transfer_data_item.id_data
     td_data = data_type_from_transfer_data_key(obj, transfer_data_item.type)
-    base_name = task_layer_prefix_basename_get(transfer_data_item.name)
+
+    # TODO Remove this
+    # Legacy Prefix Name was used during add-on testing stage but not production
+    legacy_name = task_layer_prefix_legacy_basename(transfer_data_item.name)
+
+    if legacy_name:
+        base_name = legacy_name
+    else:
+        base_name = task_layer_prefix_basename_get(transfer_data_item.name)
+
     prefix = config.TASK_LAYER_TYPES[transfer_data_item.owner]
     new_name = prefix + constants.NAME_DELIMITER + base_name
     if new_name == transfer_data_item.name or not td_data.get(transfer_data_item.name):
         return
+
+    # Ensure no period in name
+    new_name = new_name.replace('.', '')
 
     td_data[transfer_data_item.name].name = new_name
     transfer_data_item.name = new_name
