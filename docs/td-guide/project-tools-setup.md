@@ -1,7 +1,7 @@
 # Project Tools Setup
 
-::: warning Work in Progress
-15 Oct. 2023 - The content of this page is currently being edited/updated.
+::: warning Linux & Mac Only
+The terminal commands on this page are designed to be run on a linux/mac systems. Commands require modifications to file paths to run on Windows.
 :::
 
 ## Introduction
