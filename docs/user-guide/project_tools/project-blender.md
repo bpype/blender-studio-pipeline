@@ -46,7 +46,7 @@ TODO Replace Image with Project-Tools version
 To launch Blender from the terminal, open the tools directory within your project folder, and from the terminal use the run Blender script.
 
 ```bash
-cd /your_project_name/svn/tools
+cd your_project_name/svn/tools
 ./run_blender.py
 ```
 
@@ -63,7 +63,7 @@ Internally to the Blender Studio only, the blender inside your project is automa
 :::
 
 ```bash
-cd /your_project_name/svn/tools
+cd your_project_name/svn/tools
 ./update_blender.py
 ```
 ## Rollback Blender
@@ -71,7 +71,7 @@ cd /your_project_name/svn/tools
 Use `rollback_blender.py` to switch the "current" version hosted in `your_project_name/shared/artifacts/blender` to one the older downloads, rolling back affects all users using your project. This is intended to be used to rollback to an older version in case of bugs in newer downloaded versions.
 
 ```bash
-cd /your_project_name/svn/tools
+cd your_project_name/svn/tools
 ./rollback_blender.py
 ```
 
@@ -81,7 +81,7 @@ cd /your_project_name/svn/tools
 In some cases user may want to roll their machine's local blender to a previous version without affecting other users. 
 
 ```bash
-cd /your_project_name/svn/tools
+cd your_project_name/svn/tools
 ./rollback_blender_local.py
 ```
 
@@ -89,8 +89,8 @@ cd /your_project_name/svn/tools
 Blender Add-ons can be packaged directly from the [Blender Studio Pipeline](https://projects.blender.org/studio/blender-studio-pipeline) repository. Personal Add-Ons can be installed [normally](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#installing-add-ons).
 
 ```bash
-cd /blender-studio-pipeline/scripts/pipeline-release
-./package_local.py /your_project_name/shared/artifacts/addons
+cd blender-studio-pipeline/scripts/pipeline-release
+./package_local.py your_project_name/shared/artifacts/addons
 ```
 
 
