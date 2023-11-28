@@ -421,7 +421,8 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
         new_file_path = get_next_published_file(current_file, self.publish_types)
 
         # Save Latest Publish File & Mark as Asset
-        context.scene.asset_pipeline.asset_collection.asset_mark()
+        if self.publish_types == constants.ACTIVE_PUBLISH_KEY:
+            context.scene.asset_pipeline.asset_collection.asset_mark()
         bpy.ops.wm.save_as_mainfile(filepath=new_file_path.__str__(), copy=True)
         context.scene.asset_pipeline.asset_collection.asset_clear()
         return {'FINISHED'}
