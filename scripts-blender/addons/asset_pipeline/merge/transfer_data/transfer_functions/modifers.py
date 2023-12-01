@@ -78,6 +78,13 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
                 value = getattr(mod, prop)
                 setattr(mod_target, prop, value)
 
+            if mod.type != 'NODES':
+                return
+
+            # Transfer geo node attributes
+            for key, value in mod.items():
+                mod_target[key] = value
+
     # rebind modifiers (corr. smooth, surf. deform, mesh deform)
     for mod in target_obj.modifiers:
         if mod.type == 'SURFACE_DEFORM':
