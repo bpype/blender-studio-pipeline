@@ -49,6 +49,12 @@ parser.add_argument(
     help="Path to blender python script(s) to execute inside .blend files during crawl. Execution is skipped if no script is provided.",
     nargs='+',
 )
+
+parser.add_argument(
+    "--args",
+    help="Optionally pass an arguments to provided script arguments by placing arguments in qoutes like '--myarg -s' (only one script is supported). Only 'sys' arguments are supported, see https://docs.python.org/3/library/sys.html for more details",
+    type=str,
+)
 parser.add_argument(
     "-n",
     "--nosave",
@@ -176,6 +182,7 @@ def main() -> int:
     regex = args.filter
     script_input = args.script
     ask_for_confirmation = args.ask
+    arguments = args.args
 
     scripts = []
     if script_input:
@@ -185,6 +192,11 @@ def main() -> int:
                 "No --script was not provided as argument, printed found .blend files, exiting program.",
             )
             scripts.append(script_append_save(script_path, args.nosave))
+
+    if arguments and len(scripts) > 1:
+        raise Exception(
+            "Too many scripts, only one script is supported when passing arguments"
+        )
 
     # Purge is optional so it can be none
     if purge_path is not None:
@@ -260,11 +272,12 @@ def main() -> int:
             cmd_list = (
                 blender_exec.as_posix(),
                 blend_file.as_posix(),
-                "-b",
-                "-P",
+                "--background",
+                "--python",
                 script,
-                "--factory-startup",
             )
+            if arguments:
+                cmd_list = cmd_list + ("--",) + tuple(arguments.split(" "))
             process = subprocess.Popen(cmd_list, shell=False)
             if process.wait() != 0:
                 cancel_program(f"Blender Crashed on file: {blend_file.as_posix()}")

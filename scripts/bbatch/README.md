@@ -33,7 +33,8 @@ If a script is provided, `bbatch` will automatically save after execution of the
 
 | Command      | Description |
 | ----------- | ----------- |
-| --script| Path to blender python script(s) to execute inside .blend files during crawl.|
+| -s --script| Path to blender python script(s) to execute inside .blend files during crawl.|
+| --args |Optionally pass an arguments to provided script arguments by placing arguments in qoutes like '--myarg -s' (only one script is supported). Only 'sys' arguments are supported, see https://docs.python.org/3/library/sys.html for more details|
 |  -n, --nosave|Don't save .blend after script execution.|
 | -r, --recursive| If provided in combination with a folder path will perform recursive crawl|
 | -f  --filter| Provide a string to filter the found .blend files|
