@@ -82,13 +82,22 @@ def init_transfer_data(
         task_layer_name (str): Name of task layer
         temp_transfer_data: Item of class ASSET_TRANSFER_DATA_TEMP
     """
+    if obj.library:
+        # Don't create ownership data for object data if the object is linked.
+        return
+
+    constraints.init_constraints(scene, obj)
+    parent.init_parent(scene, obj)
+    modifers.init_modifiers(scene, obj)
+
+    if obj.data.library:
+        # Don't create ownership data for mesh data if the mesh is linked.
+        return
+
     vertex_groups.init_vertex_groups(scene, obj)
     materials.init_materials(scene, obj)
-    modifers.init_modifiers(scene, obj)
-    constraints.init_constraints(scene, obj)
     shape_keys.init_shape_keys(scene, obj)
     attributes.init_attributes(scene, obj)
-    parent.init_parent(scene, obj)
 
 
 def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
@@ -112,13 +121,13 @@ def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
         target_obj = transfer_data.get('target_obj')
         source_obj = transfer_data.get('source_obj')
         if target_obj is None:
-            print(f"Failed to Transferable Data for {transfer_data_item.id_data.name}")
+            print(f"Failed to Transfer Data for {transfer_data_item.id_data.name}")
             continue
         if transfer_data_item is None:
             continue
         if source_obj != target_obj:
             if transfer_data_item.type == constants.VERTEX_GROUP_KEY:
-                print(f"Transfering Data {constants.VERTEX_GROUP_KEY}: {name}")
+                print(f"Transferring Data {constants.VERTEX_GROUP_KEY}: {name}")
                 vertex_groups.transfer_vertex_group(
                     context=context,
                     vertex_group_name=transfer_data_item.name,
@@ -126,7 +135,7 @@ def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
                     source_obj=source_obj,
                 )
             if transfer_data_item.type == constants.MODIFIER_KEY:
-                print(f"Transfering Data {constants.MODIFIER_KEY}: {name}")
+                print(f"Transferring Data {constants.MODIFIER_KEY}: {name}")
                 modifers.transfer_modifier(
                     modifier_name=transfer_data_item.name,
                     target_obj=target_obj,
@@ -139,7 +148,7 @@ def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
                     source_obj=source_obj,
                 )
             if transfer_data_item.type == constants.MATERIAL_SLOT_KEY:
-                print(f"Transfering Data {constants.MATERIAL_SLOT_KEY}: {name}")
+                print(f"Transferring Data {constants.MATERIAL_SLOT_KEY}: {name}")
                 materials.transfer_materials(
                     target_obj=target_obj,
                     source_obj=source_obj,
