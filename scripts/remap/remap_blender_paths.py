@@ -1,17 +1,13 @@
+import sys
 import bpy
 from pathlib import Path
 import json
 import hashlib
 import time
 import contextlib
+from typing import List
 
 file_updated = False
-
-json_file_path = ""  # File Path to read/write JSON File to
-
-gold_file_map_json = Path(json_file_path)
-gold_file_map_data = open(gold_file_map_json)
-gold_file_map_dict = json.load(gold_file_map_data)
 
 
 @contextlib.contextmanager
@@ -27,7 +23,16 @@ def override_save_version():
         bpy.context.preferences.filepaths.save_version = save_version
 
 
-def paths_for_vse_strip(strip):
+def paths_for_vse_strip(strip: bpy.types.Sequence) -> List[str]:
+    """Returns all paths related to Movie, Image and Sound strips
+    in Blender's Video Sequence Editor
+
+    Args:
+        strip (bpy.types.Sequence): Movie, Image or Sounds Strip
+
+    Returns:
+        List[str]: List of all paths related to strip
+    """
     if hasattr(strip, "filepath"):
         return [strip.filepath]
     if hasattr(strip, "directory"):
@@ -38,9 +43,9 @@ def paths_for_vse_strip(strip):
 
 
 def generate_checksum(filepath: str) -> str:
-    """
-    Generate a checksum for a zip file
-    Arguments:
+    """Generate a checksum for a zip file
+
+    Args:
         archive_path: String of the archive's file path
     Returns:
         sha256 checksum for the provided archive as string
@@ -55,20 +60,37 @@ def generate_checksum(filepath: str) -> str:
     return sha256.hexdigest()
 
 
-def find_new_from_old(old_path):
-    for _, value in gold_file_map_dict.items():
+def dict_find_new_from_old(old_path: str, file_map_dict: dict) -> str:
+    """Returns the matching 'new' filepath stored in file_map_dict
+    using the 'old' filepath.
+
+    Args:
+        old_path (str): 'old' filepath referencing a file from Blender
+        file_map_dict (dict): Dictionary of 'old' and 'new' paths
+
+    Returns:
+        str: 'new' filepath to replace the 'old' filepath
+    """
+    for _, value in file_map_dict.items():
         for old_json_path in value['old']:
+            # Match paths using the filepath stored in Blender
             if old_json_path.endswith(old_path.split("/..")[-1]):
                 if value['new'] != old_json_path:
                     return value['new']
-    for _, value in gold_file_map_dict.items():
+    for _, value in file_map_dict.items():
         for old_json_path in value['old']:
+            # Match paths using filename only
             if old_json_path.endswith(old_path.split("/")[-1]):
                 if value['new'] != old_json_path:
                     return value['new']
 
 
-def update_vse_references():
+def update_vse_references(file_map_dict: dict) -> None:
+    """Update file references for VSE strips
+
+    Args:
+        file_map_dict (dict): Dictionary of 'old' and 'new' paths
+    """
     global file_updated
     for scn in bpy.data.scenes:
         if not scn.sequence_editor:
@@ -77,7 +99,7 @@ def update_vse_references():
             for path in paths_for_vse_strip(strip):
                 if path == "":
                     continue
-                new_path = find_new_from_old(path)
+                new_path = dict_find_new_from_old(path, file_map_dict)
                 if not new_path:
                     print(f"No new path for '{strip.name}' at '{path}' ")
                     continue
@@ -106,21 +128,31 @@ def update_vse_references():
                         file_updated = True
 
 
-def update_referenced_images():
+def update_referenced_images(file_map_dict: dict) -> None:
+    """Update file references for Image data-blocks
+
+    Args:
+        file_map_dict (dict): Dictionary of 'old' and 'new' paths
+    """
     global file_updated
     for img in bpy.data.images:
         if img.filepath is not None and img.filepath != "":
-            new_path = find_new_from_old(img.filepath)
+            new_path = dict_find_new_from_old(img.filepath, file_map_dict)
             if new_path:
                 print(f"Remapping Image Datablock {img.filepath }")
                 img.filepath = new_path
                 file_updated = True
 
 
-def update_libs():
+def update_libs(file_map_dict: dict) -> None:
+    """Update file references for libraries (linked/appended data)
+
+    Args:
+        file_map_dict (dict): Dictionary of 'old' and 'new' paths
+    """
     global file_updated
     for lib in bpy.data.libraries:
-        new_path = find_new_from_old(lib.filepath)
+        new_path = dict_find_new_from_old(lib.filepath, file_map_dict)
         if new_path:
             lib.filepath = new_path
             print(f"Remapping {lib.filepath}")
@@ -128,10 +160,21 @@ def update_libs():
 
 
 def remap_all_blender_paths():
+    """Remap all references to files from blender via dictionary"""
     start = time.time()
-    update_vse_references()
-    update_referenced_images()
-    update_libs()
+    import sys
+
+    argv = sys.argv
+    argv = argv[argv.index("--") + 1 :]
+    json_file_path = argv[0]
+
+    file_map_json = Path(json_file_path)
+    file_map_data = open(file_map_json)
+    file_map_dict = json.load(file_map_data)
+
+    update_vse_references(file_map_dict)
+    update_referenced_images(file_map_dict)
+    update_libs(file_map_dict)
     bpy.ops.file.make_paths_relative()
     end = time.time()
 

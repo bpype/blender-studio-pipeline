@@ -3,8 +3,9 @@
 This directory contains scripts that are useful for re-organizing production directories. The tools are intended to be used when some directories need to be changed, and references to these directories need to be updated in .blend files.
 
 ## Usage
-1. Set the variable `json_file_path` to match in all script files. Set `folder_path` in both has_map script files.
-2. Run `hash_map_make.py` to create a JSON file listing every file in directory via hash, plus a list directories leading to that file (duplicate files included).
-3. Re-organize/rename items in the directory you have made a map for.
-4. Run `hash_map_update.py` to find the new locations of these files using the Hash to match them up. This will add a `new` directory for each hash.
-5. Using [`bbatch`](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts/bbatch/README.md) run the script `remap_blender_paths.py` to update references in .blend files from the old path to the new path.
+1. Enter remap directory `cd blender-studio-pipeline/scripts/remap`
+2. Run the remap tool via `python -m remap`. You will be prompted for a directory to map, and a location to store the map (outside of your remap directory).
+3. Now you are ready to re-organize your mapped directory, move files into different folders, rename files and remove duplicates.
+4. Re-run the remap tool via `python -m remap` to update your map with the new file locations. The tool will print a bbatch, copy this for use in step 6.
+5. Enter bbatch directory `cd blender-studio-pipeline/scripts/bbatch`
+6. Run provided bbatch command, similar to `python -m bbatch {my_files}/ --nosave --recursive --script {path_to_script}/remap_blender_paths.py --args "{path_to_json}/dir_map.json"` to update all references to the remapped directory contents in your .blend files.
