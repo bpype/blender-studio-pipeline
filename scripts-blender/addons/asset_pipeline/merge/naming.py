@@ -106,6 +106,11 @@ def merge_add_suffix_to_hierarchy(
     datablocks = get_all_referenced_ids(collection, ref_map)
     datablocks.add(collection)
     for db in datablocks:
+        if len(db.name) > 59:
+            raise Exception(
+                f"Datablock name too long, must be max 59 characters: {db.name}"
+            )
+
         if db.library:
             # Don't rename linked datablocks.
             continue
@@ -113,7 +118,11 @@ def merge_add_suffix_to_hierarchy(
         if collision_db:
             collision_db.name += f'{constants.MERGE_DELIMITER}OLD'
         try:
-            db.name += suffix
+            new_name = db.name + suffix
+            db.name = new_name
+            assert (
+                db.name == new_name
+            ), "This should never happen here, unless some add-on suffix is >3 characters. Avoid!"
         except:
             pass
 

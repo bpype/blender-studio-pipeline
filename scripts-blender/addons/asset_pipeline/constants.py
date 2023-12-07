@@ -11,9 +11,9 @@ NAME_DELIMITER = "-"
 # Delimiter used by suffixes in the merge process
 MERGE_DELIMITER = "."
 
-# Suffixes used when naming items to merge
-LOCAL_SUFFIX = "LOCAL"
-EXTERNAL_SUFFIX = "EXTERNAL"
+# Suffixes used when naming items to merge. Max 3 chars!
+LOCAL_SUFFIX = "LOC"
+EXTERNAL_SUFFIX = "EXT"
 
 
 ###################
