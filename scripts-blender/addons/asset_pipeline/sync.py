@@ -152,36 +152,27 @@ def sync_execute_pull(self, context):
 
 def sync_execute_push(self, context):
     temp_file_path = create_temp_file_backup(self, context)
-    push_targets = find_all_published(self._current_file, constants.ACTIVE_PUBLISH_KEY)
 
-    if self._sync_target not in push_targets:
-        push_targets.append(self._sync_target)
+    file_path = self._sync_target.__str__()
+    bpy.ops.wm.open_mainfile(filepath=file_path)
 
-    for file in push_targets:
-        file_path = file.__str__()
-        bpy.ops.wm.open_mainfile(filepath=file_path)
+    update_temp_file_paths(self, context, temp_file_path)
 
-        update_temp_file_paths(self, context, temp_file_path)
+    local_tls = [
+        task_layer
+        for task_layer in config.TASK_LAYER_TYPES
+        if task_layer not in self._task_layer_keys
+    ]
 
-        # SKIP DEPRECIATED FILES
-        if context.scene.asset_pipeline.is_depreciated:
-            continue
+    error_msg = merge_task_layer(
+        context,
+        local_tls=local_tls,
+        external_file=self._current_file,
+    )
+    if error_msg:
+        context.scene.asset_pipeline.sync_error = True
+        self.report({'ERROR'}, error_msg)
+        return {'CANCELLED'}
 
-        local_tls = [
-            task_layer
-            for task_layer in config.TASK_LAYER_TYPES
-            if task_layer not in self._task_layer_keys
-        ]
-
-        error_msg = merge_task_layer(
-            context,
-            local_tls=local_tls,
-            external_file=self._current_file,
-        )
-        if error_msg:
-            context.scene.asset_pipeline.sync_error = True
-            self.report({'ERROR'}, error_msg)
-            return {'CANCELLED'}
-
-        bpy.ops.wm.save_as_mainfile(filepath=file_path)
-        bpy.ops.wm.open_mainfile(filepath=self._current_file.__str__())
+    bpy.ops.wm.save_as_mainfile(filepath=file_path)
+    bpy.ops.wm.open_mainfile(filepath=self._current_file.__str__())

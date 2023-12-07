@@ -3,6 +3,8 @@ ADDON_NAME = "asset_pipeline"
 # Delimiter used for naming data within Blender
 NAME_DELIMITER = "-"
 
+# Delimiter used for naming .blend files
+FILE_DELIMITER = NAME_DELIMITER
 
 ###################
 # MERGE
@@ -108,3 +110,4 @@ PUBLISH_TYPES = [
 PUBLISH_KEYS = [pub_type[0] for pub_type in PUBLISH_TYPES]
 ACTIVE_PUBLISH_KEY = PUBLISH_KEYS[0]
 STAGED_PUBLISH_KEY = PUBLISH_KEYS[1]
+REVIEW_PUBLISH_KEY = PUBLISH_KEYS[2]

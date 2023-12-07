@@ -6,6 +6,7 @@ from .merge.task_layer import draw_task_layer_selection
 from .config import verify_json_data
 from .prefs import get_addon_prefs
 from . import constants
+from .merge.publish import is_staged_publish
 
 
 class ASSETPIPE_PT_sync(bpy.types.Panel):
@@ -55,20 +56,41 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
 
         layout.prop(asset_pipe, "asset_collection")
 
-        layout.operator("assetpipe.sync_push", text="Push to Publish", icon="TRIA_UP")
+        staged = is_staged_publish(Path(bpy.data.filepath))
+        sync_target_name = "Staged" if staged else "Active"
         layout.operator(
-            "assetpipe.sync_pull", text="Pull from Publish", icon="TRIA_DOWN"
+            "assetpipe.sync_push", text=f"Push to {sync_target_name}", icon="TRIA_UP"
         )
+        layout.operator(
+            "assetpipe.sync_pull",
+            text=f"Pull from {sync_target_name}",
+            icon="TRIA_DOWN",
+        )
+
         layout.separator()
+        if staged:
+            layout.operator("assetpipe.publish_staged_as_active", icon="LOOP_FORWARDS")
         layout.operator("assetpipe.publish_new_version", icon="PLUS")
-        layout.separator()
-        layout.operator("assetpipe.batch_ownership_change")
         # TODO Find new way to determine if we are in a published file more explicitly
         # if asset_pipe.is_asset_pipeline_file and asset_pipe.task_layer_name == "NONE":
         # asset_pipe = context.scene.asset_pipeline
         # box = layout.box()
         # box.label(text="Published File Settings")
         # box.prop(asset_pipe, "is_depreciated")
+
+
+class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Asset Pipe 2'
+    bl_label = "Tools"
+    bl_parent_id = "ASSETPIPE_PT_sync"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context: bpy.types.Context) -> None:
+        layout = self.layout
+        layout.operator("assetpipe.batch_ownership_change")
+        layout.operator("assetpipe.revert_file", icon="FILE_TICK")
 
 
 class ASSETPIPE_PT_sync_advanced(bpy.types.Panel):
@@ -91,7 +113,6 @@ class ASSETPIPE_PT_sync_advanced(bpy.types.Panel):
         box.operator("assetpipe.reset_ownership", icon="LOOP_BACK")
         box = layout.box()
         box.operator("assetpipe.fix_prefixes", icon="CHECKMARK")
-        box.operator("assetpipe.revert_file", icon="FILE_TICK")
 
         # Task Layer Updater
         box = layout.box()
@@ -161,6 +182,7 @@ class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
 classes = (
     ASSETPIPE_PT_sync,
     ASSETPIPE_PT_sync_advanced,
+    ASSETPIPE_PT_sync_tools,
     ASSETPIPE_PT_ownership_inspector,
 )
 

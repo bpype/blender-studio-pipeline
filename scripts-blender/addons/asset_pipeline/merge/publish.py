@@ -8,12 +8,19 @@ def find_file_version(published_file: Path) -> int:
 
     Args:
         file (Path): Path to a publish file, naming convention is
-        asset_name.v{3-digit_version}.blend`
+        asset_name-v{3-digit_version}.blend`
 
     Returns:
         int: returns current version in filename as integer
     """
-    return int(published_file.name.split(".")[1].replace("v", ""))
+    name_without_ext = published_file.name.strip(".blend")
+
+    # Support Legacy Delimiter
+    # TODO Remove this is legacy code (coordinate with team)
+    if "." in name_without_ext:
+        return int(name_without_ext.split(".")[1].replace("v", ""))
+
+    return int(name_without_ext.split(constants.FILE_DELIMITER)[1].replace("v", ""))
 
 
 def get_next_published_file(
@@ -37,7 +44,25 @@ def get_next_published_file(
     else:
         new_version_number = find_file_version(last_publish) + 1
     new_version = "{0:0=3d}".format(new_version_number)
-    return publish_dir.joinpath(base_name + f".v" + new_version + ".blend")
+    return publish_dir.joinpath(
+        base_name + constants.FILE_DELIMITER + "v" + new_version + ".blend"
+    )
+
+
+def create_next_published_file(
+    current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY
+) -> None:
+    """Creates new Published version of a given Publish Type
+
+    Args:
+        current_file (Path): Current file, which must be a task file at root of asset directory
+        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'review'. Defaults to 'publish'.
+    """
+    new_file_path = get_next_published_file(current_file, publish_type)
+    if publish_type == constants.ACTIVE_PUBLISH_KEY:
+        bpy.context.scene.asset_pipeline.asset_collection.asset_mark()
+    bpy.ops.wm.save_as_mainfile(filepath=new_file_path.__str__(), copy=True)
+    bpy.context.scene.asset_pipeline.asset_collection.asset_clear()
 
 
 def find_all_published(current_file: Path, publish_type: str) -> list[Path]:
@@ -93,3 +118,18 @@ def find_sync_target(current_file: Path) -> Path:
     if latest_staged:
         return latest_staged
     return find_latest_publish(current_file, publish_type=constants.ACTIVE_PUBLISH_KEY)
+
+
+def is_staged_publish(current_file: Path) -> bool:
+    """Checks if there is a staged publish file, which
+    will be used as the push/pull target.
+
+    Args:
+        current_file (Path): Current file, which must be a task file at root of asset directory
+
+    Returns:
+        bool: True if staged file exists
+    """
+    return bool(
+        find_latest_publish(current_file, publish_type=constants.STAGED_PUBLISH_KEY)
+    )

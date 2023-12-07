@@ -188,6 +188,7 @@ def task_layer_prefix_basename_get(name: str) -> str:
 
 
 def task_layer_prefix_legacy_basename(name) -> str:
+    # TODO Remove this is legacy code (coordinate with team)
     if "." in name:
         legacy_name = name.replace(".", "")
         for task_layer_key in config.TASK_LAYER_TYPES:
@@ -230,7 +231,8 @@ def task_layer_prefix_transfer_data_update(
         return
 
     # Ensure no period in name
-    new_name = new_name.replace('.', '')
+    # TODO Remove this is legacy code (coordinate with team)
+    new_name = new_name.replace(".", "")
 
     td_data[transfer_data_item.name].name = new_name
     transfer_data_item.name = new_name

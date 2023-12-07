@@ -31,7 +31,7 @@
         },
         "PARENT": {
             "default_owner": "Rigging",
-            "auto_surrender": false
+            "auto_surrender": true
         }
     },
     "ATTRIBUTE_DEFAULTS": {

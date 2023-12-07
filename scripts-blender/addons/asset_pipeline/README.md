@@ -23,6 +23,8 @@ Checkout the [Asset Pipeline Demo](https://projects.blender.org/studio/blender-s
         - [Staged](#staged)
         - [Review](#review)
     - [Creating Custom Task Layers](#creating-custom-task-layers)
+    - [Gotchas](#gotchas)
+        - [Multi-User Object Data](#multi-user-object-data)
 
 <!-- /TOC -->
 
@@ -170,3 +172,9 @@ Add your own custom Task Layers to the asset pipeline addon. To create a custom 
 }
 
 ```
+
+
+## Gotchas
+
+### Multi-User Object Data
+ - Object Data that is owned by more than one object (like meshes used by multiple objects) are only valid between objects of the same task layer/owner. If you attempt to link externally owned object data from a locally owned object, the object data will be duplicated instead on Push/Pull. 

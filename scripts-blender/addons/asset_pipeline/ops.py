@@ -8,7 +8,13 @@ from .merge.naming import task_layer_prefix_transfer_data_update
 from .merge.task_layer import (
     draw_task_layer_selection,
 )
-from .merge.publish import get_next_published_file, find_all_published
+from .merge.publish import (
+    get_next_published_file,
+    find_all_published,
+    find_latest_publish,
+    is_staged_publish,
+    create_next_published_file,
+)
 from .images import save_images
 from .sync import (
     sync_invoke,
@@ -32,6 +38,12 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
 
     create_files: bpy.props.BoolProperty(
         name="Create Files for Unselected Task Layers", default=True
+    )
+
+    # Only Active/Stage Publish Types are avaliable
+    publish_type: bpy.props.EnumProperty(
+        name="Publish Type",
+        items=constants.PUBLISH_TYPES[:2],
     )
 
     @classmethod
@@ -61,6 +73,7 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
                 continue
             new_task_layer = all_task_layers.add()
             new_task_layer.name = task_layer_key
+        self.publish_type = constants.STAGED_PUBLISH_KEY
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
@@ -71,6 +84,7 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         for task_layer_bool in all_task_layers:
             box.prop(task_layer_bool, "is_local", text=task_layer_bool.name)
         self.layout.prop(self, "create_files")
+        self.layout.prop(self, "publish_type")
 
     def _asset_name_set(self, context) -> None:
         if self._asset_pipe.new_file_mode == "KEEP":
@@ -156,10 +170,15 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
             do_local_ids=True, do_linked_ids=False, do_recursive=True
         )
 
-    def _task_layer_collections_set(self, context, asset_col):
+    def _task_layer_collections_set(self, context, asset_col, local_tls):
         for task_layer_key in config.TASK_LAYER_TYPES:
-            bpy.data.collections.new(task_layer_key)
-            task_layer_col = bpy.data.collections.get(task_layer_key)
+            if task_layer_key not in local_tls:
+                continue
+            col_name = (
+                f"{self._name}{constants.NAME_DELIMITER}{task_layer_key}"
+            ).lower()
+            bpy.data.collections.new(col_name)
+            task_layer_col = bpy.data.collections.get(col_name)
             task_layer_col.asset_id_owner = task_layer_key
             asset_col.children.link(task_layer_col)
 
@@ -167,12 +186,14 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         self._asset_pipe.is_asset_pipeline_file = True
 
         asset_col = self._asset_collection_get(context, local_tls)
-        self._task_layer_collections_set(context, asset_col)
+        self._task_layer_collections_set(context, asset_col, local_tls)
 
         if bpy.data.filepath != "":
             first_file_name = Path(bpy.data.filepath).name
         else:
-            first_file_name = self._name + "." + local_tls[0].lower() + ".blend"
+            first_file_name = (
+                self._name + constants.FILE_DELIMITER + local_tls[0].lower() + ".blend"
+            )
 
         first_file = os.path.join(asset_directory, first_file_name)
 
@@ -182,19 +203,14 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         return first_file
 
     def _task_layer_file_create(self, context, task_layer_key, asset_directory):
-        name = self._name + "." + task_layer_key.lower() + ".blend"
+        name = self._name + constants.FILE_DELIMITER + task_layer_key.lower() + ".blend"
         self._asset_pipe.set_local_task_layers([task_layer_key])
-        self._task_layer_collections_set(context, self._asset_pipe.asset_collection)
+        self._task_layer_collections_set(
+            context, self._asset_pipe.asset_collection, [task_layer_key]
+        )
 
         task_layer_file = os.path.join(asset_directory, name)
         bpy.ops.wm.save_as_mainfile(filepath=task_layer_file, copy=True)
-
-    def _publish_file_create(self, context, asset_directory):
-        publish_path = os.path.join(asset_directory, constants.ACTIVE_PUBLISH_KEY)
-        name = self._name + "." + "v001" + ".blend"
-        self._asset_pipe.asset_collection.asset_mark()
-        publish_file = os.path.join(publish_path, name)
-        bpy.ops.wm.save_as_mainfile(filepath=publish_file, copy=True)
 
     def execute(self, context: bpy.types.Context):
         self._asset_name_set(context)
@@ -225,7 +241,7 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
 
         # Create intial publish based on task layers.
         self._remove_collections(context)
-        self._publish_file_create(context, asset_directory)
+        create_next_published_file(Path(starting_file), self.publish_type)
         if starting_file:
             bpy.ops.wm.open_mainfile(filepath=starting_file)
         return {'FINISHED'}
@@ -383,6 +399,15 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
         items=constants.PUBLISH_TYPES,
     )
 
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        if bpy.data.is_dirty:
+            cls.poll_message_set(
+                "Save the current file and/or Pull from last publish before creating new Publish"
+            )
+            return False
+        return True
+
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
         return context.window_manager.invoke_props_dialog(self, width=400)
 
@@ -391,40 +416,56 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
         layout.prop(self, "publish_types")
 
     def execute(self, context: bpy.types.Context):
-        if bpy.data.is_dirty:
+        if (
+            is_staged_publish(Path(bpy.data.filepath))
+            and self.publish_types != constants.REVIEW_PUBLISH_KEY
+        ):
             self.report(
                 {'ERROR'},
-                "Please save the current file and/or Pull from last publish before creating new Publish",
+                f"Only '{constants.REVIEW_PUBLISH_KEY}' Publish is supported when a version is staged",
             )
             return {'CANCELLED'}
 
-        current_file = Path(bpy.data.filepath)
+        create_next_published_file(Path(bpy.data.filepath), self.publish_types)
+        return {'FINISHED'}
 
-        if self.publish_types == constants.ACTIVE_PUBLISH_KEY:
-            context.scene.asset_pipeline.asset_collection.asset_mark()
 
-            push_targets = find_all_published(
-                Path(bpy.data.filepath), constants.ACTIVE_PUBLISH_KEY
+class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
+    bl_idname = "assetpipe.publish_staged_as_active"
+    bl_label = "Publish Staged to Active"
+    bl_description = """Create a new Published Version in the Publish Area"""
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        if bpy.data.is_dirty:
+            cls.poll_message_set(
+                "Save the current file and/or Pull from last publish before creating new Publish"
             )
+            return False
+        if not is_staged_publish(Path(bpy.data.filepath)):
+            cls.poll_message_set.report("No File is currently staged")
+            return False
+        return True
 
-            for file in push_targets:
-                file_path = Path(file.__str__())
+    def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
+        return context.window_manager.invoke_props_dialog(self, width=400)
 
-                bpy.ops.wm.open_mainfile(filepath=file_path.__str__())
+    def draw(self, context: bpy.types.Context):
+        layout = self.layout
+        layout.alert = True
+        layout.label(
+            text="Delete the current staged file and replace with an active publish.",
+            icon="ERROR",
+        )
 
-                # Clear old Assets
-                context.scene.asset_pipeline.asset_collection.asset_clear()
-                bpy.ops.wm.save_as_mainfile(filepath=file_path.__str__())
-
-        # Re-open Current File to use as source for Publish
-        bpy.ops.wm.open_mainfile(filepath=current_file.__str__())
-        new_file_path = get_next_published_file(current_file, self.publish_types)
-
-        # Save Latest Publish File & Mark as Asset
-        if self.publish_types == constants.ACTIVE_PUBLISH_KEY:
-            context.scene.asset_pipeline.asset_collection.asset_mark()
-        bpy.ops.wm.save_as_mainfile(filepath=new_file_path.__str__(), copy=True)
-        context.scene.asset_pipeline.asset_collection.asset_clear()
+    def execute(self, context: bpy.types.Context):
+        current_file = Path(bpy.data.filepath)
+        staged_file = find_latest_publish(
+            current_file, publish_type=constants.STAGED_PUBLISH_KEY
+        )
+        # Delete Staged File
+        staged_file.unlink()
+        create_next_published_file(current_file)
         return {'FINISHED'}
 
 
@@ -854,6 +895,7 @@ classes = (
     ASSETPIPE_OT_sync_push,
     ASSETPIPE_OT_sync_pull,
     ASSETPIPE_OT_publish_new_version,
+    ASSETPIPE_OT_publish_staged_as_active,
     ASSETPIPE_OT_create_new_asset,
     ASSETPIPE_OT_reset_ownership,
     ASSETPIPE_OT_update_local_task_layers,
