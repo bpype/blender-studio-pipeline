@@ -26,7 +26,7 @@ from .util import data_type_from_transfer_data_key
 
 
 def merge_get_target_suffix(suffix: str) -> str:
-    """Get the corrisponding suffix for a given suffix
+    """Get the corresponding suffix for a given suffix
 
     Args:
         suffix (str): Suffix for External or Local Datablock
@@ -41,12 +41,12 @@ def merge_get_target_suffix(suffix: str) -> str:
 
 
 def merge_get_target_name(name: str) -> str:
-    """Get the corrisponding target name for a given datablock's suffix.
+    """Get the corresponding target name for a given datablock's suffix.
     Suffixes are set by the add_suffix_to_hierarchy() function prior to
     calling this function.
 
     Args:
-        name (str): Name of a given datablock including it's suffix
+        name (str): Name of a given datablock including its suffix
 
     Returns:
         str: Returns datablock name with the opposite suffix
@@ -58,7 +58,7 @@ def merge_get_target_name(name: str) -> str:
 
 
 def merge_get_basename(name: str) -> str:
-    """Returns the name of an asset without it's suffix"""
+    """Returns the name of an asset without its suffix"""
     if name.endswith(constants.LOCAL_SUFFIX) or name.endswith(
         constants.EXTERNAL_SUFFIX
     ):

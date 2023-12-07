@@ -33,7 +33,7 @@ Checkout the [Asset Pipeline Demo](https://projects.blender.org/studio/blender-s
 
 
 ## Key Concepts
-**Task Layers** Task Layers are defined in a JSON file that describes the number of layers used to manage the asset. Typically each task layer is given it's own file, artists can optionally house multiple task layers inside the same file if required. Each task layer is used to describe a step in the asset making process (e.g."Modeling", "Rigging", "Shading"). The number and content of a task layer is fully customizable by the artist.
+**Task Layers** Task Layers are defined in a JSON file that describes the number of layers used to manage the asset. Typically each task layer is given its own file, artists can optionally house multiple task layers inside the same file if required. Each task layer is used to describe a step in the asset making process (e.g."Modeling", "Rigging", "Shading"). The number and content of a task layer is fully customizable by the artist.
 
 **Ownership** Each piece of data in the Asset Pipeline is owned by a task layer, this includes Objects, Task Layer Collections and Transferable Data. The owner of data is the only person who can contribute to that piece of data, including modifying or removing that data. Objects implicitly will own the meshes and other types of object data, multiple objects referencing the same mesh is not supported.
 
@@ -59,7 +59,7 @@ Transferable Data Types:
 Once the add-on is installed you will be greeted by a new sidebar in the 3D View, titled 'Asset Pipeline'. Under the panel 'Asset Management' you will find a UI to set up a new Asset. The New Asset UI has two modes "Current File" and "Blank File".
 
 ### Current File Mode
-"Current File" mode will retain you current .blend file's data and allow you to use it's current directory to setup a new Asset. 
+"Current File" mode will retain you current .blend file's data and allow you to use its current directory to setup a new Asset. 
 To setup an asset using "Current File" mode, please open the file you would like to setup as an asset, then select "Current File" mode in the asset pipeline side panel in the 3D View. 
 
  1. Select the "Task Layer Preset" you would like to use.
@@ -88,7 +88,7 @@ The Push/Pull process happens in three steps.
 When you Push/Pull a file, you will be greeted with an operator dialogue. This dialogue will list any new data that it has found in your file. Pressing OK will assign these new pieces of data to your local task layer, if you have multiple local task layers, you will be able to select which one is the owner of each piece of data. Once completed this information will be used to ensure your work is merged properly with the published file. 
 
 ### Save File
-The add-on will optionally save your current file plus any unsaved/unpacked images will be saved in a directory relative to your asset (configurable in the add-on preferences). It will always create a back-up of your current file, in the case where the merge process fails, you will be prompted to revert your file back to it's pre-merge status.
+The add-on will optionally save your current file plus any unsaved/unpacked images will be saved in a directory relative to your asset (configurable in the add-on preferences). It will always create a back-up of your current file, in the case where the merge process fails, you will be prompted to revert your file back to its pre-merge status.
 
 ### Merge with Published File
 Push and Pull are merging operations done to/from the published file. When you want to share your updated work to the rest of the team select "Push to Publish" to update the published file with your changes. Push will update any Transferable Data you edited, and update any objects/collections you own with the version in your current file. Transferable Data owned by other artists will be re-applied to your objects.

@@ -42,7 +42,7 @@ def get_next_published_file(
 
 def find_all_published(current_file: Path, publish_type: str) -> list[Path]:
     """Retuns a list of published files of a given type,
-    each publish type is seperated into it's own folder at the
+    each publish type is seperated into its own folder at the
     root of the asset's directory
     Args:
         current_file (Path): Current file, which must be a task file at root of asset directory

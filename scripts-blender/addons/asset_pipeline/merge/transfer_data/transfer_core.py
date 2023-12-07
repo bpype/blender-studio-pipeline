@@ -90,8 +90,8 @@ def init_transfer_data(
     parent.init_parent(scene, obj)
     modifers.init_modifiers(scene, obj)
 
-    if obj.data.library:
-        # Don't create ownership data for mesh data if the mesh is linked.
+    if not obj.data or obj.data.library:
+        # Don't create ownership data for mesh data if the mesh is linked, or Empties.
         return
 
     vertex_groups.init_vertex_groups(scene, obj)

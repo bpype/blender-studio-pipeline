@@ -25,7 +25,7 @@ def ownership_transfer_data_cleanup(
     asset_pipe: 'bpy.types.AssetPipeline',
     obj: bpy.types.Object,
 ) -> None:
-    """Remove Transferable Data ownership items if the corrisponding data is missing
+    """Remove Transferable Data ownership items if the corresponding data is missing
 
     Args:
         obj (bpy.types.Object): Object that contains the Transferable Data
@@ -48,7 +48,7 @@ def ownership_get(
 ) -> None:
     """Find new Transferable Data owned by the local task layer.
     Marks items as owned by the local task layer if they are in the
-    corrisponding task layer collection and have no owner.
+    corresponding task layer collection and have no owner.
 
     Args:
         local_col (bpy.types.Collection): The top level asset collection that is local to the file
@@ -153,12 +153,12 @@ def merge_task_layer(
     """Combines data from an external task layer collection in the local
     task layer collection. By finding the owner of each collection,
     object and Transferable Data item and keeping each layer of data via a copy
-    from it's respective owners.
+    from its respective owners.
 
     This ensures that objects owned by an external task layer will always be kept
     linked into the scene, and any local Transferable Data like a modifier will be applied
     ontop of that external object of vice versa. Ownership is stored in an objects properties,
-    and map is created to match each object to it's respective owner.
+    and map is created to match each object to its respective owner.
 
     Args:
         context: (bpy.types.Context): context of current .blend
