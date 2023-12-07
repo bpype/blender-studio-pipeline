@@ -199,14 +199,6 @@ def merge_task_layer(
 
     # Remove all Transferable Data from target objects
     for source_obj in map.object_map:
-        if (
-            source_obj.data
-            and not source_obj.data.library
-            and source_obj.data.users > 1
-        ):
-            raise Exception(
-                f"Object {source_obj.name} contains multi-user datablock'\n"
-            )
         target_obj = map.object_map[source_obj]
         target_obj.transfer_data_ownership.clear()
 
@@ -214,14 +206,6 @@ def merge_task_layer(
 
     for source_obj in map.object_map:
         target_obj = map.object_map[source_obj]
-        if (
-            target_obj.data
-            and not source_obj.data.library
-            and target_obj.data.users > 1
-        ):
-            raise Exception(
-                f"Object {target_obj.name} contains multi-user datablock'\n"
-            )
         remap_user(source_obj, target_obj)
         transfer_data_clean(target_obj)
 
