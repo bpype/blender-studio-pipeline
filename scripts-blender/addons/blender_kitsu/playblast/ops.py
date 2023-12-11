@@ -43,7 +43,9 @@ from blender_kitsu.types import (
 from blender_kitsu.playblast.core import (
     playblast_with_shading_settings,
     playblast_user_shading_settings,
+    playblast_vse,
 )
+from blender_kitsu.context import core as context_core
 from blender_kitsu.playblast import opsdata, core
 
 logger = LoggerFactory.getLogger()
@@ -80,12 +82,20 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(
-            prefs.session_auth(context)
-            and cache.shot_active_get()
-            and context.scene.camera
-            and context.scene.kitsu.playblast_file
-        )
+        if context_core.is_sequence_context():
+            return bool(
+                prefs.session_auth(context)
+                and cache.sequence_active_get()
+                and context.scene.camera
+                and context.scene.kitsu.playblast_file
+            )
+        else:
+            return bool(
+                prefs.session_auth(context)
+                and cache.shot_active_get()
+                and context.scene.camera
+                and context.scene.kitsu.playblast_file
+            )
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         addon_prefs = prefs.addon_prefs_get(context)
@@ -107,7 +117,8 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
             )
             return {"CANCELLED"}
 
-        shot_active = cache.shot_active_get()
+        # entity is either a shot or a sequence
+        entity = self._get_active_entity(context)
 
         # Save playblast task status id for next time.
         context.scene.kitsu.playblast_task_status_id = self.task_status
@@ -118,16 +129,20 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         context.window_manager.progress_update(0)
 
         # Render and save playblast
-        if self.use_user_shading:
-            output_path = playblast_user_shading_settings(
+        if context_core.is_sequence_context():
+            output_path = playblast_vse(
                 self, context, context.scene.kitsu.playblast_file
             )
-
         else:
-            # Get output path.
-            output_path = playblast_with_shading_settings(
-                self, context, context.scene.kitsu.playblast_file
-            )
+            if self.use_user_shading:
+                output_path = playblast_user_shading_settings(
+                    self, context, context.scene.kitsu.playblast_file
+                )
+            else:
+                # Get output path.
+                output_path = playblast_with_shading_settings(
+                    self, context, context.scene.kitsu.playblast_file
+                )
 
         context.window_manager.progress_update(1)
 
@@ -137,7 +152,7 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         context.window_manager.progress_update(2)
         context.window_manager.progress_end()
 
-        self.report({"INFO"}, f"Created and uploaded playblast for {shot_active.name}")
+        self.report({"INFO"}, f"Created and uploaded playblast for {entity.name}")
         logger.info("-END- Creating Playblast")
 
         # Redraw UI
@@ -239,12 +254,12 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         row = layout.row(align=True)
         row.prop(self, "comment")
         row = layout.row(align=True)
-        row.prop(self, "use_user_shading")
+        if not context_core.is_sequence_context():
+            row.prop(self, "use_user_shading")
         row.prop(self, "thumbnail_frame")
 
     def _upload_playblast(self, context: bpy.types.Context, filepath: Path) -> None:
-        # Get shot.
-        shot = cache.shot_active_get()
+        entity = self._get_active_entity(context)
         task_type_name = cache.task_type_active_get().name
 
         # Get task status 'wip' and task type 'Animation'.
@@ -257,14 +272,14 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
             )
 
         # Find / get latest task
-        task = Task.by_name(shot, task_type)
+        task = Task.by_name(entity, task_type)
         if not task:
             # An Entity on the server can have 0 tasks even tough task types exist.
             # We have to create a task first before being able to upload a thumbnail.
-            task = Task.new_task(shot, task_type, task_status=task_status)
+            task = Task.new_task(entity, task_type, task_status=task_status)
 
         # Create a comment
-        comment_text = self._gen_comment_text(context, shot)
+        comment_text = self._gen_comment_text(context, entity)
         comment = task.add_comment(
             task_status,
             comment=comment_text,
@@ -278,7 +293,9 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         )
 
         # Preview.set_main_preview()
-        logger.info(f"Uploaded playblast for shot: {shot.name} under: {task_type.name}")
+        logger.info(
+            f"Uploaded playblast for shot: {entity.name} under: {task_type.name}"
+        )
 
     def _gen_comment_text(self, context: bpy.types.Context, shot: Shot) -> str:
         header = f"Playblast {shot.name}: {context.scene.kitsu.playblast_version}"
@@ -300,6 +317,14 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         url = f"{host_url}/productions/{cache.project_active_get().id}/shots?search={cache.shot_active_get().name}"
         webbrowser.open(url)
 
+    def _get_active_entity(self, context):
+        if context_core.is_sequence_context():
+            # Get sequence
+            return cache.sequence_active_get()
+        else:
+            # Get shot.
+            return cache.shot_active_get()
+
 
 class KITSU_OT_playblast_set_version(bpy.types.Operator):
     bl_idname = "kitsu.anim_set_playblast_version"
@@ -320,16 +345,17 @@ class KITSU_OT_playblast_set_version(bpy.types.Operator):
         return bool(context.scene.kitsu.playblast_dir)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
+        kitsu_props = context.scene.kitsu
         version = self.versions
 
         if not version:
             return {"CANCELLED"}
 
-        if context.scene.kitsu.playblast_version == version:
+        if kitsu_props.get('playblast_version') == version:
             return {"CANCELLED"}
 
         # Update global scene cache version prop.
-        context.scene.kitsu.playblast_version = version
+        kitsu_props.playblast_version = version
         logger.info("Set playblast version to %s", version)
 
         # Redraw ui.

@@ -195,18 +195,25 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         description="Metadata that is required for lookdev",
     )
 
-    playblast_root_dir: bpy.props.StringProperty(  # type: ignore
-        name="Playblasts Root Directory",
-        description="Directory path to playblast root folder. Should point to: ./Blender Dropbox/render/sprites/shots/",
-        default="",
+    shot_playblast_root_dir: bpy.props.StringProperty(  # type: ignore
+        name="Shot Playblasts",
+        description="Directory path to shot playblast root folder. Should point to: {project}/editorial/footage/pro",
+        default="/data/gold/shared/editorial/footage/pro/",
         subtype="DIR_PATH",
         update=init_playblast_file_model,
     )
 
+    seq_playblast_root_dir: bpy.props.StringProperty(  # type: ignore
+        name="Sequence Playblasts",
+        description="Directory path to sequence playblast root folder. Should point to: {project}/editorial/footage/pre",
+        default="/data/gold/shared/editorial/footage/pre/",
+        subtype="DIR_PATH",
+    )
+
     frames_root_dir: bpy.props.StringProperty(  # type: ignore
-        name="Frames Root Directory",
-        description="Directory path to playblast root folder. Should point to: ./Blender Dropbox/render/sprites/shots/",
-        default="",
+        name="Rendered Frames",
+        description="Directory path to rendered frames root folder. Should point to: {project}/editorial/footage/post",
+        default="/data/gold/shared/editorial/footage/post/",
         subtype="DIR_PATH",
     )
 
@@ -385,7 +392,8 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         # Anim tools settings.
         box = layout.box()
         box.label(text="Animation Tools", icon="RENDER_ANIMATION")
-        box.row().prop(self, "playblast_root_dir")
+        box.row().prop(self, "shot_playblast_root_dir")
+        box.row().prop(self, "seq_playblast_root_dir")
         box.row().prop(self, "frames_root_dir")
         box.row().prop(self, "pb_open_webbrowser")
         box.row().prop(self, "pb_open_vse")
@@ -447,17 +455,23 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             box.row().prop(self, "shot_counter_increment")
 
     @property
-    def playblast_root_path(self) -> Optional[Path]:
+    def shot_playblast_root_path(self) -> Optional[Path]:
         if not self.is_playblast_root_valid:
             return None
-        return Path(os.path.abspath(bpy.path.abspath(self.playblast_root_dir)))
+        return Path(os.path.abspath(bpy.path.abspath(self.shot_playblast_root_dir)))
+
+    @property
+    def seq_playblast_root_path(self) -> Optional[Path]:
+        if not self.is_playblast_root_valid:
+            return None
+        return Path(os.path.abspath(bpy.path.abspath(self.seq_playblast_root_dir)))
 
     @property
     def is_playblast_root_valid(self) -> bool:
-        if not self.playblast_root_dir:
+        if not self.shot_playblast_root_dir:
             return False
 
-        if not bpy.data.filepath and self.playblast_root_dir.startswith("//"):
+        if not bpy.data.filepath and self.shot_playblast_root_dir.startswith("//"):
             return False
 
         return True

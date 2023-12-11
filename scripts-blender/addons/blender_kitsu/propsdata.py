@@ -24,13 +24,14 @@ from typing import Any, Dict, List, Tuple
 from pathlib import Path
 
 import bpy
-
+from blender_kitsu import bkglobals
 from blender_kitsu import cache, prefs
 
 # TODO: restructure that to not import from anim.
-from blender_kitsu.anim import ops as ops_playblast
-from blender_kitsu.anim import opsdata as ops_playblast_data
+from blender_kitsu.playblast import ops as ops_playblast
+from blender_kitsu.playblast import opsdata as ops_playblast_data
 from blender_kitsu.logger import LoggerFactory
+from blender_kitsu.context import core as context_core
 
 logger = LoggerFactory.getLogger()
 
@@ -41,7 +42,6 @@ def _get_project_active(self):
 
 
 def _resolve_pattern(pattern: str, var_lookup_table: Dict[str, str]) -> str:
-
     matches = re.findall(r"\<(\w+)\>", pattern)
     matches = list(set(matches))
     # If no variable detected just return value.
@@ -99,8 +99,12 @@ def _gen_shot_preview(self: Any) -> str:
 
 def get_task_type_name_file_suffix() -> str:
     name = cache.task_type_active_get().name.lower()
-    if name == 'animation':
-        return 'anim'
+
+    task_mappings = {**bkglobals.SHOT_TASK_MAPPING, **bkglobals.SEQ_TASK_MAPPING}
+    for key, value in task_mappings.items():
+        if name == value.lower():
+            return key
+
     return name
 
 
@@ -114,13 +118,27 @@ def get_playblast_dir(self: Any) -> str:
     seq = cache.sequence_active_get()
     shot = cache.shot_active_get()
 
+    kitsu_props = bpy.context.scene.kitsu
+    kitsu_props.get("category")
+
+    if context_core.is_sequence_context():
+        if not seq:
+            return ""
+        playblast_dir = (
+            addon_prefs.seq_playblast_root_path / seq.name / 'sequence_previews'
+        )
+        return playblast_dir.as_posix()
+
     if not seq or not shot:
         return ""
 
     task_type_name_suffix = get_task_type_name_file_suffix()
 
     playblast_dir = (
-        addon_prefs.playblast_root_path / seq.name / shot.name / f"{shot.name}.{task_type_name_suffix}"
+        addon_prefs.shot_playblast_root_path
+        / seq.name
+        / shot.name
+        / f"{shot.name}.{task_type_name_suffix}"
     )
     return playblast_dir.as_posix()
 
@@ -132,8 +150,22 @@ def get_playblast_file(self: Any) -> str:
     task_type_name_suffix = get_task_type_name_file_suffix()
     version = self.playblast_version
     shot_active = cache.shot_active_get()
-    # 070_0010_A.anim.v001.mp4.
-    file_name = f"{shot_active.name}.{task_type_name_suffix}.{version}.mp4"
+    seq_active = cache.sequence_active_get()
+    delimiter = bkglobals.FILE_DELIMITER
+
+    # 070_0010_A-anim-v001.mp4.
+
+    kitsu_props = bpy.context.scene.kitsu
+    kitsu_props.get("category")
+
+    if context_core.is_sequence_context():
+        entity_name = seq_active.name
+    else:
+        entity_name = shot_active.name
+
+    file_name = (
+        f"{entity_name}{delimiter}{task_type_name_suffix}{delimiter}{version}.mp4"
+    )
 
     return Path(self.playblast_dir).joinpath(file_name).as_posix()
 

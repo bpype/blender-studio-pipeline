@@ -130,6 +130,7 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         items=(
             ("ASSETS", "Assets", "Asset related tasks", "FILE_3D", 0),
             ("SHOTS", "Shots", "Shot related tasks", "FILE_MOVIE", 1),
+            ("SEQS", "Sequences", "Sequence related tasks", "RENDER_ANIMATION", 2),
         ),
         default="SHOTS",
         update=propsdata.reset_task_type,
@@ -256,7 +257,6 @@ class KITSU_property_group_window_manager(bpy.types.PropertyGroup):
 
 
 def _add_window_manager_props():
-
     # Multi Edit Properties.
     bpy.types.WindowManager.show_advanced = bpy.props.BoolProperty(
         name="Show Advanced",
@@ -337,9 +337,7 @@ def _calc_kitsu_frame_start(self):
     Calculates strip.kitsu_frame_start, little hack because it seems like we cant access the strip from a property group
     But we need acess to seqeuence properties.
     """
-    kitsu_frame_start = (
-        bkglobals.FRAME_START - self.kitsu.frame_start_offset 
-    )
+    kitsu_frame_start = bkglobals.FRAME_START - self.kitsu.frame_start_offset
 
     return int(kitsu_frame_start)
 
@@ -350,7 +348,7 @@ def _calc_kitsu_frame_end(self):
     But we need acess to seqeuence properties.
     """
     frame_start = _calc_kitsu_frame_start(self)
-    frame_end_final = (frame_start + (self.frame_final_duration - 1))
+    frame_end_final = frame_start + (self.frame_final_duration - 1)
     return int(frame_end_final)
 
 
@@ -373,7 +371,6 @@ def update_sequence_colors_coll_prop(dummy: Any) -> None:
 
     # Append missing sequences to scene.kitsu.seqeuence_colors.
     for seq in sequences:
-
         if not seq.kitsu.sequence_id:
             continue
 
@@ -417,7 +414,6 @@ classes = [
 
 
 def register():
-
     for cls in classes:
         bpy.utils.register_class(cls)
 

@@ -20,6 +20,7 @@
 
 import bpy
 
+from blender_kitsu.context import core as context_core
 from blender_kitsu import cache, prefs, ui
 from blender_kitsu.context.ops import (
     KITSU_OT_con_sequences_load,
@@ -47,6 +48,8 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
+        if context_core.is_edit_file():
+            return False
         return prefs.session_auth(context)
 
     @classmethod
@@ -56,7 +59,6 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
-        category = context.scene.kitsu.category  # Can be either 'SHOTS' or 'ASSETS'.
         project_active = cache.project_active_get()
 
         # Catch errors.
@@ -100,7 +102,7 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             row.enabled = False
 
         # Sequence / AssetType.
-        if category == "ASSETS":
+        if context_core.is_asset_context():
             item_group_data["name"] = "AssetType"
             item_group_data["zobject"] = cache.asset_type_active_get()
             item_group_data["operator"] = KITSU_OT_con_asset_types_load.bl_idname
@@ -116,23 +118,23 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         row.operator(
             item_group_data["operator"], text=item_group_text, icon="DOWNARROW_HLT"
         )
+        if not context_core.is_sequence_context():
+            # Shot / Asset.
+            if context_core.is_asset_context():
+                item_data["name"] = "Asset"
+                item_data["zobject"] = cache.asset_active_get()
+                item_data["operator"] = KITSU_OT_con_assets_load.bl_idname
 
-        # Shot / Asset.
-        if category == "ASSETS":
-            item_data["name"] = "Asset"
-            item_data["zobject"] = cache.asset_active_get()
-            item_data["operator"] = KITSU_OT_con_assets_load.bl_idname
+            row = box.row(align=True)
+            item_text = f"Select {item_data['name']}"
 
-        row = box.row(align=True)
-        item_text = f"Select {item_data['name']}"
+            if not project_active and item_group_data["zobject"]:
+                row.enabled = False
 
-        if not project_active and item_group_data["zobject"]:
-            row.enabled = False
+            elif item_data["zobject"]:
+                item_text = item_data["zobject"].name
 
-        elif item_data["zobject"]:
-            item_text = item_data["zobject"].name
-
-        row.operator(item_data["operator"], text=item_text, icon="DOWNARROW_HLT")
+            row.operator(item_data["operator"], text=item_text, icon="DOWNARROW_HLT")
 
         # Task Type.
         t_text = "Select Task Type"
@@ -149,10 +151,14 @@ class KITSU_PT_comp_context(KITSU_PT_vi3d_context):
     bl_space_type = "NODE_EDITOR"
 
 
+class KITSU_PT_editorial_context(KITSU_PT_vi3d_context):
+    bl_space_type = "SEQUENCE_EDITOR"
+
+
 # ---------REGISTER ----------.
 
 # Classes that inherit from another need to be registered first for some reason.
-classes = [KITSU_PT_comp_context, KITSU_PT_vi3d_context]
+classes = [KITSU_PT_comp_context, KITSU_PT_editorial_context, KITSU_PT_vi3d_context]
 
 
 def register():

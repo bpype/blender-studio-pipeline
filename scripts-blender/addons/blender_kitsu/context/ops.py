@@ -26,6 +26,7 @@ import bpy
 from blender_kitsu import bkglobals, cache, util, prefs
 from blender_kitsu.logger import LoggerFactory
 from blender_kitsu.types import TaskType, AssetType
+from blender_kitsu.context import core as context_core
 
 logger = LoggerFactory.getLogger()
 
@@ -85,7 +86,6 @@ class KITSU_OT_con_sequences_load(bpy.types.Operator):
         return bool(prefs.session_auth(context) and cache.project_active_get())
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-
         # Store vars to check if project / seq / shot changed.
         zseq_prev_id = cache.sequence_active_get().id
 
@@ -223,15 +223,17 @@ class KITSU_OT_con_task_types_load(bpy.types.Operator):
         addon_prefs = prefs.addon_prefs_get(context)
         precon = bool(prefs.session_auth(context) and cache.project_active_get())
 
-        if context.scene.kitsu.category == "SHOTS":
+        if context_core.is_shot_context():
             return bool(
                 precon and cache.sequence_active_get() and cache.shot_active_get()
             )
 
-        if context.scene.kitsu.category == "ASSETS":
+        if context_core.is_asset_context():
             return bool(
                 precon and cache.asset_type_active_get() and cache.asset_active_get()
             )
+        if context_core.is_sequence_context():
+            return bool(precon and cache.sequence_active_get())
 
         return False
 
@@ -270,51 +272,82 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         category = filepath.parents[2].name
         item_group = filepath.parents[1].name
         item = filepath.parents[0].name
-        item_task_type = filepath.stem.split(".")[-1]
+        item_task_type = filepath.stem.split(bkglobals.FILE_DELIMITER)[-1]
 
-        if category == bkglobals.SHOT_DIR_NAME:
-            # TODO: check if frame range update gets triggered.
+        if category == bkglobals.SHOT_DIR_NAME or category == bkglobals.SEQ_DIR_NAME:
+            if category == bkglobals.SHOT_DIR_NAME:
+                # TODO: check if frame range update gets triggered.
 
-            # Set category.
-            context.scene.kitsu.category = "SHOTS"
+                # Set category.
+                context.scene.kitsu.category = "SHOTS"
 
-            # Detect ad load seqeunce.
-            sequence = active_project.get_sequence_by_name(item_group)
-            if not sequence:
-                self.report(
-                    {"ERROR"}, f"Failed to find sequence: '{item_group}' on server"
+                # Detect ad load seqeunce.
+                sequence = active_project.get_sequence_by_name(item_group)
+                if not sequence:
+                    self.report(
+                        {"ERROR"}, f"Failed to find sequence: '{item_group}' on server"
+                    )
+                    return {"CANCELLED"}
+
+                bpy.ops.kitsu.con_sequences_load(enum_prop=sequence.id)
+
+                # Detect and load shot.
+                shot = active_project.get_shot_by_name(sequence, item)
+                if not shot:
+                    self.report({"ERROR"}, f"Failed to find shot: '{item}' on server")
+                    return {"CANCELLED"}
+
+                bpy.ops.kitsu.con_shots_load(enum_prop=shot.id)
+
+                # Detect and load shot task type.
+                kitsu_task_type_name = self._find_in_mapping(
+                    item_task_type, bkglobals.SHOT_TASK_MAPPING, "shot task type"
                 )
-                return {"CANCELLED"}
+                if not kitsu_task_type_name:
+                    return {"CANCELLED"}
 
-            bpy.ops.kitsu.con_sequences_load(enum_prop=sequence.id)
+                task_type = TaskType.by_name(kitsu_task_type_name)
+                if not task_type:
+                    self.report(
+                        {"ERROR"},
+                        f"Failed to find task type: '{kitsu_task_type_name}' on server",
+                    )
+                    return {"CANCELLED"}
 
-            # Detect and load shot.
-            shot = active_project.get_shot_by_name(sequence, item)
-            if not shot:
-                self.report({"ERROR"}, f"Failed to find shot: '{item}' on server")
-                return {"CANCELLED"}
+                bpy.ops.kitsu.con_task_types_load(enum_prop=task_type.id)
 
-            bpy.ops.kitsu.con_shots_load(enum_prop=shot.id)
+            if category == bkglobals.SEQ_DIR_NAME:
+                # Set category.
+                context.scene.kitsu.category = "SEQS"
 
-            # Detect and load shot task type.
-            kitsu_task_type_name = self._find_in_mapping(
-                item_task_type, bkglobals.SHOT_TASK_MAPPING, "shot task type"
-            )
-            if not kitsu_task_type_name:
-                return {"CANCELLED"}
+                # Detect and load seqeunce.
+                sequence = active_project.get_sequence_by_name(item_group)
+                if not sequence:
+                    self.report(
+                        {"ERROR"}, f"Failed to find sequence: '{item_group}' on server"
+                    )
+                    return {"CANCELLED"}
 
-            task_type = TaskType.by_name(kitsu_task_type_name)
-            if not task_type:
-                self.report(
-                    {"ERROR"},
-                    f"Failed to find task type: '{kitsu_task_type_name}' on server",
+                bpy.ops.kitsu.con_sequences_load(enum_prop=sequence.id)
+
+                # Detect and load shot task type.
+                kitsu_task_type_name = self._find_in_mapping(
+                    item_task_type, bkglobals.SEQ_TASK_MAPPING, "seq task type"
                 )
-                return {"CANCELLED"}
+                if not kitsu_task_type_name:
+                    return {"CANCELLED"}
 
-            bpy.ops.kitsu.con_task_types_load(enum_prop=task_type.id)
+                task_type = TaskType.by_name(kitsu_task_type_name)
+                if not task_type:
+                    self.report(
+                        {"ERROR"},
+                        f"Failed to find task type: '{kitsu_task_type_name}' on server",
+                    )
+                    return {"CANCELLED"}
+
+                bpy.ops.kitsu.con_task_types_load(enum_prop=task_type.id)
 
         elif category == bkglobals.ASSET_DIR_NAME:
-
             # Set category.
             context.scene.kitsu.category = "ASSETS"
 

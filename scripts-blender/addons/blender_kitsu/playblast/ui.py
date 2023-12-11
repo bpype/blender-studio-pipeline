@@ -19,6 +19,7 @@
 # (c) 2023, Blender Foundation
 
 from blender_kitsu.anim import opsdata
+from blender_kitsu.context import core as context_core
 import bpy
 
 from pathlib import Path
@@ -47,6 +48,8 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
+        if context_core.is_edit_file():
+            return False
         return bool(prefs.session_auth(context))
 
     @classmethod
@@ -115,9 +118,18 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
             ).filepath = context.scene.kitsu.playblast_file
 
 
+class KITSU_PT_seq_playblast(KITSU_PT_vi3d_playblast):
+    bl_space_type = "SEQUENCE_EDITOR"
+
+
+classes = (KITSU_PT_seq_playblast, KITSU_PT_vi3d_playblast)
+
+
 def register():
-    bpy.utils.register_class(KITSU_PT_vi3d_playblast)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
 
 def unregister():
-    bpy.utils.unregister_class(KITSU_PT_vi3d_playblast)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

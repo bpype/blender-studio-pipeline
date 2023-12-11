@@ -74,7 +74,6 @@ def sqe_update_duplicates(context: bpy.types.Context) -> List[Tuple[str, str, st
 
     # Create data dict that holds all shots ids and the corresponding strips that are linked to it.
     for i in range(len(strips)):
-
         if strips[i].kitsu.linked:
             # Get shot_id, shot_name, create entry in data_dict if id not existent.
             shot_id = strips[i].kitsu.shot_id
@@ -132,7 +131,6 @@ def sqe_update_multi_project(context: bpy.types.Context) -> List[Tuple[str, str,
 
 
 def resolve_pattern(pattern: str, var_lookup_table: Dict[str, str]) -> str:
-
     matches = re.findall(r"\<(\w+)\>", pattern)
     matches = list(set(matches))
     # If no variable detected just return value.

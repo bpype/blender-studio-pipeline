@@ -2273,8 +2273,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
             color_space_name = "Linear"
         else:
             color_space_name = "Linear Rec.709"
-        
-        
+
         scene = context.scene
         if self.file_type == ".jpg":
             scene.sequencer_colorspace_settings.name = "sRGB"
@@ -2363,7 +2362,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         path_string = os.path.realpath(bpy.path.abspath(strip.filepath))
         path = Path(
             path_string.replace(
-                addon_prefs.playblast_root_dir, addon_prefs.frames_root_dir
+                addon_prefs.shot_playblast_root_dir, addon_prefs.frames_root_dir
             )
         )
         return path.parent

@@ -22,6 +22,7 @@ import bpy
 
 from blender_kitsu import cache, prefs, ui
 from blender_kitsu.sqe import checkstrip
+from blender_kitsu.context import core as context_core
 from blender_kitsu.logger import LoggerFactory
 from blender_kitsu.sqe.ops import (
     KITSU_OT_sqe_push_new_sequence,
@@ -50,6 +51,7 @@ from blender_kitsu.sqe.ops import (
     KITSU_OT_sqe_change_strip_source,
     KITSU_OT_sqe_clear_update_indicators,
 )
+from pathlib import Path
 
 logger = LoggerFactory.getLogger()
 
@@ -95,6 +97,8 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
+        if not context_core.is_edit_file():
+            return False
         sqe = context.scene.sequence_editor
         return bool(prefs.session_auth(context) or (sqe and sqe.sequences_all))
 
@@ -677,6 +681,8 @@ class KITSU_PT_sqe_general_tools(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
+        if not context_core.is_edit_file():
+            return False
         selshots = context.selected_sequences
 
         sqe = context.scene.sequence_editor
@@ -734,6 +740,11 @@ class KITSU_PT_edit_task(bpy.types.Panel):
     bl_space_type = "SEQUENCE_EDITOR"
     bl_region_type = "UI"
     bl_options = {"DEFAULT_CLOSED"}
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        if not context_core.is_edit_file():
+            return False
 
     def draw(self, context: bpy.types.Context) -> None:
         self.layout.operator("kitsu.vse_publish_edit_revision")

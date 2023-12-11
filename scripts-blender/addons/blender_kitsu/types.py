@@ -706,6 +706,14 @@ class TaskType(Entity):
             if t["for_entity"] == "Asset"
         ]
 
+    @classmethod
+    def all_sequence_task_types(cls) -> List[TaskType]:
+        return [
+            cls.from_dict(t)
+            for t in gazu.task.all_task_types()
+            if t["for_entity"] == "Sequence"
+        ]
+
     def __bool__(self) -> bool:
         return bool(self.id)
 
@@ -880,7 +888,7 @@ class Task(Entity):
         self, comment: Comment, preview_file_path: str, frame_number=0
     ) -> Preview:
         preview_dict = gazu.task.add_preview(
-            asdict(self), asdict(comment), preview_file_path
+            asdict(self), asdict(comment), preview_file_path, normalize_movie=False
         )
         gazu.task.set_main_preview(preview_dict["id"], frame_number)
         return Preview.from_dict(preview_dict)

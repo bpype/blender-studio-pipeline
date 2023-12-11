@@ -26,7 +26,10 @@ VERSION_PATTERN = r"v\d\d\d"
 FRAME_START = 101
 
 SHOT_DIR_NAME = "shots"
+SEQ_DIR_NAME = "sequences"
 ASSET_DIR_NAME = "assets"
+
+FILE_DELIMITER = '-'
 
 ASSET_TASK_MAPPING = {
     "geometry": "Geometry",
@@ -42,6 +45,11 @@ ASSET_TYPE_MAPPING = {
     "set": "Set",
     "props": "Prop",
     "env": "Library",
+}
+
+SEQ_TASK_MAPPING = {
+    "previs": "Previsualization",
+    "boards": "Boards",
 }
 
 SHOT_TASK_MAPPING = {

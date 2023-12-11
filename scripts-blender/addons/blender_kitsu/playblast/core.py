@@ -258,6 +258,22 @@ def playblast_user_shading_settings(self, context, file_path):
                     return output_path
 
 
+def playblast_vse(self, context, file_path):
+    with override_render_path(self, context, file_path):
+        with override_render_format(
+            self,
+            context,
+        ):
+            output_path = Path(file_path)
+
+            # Ensure folder exists.
+            Path(context.scene.kitsu.playblast_dir).mkdir(parents=True, exist_ok=True)
+
+            # Make opengl render.
+            bpy.ops.render.opengl(animation=True, sequencer=True)
+            return output_path
+
+
 def set_frame_range_in(frame_in: int) -> dict:
     shot = cache.shot_active_pull_update()
     shot.data["3d_start"] = frame_in

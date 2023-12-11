@@ -25,7 +25,7 @@ import bpy
 
 from blender_kitsu.models import FileListModel
 from blender_kitsu.logger import LoggerFactory
-
+from blender_kitsu.playblast import core
 
 PLAYBLAST_FILE_MODEL = FileListModel()
 _playblast_enum_list: List[Tuple[str, str, str]] = []
@@ -44,9 +44,12 @@ def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
 def init_playblast_file_model(
     context: bpy.types.Context,
 ) -> None:
-
     global PLAYBLAST_FILE_MODEL
     global _playblast_file_model_init
+
+    kitsu_props = context.scene.kitsu
+    # TODO Make playblast dir variable (seq or shot)
+    # Consider removing this string and use prefs instead
 
     # Is None if invalid.
     if not context.scene.kitsu.playblast_dir:
@@ -63,17 +66,16 @@ def init_playblast_file_model(
     if not PLAYBLAST_FILE_MODEL.versions:
         PLAYBLAST_FILE_MODEL.append_item("v001")
         # Update playblast_version prop.
-        context.scene.kitsu.playblast_version = "v001"
+        kitsu_props.playblast_version = "v001"
 
     else:
         # Update playblast_version prop.
-        context.scene.kitsu.playblast_version = PLAYBLAST_FILE_MODEL.versions[0]
+        kitsu_props.playblast_version = PLAYBLAST_FILE_MODEL.versions[0]
 
     _playblast_file_model_init = True
 
 
 def add_playblast_version_increment(context: bpy.types.Context) -> str:
-
     # Init model if it did not happen.
     if not _playblast_file_model_init:
         init_playblast_file_model(context)
@@ -95,7 +97,6 @@ def get_playblast_versions_enum_list(
     self: Any,
     context: bpy.types.Context,
 ) -> List[Tuple[str, str, str]]:
-
     global _playblast_enum_list
     global PLAYBLAST_FILE_MODEL
     global init_playblast_file_model
@@ -117,4 +118,3 @@ def add_version_custom(custom_version: str) -> None:
     global PLAYBLAST_FILE_MODEL
 
     PLAYBLAST_FILE_MODEL.append_item(custom_version)
-

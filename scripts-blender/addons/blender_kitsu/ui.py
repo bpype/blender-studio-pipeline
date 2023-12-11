@@ -87,7 +87,6 @@ def draw_error_config_dir_not_exists(
 def draw_error_no_active_camera(
     box: bpy.types.UILayout,
 ) -> bpy.types.UILayout:
-
     row = box.row(align=True)
     row.label(text=f"No active camera")
     row.prop(bpy.context.scene, "camera", text="")
