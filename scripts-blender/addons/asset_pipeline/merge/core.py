@@ -249,35 +249,35 @@ def import_data_from_lib(
     if link:
         noun = "Linked"
 
+    data_local_collprop = getattr(bpy.data, data_category)
     with bpy.data.libraries.load(libpath.as_posix(), relative=True, link=link) as (
         data_from,
         data_to,
     ):
-        if data_name not in eval(f"data_from.{data_category}"):
+        data_from_collprop = getattr(data_from, data_category)
+        data_to_collprop = getattr(data_to, data_category)
+        if data_name not in data_from_collprop:
             print(
                 f"Failed to import {data_category} {data_name} from {libpath.as_posix()}. Doesn't exist in file.",
             )
 
         # Check if datablock with same name already exists in blend file.
-        try:
-            eval(f"bpy.data.{data_category}['{data_name}']")
-        except KeyError:
-            pass
-        else:
+        existing_datablock = data_local_collprop.get(data_name)
+        if existing_datablock:
             print(
                 f"{data_name} already in bpy.data.{data_category} of this blendfile.",
             )
 
         # Append data block.
-        eval(f"data_to.{data_category}.append('{data_name}')")
+        data_to_collprop.append(data_name)
         print(f"{noun}:{data_name} from library: {libpath.as_posix()}")
 
     if link:
-        return eval(
-            f"bpy.data.{data_category}['{data_name}', '{bpy.path.relpath(libpath.as_posix())}']"
+        return data_local_collprop.get(
+            (data_name, bpy.path.relpath(libpath.as_posix()))
         )
 
-    return eval(f"bpy.data.{data_category}['{data_name}']")
+    return data_local_collprop.get(data_name)
 
 
 def get_task_layer_objects(asset_pipe):
