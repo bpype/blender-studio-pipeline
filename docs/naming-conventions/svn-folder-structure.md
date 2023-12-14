@@ -6,8 +6,8 @@ October 17th 2023 - The content of this page is currently being edited/updated.
 
 ## Logic
 
-* ‘pre’ folder: like a sandbox, can be messy
-* ‘pro’ folder should be the very structured one
+* `pre` folder: like a sandbox, can be messy
+* `pro` folder should be the very structured one
 * Keep the structure as simple as possible, with assets / shots / others
 * Inside an asset folder:
     * `blend` file
@@ -45,7 +45,13 @@ svn
 │   │   └── scripts
 │   ├── shots
 │   │   ├── 000_titles
-│   │   ├── 010_intro
+│   │   ├── 001_intro
+│   │   │   ├── 010_0010
+│   │   │   │   ├── 010_0010-anim.blend
+│   │   │   │   └── 010_0010-lighting.blend
+│   │   │   └── 010_0020
+│   │   │       ├── 010_0020-anim.blend
+│   │   │       └── 010_0020-lighting.blend
 │   │   ├── 020_tryout
 │   │   ├── ...
 │   │   ├── 900_animtest
