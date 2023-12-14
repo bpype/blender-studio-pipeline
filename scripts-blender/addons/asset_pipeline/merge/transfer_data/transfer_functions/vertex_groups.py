@@ -6,6 +6,9 @@ from ..transfer_util import (
     transfer_data_item_is_missing,
     transfer_data_item_init,
 )
+from .transfer_function_util.proximity_core import (
+    is_obdata_identical,
+)
 from .... import constants
 
 
@@ -45,10 +48,31 @@ def transfer_vertex_group(
         print(f"ERROR Vertex Group {vertex_group_name} not found in {source_obj.name}")
         return
 
-    precalc_and_transfer_single_group(
-        source_obj, target_obj, vertex_group_name, expand=2
-    )
+    # If topology matches transfer directly, otherwise use vertex proximity
+    if is_obdata_identical(source_obj, target_obj):
+        transfer_single_vgroup_by_topology(
+            source_obj, target_obj, vertex_group_name
+        )
+    else:
+        precalc_and_transfer_single_group(
+            source_obj, target_obj, vertex_group_name, expand=2
+        )
 
+def transfer_single_vgroup_by_topology(source_obj, target_obj, vgroup_name):
+    """ Function to quickly transfer single vertex group between mesh objects in case of matching topology.
+    """
+
+    # Remove group from the target obj if it already exists. TODO: de-duplicate
+    tgt_vg = target_obj.vertex_groups.get(vgroup_name)
+    if tgt_vg:
+        target_obj.vertex_groups.remove(tgt_vg)
+
+    vgroup_src = source_obj.vertex_groups.get(vgroup_name)
+    vgroup_tgt = target_obj.vertex_groups.new(name=vgroup_name)
+
+    for v in source_obj.data.vertices:
+        if vgroup_src.index in [g.group for g in v.groups]:
+            vgroup_tgt.add([v.index], vgroup_src.weight(v.index), 'REPLACE')
 
 def precalc_and_transfer_single_group(source_obj, target_obj, vgroup_name, expand=2):
     """Convenience function to transfer a single group. For transferring multiple groups,
@@ -59,7 +83,7 @@ def precalc_and_transfer_single_group(source_obj, target_obj, vgroup_name, expan
     - build_vert_influence_map and transfer_vertex_groups ONCE per object pair.
     """
 
-    # Remove group from the target obj if it already exists.
+    # Remove group from the target obj if it already exists. TODO: de-duplicate
     tgt_vg = target_obj.vertex_groups.get(vgroup_name)
     if tgt_vg:
         target_obj.vertex_groups.remove(tgt_vg)
