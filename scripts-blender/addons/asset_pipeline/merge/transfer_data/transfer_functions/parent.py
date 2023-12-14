@@ -56,4 +56,11 @@ def init_parent(scene, obj):
 
 def transfer_parent(target_obj, source_obj):
     target_obj.parent = source_obj.parent
-    target_obj.matrix_parent_inverse = source_obj.parent.matrix_world.inverted()
+
+    target_obj.location = source_obj.location
+    if source_obj.rotation_mode == 'QUATERNION':
+        target_obj.rotation_quaternion = source_obj.rotation_quaternion
+    else:
+        target_obj.rotation_euler = source_obj.rotation_euler
+    target_obj.scale = source_obj.scale
+    target_obj.matrix_parent_inverse = source_obj.matrix_parent_inverse.copy()
