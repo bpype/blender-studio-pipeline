@@ -27,18 +27,18 @@ shared
         ├── dev
         │   └── 010_intro
         │       ├── sequence_previews
-        │       │   └── 010_intro-beats-v001.mp4
+        │       │   └── 010-beats-v001.mp4
         │       └── thumbnails
-        │           └── 010_intro-beats-001.jpg
+        │           └── 010-beats-001.jpg
         ├── pre
         │   ├── 010_intro
         │   │   ├── thumbnails
-        │   │   │   ├── 010_intro-previs-001.jpg
-        │   │   │   ├── 010_intro-previs-002.jpg
+        │   │   │   ├── 010-previs-001.jpg
+        │   │   │   ├── 010-previs-002.jpg
         │   │   │   └── ...
         │   │   ├── sequence_previews
-        │   │   │   ├── 010_intro-previs-v001.mp4
-        │   │   │   ├── 010_intro-previs-v001_weekly.mp4
+        │   │   │   ├── 010-previs-v001.mp4
+        │   │   │   ├── 010-previs-v001_weekly.mp4
         │   │   │   └── ...
         │   │   └── 010_0100
         │   │       ├── 010_0100-previs
