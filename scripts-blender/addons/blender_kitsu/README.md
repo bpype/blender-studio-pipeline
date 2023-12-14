@@ -35,10 +35,10 @@ blender-kitsu is a Blender Add-on to interact with Kitsu from within Blender. It
 
 ## Installation
 1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
+2. Launch Blender, navigate to `Edit > Preferences` select `Add-ons` and then `Install`, 
 3. Navigate to the downloaded add-on and select `Install Add-on` 
 ## How to get started
-After installing you need to setup the addon preferences to fit your environment.
+After installing you need to setup the add-on preferences to fit your environment.
 In order to be able to log in to Kitsu you need a server that runs the Kitsu production management suite.
 Information on how to set up Kitsu can be found [here](https://zou.cg-wire.com/).
 
@@ -113,7 +113,7 @@ Metastrips are regular Movie Strips that can be linked to a shot in kitsu. It is
 
 ###### Create a Metastrip
 1. Select a sequence strip for which you want to create a metastrip and execute the `Create Metastrip` operator.
-This will import a metastrip.mp4 (1000 frame black video) file which is saved in the addons repository. The metastrip will be placed one channel above the selected strips. Make sure there is enough space otherwise the metastrip will not be created.
+This will import a metastrip.mp4 (1000 frame black video) file which is saved in the add-ons repository. The metastrip will be placed one channel above the selected strips. Make sure there is enough space otherwise the metastrip will not be created.
 
 ###### Initialize a Shot
 1. Select a metastrip and open the `Kitsu` tab in the sidebar of the sequence editor. You will find multiple ways on how to initialize your strip.
@@ -264,7 +264,7 @@ The lookdev tools will show up when you selected a `Task Type` with the name `Li
 
 ![image info](/media/addons/blender_kitsu/context_lookdev_tools.jpg)
 
->**Apply Render Preset**: Consists of a dropdown menu that displays all `.py` files which are present in the `Render Presets Directory` (defined in the addon preferences). Select the `.py` file you want to execute. When you hit the `Play` button the `main()` function of the python file will be executed. Very useful to quickly switch between different render settings.
+>**Apply Render Preset**: Consists of a dropdown menu that displays all `.py` files which are present in the `Render Presets Directory` (defined in the add-on preferences). Select the `.py` file you want to execute. When you hit the `Play` button the `main()` function of the python file will be executed. Very useful to quickly switch between different render settings.
 
 ##### Error System
 
