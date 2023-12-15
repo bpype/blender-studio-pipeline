@@ -50,7 +50,7 @@ If Kitsu is up and running and you can successfully log in via the web interface
 
 ![image info](/media/addons/blender_kitsu/prefs_login.jpg)
 
->**Host**: The web address of your kitsu server (e.G https://kitsu.mydomain.com)<br/>
+>**Host**: The web address of your kitsu server (e.g., https://kitsu.mydomain.com)<br/>
 **Email**: The email you use to log in to kitsu<br/>
 **Password**: The password you use to log in to kitsu<br/>
 
