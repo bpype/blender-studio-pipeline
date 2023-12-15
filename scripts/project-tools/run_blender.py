@@ -198,25 +198,25 @@ def update_blender(artifacts_path = PATH_ARTIFACTS / 'blender', local_blender_pa
     # Check if we found any files
     if len(matched_archives) != 1:
         if len(matched_archives) == 0:
-            logger.error("No Blender archives found for this system!")
-            logger.error("System is: %s %s" % (system_name, architecture))
-            return
+            logger.fatal("No Blender archives found for this system!")
+            logger.fatal("System is: %s %s" % (system_name, architecture))
+            sys.exit(1)
         else:
-            logger.error(
+            logger.fatal(
                 "More than one candidate archive was found for this system. Only one is allowed!"
             )
-            logger.error("The following candidates were found: %s" % str(matched_archives))
-            return
+            logger.fatal("The following candidates were found: %s" % str(matched_archives))
+            sys.exit(1)
 
     blender_build_checksum = Path(matched_archives[0])
     blender_build_archive = blender_build_checksum.with_suffix('')
 
     if not blender_build_archive.exists():
-        logger.error(
+        logger.fatal(
             "Shasum exists but the target Blender archive %s does not!" % blender_build_archive
         )
-        logger.error("Could not update blender")
-        return
+        logger.fatal("Could not update blender")
+        sys.exit(1)
 
     local_checksum = local_blender_path / f"{system_name}.sha256"
 
