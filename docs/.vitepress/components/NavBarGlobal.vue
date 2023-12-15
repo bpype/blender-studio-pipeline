@@ -209,14 +209,17 @@ export default {
   data() {
     return {
       isDropdownVisible: false,
-      dropdownToggles: document.getElementsByClassName("js-nav-global-dropdown-toggle"),
+      dropdownToggles: null,
       btnActiveClass: 'nav-global-btn-active',
       isVisibleClass: 'is-visible'
     };
   },
   methods: {
+    initDropdownToggles() {
+      this.dropdownToggles = window.document.getElementsByClassName("js-nav-global-dropdown-toggle");
+    },
     toggleDropdown(dropdownId) {
-      const el = document.getElementById(dropdownId);
+      const el = window.document.getElementById(dropdownId);
 
       if (el) {
         if (el.classList.contains(this.isVisibleClass)) {
@@ -227,7 +230,7 @@ export default {
       }
     },
     hideAllDropdowns() {
-      const dropdownMenus = document.getElementsByClassName("js-nav-global-dropdown");
+      const dropdownMenus = window.document.getElementsByClassName("js-nav-global-dropdown");
 
       if (dropdownMenus) {
         for (let i = 0; i < dropdownMenus.length; i++) {
@@ -254,11 +257,12 @@ export default {
     }
   },
   mounted() {
+    this.initDropdownToggles();
     for (let i = 0; i < this.dropdownToggles.length; i++) {
       this.dropdownToggles[i].addEventListener("click", (e) => {
         e.stopPropagation();
         const dropdownId = this.dropdownToggles[i].getAttribute('data-dropdown-id');
-        const el = document.getElementById(dropdownId);
+        const el = window.document.getElementById(dropdownId);
         if (el) {
           if (el.classList.contains(this.isVisibleClass)) {
             this.hideAllDropdowns();
