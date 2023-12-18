@@ -675,6 +675,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
 
 
 class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
+    # TODO Update Operator Documentation
     bl_idname = "assetpipe.batch_ownership_change"
     bl_label = "Batch Set Ownership"
     bl_description = """Re-Assign Ownership in a batch operation"""
@@ -729,15 +730,25 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
             ),
         ),
     )
-
     transfer_data_type: bpy.props.EnumProperty(
         name="Type Filter", items=constants.TRANSFER_DATA_TYPES_ENUM_ITEMS
     )
     owner_selection: bpy.props.StringProperty(name="Set Owner")
-    surrender_selection: bpy.props.BoolProperty(
-        name="Set Surrender",
-        default=False,
-        description="Surrender can only be set on objects/Transferable Data that are locally owned. Ownership cannot be changed while surrendering",
+
+    def update_set_surrender(self, context):
+        if self.set_surrender:
+            self.claim_surrender = False
+
+    set_surrender: bpy.props.BoolProperty(
+        name="Set Surrender", default=False, update=update_set_surrender
+    )
+
+    def update_claim_surrender(self, context):
+        if self.claim_surrender:
+            self.set_surrender = False
+
+    claim_surrender: bpy.props.BoolProperty(
+        name="Claim Surrender", default=False, update=update_claim_surrender
     )
 
     def _filter_by_name(self, context, unfiltered_list: []):
@@ -760,12 +771,26 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
                             transfer_data_items_to_update.append(transfer_data_item)
                     else:
                         transfer_data_items_to_update.append(transfer_data_item)
-        if self.filter_owners == "LOCAL":
+
+        if self.claim_surrender:
             return [
+                item
+                for item in transfer_data_items_to_update
+                if item.surrender
+                and item.owner not in asset_pipe.get_local_task_layers()
+            ]
+
+        if self.filter_owners == "LOCAL":
+            transfer_data_items_to_update = [
                 item
                 for item in transfer_data_items_to_update
                 if item.owner in asset_pipe.get_local_task_layers()
             ]
+        if self.set_surrender:
+            return [
+                item for item in transfer_data_items_to_update if not item.surrender
+            ]
+
         return transfer_data_items_to_update
 
     def _get_objects(self, context):
@@ -792,6 +817,28 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
             ]
         return self._filter_by_name(context, objs)
 
+    def _get_message(self, context) -> str:
+        objs = self._get_filtered_objects(context)
+        if self.data_type == "OBJECT":
+            data_type_name = "Object(s)"
+            length = len(objs) if objs else 0
+        else:
+            transfer_data_items_to_update = self._get_transfer_data_to_update(context)
+            data_type_name = "Transferable Data Item(s)"
+
+            length = (
+                len(transfer_data_items_to_update)
+                if transfer_data_items_to_update
+                else 0
+            )
+        if self.claim_surrender:
+            action = "Claim Surrendered on"
+        if self.set_surrender:
+            action = "Set Surrender on"
+        if not (self.claim_surrender or self.set_surrender):
+            action = "Change Ownership on"
+        return f"{action} {length} {data_type_name}"
+
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
         if not get_addon_prefs().is_advanced_mode:
             self.filter_owners = 'LOCAL'
@@ -802,7 +849,10 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         prefs = get_addon_prefs()
         advanced_mode = prefs.is_advanced_mode
         grey_out = True
-        if self.surrender_selection and self.data_type == "TRANSFER_DATA":
+
+        if (
+            self.set_surrender and self.data_type == "TRANSFER_DATA"
+        ):  # TODO Remove Transfer Data check after OBJS are included
             grey_out = False
             self.filter_owners = "LOCAL"
 
@@ -846,29 +896,29 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         if advanced_mode:
             owner_row.prop(self, "avaliable_owners", text="")
 
-        if self.data_type == "TRANSFER_DATA":
-            layout.prop(self, "surrender_selection", expand=True)
+        if self.data_type == "TRANSFER_DATA":  # TODO Make surrender work on OBJS too
+            row = layout.row(align=True)
+            row.prop(self, 'set_surrender', toggle=True)
+            row.prop(self, 'claim_surrender', toggle=True)
 
-        objs = self._get_filtered_objects(context)
-        if self.data_type == "OBJECT":
-            data_type_name = "Object(s)"
-            length = len(objs) if objs else 0
-        else:
-            transfer_data_items_to_update = self._get_transfer_data_to_update(context)
-            data_type_name = "Transferable Data Item(s)"
-            length = (
-                len(transfer_data_items_to_update)
-                if transfer_data_items_to_update
-                else 0
-            )
         bottom_label = layout.row()
         bottom_label_split = bottom_label.split(factor=0.4)
         bottom_label_split.row()
-        bottom_label_split.label(text=f"Change Ownership on {length} {data_type_name}")
+        bottom_label_split.label(text=self._get_message(context))
 
     def execute(self, context: bpy.types.Context):
         asset_pipe = context.scene.asset_pipeline
         objs = self._get_filtered_objects(context)
+        message = self._get_message(context)
+
+        # Only check for owner selection not surrendering data.
+        if not self.set_surrender:
+            if self.owner_selection == "":
+                self.report(
+                    {'ERROR'},
+                    "Ownership 'Set To' must be set to a task layer",
+                )
+                return {'CANCELLED'}
 
         if self.data_type == "OBJECT":
             for obj in objs:
@@ -877,16 +927,16 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
             transfer_data_items_to_update = self._get_transfer_data_to_update(context)
 
             for transfer_data_item_to_update in transfer_data_items_to_update:
-                if self.surrender_selection:
-                    if (
-                        transfer_data_item_to_update.owner
-                        in asset_pipe.get_local_task_layers()
-                    ):
-                        transfer_data_item_to_update.surrender = True
+                if self.claim_surrender:
+                    transfer_data_item_to_update.surrender = False
+                if self.set_surrender:
+                    transfer_data_item_to_update.surrender = True
                     continue
+
                 transfer_data_item_to_update.owner = self.owner_selection
                 task_layer_prefix_transfer_data_update(transfer_data_item_to_update)
 
+        self.report({'INFO'}, message)
         return {'FINISHED'}
 
 
