@@ -18,6 +18,8 @@
 }
 
 .VPNav {
+  /* Fix Vitepress VPNav arbitrary style */
+  pointer-events: auto !important;
   position: relative !important;
 }
 
