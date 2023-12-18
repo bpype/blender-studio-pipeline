@@ -9,8 +9,9 @@ import requests
 import shutil
 import json
 
-HOMEPAGE = "https://builder.blender.org/download/daily/?format=json&v=1"
+BUILDS_INDEX = "https://builder.blender.org/download/daily/?format=json&v=1"
 
+# Use a value found in the "branch" property. For example "v33", "v34", "main", etc.
 BLENDER_BRANCH = "main"
 
 
@@ -59,7 +60,7 @@ platforms_dict = {
 
 download_info = []
 branch_string = "+" + BLENDER_BRANCH
-reqs = requests.get(HOMEPAGE)
+reqs = requests.get(BUILDS_INDEX)
 available_downloads = json.loads(reqs.text)
 for download in available_downloads:
     if download["branch"] != BLENDER_BRANCH:
