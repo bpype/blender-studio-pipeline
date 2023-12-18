@@ -24,14 +24,14 @@ from typing import Any, Dict, List, Tuple
 from pathlib import Path
 
 import bpy
-from blender_kitsu import bkglobals
-from blender_kitsu import cache, prefs
+from . import bkglobals
+from . import cache, prefs
 
 # TODO: restructure that to not import from anim.
-from blender_kitsu.playblast import ops as ops_playblast
-from blender_kitsu.playblast import opsdata as ops_playblast_data
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.context import core as context_core
+from .playblast import ops as ops_playblast
+from .playblast import opsdata as ops_playblast_data
+from .logger import LoggerFactory
+from .context import core as context_core
 
 logger = LoggerFactory.getLogger()
 

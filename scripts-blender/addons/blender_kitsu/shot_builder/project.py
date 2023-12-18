@@ -23,18 +23,17 @@ from collections import defaultdict
 
 import bpy
 
-from blender_kitsu.shot_builder.task_type import *
-from blender_kitsu.shot_builder.shot import Shot, ShotRef
-from blender_kitsu.shot_builder.render_settings import RenderSettings
-from blender_kitsu.shot_builder.asset import Asset, AssetRef
-from blender_kitsu.shot_builder.sys_utils import *
-from blender_kitsu.shot_builder.hooks import Hooks, register_hooks
-
-from blender_kitsu.shot_builder.connectors.default import DefaultConnector
-from blender_kitsu.shot_builder.connectors.connector import Connector
+from .task_type import *
+from .shot import Shot, ShotRef
+from .render_settings import RenderSettings
+from .asset import Asset, AssetRef
+from .sys_utils import *
+from .hooks import Hooks, register_hooks
+from .connectors.default import DefaultConnector
+from .connectors.connector import Connector
 import os
 
-from blender_kitsu import prefs
+from .. import prefs
 from pathlib import Path
 
 from typing import *
@@ -55,8 +54,7 @@ class Production:
 
     """
 
-    __ATTRNAMES_SUPPORTING_CONNECTOR = [
-        'task_types', 'shots', 'name']
+    __ATTRNAMES_SUPPORTING_CONNECTOR = ['task_types', 'shots', 'name']
 
     def __init__(self, production_path: pathlib.Path):
         self.path = production_path
@@ -75,11 +73,13 @@ class Production:
 
         self.scene_name_format = "{shot.sequence_code}_{shot.code}.{task_type}"
         self.shot_name_format = "{shot.sequence_code}_{shot.code}"
-        self.file_name_format = "{production.path}shots/{shot.code}/{shot.code}.{task_type}.blend"
+        self.file_name_format = (
+            "{production.path}shots/{shot.code}/{shot.code}.{task_type}.blend"
+        )
 
-    def __create_connector(self,
-                           connector_cls: Type[Connector],
-                           context: bpy.types.Context) -> Connector:
+    def __create_connector(
+        self, connector_cls: Type[Connector], context: bpy.types.Context
+    ) -> Connector:
         # TODO: Cache connector
         preferences = context.preferences.addons["blender_kitsu"].preferences
         return connector_cls(production=self, preferences=preferences)
@@ -87,31 +87,32 @@ class Production:
     def __format_shot_name(self, shot: Shot) -> str:
         return self.shot_name_format.format(shot=shot)
 
-    def get_task_type_items(self,
-                            context: bpy.types.Context
-                            ) -> List[Tuple[str, str, str]]:
+    def get_task_type_items(
+        self, context: bpy.types.Context
+    ) -> List[Tuple[str, str, str]]:
         """
         Get the list of task types items to be used in an item function of a
         `bpy.props.EnumProperty`
         """
         if not self.task_types:
             connector = self.__create_connector(
-                self.task_types_connector, context=context)
+                self.task_types_connector, context=context
+            )
             self.task_types = connector.get_task_types()
         return [
             (task_type.name, task_type.name, task_type.name)
             for task_type in self.task_types
         ]
 
-    def get_assets_for_shot(self, context: bpy.types.Context, shot: Shot) -> List[AssetRef]:
-        connector = self.__create_connector(
-            self.shots_connector, context=context)
+    def get_assets_for_shot(
+        self, context: bpy.types.Context, shot: Shot
+    ) -> List[AssetRef]:
+        connector = self.__create_connector(self.shots_connector, context=context)
 
         return connector.get_assets_for_shot(shot)
 
     def get_shots(self, context: bpy.types.Context) -> List[ShotRef]:
-        connector = self.__create_connector(
-            self.shots_connector, context=context)
+        connector = self.__create_connector(self.shots_connector, context=context)
         return connector.get_shots()
 
     def get_shot(self, context: bpy.types.Context, shot_name: str) -> Optional[Shot]:
@@ -152,9 +153,10 @@ class Production:
 
         self.shot_data_synced = True
 
-    def get_render_settings(self, context: bpy.types.Context, shot: Shot) -> RenderSettings:
-        connector = self.__create_connector(
-            self.shots_connector, context=context)
+    def get_render_settings(
+        self, context: bpy.types.Context, shot: Shot
+    ) -> RenderSettings:
+        connector = self.__create_connector(self.shots_connector, context=context)
         return connector.get_render_settings(shot)
 
     def get_shot_items(self, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
@@ -174,11 +176,9 @@ class Production:
         for sequence in sorted_sequences:
             result.append(("", sequence, sequence))
             for shot in sorted(sequences[sequence], key=lambda x: x.name):
-                result.append((shot.name, self.__format_shot_name(
-                    shot), shot.name))
+                result.append((shot.name, self.__format_shot_name(shot), shot.name))
 
         return result
-
 
     def get_seq_items(self, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
         """
@@ -191,14 +191,12 @@ class Production:
 
         return [(seq.name, seq.name, "") for seq in sequences]
 
-
     def get_name(self, context: bpy.types.Context) -> str:
         """
         Get the name of the production
         """
         if not self.name:
-            connector = self.__create_connector(
-                self.name_connector, context=context)
+            connector = self.__create_connector(self.name_connector, context=context)
             self.name = connector.get_name()
         return self.name
 
@@ -219,7 +217,8 @@ class Production:
             return
 
         logger.warn(
-            "Skip loading of production name. Incorrect configuration detected.")
+            "Skip loading of production name. Incorrect configuration detected."
+        )
 
     def __load_task_types(self, main_config_mod: types.ModuleType) -> None:
         task_types = getattr(main_config_mod, "TASK_TYPES", None)
@@ -234,8 +233,7 @@ class Production:
         if issubclass(task_types, Connector):
             self.task_types = task_types
 
-        logger.warn(
-            "Skip loading of task_types. Incorrect configuration detected.")
+        logger.warn("Skip loading of task_types. Incorrect configuration detected.")
 
     def __load_shots_connector(self, main_config_mod: types.ModuleType) -> None:
         shots = getattr(main_config_mod, "SHOTS", None)
@@ -247,8 +245,7 @@ class Production:
             self.shots_connector = shots
             return
 
-        logger.warn(
-            "Skip loading of shots. Incorrect configuration detected.")
+        logger.warn("Skip loading of shots. Incorrect configuration detected.")
 
     def __load_connector_keys(self, main_config_mod: types.ModuleType) -> None:
         connectors = set()
@@ -263,8 +260,7 @@ class Production:
 
         for connector_key in connector_keys:
             if hasattr(main_config_mod, connector_key):
-                self.config[connector_key] = getattr(
-                    main_config_mod, connector_key)
+                self.config[connector_key] = getattr(main_config_mod, connector_key)
 
     def __load_render_settings(self, main_config_mod: types.ModuleType) -> None:
         render_settings = getattr(main_config_mod, "RENDER_SETTINGS", None)
@@ -275,16 +271,18 @@ class Production:
             self.render_settings_connector = render_settings
             return
 
-        logger.warn(
-            "Skip loading of render settings. Incorrect configuration detected")
+        logger.warn("Skip loading of render settings. Incorrect configuration detected")
 
     def __load_formatting_strings(self, main_config_mod: types.ModuleType) -> None:
         self.shot_name_format = getattr(
-            main_config_mod, "SHOT_NAME_FORMAT", self.scene_name_format)
+            main_config_mod, "SHOT_NAME_FORMAT", self.scene_name_format
+        )
         self.scene_name_format = getattr(
-            main_config_mod, "SCENE_NAME_FORMAT", self.scene_name_format)
+            main_config_mod, "SCENE_NAME_FORMAT", self.scene_name_format
+        )
         self.file_name_format = getattr(
-            main_config_mod, "FILE_NAME_FORMAT", self.file_name_format)
+            main_config_mod, "FILE_NAME_FORMAT", self.file_name_format
+        )
 
     def _load_config(self, main_config_mod: types.ModuleType) -> None:
         self.__load_name(main_config_mod)
@@ -386,7 +384,7 @@ def get_production_root(context: bpy.types.Context) -> Optional[pathlib.Path]:
     production_root = _find_production_root(current_file)
     if production_root:
         return production_root
-    
+
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     production_root = Path(addon_prefs.project_root_dir)
     if is_valid_production_root(production_root):
@@ -403,24 +401,26 @@ def ensure_loaded_production(context: bpy.types.Context) -> bool:
     global _PRODUCTION
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     base_path = Path(addon_prefs.project_root_dir)
-    production_root = os.path.join(base_path, "pro") #TODO Fix during refactor should use base_path
+    production_root = os.path.join(
+        base_path, "pro"
+    )  # TODO Fix during refactor should use base_path
     if is_valid_production_root(Path(production_root)):
-        logger.debug(
-        f"loading new production configuration from '{production_root}'.")
+        logger.debug(f"loading new production configuration from '{production_root}'.")
         __load_production_configuration(context, Path(production_root))
         return True
     return False
 
 
-
-def __load_production_configuration(context: bpy.types.Context,
-                                    production_path: pathlib.Path) -> bool:
+def __load_production_configuration(
+    context: bpy.types.Context, production_path: pathlib.Path
+) -> bool:
     global _PRODUCTION
     _PRODUCTION = Production(production_path)
-    paths = [production_path/"shot-builder"]
+    paths = [production_path / "shot-builder"]
     with SystemPathInclude(paths) as _include:
         try:
             import config as production_config
+
             importlib.reload(production_config)
             _PRODUCTION._load_config(production_config)
         except ModuleNotFoundError:
@@ -428,6 +428,7 @@ def __load_production_configuration(context: bpy.types.Context,
 
         try:
             import shots as production_shots
+
             importlib.reload(production_shots)
             _PRODUCTION._load_shot_definitions(production_shots)
         except ModuleNotFoundError:
@@ -435,6 +436,7 @@ def __load_production_configuration(context: bpy.types.Context,
 
         try:
             import assets as production_assets
+
             importlib.reload(production_assets)
             _PRODUCTION._load_asset_definitions(production_assets)
         except ModuleNotFoundError:
@@ -442,6 +444,7 @@ def __load_production_configuration(context: bpy.types.Context,
 
         try:
             import hooks as production_hooks
+
             importlib.reload(production_hooks)
             register_hooks(production_hooks)
         except ModuleNotFoundError:
@@ -453,5 +456,5 @@ def __load_production_configuration(context: bpy.types.Context,
 
 def get_active_production() -> Production:
     global _PRODUCTION
-    assert(_PRODUCTION)
+    assert _PRODUCTION
     return _PRODUCTION

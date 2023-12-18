@@ -1,7 +1,7 @@
 import bpy
 from typing import Set
-from blender_kitsu.shot_builder.editorial.core import editorial_export_get_latest
-from blender_kitsu import cache
+from .core import editorial_export_get_latest
+from ... import cache
 import gazu
 
 

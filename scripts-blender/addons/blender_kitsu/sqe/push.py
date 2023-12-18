@@ -22,9 +22,9 @@ from typing import Tuple
 
 import bpy
 
-from blender_kitsu import bkglobals
-from blender_kitsu.types import Sequence, Project, Shot
-from blender_kitsu.logger import LoggerFactory
+from .. import bkglobals
+from ..types import Sequence, Project, Shot
+from ..logger import LoggerFactory
 import gazu
 
 logger = LoggerFactory.getLogger()

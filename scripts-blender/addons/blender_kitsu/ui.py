@@ -20,7 +20,7 @@
 
 import bpy
 
-from blender_kitsu import prefs
+from . import prefs
 
 
 def draw_error_box(layout: bpy.types.UILayout) -> bpy.types.UILayout:

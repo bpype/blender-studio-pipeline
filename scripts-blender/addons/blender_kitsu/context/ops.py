@@ -23,10 +23,10 @@ from pathlib import Path
 
 import bpy
 
-from blender_kitsu import bkglobals, cache, util, prefs
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.types import TaskType, AssetType
-from blender_kitsu.context import core as context_core
+from .. import bkglobals, cache, util, prefs
+from ..logger import LoggerFactory
+from ..types import TaskType, AssetType
+from ..context import core as context_core
 
 logger = LoggerFactory.getLogger()
 

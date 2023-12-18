@@ -19,7 +19,7 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 import importlib
-from blender_kitsu.auth import ops, ui
+from ..auth import ops, ui
 
 
 # ---------REGISTER ----------.

@@ -19,7 +19,7 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 import importlib
-from blender_kitsu.anim import opsdata, ops, ui
+from . import opsdata, ops, ui
 
 
 # ---------REGISTER ----------.

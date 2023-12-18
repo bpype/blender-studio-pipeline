@@ -1,6 +1,6 @@
 import bpy
 from typing import Set
-from blender_kitsu.shot_builder.anim_setup.core import  animation_workspace_delete_others, animation_workspace_vse_area_add
+from .core import  animation_workspace_delete_others, animation_workspace_vse_area_add
 class ANIM_SETUP_OT_setup_workspaces(bpy.types.Operator):
     bl_idname = "anim_setup.setup_workspaces"
     bl_label = "Setup Workspace"

@@ -27,11 +27,11 @@ from typing import Dict, List, Set, Optional, Tuple, Any
 import datetime
 import bpy
 import gazu
-from blender_kitsu import cache, util, prefs, bkglobals
-from blender_kitsu.sqe import push, pull, checkstrip, opsdata, checksqe
+from .. import cache, util, prefs, bkglobals
+from ..sqe import push, pull, checkstrip, opsdata, checksqe
 
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.types import (
+from ..logger import LoggerFactory
+from ..types import (
     Cache,
     Sequence,
     Shot,
@@ -40,7 +40,7 @@ from blender_kitsu.types import (
     Task,
 )
 
-from blender_kitsu.playblast.core import override_render_path, override_render_format
+from ..playblast.core import override_render_path, override_render_format
 
 logger = LoggerFactory.getLogger()
 

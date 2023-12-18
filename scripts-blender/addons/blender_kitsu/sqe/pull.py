@@ -20,15 +20,14 @@
 
 import bpy
 
-from blender_kitsu import bkglobals
-from blender_kitsu.types import Cache, Sequence, Project, Shot
-from blender_kitsu.logger import LoggerFactory
+from .. import bkglobals
+from ..types import Cache, Sequence, Project, Shot
+from ..logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
 
 
 def shot_meta(strip: bpy.types.Sequence, shot: Shot, clear_cache: bool = True) -> None:
-
     if clear_cache:
         # Clear cache before pulling.
         Cache.clear_all()

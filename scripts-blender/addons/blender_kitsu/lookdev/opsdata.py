@@ -24,8 +24,8 @@ from pathlib import Path
 
 import bpy
 
-from blender_kitsu.models import FileListModel
-from blender_kitsu.logger import LoggerFactory
+from ..models import FileListModel
+from ..logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
 

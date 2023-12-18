@@ -21,10 +21,10 @@
 from pathlib import Path
 import bpy
 
-from blender_kitsu import prefs, cache
-from blender_kitsu.tasks.ops import KITSU_OT_tasks_user_laod
+from .. import prefs, cache
+from .ops import KITSU_OT_tasks_user_laod
 
-# from blender_kitsu.tasks.ops import KITSU_OT_session_end, KITSU_OT_session_start
+# from ..tasks.ops import KITSU_OT_session_end, KITSU_OT_session_start
 
 
 class KITSU_PT_tasks_user(bpy.types.Panel):

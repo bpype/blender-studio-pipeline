@@ -22,7 +22,7 @@ from . import dependencies
 
 dependencies.preload_modules()
 
-from blender_kitsu import (
+from . import (
     shot_builder,
     lookdev,
     bkglobals,
@@ -44,7 +44,7 @@ from blender_kitsu import (
 )
 
 
-from blender_kitsu.logger import LoggerFactory, LoggerLevelManager
+from .logger import LoggerFactory, LoggerLevelManager
 
 logger = LoggerFactory.getLogger(__name__)
 

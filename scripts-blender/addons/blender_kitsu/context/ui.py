@@ -20,9 +20,9 @@
 
 import bpy
 
-from blender_kitsu.context import core as context_core
-from blender_kitsu import cache, prefs, ui
-from blender_kitsu.context.ops import (
+from ..context import core as context_core
+from .. import cache, prefs, ui
+from ..context.ops import (
     KITSU_OT_con_sequences_load,
     KITSU_OT_con_shots_load,
     KITSU_OT_con_asset_types_load,

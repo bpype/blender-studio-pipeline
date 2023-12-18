@@ -18,14 +18,14 @@
 
 # <pep8 compliant>
 import bpy
-from blender_kitsu.shot_builder import vars
-from blender_kitsu.shot_builder.shot import Shot, ShotRef
-from blender_kitsu.shot_builder.asset import Asset, AssetRef
-from blender_kitsu.shot_builder.task_type import TaskType
-from blender_kitsu.shot_builder.render_settings import RenderSettings
-from blender_kitsu.shot_builder.connectors.connector import Connector
+from .. import vars
+from ..shot import Shot, ShotRef
+from ..asset import Asset, AssetRef
+from ..task_type import TaskType
+from ..render_settings import RenderSettings
+from ..connectors.connector import Connector
 import requests
-from blender_kitsu import cache
+from ... import cache
 import gazu
 
 import typing

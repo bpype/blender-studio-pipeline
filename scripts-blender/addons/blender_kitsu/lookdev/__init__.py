@@ -19,11 +19,11 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 import importlib
-from blender_kitsu.lookdev import prefs
-from blender_kitsu.lookdev import props
-from blender_kitsu.lookdev import opsdata
-from blender_kitsu.lookdev import ops
-from blender_kitsu.lookdev import ui
+from ..lookdev import prefs
+from ..lookdev import props
+from ..lookdev import opsdata
+from ..lookdev import ops
+from ..lookdev import ui
 
 
 # ---------REGISTER ----------.

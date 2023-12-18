@@ -17,11 +17,11 @@
 # ##### END GPL LICENSE BLOCK #####
 
 # <pep8 compliant>
-from blender_kitsu.shot_builder.shot import Shot, ShotRef
-from blender_kitsu.shot_builder.asset import Asset, AssetRef
-from blender_kitsu.shot_builder.task_type import TaskType
-from blender_kitsu.shot_builder.render_settings import RenderSettings
-from blender_kitsu.shot_builder.connectors.connector import Connector
+from ..shot import Shot, ShotRef
+from ..asset import Asset, AssetRef
+from ..task_type import TaskType
+from ..render_settings import RenderSettings
+from ..connectors.connector import Connector
 from typing import *
 
 

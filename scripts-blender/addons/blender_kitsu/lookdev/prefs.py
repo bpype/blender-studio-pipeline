@@ -24,7 +24,7 @@ from pathlib import Path
 
 import bpy
 
-from blender_kitsu.lookdev import opsdata
+from . import opsdata
 
 
 class LOOKDEV_preferences(bpy.types.PropertyGroup):

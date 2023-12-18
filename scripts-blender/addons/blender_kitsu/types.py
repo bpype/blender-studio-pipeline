@@ -24,7 +24,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Union, Tuple, TypeVar
 
 import gazu
-from blender_kitsu.logger import LoggerFactory
+from .logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
 

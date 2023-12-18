@@ -23,12 +23,12 @@ from typing import Dict, List, Set, Optional, Tuple, Any
 import bpy
 import threading
 import gazu
-from blender_kitsu import cache, prefs
+from .. import cache, prefs
 
 # TODO: restructure this to not access ops_playblast_data.
-from blender_kitsu.playblast import opsdata as ops_playblast_data
-from blender_kitsu.playblast import ops as ops_playblast
-from blender_kitsu.logger import LoggerFactory
+from ..playblast import opsdata as ops_playblast_data
+from ..playblast import ops as ops_playblast
+from ..logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
 

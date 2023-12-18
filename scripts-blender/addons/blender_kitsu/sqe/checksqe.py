@@ -22,8 +22,8 @@ from typing import Dict, List, Set, Optional, Tuple, Any
 
 import bpy
 
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.sqe import checkstrip
+from ..logger import LoggerFactory
+from ..sqe import checkstrip
 
 logger = LoggerFactory.getLogger()
 

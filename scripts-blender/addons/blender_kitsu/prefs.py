@@ -28,19 +28,19 @@ from pathlib import Path
 
 import bpy
 
-from blender_kitsu import cache, bkglobals
+from . import cache, bkglobals
 
 # TODO: restructure this to not access ops_playblast_data.
-from blender_kitsu.playblast import opsdata as ops_playblast_data
-from blender_kitsu.types import Session
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.auth.ops import (
+from .playblast import opsdata as ops_playblast_data
+from .types import Session
+from .logger import LoggerFactory
+from .auth.ops import (
     KITSU_OT_session_end,
     KITSU_OT_session_start,
 )
-from blender_kitsu.context.ops import KITSU_OT_con_productions_load
-from blender_kitsu.lookdev.prefs import LOOKDEV_preferences
-from blender_kitsu.shot_builder.editorial.core import editorial_export_check_latest
+from .context.ops import KITSU_OT_con_productions_load
+from .lookdev.prefs import LOOKDEV_preferences
+from .shot_builder.editorial.core import editorial_export_check_latest
 
 
 logger = LoggerFactory.getLogger()

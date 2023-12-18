@@ -1,7 +1,7 @@
-from blender_kitsu.shot_builder.builder.build_step import BuildStep, BuildContext
-from blender_kitsu.shot_builder.asset import *
-from blender_kitsu.shot_builder.project import *
-from blender_kitsu.shot_builder.shot import *
+from ..builder.build_step import BuildStep, BuildContext
+from ..asset import *
+from ..project import *
+from ..shot import *
 
 import bpy
 
@@ -16,5 +16,4 @@ class InitShotStep(BuildStep):
 
     def execute(self, build_context: BuildContext) -> None:
         shot = build_context.shot
-        shot.file_path = shot.file_path_format.format_map(
-            build_context.as_dict())
+        shot.file_path = shot.file_path_format.format_map(build_context.as_dict())

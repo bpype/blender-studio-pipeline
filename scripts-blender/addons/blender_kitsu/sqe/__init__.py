@@ -19,7 +19,7 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 import importlib
-from blender_kitsu.sqe import opsdata, checkstrip, pull, push, ops, ui, draw
+from ..sqe import opsdata, checkstrip, pull, push, ops, ui, draw
 
 
 # ---------REGISTER ----------.

@@ -19,7 +19,7 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 import importlib
-from blender_kitsu.generic import ops
+from ..generic import ops
 
 
 # ---------REGISTER ----------.

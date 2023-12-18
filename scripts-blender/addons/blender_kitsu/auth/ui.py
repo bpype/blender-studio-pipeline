@@ -20,8 +20,8 @@
 
 import bpy
 
-from blender_kitsu import prefs
-from blender_kitsu.auth.ops import KITSU_OT_session_end, KITSU_OT_session_start
+from .. import prefs
+from ..auth.ops import KITSU_OT_session_end, KITSU_OT_session_start
 
 
 class KITSU_PT_vi3d_auth(bpy.types.Panel):

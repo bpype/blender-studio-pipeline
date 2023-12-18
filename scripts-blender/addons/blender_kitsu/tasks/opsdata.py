@@ -23,6 +23,6 @@ from pathlib import Path
 
 import bpy
 
-from blender_kitsu.logger import LoggerFactory
+from ..logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()

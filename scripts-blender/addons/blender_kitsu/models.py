@@ -23,8 +23,8 @@ import re
 from pathlib import Path
 from typing import Union, Optional, Dict, List, Tuple
 
-from blender_kitsu import bkglobals
-from blender_kitsu.logger import LoggerFactory
+from . import bkglobals
+from .logger import LoggerFactory
 
 logger = LoggerFactory.getLogger(__name__)
 
@@ -51,7 +51,6 @@ class FolderListModel:
 
     @root_path.setter
     def root_path(self, path: Path) -> None:
-
         if not path or not path.absolute().exists():
             logger.debug("FolderListModel: Path does not exist: %s", str(path))
             self.reset()
@@ -126,7 +125,6 @@ class FileListModel:
 
     @root_path.setter
     def root_path(self, path: Path) -> None:
-
         if not path or not path.absolute().exists():
             logger.debug("FileListModel: Path does not exist: %s", str(path))
             self.reset()

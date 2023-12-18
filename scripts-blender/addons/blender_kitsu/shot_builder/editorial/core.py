@@ -2,8 +2,8 @@ import bpy
 import re
 from pathlib import Path
 from typing import Set
-from blender_kitsu import prefs
-from blender_kitsu import cache
+from ... import prefs
+from ... import cache
 
 
 def editorial_export_get_latest(

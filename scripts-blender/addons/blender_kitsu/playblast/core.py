@@ -3,8 +3,8 @@ from pathlib import Path
 
 import contextlib
 
-from blender_kitsu import prefs, cache
-from blender_kitsu.logger import LoggerFactory
+from .. import prefs, cache
+from ..logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
 

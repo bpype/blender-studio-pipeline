@@ -26,7 +26,7 @@ from typing import Dict, List, Set, Optional, Tuple, Any
 
 import bpy
 
-from blender_kitsu.logger import LoggerFactory
+from ..logger import LoggerFactory
 
 
 logger = LoggerFactory.getLogger()

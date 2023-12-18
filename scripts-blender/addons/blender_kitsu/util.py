@@ -23,7 +23,7 @@ from typing import Union
 
 import bpy
 
-from blender_kitsu import bkglobals
+from . import bkglobals
 
 
 def ui_redraw() -> None:

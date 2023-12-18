@@ -19,14 +19,14 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 from typing import Dict, List, Set, Optional, Tuple, Any
-from blender_kitsu import tasks
+from .. import tasks
 
 import bpy
 import gazu
-from blender_kitsu import cache, prefs, util
+from .. import cache, prefs, util
 
-from blender_kitsu.tasks import opsdata
-from blender_kitsu.logger import LoggerFactory
+from ..tasks import opsdata
+from ..logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
 

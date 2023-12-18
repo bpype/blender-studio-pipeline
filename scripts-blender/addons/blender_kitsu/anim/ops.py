@@ -22,13 +22,13 @@ from typing import List, Set, Tuple
 
 import bpy
 
-from blender_kitsu import (
+from .. import (
     cache,
     util,
 )
-from blender_kitsu.logger import LoggerFactory
+from ..logger import LoggerFactory
 
-from blender_kitsu.anim import opsdata
+from . import opsdata
 
 logger = LoggerFactory.getLogger()
 

@@ -25,28 +25,28 @@ from typing import Dict, List, Set, Optional, Tuple, Any
 import bpy
 from bpy.app.handlers import persistent
 
-from blender_kitsu import bkglobals
+from .. import bkglobals
 
-from blender_kitsu import (
+from .. import (
     cache,
     util,
     prefs,
     bkglobals,
 )
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.types import (
+from ..logger import LoggerFactory
+from ..types import (
     Shot,
     Task,
     TaskStatus,
     TaskType,
 )
-from blender_kitsu.playblast.core import (
+from ..playblast.core import (
     playblast_with_shading_settings,
     playblast_user_shading_settings,
     playblast_vse,
 )
-from blender_kitsu.context import core as context_core
-from blender_kitsu.playblast import opsdata, core
+from ..context import core as context_core
+from ..playblast import opsdata, core
 
 logger = LoggerFactory.getLogger()
 

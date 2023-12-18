@@ -1,5 +1,5 @@
-from blender_kitsu.shot_builder.builder.build_step import BuildStep, BuildContext
-from blender_kitsu.shot_builder.render_settings import RenderSettings
+from ..builder.build_step import BuildStep, BuildContext
+from ..render_settings import RenderSettings
 import bpy
 
 import logging

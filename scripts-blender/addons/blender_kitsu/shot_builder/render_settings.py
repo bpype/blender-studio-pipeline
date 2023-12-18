@@ -18,7 +18,7 @@
 
 # <pep8 compliant>
 
-from blender_kitsu.shot_builder.asset import Asset
+from ..shot_builder.asset import Asset
 from typing import *
 
 

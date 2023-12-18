@@ -19,10 +19,9 @@
 # <pep8 compliant>
 import bpy
 from typing import *
-from blender_kitsu.shot_builder.operators import *
+from .operators import *
 
 
 def topbar_file_new_draw_handler(self: Any, context: bpy.types.Context) -> None:
     layout = self.layout
-    op = layout.operator(
-        SHOTBUILDER_OT_NewShotFile.bl_idname, text="Shot File")
+    op = layout.operator(SHOTBUILDER_OT_NewShotFile.bl_idname, text="Shot File")

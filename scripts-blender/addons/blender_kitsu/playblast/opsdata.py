@@ -23,9 +23,9 @@ from pathlib import Path
 
 import bpy
 
-from blender_kitsu.models import FileListModel
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.playblast import core
+from ..models import FileListModel
+from ..logger import LoggerFactory
+from ..playblast import core
 
 PLAYBLAST_FILE_MODEL = FileListModel()
 _playblast_enum_list: List[Tuple[str, str, str]] = []

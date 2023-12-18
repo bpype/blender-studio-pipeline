@@ -24,7 +24,7 @@ import bpy
 
 from bpy.app.handlers import persistent
 
-from blender_kitsu.types import (
+from .types import (
     Project,
     Sequence,
     Shot,
@@ -37,7 +37,7 @@ from blender_kitsu.types import (
     Cache,
     User,
 )
-from blender_kitsu.logger import LoggerFactory
+from .logger import LoggerFactory
 import gazu
 
 logger = LoggerFactory.getLogger()
@@ -312,7 +312,7 @@ def get_task_types_enum_for_current_context(
     global _task_types_enum_list
 
     # Import within function to avoid circular import
-    from blender_kitsu.context import core as context_core
+    from .context import core as context_core
 
     items = []
     if context_core.is_shot_context():

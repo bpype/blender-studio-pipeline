@@ -1,7 +1,7 @@
-from blender_kitsu.shot_builder.builder.build_step import BuildStep, BuildContext
-from blender_kitsu.shot_builder.asset import *
-from blender_kitsu.shot_builder.project import *
-from blender_kitsu.shot_builder.shot import *
+from ..builder.build_step import BuildStep, BuildContext
+from ..asset import *
+from ..project import *
+from ..shot import *
 
 import bpy
 
@@ -20,4 +20,6 @@ class InitAssetStep(BuildStep):
     def execute(self, build_context: BuildContext) -> None:
         build_context.asset = self.__asset
         self.__asset.path = self.__asset.path.format_map(build_context.as_dict())
-        self.__asset.collection = self.__asset.collection.format_map(build_context.as_dict())
+        self.__asset.collection = self.__asset.collection.format_map(
+            build_context.as_dict()
+        )

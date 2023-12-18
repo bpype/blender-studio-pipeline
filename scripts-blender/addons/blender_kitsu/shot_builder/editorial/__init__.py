@@ -19,7 +19,7 @@
 # <pep8 compliant>
 
 import bpy
-from blender_kitsu.shot_builder.editorial import ops 
+from . import ops
 
 
 def register():
@@ -27,4 +27,4 @@ def register():
 
 
 def unregister():
-    ops.unregister()    
+    ops.unregister()

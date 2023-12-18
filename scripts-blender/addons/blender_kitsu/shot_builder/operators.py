@@ -21,20 +21,20 @@ import pathlib
 from typing import *
 import bpy
 import gazu
-from blender_kitsu.shot_builder.shot import ShotRef
-from blender_kitsu.shot_builder.project import (
+from .shot import ShotRef
+from .project import (
     ensure_loaded_production,
     get_active_production,
 )
-from blender_kitsu.shot_builder.builder import ShotBuilder
-from blender_kitsu.shot_builder.task_type import TaskType
-from blender_kitsu import prefs, cache
-from blender_kitsu.shot_builder.anim_setup.core import (
+from .builder import ShotBuilder
+from .task_type import TaskType
+from .. import prefs, cache
+from .anim_setup.core import (
     animation_workspace_delete_others,
     animation_workspace_vse_area_add,
 )
-from blender_kitsu.shot_builder.editorial.core import editorial_export_get_latest
-from blender_kitsu.shot_builder.builder.save_file import save_shot_builder_file
+from .editorial.core import editorial_export_get_latest
+from .builder.save_file import save_shot_builder_file
 
 
 _production_task_type_items: List[Tuple[str, str, str]] = []
@@ -254,9 +254,7 @@ class SHOTBUILDER_OT_NewShotFile(bpy.types.Operator):
         active_project = cache.project_active_get()
 
         # Build Kitsu Context
-        sequence = gazu.shot.get_sequence_by_name(
-            active_project.id, self.seq_id
-        )
+        sequence = gazu.shot.get_sequence_by_name(active_project.id, self.seq_id)
         shot = gazu.shot.get_shot_by_name(sequence, self.shot_id)
 
         # TODO this is a hack, should be inherient to above builder

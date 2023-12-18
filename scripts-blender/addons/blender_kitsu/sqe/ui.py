@@ -20,11 +20,11 @@
 
 import bpy
 
-from blender_kitsu import cache, prefs, ui
-from blender_kitsu.sqe import checkstrip
-from blender_kitsu.context import core as context_core
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.sqe.ops import (
+from .. import cache, prefs, ui
+from ..sqe import checkstrip
+from ..context import core as context_core
+from ..logger import LoggerFactory
+from ..sqe.ops import (
     KITSU_OT_sqe_push_new_sequence,
     KITSU_OT_sqe_push_new_shot,
     KITSU_OT_sqe_push_shot_meta,

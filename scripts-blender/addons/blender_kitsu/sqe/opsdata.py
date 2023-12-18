@@ -24,8 +24,8 @@ from typing import Any, Dict, List, Tuple, Union, Optional
 
 import bpy
 
-from blender_kitsu.logger import LoggerFactory
-from blender_kitsu.types import Sequence, Task, TaskStatus, Shot, TaskType
+from ..logger import LoggerFactory
+from ..types import Sequence, Task, TaskStatus, Shot, TaskType
 
 logger = LoggerFactory.getLogger()
 

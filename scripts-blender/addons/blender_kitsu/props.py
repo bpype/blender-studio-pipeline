@@ -24,8 +24,8 @@ from typing import Any, Union, List, Dict, Optional
 import bpy
 from bpy.app.handlers import persistent
 
-from blender_kitsu import propsdata, bkglobals
-from blender_kitsu.logger import LoggerFactory
+from . import propsdata, bkglobals
+from .logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
 

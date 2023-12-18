@@ -19,7 +19,7 @@
 # (c) 2023, Blender Foundation
 
 import importlib
-from blender_kitsu.playblast import ops, ui
+from ..playblast import ops, ui
 
 
 # ---------REGISTER ----------.

@@ -18,19 +18,19 @@
 #
 # (c) 2023, Blender Foundation
 
-from blender_kitsu.anim import opsdata
-from blender_kitsu.context import core as context_core
+from ..anim import opsdata
+from ..context import core as context_core
 import bpy
 
 from pathlib import Path
 
-from blender_kitsu import prefs, cache, ui
-from blender_kitsu.playblast.ops import (
+from .. import prefs, cache, ui
+from ..playblast.ops import (
     KITSU_OT_playblast_create,
     KITSU_OT_playblast_set_version,
     KITSU_OT_playblast_increment_playblast_version,
 )
-from blender_kitsu.generic.ops import KITSU_OT_open_path
+from ..generic.ops import KITSU_OT_open_path
 
 
 class KITSU_PT_vi3d_playblast(bpy.types.Panel):

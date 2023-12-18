@@ -22,12 +22,12 @@ from pathlib import Path
 
 import bpy
 
-from blender_kitsu import prefs, lookdev, ui, cache
-from blender_kitsu.lookdev.ops import (
+from .. import prefs, lookdev, ui, cache
+from .ops import (
     KITSU_OT_lookdev_set_preset,
     KITSU_OT_lookdev_apply_preset,
 )
-from blender_kitsu.lookdev import opsdata
+from . import opsdata
 
 
 class KITSU_PT_vi3d_lookdev_tools(bpy.types.Panel):
@@ -101,7 +101,6 @@ class KITSU_PT_vi3d_lookdev_tools(bpy.types.Panel):
 
 
 class KITSU_PT_comp_lookdev_tools(KITSU_PT_vi3d_lookdev_tools):
-
     bl_space_type = "NODE_EDITOR"
 
 

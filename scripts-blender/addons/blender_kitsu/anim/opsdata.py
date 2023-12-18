@@ -23,9 +23,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union, Generator
 
 import bpy
 
-from blender_kitsu import bkglobals, util
-from blender_kitsu.types import Shot
-from blender_kitsu.logger import LoggerFactory
+from .. import bkglobals, util
+from ..types import Shot
+from ..logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
 
@@ -86,7 +86,6 @@ def get_output_coll_name(shot: Shot) -> str:
 def find_rig(
     coll: bpy.types.Collection, log: bool = True
 ) -> Optional[bpy.types.Armature]:
-
     valid_rigs = []
 
     for obj in coll.all_objects:
@@ -114,12 +113,10 @@ def find_rig(
 def find_asset_collections(log: bool = True) -> List[bpy.types.Collection]:
     asset_colls: List[bpy.types.Collection] = []
     for coll in bpy.data.collections:
-
         if not is_item_lib_override(coll):
             continue
 
         for prefix in bkglobals.ASSET_COLL_PREFIXES:
-
             if not coll.name.startswith(prefix):
                 continue
 
@@ -142,7 +139,6 @@ def traverse_collection_tree(
 def find_asset_collections_in_scene(
     scene: bpy.types.Scene, log: bool = True
 ) -> List[bpy.types.Collection]:
-
     asset_colls: List[bpy.types.Collection] = []
     colls: List[bpy.types.Collection] = []
 
@@ -151,9 +147,7 @@ def find_asset_collections_in_scene(
         colls.extend(list(traverse_collection_tree(coll)))
 
     for coll in colls:
-
         for prefix in bkglobals.ASSET_COLL_PREFIXES:
-
             if not coll.name.startswith(prefix):
                 continue
 
@@ -215,7 +209,6 @@ _current_asset_idx: int = 0
 def gen_action_name(
     armature: bpy.types.Armature, collection: bpy.types.Collection, shot: Shot
 ) -> str:
-
     global action_names_cache
     global _current_asset
     global _current_asset_idx
@@ -264,7 +257,6 @@ def gen_action_name(
 
         # Find all actions that relate to the same asset except for the asset.
         for action_name in action_names_cache:
-
             # Skip action that was input as parameter of this function.
             if has_action and action_name == armature.animation_data.action.name:
                 # Print(f"Skipping action same name: {action_name}").

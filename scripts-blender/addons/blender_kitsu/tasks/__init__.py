@@ -19,7 +19,7 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 import importlib
-from blender_kitsu.tasks import ops, ui
+from ..tasks import ops, ui
 
 
 # ---------REGISTER ----------
