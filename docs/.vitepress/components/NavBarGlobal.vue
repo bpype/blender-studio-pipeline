@@ -34,19 +34,19 @@ import VPNavBarTranslations from '../../node_modules/vitepress/dist/client/theme
         <ul class="js-nav-global-dropdown nav-global-nav-links nav-global-dropdown" id="nav-global-nav-links">
           <!-- TODO: use constant studioURL for links -->
           <li>
-            <a href="https://studio.blender.org/films">Films</a>
+            <a class="js-nav-global-link" href="https://studio.blender.org/films">Films</a>
           </li>
           <li>
-            <a href="https://studio.blender.org/training">Training</a>
+            <a class="js-nav-global-link" href="https://studio.blender.org/training">Training</a>
           </li>
           <li>
-            <a href="https://studio.blender.org/characters">Characters</a>
+            <a class="js-nav-global-link" href="https://studio.blender.org/characters">Characters</a>
           </li>
           <li>
-            <a href="/" class="nav-global-link-active">Pipeline</a>
+            <a class="js-nav-global-link nav-global-link-active" href="/">Pipeline</a>
           </li>
           <li>
-            <a href="https://studio.blender.org/blog">Blog</a>
+            <a class="js-nav-global-link" href="https://studio.blender.org/blog">Blog</a>
           </li>
         </ul>
 
@@ -284,6 +284,28 @@ export default {
         this.hideAllDropdowns();
       }
     });
+
+    // Create function navGlobalLinkOpen to force link open with JavaScript
+    function navGlobalLinkOpen() {
+      var navGlobalLink = document.querySelectorAll('.js-nav-global-link');
+
+      navGlobalLink.forEach(function(item) {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+
+          var attrHref = this.getAttribute('href');
+
+          // Save current link to history object dynamically
+          history.pushState(null, null, window.location.href);
+
+          // Redirect to link attrHref dynamically
+          window.location.replace(attrHref);
+        });
+      });
+    }
+
+    // Init function navGlobalLinkOpen
+    navGlobalLinkOpen();
 
     // Cleanup VPNav Vitepress attributes to make links work
     var VPNav = document.querySelector('.VPNav');
