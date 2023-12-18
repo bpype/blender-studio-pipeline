@@ -536,6 +536,6 @@ This project uses gazu as a submodule to interact with the gazu data base. Gazu 
 - gazu doc : https://gazu.cg-wire.com/
 
 The file at ./blender_kitsu/sqe/draw.py is copied and modified from the blender-cloud-addon (https://projects.blender.org/archive/blender-cloud-addon).
-Original author of this file is: Sybren A. Stuevel.
+Original author of this file is: Sybren A. Stüvel.
 
 
