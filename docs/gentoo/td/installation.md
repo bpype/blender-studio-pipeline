@@ -2,17 +2,12 @@
 
 
 
-::: warning Work in Progress
-20 June 2023 - The IPXE Boot Scripts from the Blender Studio have not yet been made public yet.
-:::
-
-
 If you are installing the whole system from scratch you need to first to do four things:
-1. Clone `Repo_to_be_determined.com` to get the files
+1. Clone `https://projects.blender.org/ZedDB/gentoo-pxe-builder` to get the files
 2. Run `build.sh` to setup the files needed by the IPXE bootloader
-3. Create an HTTP server to host the IPXE files. 
-    - For example to start an HTTP server using python run ` python -m http.server 8000` from the directory containing your IPXE Files
-4. Create IPXE Boot Stick by running `file_to_be_determined.sh` from the`Repo_to_be_determined.com` repo. You will need to supply the script with the address for the above HTTP server.
+3. Create an HTTP server to host the IPXE files. Or create a usb drive will all the installation script files already on it.
+    (See the README.md file in the `http` and `ipxe_builder` for more information on how to do it)
+4. Setup your computers to boot in UEFI mode and have secure boot disabled.
 
 After this is done, you can start installation of your build server and then client computers.
 
