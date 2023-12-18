@@ -287,8 +287,14 @@ export default {
 
     // Cleanup VPNav Vitepress attributes to make links work
     var VPNav = document.querySelector('.VPNav');
-    VPNav.removeAttribute('data-v-14f22a90');
-    VPNav.removeAttribute('data-v-702a693e');
+
+    for (var i = 0; i < VPNav.attributes.length; i++) {
+      var attr = VPNav.attributes[i];
+      if (attr.name.startsWith('data-v')) {
+        // Cleanup all attributes starting with 'data-v'
+        VPNav.removeAttribute(attr.name);
+      }
+    }
 
     // Make header position fixed if page has sidebar
     // TODO: change to Vue route change
