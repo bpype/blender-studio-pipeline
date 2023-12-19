@@ -6,35 +6,21 @@
   --vp-c-brand-darker: #007ac6;
   --vp-local-search-highlight-bg: var(--vp-c-brand-lighter);
 
-  /* Map custom property --vp-font-family-base to --font-family-base */
-  --vp-font-family-base: var(--font-family-base);
+  --vp-font-family-base: 'Heebo', ui-sans-serif,
+    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Helvetica, Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --vp-font-family-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco,
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
-/* Hide btn search txt */
-.DocSearch-Button .DocSearch-Button-Placeholder {
-  display: none;
-}
-
-.VPNav {
-  /* Fix Vitepress VPNav arbitrary style */
-  pointer-events: auto !important;
-  position: relative !important;
-}
-
-.VPNav-fixed {
-  position: fixed !important;
-  z-index: 2;
-}
-
-/* .VPNavBar {
+.VPNavBar {
   background-color: var(--vp-c-bg);
 }
 
 .VPNavBar.has-sidebar {
   background-color: transparent;
-} */
+}
 
 .VPHero {
   background-image: url("/media/images/hero_banner.jpg");
@@ -47,30 +33,4 @@
 .VPHero .text {
   color: white;
   -webkit-text-fill-color: white;
-}
-
-/* Web Assets overrides. */
-:root {
-  --btn-bg-color: transparent;
-  --btn-bg-color-hover: var(--background-color-primary);
-}
-
-a:hover {
-  text-decoration: none;
-}
-
-@media (min-width: 768px) {
-  .nav-global {
-    z-index: 10002;
-  }
-}
-
-.nav-global .nav-global-logo {
-  display: flex;
-}
-
-@media (max-width: 767px) {
-  .nav-global button.nav-global-logo {
-    display: flex;
-  }
 }
