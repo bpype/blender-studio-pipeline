@@ -305,8 +305,7 @@ export default {
     }
 
     // Init function navGlobalLinkOpen
-    // TODO: check if function navGlobalLinkOpen is needed without web-assets
-    // navGlobalLinkOpen();
+    navGlobalLinkOpen();
 
     // Cleanup VPNav Vitepress attributes to make links work
     var VPNav = document.querySelector('.VPNav');
