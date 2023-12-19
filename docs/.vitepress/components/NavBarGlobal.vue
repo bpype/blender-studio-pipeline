@@ -43,7 +43,7 @@ import VPNavBarTranslations from '../../node_modules/vitepress/dist/client/theme
             <a class="js-nav-global-link" href="https://studio.blender.org/characters">Characters</a>
           </li>
           <li>
-            <a class="js-nav-global-link nav-global-link-active" href="/">Pipeline</a>
+            <a class="js-nav-global-link nav-global-link-active" href="/pipeline/">Pipeline</a>
           </li>
           <li>
             <a class="js-nav-global-link" href="https://studio.blender.org/blog">Blog</a>
