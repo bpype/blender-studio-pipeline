@@ -66,6 +66,5 @@ ENV/
 .vscode/
 
 # Docs
-assets_shared/
 node_modules/
 docs/.vitepress/cache
