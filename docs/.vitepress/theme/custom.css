@@ -14,6 +14,25 @@
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
+.VPNav {
+  /* Fix Vitepress VPNav arbitrary style */
+  pointer-events: auto !important;
+  position: relative !important;
+  width: 100%;
+}
+
+.VPNav-fixed {
+  position: fixed !important;
+  z-index: 30;
+}
+
+@media (max-width: 768px) {
+  .VPNav-fixed {
+    position: relative !important;
+  }
+}
+
+
 .VPNavBar {
   background-color: var(--vp-c-bg);
 }
@@ -34,3 +53,9 @@
   color: white;
   -webkit-text-fill-color: white;
 }
+
+/* Web Assets overrides. */
+.nav-global .nav-global-logo svg {
+  display: inline;
+}
+
