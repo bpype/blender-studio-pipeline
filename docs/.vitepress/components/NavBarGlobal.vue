@@ -305,13 +305,15 @@ export default {
     }
 
     // Init function navGlobalLinkOpen
-    navGlobalLinkOpen();
+    // TODO: check if function navGlobalLinkOpen is needed without web-assets
+    // navGlobalLinkOpen();
 
     // Cleanup VPNav Vitepress attributes to make links work
     var VPNav = document.querySelector('.VPNav');
 
     for (var i = 0; i < VPNav.attributes.length; i++) {
       var attr = VPNav.attributes[i];
+
       if (attr.name.startsWith('data-v')) {
         // Cleanup all attributes starting with 'data-v'
         VPNav.removeAttribute(attr.name);
@@ -328,7 +330,7 @@ export default {
       } else {
         VPNav.classList.remove('VPNav-fixed');
       }
-    }, 1000);
+    }, 200);
   }
 };
 </script>
