@@ -90,6 +90,9 @@ Blender Add-ons can be packaged directly from the [Blender Studio Pipeline](http
 
 ```bash
 cd blender-studio-pipeline/scripts/pipeline-release
+git checkout main # Checkout main branch
+git reset --hard # Remove any changes stored in your branch
+git pull --rebase origin # Pull to update to latest commit
 ./package_local.py your_project_name/shared/artifacts/addons
 ```
 
