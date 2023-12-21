@@ -359,20 +359,12 @@ def get_assets_enum_for_active_asset_type(
 
     _asset_enum_list.clear()
     if not episode_active:
-        _asset_enum_list.extend(
-            [
-                (a.id, a.name, a.description or "")
-                for a in all_assets
-            ]
-        )
+        _asset_enum_list.extend([(a.id, a.name, a.description or "") for a in all_assets])
     else:
-        episode_assets = filter(lambda p: p.source_id == episode_active.id or p.source_id is None, all_assets)
-        _asset_enum_list.extend(
-            [
-                (a.id, a.name, a.description or "")
-                for a in episode_assets
-            ]
+        episode_assets = filter(
+            lambda p: p.source_id == episode_active.id or p.source_id is None, all_assets
         )
+        _asset_enum_list.extend([(a.id, a.name, a.description or "") for a in episode_assets])
     return _asset_enum_list
 
 
@@ -576,7 +568,7 @@ def init_cache_variables() -> None:
         return
 
     project_active_id = addon_prefs.project_active_id
-    episode_active_id = addon_prefs.episode_active_id
+    episode_active_id = bpy.context.scene.kitsu.episode_active_id
     sequence_active_id = bpy.context.scene.kitsu.sequence_active_id
     shot_active_id = bpy.context.scene.kitsu.shot_active_id
     asset_active_id = bpy.context.scene.kitsu.asset_active_id

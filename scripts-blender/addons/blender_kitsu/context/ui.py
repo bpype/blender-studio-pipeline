@@ -29,6 +29,7 @@ from ..context.ops import (
     KITSU_OT_con_assets_load,
     KITSU_OT_con_task_types_load,
     KITSU_OT_con_detect_context,
+    KITSU_OT_con_episodes_load,
 )
 
 
@@ -67,16 +68,6 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             if not project_active:
                 ui.draw_error_active_project_unset(box)
 
-        item_group_data = {
-            "name": "Sequence",
-            "zobject": cache.sequence_active_get(),
-            "operator": KITSU_OT_con_sequences_load.bl_idname,
-        }
-        item_data = {
-            "name": "Shot",
-            "zobject": cache.shot_active_get(),
-            "operator": KITSU_OT_con_shots_load.bl_idname,
-        }
         # Production.
         layout.row().label(text=f"Production: {project_active.name}")
 
@@ -101,7 +92,36 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         if not prefs.session_auth(context) or not project_active:
             row.enabled = False
 
+        # Episode
+        row = box.row(align=True)
+
+        if not project_active:
+            row.enabled = False
+
+        label_text = "Select Episode"
+        episode = cache.episode_active_get()
+        if episode:
+            label_text = episode.name
+
+        if project_active.nb_episodes > 0:
+            row.operator(
+                KITSU_OT_con_episodes_load.bl_idname,
+                text=label_text,
+                icon="DOWNARROW_HLT",
+            )
+
         # Sequence / AssetType.
+        item_group_data = {
+            "name": "Sequence",
+            "zobject": cache.sequence_active_get(),
+            "operator": KITSU_OT_con_sequences_load.bl_idname,
+        }
+        item_data = {
+            "name": "Shot",
+            "zobject": cache.shot_active_get(),
+            "operator": KITSU_OT_con_shots_load.bl_idname,
+        }
+
         if context_core.is_asset_context():
             item_group_data["name"] = "AssetType"
             item_group_data["zobject"] = cache.asset_type_active_get()
@@ -112,12 +132,10 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
 
         if not project_active:
             row.enabled = False
-
         elif item_group_data["zobject"]:
             item_group_text = item_group_data["zobject"].name
-        row.operator(
-            item_group_data["operator"], text=item_group_text, icon="DOWNARROW_HLT"
-        )
+
+        row.operator(item_group_data["operator"], text=item_group_text, icon="DOWNARROW_HLT")
         if not context_core.is_sequence_context():
             # Shot / Asset.
             if context_core.is_asset_context():
@@ -142,9 +160,7 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         if task_type_active:
             t_text = task_type_active.name
         row = box.row(align=True)
-        row.operator(
-            KITSU_OT_con_task_types_load.bl_idname, text=t_text, icon="DOWNARROW_HLT"
-        )
+        row.operator(KITSU_OT_con_task_types_load.bl_idname, text=t_text, icon="DOWNARROW_HLT")
 
 
 class KITSU_PT_comp_context(KITSU_PT_vi3d_context):
