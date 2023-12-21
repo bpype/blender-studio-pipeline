@@ -97,16 +97,19 @@ def project_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None
     _addon_prefs_get(context).project_active_id = entity_id
     logger.debug("Set active project to %s", _project_active.name)
 
+
 def project_active_reset(context: bpy.types.Context) -> None:
     global _project_active
     _project_active = Project()
     _addon_prefs_get(context).project_active_id = ""
     logger.debug("Reset active project")
 
+
 def episode_active_get() -> Project:
     global _episode_active
 
     return _episode_active
+
 
 def episode_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None:
     global _episode_active
@@ -115,12 +118,14 @@ def episode_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None
     _addon_prefs_get(context).episode_active_id = entity_id
     logger.debug("Set active episode to %s", _episode_active.name)
 
+
 def episode_active_reset(context: bpy.types.Context) -> None:
     global _episode_active
 
     _episode_active = Episode()
     context.scene.kitsu.episode_active_id = ""
     logger.debug("Reset active episode")
+
 
 def sequence_active_get() -> Sequence:
     return _sequence_active
@@ -248,10 +253,9 @@ def get_projects_enum_list(
 
     projectlist = ProjectList()
     _projects_enum_list.clear()
-    _projects_enum_list.extend(
-        [(p.id, p.name, p.description or "") for p in projectlist.projects]
-    )
+    _projects_enum_list.extend([(p.id, p.name, p.description or "") for p in projectlist.projects])
     return _projects_enum_list
+
 
 def get_episodes_enum_list(
     self: bpy.types.Operator, context: bpy.types.Context
@@ -267,12 +271,10 @@ def get_episodes_enum_list(
 
     _episodes_enum_list.clear()
     _episodes_enum_list.extend(
-        [
-            (e.id, e.name, e.description or "")
-            for e in project_active.get_episodes_all()
-        ]
+        [(e.id, e.name, e.description or "") for e in project_active.get_episodes_all()]
     )
     return _episodes_enum_list
+
 
 def get_sequences_enum_list(
     self: bpy.types.Operator, context: bpy.types.Context
@@ -287,17 +289,11 @@ def get_sequences_enum_list(
     _sequence_enum_list.clear()
     if episode_active:
         _sequence_enum_list.extend(
-            [
-                (s.id, s.name, s.description or "")
-                for s in episode_active.get_sequences_all()
-            ]
+            [(s.id, s.name, s.description or "") for s in episode_active.get_sequences_all()]
         )
     else:
         _sequence_enum_list.extend(
-            [
-                (s.id, s.name, s.description or "")
-                for s in project_active.get_sequences_all()
-            ]
+            [(s.id, s.name, s.description or "") for s in project_active.get_sequences_all()]
         )
     return _sequence_enum_list
 
@@ -358,7 +354,7 @@ def get_assets_enum_for_active_asset_type(
 
     if not project_active or not asset_type_active:
         return []
-    
+
     all_assets = project_active.get_all_assets_for_type(asset_type_active)
 
     _asset_enum_list.clear()
@@ -590,9 +586,7 @@ def init_cache_variables() -> None:
     _init_cache_entity(project_active_id, Project, "_project_active", "project")
     _init_cache_entity(episode_active_id, Episode, "_episode_active", "episode")
     _init_cache_entity(sequence_active_id, Sequence, "_sequence_active", "sequence")
-    _init_cache_entity(
-        asset_type_active_id, AssetType, "_asset_type_active", "asset type"
-    )
+    _init_cache_entity(asset_type_active_id, AssetType, "_asset_type_active", "asset type")
     _init_cache_entity(shot_active_id, Shot, "_shot_active", "shot")
     _init_cache_entity(asset_active_id, Asset, "_asset_active", "asset")
     _init_cache_entity(task_type_active_id, TaskType, "_task_type_active", "task type")
