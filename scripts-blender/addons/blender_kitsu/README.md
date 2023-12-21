@@ -1,53 +1,31 @@
 # Blender Kitsu
 blender-kitsu is a Blender Add-on to interact with Kitsu from within Blender. It also has features that are not directly related to Kitsu but support certain aspects of the Blender Studio Pipeline. [Blender-Kitsu blogpost](https://studio.blender.org/blog/kitsu-addon-for-blender/)
 
-<!-- TOC -->
+
+
+## Table of Contents
 
 - [Blender Kitsu](#blender-kitsu)
-    - [Table of Contents](#table-of-contents)
     - [Installation](#installation)
     - [How to get started](#how-to-get-started)
-                    - [**Setup Login Data**](#setup-login-data)
-                    - [**Setup Project Settings**](#setup-project-settings)
-                    - [**Setup Animation Tools**](#setup-animation-tools)
-                    - [**Setup Lookdev Tools**](#setup-lookdev-tools)
-                    - [**Setup Media Search Paths**](#setup-media-search-paths)
-                    - [**Setup Miscellaneous**](#setup-miscellaneous)
     - [Features](#features)
-            - [Sequence Editor](#sequence-editor)
-                - [Metastrips](#metastrips)
-                    - [Create a Metastrip](#create-a-metastrip)
-                    - [Initialize a Shot](#initialize-a-shot)
-                - [Metadata](#metadata)
-                - [Push](#push)
-                - [Pull](#pull)
-                - [Multi Edit](#multi-edit)
-                - [Shot as Image Sequence](#shot-as-image-sequence)
-                    - [Advanced Settings](#advanced-settings)
-                - [General Sequence Editor Tools](#general-sequence-editor-tools)
-            - [Context](#context)
-                - [Animation Tools](#animation-tools)
-                - [Lookdev Tools](#lookdev-tools)
-                - [Error System](#error-system)
+        - [Sequence Editor](#sequence-editor)
+            - [Metadata](#metadata)
+            - [Push](#push)
+            - [Pull](#pull)
+            - [Multi Edit](#multi-edit)
+            - [Shot as Image Sequence](#shot-as-image-sequence)
+            - [General Sequence Editor Tools](#general-sequence-editor-tools)
+        - [Context](#context)
+            - [Animation Tools](#animation-tools)
+            - [Lookdev Tools](#lookdev-tools)
+            - [Error System](#error-system)
     - [Shot Builder](#shot-builder)
-        - [Features](#features)
-        - [Getting Started](#getting-started)
-            - [Shot Setup](#shot-setup)
-            - [Asset Setup](#asset-setup)
-                - [Kitsu Server](#kitsu-server)
-                - [Asset Index](#asset-index)
-                - [Example asset_index.json](#example-asset_indexjson)
-            - [Hooks Setup](#hooks-setup)
-            - [Editorial Exports](#editorial-exports)
-            - [Run Shot Builder](#run-shot-builder)
     - [Development](#development)
         - [Update Dependencies](#update-dependencies)
     - [Troubleshoot](#troubleshoot)
     - [Credits](#credits)
 
-<!-- /TOC -->
-
-## Table of Contents
 
 
 ## Installation
