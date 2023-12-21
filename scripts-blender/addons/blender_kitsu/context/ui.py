@@ -98,10 +98,8 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         if not project_active:
             row.enabled = False
 
-        label_text = "Select Episode"
         episode = cache.episode_active_get()
-        if episode:
-            label_text = episode.name
+        label_text = "Select Episode" if not episode else episode.name
 
         if project_active.nb_episodes > 0:
             row.operator(
