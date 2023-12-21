@@ -269,7 +269,7 @@ class Project(Entity):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     man_days: Optional[str] = None
-    nb_episodes: int = 0
+    nb_episodes: int = 0  # Set in the Project settings (not counting actual Episodes)
     episode_span: int = 0
     project_status_id: str = ""
     type: str = ""
@@ -299,12 +299,8 @@ class Project(Entity):
         return Episode.by_id(ep_id)
 
     def get_episodes_all(self) -> List[Episode]:
-        episodes = [
-            Episode.from_dict(s)
-            for s in gazu.shot.all_episodes_for_project(asdict(self))
-        ]
+        episodes = [Episode.from_dict(s) for s in gazu.shot.all_episodes_for_project(asdict(self))]
         return sorted(episodes, key=lambda x: x.name)
-
 
     # SEQUENCES
     # ---------------
@@ -319,8 +315,7 @@ class Project(Entity):
 
     def get_sequences_all(self) -> List[Sequence]:
         sequences = [
-            Sequence.from_dict(s)
-            for s in gazu.shot.all_sequences_for_project(asdict(self))
+            Sequence.from_dict(s) for s in gazu.shot.all_sequences_for_project(asdict(self))
         ]
         return sorted(sequences, key=lambda x: x.name)
 
@@ -336,9 +331,7 @@ class Project(Entity):
         return Shot.by_id(shot_id)
 
     def get_shots_all(self) -> List[Shot]:
-        shots = [
-            Shot.from_dict(s) for s in gazu.shot.all_shots_for_project(asdict(self))
-        ]
+        shots = [Shot.from_dict(s) for s in gazu.shot.all_shots_for_project(asdict(self))]
         return sorted(shots, key=lambda x: x.name)
 
     def get_shot_by_name(self, sequence: Sequence, name: str) -> Optional[Shot]:
@@ -373,8 +366,7 @@ class Project(Entity):
 
     def get_all_asset_types(self) -> List[AssetType]:
         assettypes = [
-            AssetType.from_dict(at)
-            for at in gazu.asset.all_asset_types_for_project(asdict(self))
+            AssetType.from_dict(at) for at in gazu.asset.all_asset_types_for_project(asdict(self))
         ]
         return sorted(assettypes, key=lambda x: x.name)
 
@@ -385,9 +377,7 @@ class Project(Entity):
     # ---------------
 
     def get_all_assets(self) -> List[Asset]:
-        assets = [
-            Asset.from_dict(a) for a in gazu.asset.all_assets_for_project(asdict(self))
-        ]
+        assets = [Asset.from_dict(a) for a in gazu.asset.all_assets_for_project(asdict(self))]
         return sorted(assets, key=lambda x: x.name)
 
     def get_asset_by_name(self, asset_name: str) -> Optional[Asset]:
@@ -396,9 +386,7 @@ class Project(Entity):
     def get_all_assets_for_type(self, assettype: AssetType) -> List[Asset]:
         assets = [
             Asset.from_dict(a)
-            for a in gazu.asset.all_assets_for_project_and_type(
-                asdict(self), asdict(assettype)
-            )
+            for a in gazu.asset.all_assets_for_project_and_type(asdict(self), asdict(assettype))
         ]
         return sorted(assets, key=lambda x: x.name)
 
@@ -408,26 +396,22 @@ class Project(Entity):
     def __bool__(self) -> bool:
         return bool(self.id)
 
+
 @dataclass
 class Episode(Entity):
     """
     Class to get object-oriented representation of backend episode data structure.
     Has multiple constructor functions (by_name, by_id, init>by_dict)
     """
+
     id: str = ""
     name: str = ""
     description: Optional[str] = None
 
     @classmethod
-    def by_name(
-        cls,
-        project: Project,
-        ep_name: str
-    ) -> Optional[Episode]:
+    def by_name(cls, project: Project, ep_name: str) -> Optional[Episode]:
         # Can return None if ep does not exist.
-        ep_dict = gazu.shot.get_episode_by_name(
-            asdict(project), ep_name
-        )
+        ep_dict = gazu.shot.get_episode_by_name(asdict(project), ep_name)
         if ep_dict:
             return cls.from_dict(ep_dict)
         return None
@@ -439,20 +423,17 @@ class Episode(Entity):
 
     def __bool__(self) -> bool:
         return bool(self.id)
-    
+
     def get_all_asset(self) -> List[Asset]:
-        assets = [
-            Asset.from_dict(at)
-            for at in gazu.asset.all_assets_for_episode(asdict(self))
-        ]
+        assets = [Asset.from_dict(at) for at in gazu.asset.all_assets_for_episode(asdict(self))]
         return sorted(assets, key=lambda x: x.name)
 
     def get_sequences_all(self) -> List[Sequence]:
         sequences = [
-            Sequence.from_dict(s)
-            for s in gazu.shot.all_sequences_for_episode(asdict(self))
+            Sequence.from_dict(s) for s in gazu.shot.all_sequences_for_episode(asdict(self))
         ]
         return sorted(sequences, key=lambda x: x.name)
+
 
 @dataclass
 class Sequence(Entity):
@@ -487,9 +468,7 @@ class Sequence(Entity):
         episode: Union[str, Dict[str, Any], None] = None,
     ) -> Optional[Sequence]:
         # Can return None if seq does not exist.
-        seq_dict = gazu.shot.get_sequence_by_name(
-            asdict(project), seq_name, episode=episode
-        )
+        seq_dict = gazu.shot.get_sequence_by_name(asdict(project), seq_name, episode=episode)
         if seq_dict:
             return cls.from_dict(seq_dict)
         return None
@@ -500,22 +479,14 @@ class Sequence(Entity):
         return cls.from_dict(seq_dict)
 
     def get_all_shots(self) -> List[Shot]:
-        shots = [
-            Shot.from_dict(shot)
-            for shot in gazu.shot.all_shots_for_sequence(asdict(self))
-        ]
+        shots = [Shot.from_dict(shot) for shot in gazu.shot.all_shots_for_sequence(asdict(self))]
         return sorted(shots, key=lambda x: x.name)
 
     def get_all_task_types(self) -> List[TaskType]:
-        return [
-            TaskType.from_dict(t)
-            for t in gazu.task.all_task_types_for_sequence(asdict(self))
-        ]
+        return [TaskType.from_dict(t) for t in gazu.task.all_task_types_for_sequence(asdict(self))]
 
     def get_all_tasks(self) -> List[Task]:
-        return [
-            Task.from_dict(t) for t in gazu.task.all_tasks_for_sequence(asdict(self))
-        ]
+        return [Task.from_dict(t) for t in gazu.task.all_tasks_for_sequence(asdict(self))]
 
     def update(self) -> Sequence:
         gazu.shot.update_sequence(asdict(self))
@@ -610,10 +581,7 @@ class Shot(Entity):
         return cls.from_dict(shot_dict)
 
     def get_all_task_types(self) -> List[TaskType]:
-        return [
-            TaskType.from_dict(t)
-            for t in gazu.task.all_task_types_for_shot(asdict(self))
-        ]
+        return [TaskType.from_dict(t) for t in gazu.task.all_task_types_for_shot(asdict(self))]
 
     def get_all_tasks(self) -> List[Task]:
         return [Task.from_dict(t) for t in gazu.task.all_tasks_for_shot(asdict(self))]
@@ -719,10 +687,7 @@ class Asset(Entity):
         return cls.from_dict(asset_dict)
 
     def get_all_task_types(self) -> List[TaskType]:
-        return [
-            TaskType.from_dict(t)
-            for t in gazu.task.all_task_types_for_asset(asdict(self))
-        ]
+        return [TaskType.from_dict(t) for t in gazu.task.all_task_types_for_asset(asdict(self))]
 
     def get_all_tasks(self) -> List[Task]:
         return [Task.from_dict(t) for t in gazu.task.all_tasks_for_asset(asdict(self))]
@@ -774,26 +739,16 @@ class TaskType(Entity):
 
     @classmethod
     def all_shot_task_types(cls) -> List[TaskType]:
-        return [
-            cls.from_dict(t)
-            for t in gazu.task.all_task_types()
-            if t["for_entity"] == "Shot"
-        ]
+        return [cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Shot"]
 
     @classmethod
     def all_asset_task_types(cls) -> List[TaskType]:
-        return [
-            cls.from_dict(t)
-            for t in gazu.task.all_task_types()
-            if t["for_entity"] == "Asset"
-        ]
+        return [cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Asset"]
 
     @classmethod
     def all_sequence_task_types(cls) -> List[TaskType]:
         return [
-            cls.from_dict(t)
-            for t in gazu.task.all_task_types()
-            if t["for_entity"] == "Sequence"
+            cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Sequence"
         ]
 
     def get_short_name(self) -> str:
@@ -920,21 +875,13 @@ class Task(Entity):
         return cls.from_dict(task_dict)
 
     @classmethod
-    def all_tasks_for_entity_and_task_type(
-        cls, entity: Any, task_type: TaskType
-    ) -> List[Task]:
-        task_list = gazu.task.all_tasks_for_entity_and_task_type(
-            asdict(entity), asdict(task_type)
-        )
+    def all_tasks_for_entity_and_task_type(cls, entity: Any, task_type: TaskType) -> List[Task]:
+        task_list = gazu.task.all_tasks_for_entity_and_task_type(asdict(entity), asdict(task_type))
         return [cls.from_dict(t) for t in task_list]
 
     @classmethod
-    def all_tasks_for_task_type(
-        cls, project: Project, task_type: TaskType
-    ) -> List[Task]:
-        task_list = gazu.task.all_tasks_for_task_type(
-            asdict(project), asdict(task_type)
-        )
+    def all_tasks_for_task_type(cls, project: Project, task_type: TaskType) -> List[Task]:
+        task_list = gazu.task.all_tasks_for_task_type(asdict(project), asdict(task_type))
         return [cls.from_dict(t) for t in task_list]
 
     def get_last_comment(self) -> Comment:
@@ -942,9 +889,7 @@ class Task(Entity):
         return Comment.from_dict(comment_dict)
 
     def get_all_comments(self) -> List[Comment]:
-        return [
-            Comment.from_dict(c) for c in gazu.task.all_comments_for_task(asdict(self))
-        ]
+        return [Comment.from_dict(c) for c in gazu.task.all_comments_for_task(asdict(self))]
 
     def add_comment(
         self,
@@ -1145,15 +1090,12 @@ class User(BaseDataClass):
 
     def all_open_projects(self) -> List[Project]:
         project_list = [
-            Project.from_dict(project_dict)
-            for project_dict in gazu.user.all_open_projects()
+            Project.from_dict(project_dict) for project_dict in gazu.user.all_open_projects()
         ]
         return project_list
 
     def all_tasks_to_do(self) -> List[Task]:
-        task_list = [
-            Task.from_dict(task_dict) for task_dict in gazu.user.all_tasks_to_do()
-        ]
+        task_list = [Task.from_dict(task_dict) for task_dict in gazu.user.all_tasks_to_do()]
         return task_list
 
     # SHOTS.
@@ -1174,8 +1116,7 @@ class User(BaseDataClass):
 
     def all_tasks_for_shot(self, shot: Shot) -> List[Task]:
         task_list = [
-            Task.from_dict(task_dict)
-            for task_dict in gazu.user.all_tasks_for_shot(asdict(shot))
+            Task.from_dict(task_dict) for task_dict in gazu.user.all_tasks_for_shot(asdict(shot))
         ]
         return task_list
 
@@ -1191,9 +1132,7 @@ class User(BaseDataClass):
     def all_asset_types_for_project(self, project: Project) -> List[AssetType]:
         asset_type_list = [
             AssetType.from_dict(asset_type_dict)
-            for asset_type_dict in gazu.user.all_asset_types_for_project(
-                asdict(project)
-            )
+            for asset_type_dict in gazu.user.all_asset_types_for_project(asdict(project))
         ]
         return asset_type_list
 
@@ -1210,8 +1149,7 @@ class User(BaseDataClass):
 
     def all_tasks_for_asset(self, asset: Asset) -> List[Task]:
         task_list = [
-            Task.from_dict(task_dict)
-            for task_dict in gazu.user.all_tasks_for_asset(asdict(asset))
+            Task.from_dict(task_dict) for task_dict in gazu.user.all_tasks_for_asset(asdict(asset))
         ]
         return task_list
 
