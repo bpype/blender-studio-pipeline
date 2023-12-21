@@ -58,9 +58,26 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         project_active = cache.project_active_get()
         return bool(not project_active)
 
+    def draw_episode_selector(self, box, project_active):
+        row = box.row(align=True)
+
+        if not project_active:
+            row.enabled = False
+
+        episode = cache.episode_active_get()
+        label_text = "Select Episode" if not episode else episode.name
+
+        if project_active.nb_episodes > 0:
+            row.operator(
+                KITSU_OT_con_episodes_load.bl_idname,
+                text=label_text,
+                icon="DOWNARROW_HLT",
+            )
+
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         project_active = cache.project_active_get()
+        episode_active = cache.episode_active_get()
 
         # Catch errors.
         if self.poll_error(context):
@@ -93,20 +110,8 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             row.enabled = False
 
         # Episode
-        row = box.row(align=True)
-
-        if not project_active:
-            row.enabled = False
-
-        episode = cache.episode_active_get()
-        label_text = "Select Episode" if not episode else episode.name
-
-        if project_active.nb_episodes > 0:
-            row.operator(
-                KITSU_OT_con_episodes_load.bl_idname,
-                text=label_text,
-                icon="DOWNARROW_HLT",
-            )
+        if not context_core.is_asset_context():
+            self.draw_episode_selector(box, project_active)
 
         # Sequence / AssetType.
         item_group_data = {
@@ -128,7 +133,7 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         row = box.row(align=True)
         item_group_text = f"Select {item_group_data['name']}"
 
-        if not project_active:
+        if not project_active or not episode_active:
             row.enabled = False
         elif item_group_data["zobject"]:
             item_group_text = item_group_data["zobject"].name
