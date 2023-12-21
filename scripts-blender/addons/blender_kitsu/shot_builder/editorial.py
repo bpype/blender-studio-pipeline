@@ -1,9 +1,8 @@
 import bpy
-import re
+from .. import prefs
 from pathlib import Path
-from typing import Set
-from ... import prefs
-from ... import cache
+import re
+from .core import get_3d_start
 
 
 def editorial_export_get_latest(
@@ -16,7 +15,7 @@ def editorial_export_get_latest(
     if not latest_file:
         return None
     # Check if Kitsu server returned empty shot
-    if shot.get("id") == '':
+    if shot.id == '':
         return None
     strip_filepath = latest_file.as_posix()
     strip_frame_start = addon_prefs.shot_builder_frame_offset
@@ -41,8 +40,8 @@ def editorial_export_get_latest(
     new_strips = [movie_strip, sound_strip]
 
     # Update shift frame range prop.
-    frame_in = shot["data"].get("frame_in")
-    frame_3d_start = shot["data"].get("3d_start")
+    frame_in = shot.data.get("frame_in")
+    frame_3d_start = get_3d_start(shot)
     frame_3d_offset = frame_3d_start - addon_prefs.shot_builder_frame_offset
     edit_export_offset = addon_prefs.edit_export_frame_offset
 

@@ -22,9 +22,11 @@ from __future__ import annotations
 import inspect
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Union, Tuple, TypeVar
-
+from pathlib import Path
 import gazu
 from .logger import LoggerFactory
+from . import bkglobals
+from . import prefs
 
 logger = LoggerFactory.getLogger()
 
@@ -558,12 +560,34 @@ class Shot(Entity):
     def get_all_tasks(self) -> List[Task]:
         return [Task.from_dict(t) for t in gazu.task.all_tasks_for_shot(asdict(self))]
 
+    def get_all_assets(self) -> List[Asset]:
+        return [
+            Asset.from_dict(t) for t in gazu.asset.all_assets_for_shot(asdict(self))
+        ]
+
     def get_sequence(self) -> Sequence:
         return Sequence.from_dict(gazu.shot.get_sequence_from_shot(asdict(self)))
 
     def update(self) -> Shot:
         gazu.shot.update_shot(asdict(self))
         return self
+
+    def get_shot_task_name(self, task_type_short_name: str) -> str:  #
+        return f"{self.name}{bkglobals.FILE_DELIMITER}{task_type_short_name}"
+
+    def get_output_collection_name(self, task_type_short_name: str) -> str:
+        return f"{self.get_shot_task_name(task_type_short_name)}{bkglobals.FILE_DELIMITER}output"
+
+    def get_shot_dir(self, context) -> str:
+        project_root_dir = prefs.project_root_dir_get(context)
+        all_shots_dir = project_root_dir.joinpath('pro').joinpath('shots')
+        seq = self.get_sequence()
+        shot_dir = all_shots_dir.joinpath(seq.name).joinpath(self.name)
+        return shot_dir.__str__()
+
+    def get_shot_filepath(self, context, task_type_short_name: str) -> str:
+        file_name = self.get_shot_task_name(task_type_short_name) + '.blend'
+        return Path(self.get_shot_dir(context)).joinpath(file_name).__str__()
 
     def update_data(self, data: Dict[str, Any]) -> Shot:
         gazu.shot.update_shot_data(asdict(self), data=data)
@@ -713,6 +737,11 @@ class TaskType(Entity):
             for t in gazu.task.all_task_types()
             if t["for_entity"] == "Sequence"
         ]
+
+    def get_short_name(self) -> str:
+        for key, value in bkglobals.SHOT_TASK_MAPPING.items():
+            if value == self.name:
+                return key
 
     def __bool__(self) -> bool:
         return bool(self.id)

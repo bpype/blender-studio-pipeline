@@ -1,1 +1,0 @@
-DEFAULT_FRAME_START: int = 101

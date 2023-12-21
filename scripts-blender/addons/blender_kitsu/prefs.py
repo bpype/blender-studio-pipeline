@@ -40,7 +40,7 @@ from .auth.ops import (
 )
 from .context.ops import KITSU_OT_con_productions_load
 from .lookdev.prefs import LOOKDEV_preferences
-from .shot_builder.editorial.core import editorial_export_check_latest
+from .shot_builder.editorial import editorial_export_check_latest
 
 
 logger = LoggerFactory.getLogger()
@@ -339,12 +339,6 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         default="ANI-",
     )
 
-    user_exec_code: bpy.props.StringProperty(  # type: ignore
-        name="Post Execution Command",
-        description="Run this command after shot_builder is complete, but before the file is saved.",
-        default="",
-    )
-
     session: Session = Session()
 
     tasks: bpy.props.CollectionProperty(type=KITSU_task)
@@ -439,7 +433,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             start_frame_row.prop(self, "shot_builder_frame_offset", text="")
             box.row().prop(self, "shot_builder_armature_prefix")
             box.row().prop(self, "shot_builder_action_prefix")
-            box.row().prop(self, "user_exec_code")
+        box.operator("kitsu.save_shot_builder_hooks", icon='FILE_SCRIPT')
 
         # Misc settings.
         box = layout.box()
@@ -525,6 +519,11 @@ def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
     Shortcut to get blender_kitsu addon preferences
     """
     return context.preferences.addons["blender_kitsu"].preferences
+
+
+def project_root_dir_get(context: bpy.types.Context):
+    addon_prefs = addon_prefs_get(context)
+    return Path(addon_prefs.project_root_dir).resolve()
 
 
 def session_auth(context: bpy.types.Context) -> bool:

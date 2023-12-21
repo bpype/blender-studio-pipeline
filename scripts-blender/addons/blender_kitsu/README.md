@@ -7,28 +7,45 @@ blender-kitsu is a Blender Add-on to interact with Kitsu from within Blender. It
     - [Table of Contents](#table-of-contents)
     - [Installation](#installation)
     - [How to get started](#how-to-get-started)
+                    - [**Setup Login Data**](#setup-login-data)
+                    - [**Setup Project Settings**](#setup-project-settings)
+                    - [**Setup Animation Tools**](#setup-animation-tools)
+                    - [**Setup Lookdev Tools**](#setup-lookdev-tools)
+                    - [**Setup Media Search Paths**](#setup-media-search-paths)
+                    - [**Setup Miscellaneous**](#setup-miscellaneous)
     - [Features](#features)
-        - [Sequence Editor](#sequence-editor)
-            - [Metadata](#metadata)
-            - [Push](#push)
-            - [Pull](#pull)
-            - [Multi Edit](#multi-edit)
-            - [Shot as Image Sequence](#shot-as-image-sequence)
-            - [General Sequence Editor Tools](#general-sequence-editor-tools)
-        - [Context](#context)
-            - [Animation Tools](#animation-tools)
-            - [Lookdev Tools](#lookdev-tools)
-            - [Error System](#error-system)
+            - [Sequence Editor](#sequence-editor)
+                - [Metastrips](#metastrips)
+                    - [Create a Metastrip](#create-a-metastrip)
+                    - [Initialize a Shot](#initialize-a-shot)
+                - [Metadata](#metadata)
+                - [Push](#push)
+                - [Pull](#pull)
+                - [Multi Edit](#multi-edit)
+                - [Shot as Image Sequence](#shot-as-image-sequence)
+                    - [Advanced Settings](#advanced-settings)
+                - [General Sequence Editor Tools](#general-sequence-editor-tools)
+            - [Context](#context)
+                - [Animation Tools](#animation-tools)
+                - [Lookdev Tools](#lookdev-tools)
+                - [Error System](#error-system)
     - [Shot Builder](#shot-builder)
+        - [Features](#features)
+        - [Getting Started](#getting-started)
+            - [Shot Setup](#shot-setup)
+            - [Asset Setup](#asset-setup)
+                - [Kitsu Server](#kitsu-server)
+                - [Asset Index](#asset-index)
+                - [Example asset_index.json](#example-asset_indexjson)
+            - [Hooks Setup](#hooks-setup)
+            - [Editorial Exports](#editorial-exports)
+            - [Run Shot Builder](#run-shot-builder)
     - [Development](#development)
         - [Update Dependencies](#update-dependencies)
     - [Troubleshoot](#troubleshoot)
     - [Credits](#credits)
 
 <!-- /TOC -->
-blender-kitsu is a Blender Add-on to interact with Kitsu from within Blender. It also has features that are not directly related to Kitsu but support certain aspects of the Blender Studio Pipeline. 
-
-[Blender-Kitsu blogpost](https://studio.blender.org/blog/kitsu-addon-for-blender/)
 
 ## Table of Contents
 
@@ -274,250 +291,83 @@ blender-kitsu has different checks that are performed during file load or during
 ![image info](/media/addons/blender_kitsu/error_animation.jpg)
 
  ## Shot Builder
-Shot Builder is an Add-on that helps studios to work with task specific
-Blend-files. The shot builder is part of the shot-tools repository. The main functionalities are
+Shot Builder is a Feature of the Blender Kitsu Add-on To automatically build shot files, using the data from Kitsu server and the file structures defined on the [Blender Studio](https://studio.blender.org/pipeline/naming-conventions/svn-folder-structure) website. 
 
-* Build blend files for a specific task and shot.
-* Sync data back from work files to places like kitsu, or `edit.blend`.
+### Features
+ - Saves a 'Shot' File for each of the Shot's Task Types on Kitsu Server.
+ - Automatically Names Scenes based on Shot and Task Type names
+ - Creates output collections for certain Task Types (anim, fx, layout, lighting, previz, storyboard)
+ - Links output collections between Task Types based on [Shot Assembly](https://studio.blender.org/pipeline/pipeline-overview/shot-production/shot-assembly) specifications
+ - Loads Editorial Export (defined in preferences) into Shot file's VSE area (if available)
+ - Loads Assets via `asset_index.json` file stored at `your_production/svn/pro/assets/asset_index.json`
+ - Executes a `hook.py` file stored at `your_production/svn/pro/assets/shot-builder/hooks.py`
 
-### Design Principles
+### Getting Started
+#### Shot Setup
+The Shot Builder requires shot data including Name, Frame Rate, and Duration to be stored on a Kitsu Server. Please follow the [Sequence Editor](#sequence-editor) guide to create metastrips and Push that data to the Kitsu server or follow the [Kitsu First Production](https://kitsu.cg-wire.com/first_production/) to manually enter this data into the Kitsu Server. 
 
-The main design principles are:
+#### Asset Setup
+##### Kitsu Server
+The Shot Builder requires all Asset to be stored on the Kitsu Server with a [Metadata Column](https://kitsu.cg-wire.com/production_advanced/#create-custom-metadata-columns) with the exact name `slug` exactly matching the name of the asset's collection.
 
-* The core-tool can be installed as an add-on, but the (production specific)
-  configuration should be part of the production repository.
-* The configuration files are a collection of python files. The API between
-  the configuration files and the add-on should be easy to use as pipeline
-  TDs working on the production should be able to work with it.
-* TDs/artists should be able to handle issues during building without looking
-  at how the add-on is structured.
-* The tool contains connectors that can be configured to read/write data
-  from the system/file that is the main location of the data. For example
-  The start and end time of a shot could be stored in an external production tracking application.
+Assets needs to be associated with each shot in your production. Please follow the [Kitsu Breakdown](https://kitsu.cg-wire.com/getting-started-production/) guide to Cast your assets to shots.
 
-### Connectors
+##### Asset Index
+To match Assets File to the casting breakdown on the Kitsu server, we need to create an Asset Index. This is a json file that contains the mapping of the asset's name to the asset's filepath. Any collection Marked as an Asset in Blender in the directory `your_project/svn/pro/assets` will be added to this index. 
 
-Connectors are components that can be used to read or write to files or
-systems. The connectors will add flexibility to the add-on so it could be used
-in multiple productions or studios.
-
-In the configuration files the TD can setup the connectors that are used for
-the production. Possible connectors would be:
-
-* Connector for text based config files (json/yaml).
-* Connector for kitsu (https://www.cg-wire.com/en/kitsu.html).
-* Connector for blend files.
-
-### Layering & Hooks
-
-The configuration of the tool is layered. When building a work file for a sequence
-there are multiple ways to change the configuration.
-
-* Configuration for the production.
-* Configuration for the asset that is needed.
-* Configuration for the asset type of the loaded asset.
-* Configuration for the sequence.
-* Configuration for the shot.
-* Configuration for the task type.
-
-For any combination of these configurations hooks can be defined.
-
-```
-@shot_tools.hook(match_asset_name='Spring', match_shot_code='02_020A')
-def hook_Spring_02_020A(asset: shot_tools.Asset, shot: shot_tools.Shot, **kwargs) -> None:
-    """
-    Specific overrides when Spring is loaded in 02_020A.
-    """
-
-@shot_tools.hook(match_task_type='anim')
-def hook_task_anim(task: shot_tools.Task, shot: shot_tools.Shot, **kwargs) -> None:
-    """
-    Specific overrides for any animation task.
-    """
-```
-
-#### Data
-
-All hooks must have Python’s `**kwargs` parameter. The `kwargs` contains
-the context at the moment the hook is invoked. The context can contain the
-following items.
-
-* `production`: `shot_tools.Production`: Include the name of the production
-  and the location on the filesystem.
-* `task`: `shot_tools.Task`: The task (combination of task_type and shot)
-* `task_type`: `shot_tools.TaskType`: Is part of the `task`.
-* `sequence`: `shot_tools.Sequence`: Is part of `shot`.
-* `shot`: `shot_tools.Shot` Is part of `task`.
-* `asset`: `shot_tools.Asset`: Only available during asset loading phase.
-* `asset_type`: `shot_tools.AssetType`: Only available during asset loading phase.
-
-#### Execution Order
-
-The add-on will internally create a list containing the hooks that needs to be
-executed for the command in a sensible order. It will then execute them in that
-order.
-
-By default the next order will be used:
-
-* Production wide hooks
-* Asset Type hooks
-* Asset hooks
-* Sequence hooks
-* Shot hooks
-* Task type hooks
-
-A hook with a single ‘match’ rule will be run in the corresponding phase. A hook with
-multiple ‘match’ rules will be run in the last matching phase. For example, a hook with
-‘asset’ and ‘task type’ match rules will be run in the ‘task type’ phase.
-
-###### Events
-
-Order of execution can be customized by adding the optional `run_before`
-or `run_after` parameters.
-
-```
-@shot_tools.hook(match_task_type='anim',
-                 requires={shot_tools.events.AssetsLoaded, hook_task_other_anim},
-                 is_required_by={shot_tools.events.ShotOverrides})
-def hook_task_anim(task: shot_tools.Task, shot: shot_tools.Shot, **kwargs) -> None:
-    """
-    Specific overrides for any animation task run after all assets have been loaded.
-    """
-```
-
-Events could be:
-
-* `shot_tools.events.BuildStart`
-* `shot_tools.events.ProductionSettingsLoaded`
-* `shot_tools.events.AssetsLoaded`
-* `shot_tools.events.AssetTypeOverrides`
-* `shot_tools.events.SequenceOverrides`
-* `shot_tools.events.ShotOverrides`
-* `shot_tools.events.TaskTypeOverrides`
-* `shot_tools.events.BuildFinished`
-* `shot_tools.events.HookStart`
-* `shot_tools.events.HookEnd`
-
-During usage we should see which one of these or other events are needed.
-
-`shot_tools.events.BuildStart`, `shot_tools.events.ProductionSettingsLoaded`
-and `shot_tools.events.HookStart` can only be used in the `run_after`
-parameter. `shot_tools.events.BuildFinished`, `shot_tools.events.HookFinished`
-can only be used in the `run_before` parameter.
-
-
-### API
-
-The shot builder has an API between the add-on and the configuration files. This
-API contains convenience functions and classes to hide complexity and makes
-sure that the configuration files are easy to maintain.
-
-```
-register_task_type(task_type="anim")
-register_task_type(task_type="lighting")
-```
-
-```
-# shot_tool/characters.py
-class Asset(shot_tool.some_module.Asset):
-    asset_file = "/{asset_type}/{name}/{name}.blend"
-    collection = “{class_name}”
-    name = “{class_name}”
-
-class Character(Asset):
-    asset_type = ‘char’
-
-
-class Ellie(Character):
-    collection = “{class_name}-{variant_name}”
-    variants = {‘default’, ‘short_hair’}
-
-class Victoria(Character): pass
-class Rex(Character): pass
-
-# shot_tool/shots.py
-class Shot_01_020_A(shot_tool.some_module.Shot):
-    shot_id = ‘01_020_A’
-    assets = {
-        characters.Ellie(variant=”short_hair”),
-        characters.Rex,
-        sets.LogOverChasm,
+##### Example `asset_index.json`
+```json
+{
+    "CH-rain": {
+        "type": "Collection",
+        "filepath": "your_project/svn/pro/assets/chars/rain/rain.blend"
+    },
+    "CH-snow": {
+        "type": "Collection",
+        "filepath": "your_project/svn/pro/assets/chars/snow/snow.blend"
     }
-
-class AllHumansShot(shot_tool.some_module.Shot):
-    assets = {
-        characters.Ellie(variant=”short_hair”),
-        characters.Rex,
-        characters.Victoria,
-    }
-
-class Shot_01_035_A(AllHumansShot):
-    assets = {
-        sets.Camp,
-    }
-
+}
 ```
 
-This API is structured/implemented in a way that it keeps track of what
-is being done. This will be used when an error occurs so a descriptive
-error message can be generated that would help the TD to solve the issue more
-quickly. The goal would be that the error messages are descriptive enough to
-direct the TD into the direction where the actual cause is. And when possible
-propose several solutions to fix it.
+To create/update the Asset Index:
+1. Enter Asset Index directory `cd blender-studio-pipeline/scripts/index_assets` 
+2. Run using `./run_index_assets.py your_poduction` replace `your_production` with the path to your project's root directory
+3. This will create an index file at `your_production/svn/pro/assets/asset_index.py`
 
-### Setting up the tool
+#### Hooks Setup
+Shot Builder uses hooks to extend the functionality of the shot builder. To create a hook file
+1. Open `Edit>Preferences>Add-Ons`
+2. Search for the `Blender Kitsu` Add-On
+3. In the `Blender Kitsu` Add-On preferences find the `Shot Builder` section
+4. Run the Operator `Save Shot Builder Hook File`
+5. Edit the file `your_project/svn/pro/assets/scripts/shot-builder/hooks.py` to customize your hooks. 
 
-The artist/TD can configure their current local project directory in the add-on preferences. 
-This can then be used for new blend files. The project associated with an opened (so existing)
-blend file can be found automatically by iterating over parent directories until a Shot Builder
-configuration file is found. Project-specific settings are not configured/stored in the add-on,
-but in this configuration file.
-
-The add-on will look in the root of the production repository to locate the
-main configuration file `/project_root_directory/pro/shot-builder/config.py`. This file contains general
-settings about the production, including:
-
-* The name of the production for reporting back to the user when needed.
-* Naming standards to test against when reporting deviations.
-* Location of other configuration (`tasks.py`, `assets.py`) relative to the `shot-builder` directory of the production.
-* Configuration of the needed connectors.
-
-#### Directory Layout
-``` bash
-└── project-name/ # Project Root Directory
-    └── pro/
-        ├── assets/
-        ├── shot-builder/
-        │   ├── assets.py
-        │   ├── config.py
-        │   ├── hooks.py
-        │   └── shots.py
-        └── shots/
 ```
+Arguments to use in hooks
+    scene: bpy.types.Scene # current scene
+    shot: Shot class from blender_kitsu.types.py
+    prod_path: str # path to production root dir (your_project/svn/)
+    shot_path: str # path to shot file (your_project/svn/pro/shots/{sequence_name}/{shot_name}/{shot_task_name}.blend)
+    
+Notes
+     matching_task_type = ['anim', 'lighting', 'fx', 'comp'] # either use list or just one string
+     output_col_name = shot.get_output_collection_name(task_type_short_name="anim")
 
-### Usage
+```
+#### Editorial Exports
+Shot Builder can load Exports from Editorial to the .blend's VSE for reference. 
 
-Any artist can open a shot file via the `File` menu. A modal panel appears
-where the user can select the task type and sequence/shot. When the file
-already exists, it will be opened. When the file doesn't exist, the file
-will be built.
+1. Open `Edit>Preferences>Add-Ons`
+2. Search for the `Blender Kitsu` Add-On
+3. In the `Blender Kitsu` Add-On preferences find the `Shot Builder` section
+4. Set your `Editorial Export Directory` to `your_project/shared/editorial/export/`
+5. Set your `Editorial File Pattern` to `your_project_v\d\d\d.mp4` where `\d` represents a digit. This pattern matches a file named `your_movie_v001.mp4`.
 
-In the future other use cases will also be accessible, such as:
-
-* Syncing data back from a work file to the source of the data.
-* Report of errors/differences between the shot file and the configuration.
-
-### Open Issues
-
-#### Security
-
-* Security keys needed by connectors need to be stored somewhere. The easy
-  place is to place inside the production repository, but that isn't secure
-  Anyone with access to the repository could misuse the keys to access the
-  connector. Other solution might be to use the OS key store or retrieve the
-  keys from an online service authenticated by the blender cloud add-on.
-
-  We could use `keyring` to access OS key stores.
+#### Run Shot Builder
+1. Open Blender
+2. Select File>New
+3. From dialogue box, select the desired Sequence/Shot/Task Type
+4. Hit `ok` to run the tool. The tool will create a new file in the directory `your_project/svn/pro/shots/{sequence_name}/{shot_name}/{shot_name}+{task_type_name}.blend`
 
 ## Development
 ### Update Dependencies

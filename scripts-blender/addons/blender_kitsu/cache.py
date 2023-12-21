@@ -269,6 +269,18 @@ def get_shots_enum_for_active_seq(
     return _shot_enum_list
 
 
+def get_shots_enum_for_seq(
+    self: bpy.types.Operator, context: bpy.types.Context, sequence: Sequence
+) -> List[Tuple[str, str, str]]:
+    global _shot_enum_list
+
+    _shot_enum_list.clear()
+    _shot_enum_list.extend(
+        [(s.id, s.name, s.description or "") for s in sequence.get_all_shots()]
+    )
+    return _shot_enum_list
+
+
 def get_assetypes_enum_list(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
@@ -336,6 +348,20 @@ def get_shot_task_types_enum(
     global _task_types_shots_enum_list
 
     items = [(t.id, t.name, "") for t in TaskType.all_shot_task_types()]
+
+    _task_types_shots_enum_list.clear()
+    _task_types_shots_enum_list.extend(items)
+
+    return _task_types_shots_enum_list
+
+
+def get_shot_task_types_enum_for_shot(  # TODO Rename
+    self: bpy.types.Operator, context: bpy.types.Context, shot: Shot
+) -> List[Tuple[str, str, str]]:
+    # TODO why do we have global variables here can't I just return the items directly? We clear the list every time how is this a cahe?
+    global _task_types_shots_enum_list
+
+    items = [(t.id, t.name, "") for t in shot.get_all_task_types()]
 
     _task_types_shots_enum_list.clear()
     _task_types_shots_enum_list.extend(items)

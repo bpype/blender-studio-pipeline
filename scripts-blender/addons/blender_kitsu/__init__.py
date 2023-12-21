@@ -116,7 +116,6 @@ def unregister():
     lookdev.unregister()
     playblast.unregister()
     shot_builder.unregister()
-
     LoggerLevelManager.restore_levels()
 
 
