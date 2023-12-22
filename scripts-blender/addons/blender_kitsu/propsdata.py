@@ -111,30 +111,25 @@ def get_playblast_dir(self: Any) -> str:
     if not addon_prefs.is_playblast_root_valid:
         return ""
 
-    seq = cache.sequence_active_get()
+    episode = cache.episode_active_get()
+    sequence = cache.sequence_active_get()
     shot = cache.shot_active_get()
 
-    kitsu_props = bpy.context.scene.kitsu
-    kitsu_props.get("category")
+    # Start building path
+    playblast_dir = addon_prefs.shot_playblast_root_path
+
+    # Inject episode name if available
+    if episode:
+        playblast_dir = playblast_dir / episode.name
 
     if context_core.is_sequence_context():
-        if not seq:
-            return ""
-        playblast_dir = (
-            addon_prefs.seq_playblast_root_path / seq.name / 'sequence_previews'
-        )
+        playblast_dir = playblast_dir / sequence.name / 'sequence_previews'
         return playblast_dir.as_posix()
-
-    if not seq or not shot:
-        return ""
 
     task_type_name_suffix = get_task_type_name_file_suffix()
 
     playblast_dir = (
-        addon_prefs.shot_playblast_root_path
-        / seq.name
-        / shot.name
-        / f"{shot.name}.{task_type_name_suffix}"
+        playblast_dir / sequence.name / shot.name / f"{shot.name}-{task_type_name_suffix}"
     )
     return playblast_dir.as_posix()
 
