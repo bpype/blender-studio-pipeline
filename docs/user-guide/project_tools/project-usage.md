@@ -13,8 +13,8 @@ Most productions begin with a previz or storyboard step, showing the overall dir
 2. At the directory `your_project_name/svn/edit` create a new "Video Editing" File.
 3. Populate your new edit file with your previz video strips
 4. With your first strip selected, in the Blender Kitsu side panel of the VSE select "Create Metastrip Active Shot” to create a new metastrip.
-5.  Next select “Init Active Shot”, and enter the Shot and Sequence names you would like to submit to Kitsu.
-6.  Finally select the “Submit New Shot Button” to submit this new Shot to the Kitsu Server.
+5. Next select “Init Active Shot”, and enter the Shot and Sequence names you would like to submit to Kitsu.
+6. Finally select the “Submit New Shot Button” to submit this new Shot to the Kitsu Server.
 
 Repeat steps 4-6 for each shot in the sequence. Multiple metastrips can be made out of a single previz strip if required, adjust the shot’s timing by simply trimming the metastrip in the timeline. Below is an example of a previz sequence with metastrips.
 
@@ -25,21 +25,37 @@ The next step is to create an asset and store that information into the Kitsu Se
 
 1. Launch Blender via [Project Blender](/user-guide/project_tools/project-blender.md) Guide
 2. Under `Edit>Preferences>Add-Ons` ensure `Asset Pipeline` is enabled
-3. Follow the[ asset pipeline guide](https://studio.blender.org/pipeline/addons/asset_pipeline#how-to-get-started) to create a new asset (optional)
+3. Follow the [asset pipeline guide](https://studio.blender.org/pipeline/addons/asset_pipeline) to create a new asset (optional)
 4. Save the above asset within the directory `your_project_name/svn/pro/assets/char`
-5. Create a matching entry in Kitsu for the above asset via the [Create Assets guide](https://kitsu.cg-wire.com/first_production/#create-assets)
-6. Follow the [casting guide](https://forum.cg-wire.com/t/breakdown-casting-widget-for-kitsu/31) in the breakdown section to assign assets to shots.
+5. Create a matching entry in Kitsu for the above asset via the [Kitsu Create Assets guide](https://kitsu.cg-wire.com/first_production/#create-assets)
+6. Follow the [Kitsu Breakdown guide](https://kitsu.cg-wire.com/first_production/#create-a-breakdown-list) to assign/cast assets to shots.
+7. Use the [Index Assets Script](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts/index_assets) to create an `asset_index.json` file.
 
-
+**Example of `asset_index.json*`*
+```json
+{
+    "CH-rain": {
+        "type": "Collection",
+        "filepath": "your_project/svn/pro/assets/chars/rain/rain.blend"
+    },
+    "CH-snow": {
+        "type": "Collection",
+        "filepath": "your_project/svn/pro/assets/chars/snow/snow.blend"
+    }
+}
+```
 ## Building your First Shot
-Inside your production’s directory the Shot Builder configuration files need to be created using the [examples](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/docs/examples) included in the Add-On directory. See the Shot Builder Config [Directory Layout](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/docs#directory-layout) for details. The only configuration file that requires production specific edits is `assets.py`. This configuration file links the Kitsu Asset entries to their corresponding files in the production directory.
+Before building your first shot, you will need to customize your production's Shot Builder hooks. Inside your production’s `assets/scripts` directory the Shot Builder hook file should be stored, based on the [example](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/hook_examples) included in the Add-On. This file can be automatically created at the correct directory using an operator in the **Blender Kitsu** Add-On preferences. Hooks are used to extend the functionality of the shot builder, and can be customized on a per project basis.
 
 
-1. Copy Configuration Files from [examples](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/docs/examples) to `your_project_name/svn/pro/shot-builder/`
-2. Update `assets.py` file with each asset you have in your `assets` folder see the [Shot Builder API](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/docs#api)
-3. Open a new Blender File, select `File>New>Shot File`
-4. Select the desired Sequence/Shot from Kitsu and select OK to start Building
-5. New file will be saved to  `your_project_name/svn/pro/shots/{sequence}/{shot}/{shot}.blend`
+1. Open `Edit>Preferences>Add-Ons`
+2. Search for the **Blender Kitsu** Add-On
+3. In the **Blender Kitsu** Add-On preferences find the Shot Builder section
+4. Run the Operator `Save Shot Builder Hook File`
+5. Edit the file `your_project/svn/pro/assets/scripts/shot-builder/hooks.py` to customize your hooks.
+6. Open a new Blender File, select `File>New>Shot File`
+7. Select the desired Sequence/Shot from Kitsu and select OK to start Building
+8. New file will be saved to  `your_project_name/svn/pro/shots/{sequence}/{shot}/{shot}.blend`
 
 ## Playblast your First Shot
 Once your first shot is animated you are ready to render a playblast of this shot, which will be later imported into your edit .blend file. 
