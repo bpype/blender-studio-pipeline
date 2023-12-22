@@ -54,9 +54,7 @@ def _resolve_pattern(pattern: str, var_lookup_table: Dict[str, str]) -> str:
                 to_insert = var_lookup_table[to_replace]
                 result = result.replace("<{}>".format(to_replace), to_insert)
             else:
-                logger.warning(
-                    "Failed to resolve variable: %s not defined!", to_replace
-                )
+                logger.warning("Failed to resolve variable: %s not defined!", to_replace)
                 return ""
         return result
 
@@ -81,9 +79,7 @@ def _gen_shot_preview(self: Any) -> str:
     examples: List[str] = []
     sequence = self.sequence_enum
     var_project = (
-        self.var_project_custom
-        if self.var_use_custom_project
-        else self.var_project_active
+        self.var_project_custom if self.var_use_custom_project else self.var_project_active
     )
     var_sequence = self.var_sequence_custom if self.var_use_custom_seq else sequence
     var_lookup_table = {"Sequence": var_sequence, "Project": var_project}
@@ -163,9 +159,7 @@ def get_playblast_file(self: Any) -> str:
     else:
         entity_name = shot_active.name
 
-    file_name = (
-        f"{entity_name}{delimiter}{task_type_name_suffix}{delimiter}{version}.mp4"
-    )
+    file_name = f"{entity_name}{delimiter}{task_type_name_suffix}{delimiter}{version}.mp4"
 
     return Path(self.playblast_dir).joinpath(file_name).as_posix()
 
