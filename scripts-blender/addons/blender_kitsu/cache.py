@@ -47,7 +47,6 @@ logger = LoggerFactory.getLogger()
 # used to cache active entities to prevent a new api request when read only
 _project_active: Project = Project()
 _episode_active: Episode = Episode()
-
 _sequence_active: Sequence = Sequence()
 _shot_active: Shot = Shot()
 _asset_active: Asset = Asset()
@@ -587,6 +586,7 @@ def init_cache_variables() -> None:
 
 def clear_cache_variables():
     global _project_active
+    global _episode_active
     global _sequence_active
     global _shot_active
     global _asset_active
