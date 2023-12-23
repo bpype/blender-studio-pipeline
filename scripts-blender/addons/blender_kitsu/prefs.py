@@ -356,13 +356,13 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             box.row().label(text=f"Logged in: {self.session.email}")
             box.row().operator(KITSU_OT_session_end.bl_idname, text="Logout", icon="PANEL_CLOSE")
 
-        # Production.
+        # Project
         box = layout.box()
-        box.label(text="Project settings", icon="FILEBROWSER")
+        box.label(text="Project", icon="FILEBROWSER")
         row = box.row(align=True)
 
         if not project_active:
-            prod_load_text = "Select Production"
+            prod_load_text = "Select Project"
         else:
             prod_load_text = project_active.name
 
@@ -373,9 +373,9 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         )
         box.row().prop(self, "project_root_dir")
 
-        # Anim tools settings.
+        # Previews
         box = layout.box()
-        box.label(text="Animation Tools", icon="RENDER_ANIMATION")
+        box.label(text="Previews", icon="RENDER_ANIMATION")
         box.row().prop(self, "shot_playblast_root_dir")
         box.row().prop(self, "seq_playblast_root_dir")
         box.row().prop(self, "frames_root_dir")
