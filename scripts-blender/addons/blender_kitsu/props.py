@@ -143,6 +143,13 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         description="ID that refers to the active sequence on server",
         default="",
     )
+
+    episode_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Active Episode ID",
+        description="ID that refers to the active episode on server",
+        default="",
+    )
+
     shot_active_id: bpy.props.StringProperty(  # type: ignore
         name="Active Shot ID",
         description="IDthat refers to the active shot on server",
