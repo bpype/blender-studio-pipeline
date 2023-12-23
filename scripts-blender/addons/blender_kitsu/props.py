@@ -375,9 +375,7 @@ def update_sequence_colors_coll_prop(dummy: Any) -> None:
             continue
 
         if seq.kitsu.sequence_id not in sequence_colors.keys():
-            logger.info(
-                "Added %s to scene.kitsu.seqeuence_colors", seq.kitsu.sequence_name
-            )
+            logger.info("Added %s to scene.kitsu.seqeuence_colors", seq.kitsu.sequence_name)
             item = sequence_colors.add()
             item.name = seq.kitsu.sequence_id
 
@@ -386,9 +384,7 @@ def update_sequence_colors_coll_prop(dummy: Any) -> None:
     # Delete sequence colors that are not in edit anymore.
     existings_seq_ids = set(existings_seq_ids)
 
-    to_be_removed = [
-        seq_id for seq_id in sequence_colors.keys() if seq_id not in existings_seq_ids
-    ]
+    to_be_removed = [seq_id for seq_id in sequence_colors.keys() if seq_id not in existings_seq_ids]
 
     for seq_id in to_be_removed:
         idx = sequence_colors.find(seq_id)
