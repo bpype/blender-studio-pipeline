@@ -69,6 +69,7 @@ class KITSU_OT_con_productions_load(bpy.types.Operator):
         context.window_manager.invoke_search_popup(self)
         return {"FINISHED"}
 
+
 class KITSU_OT_con_episodes_load(bpy.types.Operator):
     """
     Gets all episodes that are available in server and let's user select. Invokes a search Popup (enum_prop) on click.
@@ -106,6 +107,7 @@ class KITSU_OT_con_episodes_load(bpy.types.Operator):
     def invoke(self, context, event):
         context.window_manager.invoke_search_popup(self)
         return {"FINISHED"}
+
 
 class KITSU_OT_con_sequences_load(bpy.types.Operator):
     """
@@ -262,14 +264,10 @@ class KITSU_OT_con_task_types_load(bpy.types.Operator):
         precon = bool(prefs.session_auth(context) and cache.project_active_get())
 
         if context_core.is_shot_context():
-            return bool(
-                precon and cache.sequence_active_get() and cache.shot_active_get()
-            )
+            return bool(precon and cache.sequence_active_get() and cache.shot_active_get())
 
         if context_core.is_asset_context():
-            return bool(
-                precon and cache.asset_type_active_get() and cache.asset_active_get()
-            )
+            return bool(precon and cache.asset_type_active_get() and cache.asset_active_get())
         if context_core.is_sequence_context():
             return bool(precon and cache.sequence_active_get())
 
@@ -298,9 +296,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         return bool(
-            prefs.session_auth(context)
-            and cache.project_active_get()
-            and bpy.data.filepath
+            prefs.session_auth(context) and cache.project_active_get() and bpy.data.filepath
         )
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
@@ -322,9 +318,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 # Detect ad load seqeunce.
                 sequence = active_project.get_sequence_by_name(item_group)
                 if not sequence:
-                    self.report(
-                        {"ERROR"}, f"Failed to find sequence: '{item_group}' on server"
-                    )
+                    self.report({"ERROR"}, f"Failed to find sequence: '{item_group}' on server")
                     return {"CANCELLED"}
 
                 bpy.ops.kitsu.con_sequences_load(enum_prop=sequence.id)
@@ -361,9 +355,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 # Detect and load seqeunce.
                 sequence = active_project.get_sequence_by_name(item_group)
                 if not sequence:
-                    self.report(
-                        {"ERROR"}, f"Failed to find sequence: '{item_group}' on server"
-                    )
+                    self.report({"ERROR"}, f"Failed to find sequence: '{item_group}' on server")
                     return {"CANCELLED"}
 
                 bpy.ops.kitsu.con_sequences_load(enum_prop=sequence.id)
