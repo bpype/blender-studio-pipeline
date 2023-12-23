@@ -137,16 +137,12 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         # This function is copied and modified from the edit_breakdown addon by Inês Almeida and Francesco Siddi.
 
         hashed_filepath = hashlib.md5(bpy.data.filepath.encode()).hexdigest()
-        storage_dir = (
-            self.get_datadir() / "blender_kitsu" / "thumbnails" / hashed_filepath
-        )
+        storage_dir = self.get_datadir() / "blender_kitsu" / "thumbnails" / hashed_filepath
         return storage_dir.as_posix()
 
     def get_sqe_render_dir(self) -> str:
         hashed_filepath = hashlib.md5(bpy.data.filepath.encode()).hexdigest()
-        storage_dir = (
-            self.get_datadir() / "blender_kitsu" / "sqe_render" / hashed_filepath
-        )
+        storage_dir = self.get_datadir() / "blender_kitsu" / "sqe_render" / hashed_filepath
         return storage_dir.absolute().as_posix()
 
     def get_config_dir(self) -> str:
@@ -288,9 +284,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         default=False,
     )
 
-    media_update_search_paths: bpy.props.CollectionProperty(
-        type=KITSU_media_update_search_paths
-    )
+    media_update_search_paths: bpy.props.CollectionProperty(type=KITSU_media_update_search_paths)
 
     production_path: bpy.props.StringProperty(  # type: ignore
         name="Production Root",
@@ -354,17 +348,13 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             box.row().prop(self, "host")
             box.row().prop(self, "email")
             box.row().prop(self, "passwd")
-            box.row().operator(
-                KITSU_OT_session_start.bl_idname, text="Login", icon="PLAY"
-            )
+            box.row().operator(KITSU_OT_session_start.bl_idname, text="Login", icon="PLAY")
         else:
             row = box.row()
             row.prop(self, "host")
             row.enabled = False
             box.row().label(text=f"Logged in: {self.session.email}")
-            box.row().operator(
-                KITSU_OT_session_end.bl_idname, text="Logout", icon="PANEL_CLOSE"
-            )
+            box.row().operator(KITSU_OT_session_end.bl_idname, text="Logout", icon="PANEL_CLOSE")
 
         # Production.
         box = layout.box()
