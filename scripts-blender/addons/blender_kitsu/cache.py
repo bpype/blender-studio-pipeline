@@ -549,6 +549,7 @@ def clear_startup_variables():
 
 def init_cache_variables() -> None:
     global _project_active
+    global _episode_active
     global _sequence_active
     global _shot_active
     global _asset_active
