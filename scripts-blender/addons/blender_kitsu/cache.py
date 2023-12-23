@@ -321,9 +321,7 @@ def get_shots_enum_for_seq(
     global _shot_enum_list
 
     _shot_enum_list.clear()
-    _shot_enum_list.extend(
-        [(s.id, s.name, s.description or "") for s in sequence.get_all_shots()]
-    )
+    _shot_enum_list.extend([(s.id, s.name, s.description or "") for s in sequence.get_all_shots()])
     return _shot_enum_list
 
 
