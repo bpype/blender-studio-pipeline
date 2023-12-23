@@ -58,8 +58,8 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         project_active = cache.project_active_get()
         return bool(not project_active)
 
-    def draw_episode_selector(self, box, project_active, episode_active):
-        row = box.row(align=True)
+    def draw_episode_selector(self, layout, project_active, episode_active):
+        row = layout.row(align=True)
 
         if not project_active:
             row.enabled = False
@@ -73,8 +73,8 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
                 icon="DOWNARROW_HLT",
             )
 
-    def draw_sequence_selector(self, box, project_active, episode_active):
-        row = box.row(align=True)
+    def draw_sequence_selector(self, layout, project_active, episode_active):
+        row = layout.row(align=True)
 
         if not project_active:
             row.enabled = False
@@ -91,8 +91,8 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             icon="DOWNARROW_HLT",
         )
 
-    def draw_asset_type_selector(self, box, project_active):
-        row = box.row(align=True)
+    def draw_asset_type_selector(self, layout, project_active):
+        row = layout.row(align=True)
 
         if not project_active:
             row.enabled = False
@@ -106,8 +106,8 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             icon="DOWNARROW_HLT",
         )
 
-    def draw_shot_selector(self, box, project_active):
-        row = box.row(align=True)
+    def draw_shot_selector(self, layout, project_active):
+        row = layout.row(align=True)
 
         if not project_active:
             row.enabled = False
@@ -121,8 +121,8 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             icon="DOWNARROW_HLT",
         )
 
-    def draw_asset_selector(self, box, project_active):
-        row = box.row(align=True)
+    def draw_asset_selector(self, layout, project_active):
+        row = layout.row(align=True)
 
         if not project_active:
             row.enabled = False
@@ -151,8 +151,7 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         layout.row().label(text=f"Production: {project_active.name}")
         layout.row(align=True)
 
-        box = layout.box()
-        row = box.row(align=True)
+        row = layout.row(align=True)
         row.label(text="Browser", icon="FILEBROWSER")
 
         # Detect Context
@@ -164,7 +163,7 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         )
 
         # Entity context
-        row = box.row(align=True)
+        row = layout.row(align=True)
         row.prop(context.scene.kitsu, "category", expand=True)
 
         if not prefs.session_auth(context) or not project_active:
@@ -173,27 +172,27 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         # Sequence (if context is Shot or Sequence)
         if context_core.is_sequence_context():
             if project_active.nb_episodes > 0:
-                self.draw_episode_selector(box, project_active, episode_active)
-            self.draw_sequence_selector(box, project_active, episode_active)
+                self.draw_episode_selector(layout, project_active, episode_active)
+            self.draw_sequence_selector(layout, project_active, episode_active)
 
         # Shot
         if context_core.is_shot_context():
             if project_active.nb_episodes > 0:
-                self.draw_episode_selector(box, project_active, episode_active)
-            self.draw_sequence_selector(box, project_active, episode_active)
-            self.draw_shot_selector(box, project_active)
+                self.draw_episode_selector(layout, project_active, episode_active)
+            self.draw_sequence_selector(layout, project_active, episode_active)
+            self.draw_shot_selector(layout, project_active)
 
         # AssetType (if context is Asset)
         if context_core.is_asset_context():
-            self.draw_asset_type_selector(box, project_active)
-            self.draw_asset_selector(box, project_active)
+            self.draw_asset_type_selector(layout, project_active)
+            self.draw_asset_selector(layout, project_active)
 
         # Task Type.
         t_text = "Select Task Type"
         task_type_active = cache.task_type_active_get()
         if task_type_active:
             t_text = task_type_active.name
-        row = box.row(align=True)
+        row = layout.row(align=True)
         row.operator(KITSU_OT_con_task_types_load.bl_idname, text=t_text, icon="DOWNARROW_HLT")
 
 
