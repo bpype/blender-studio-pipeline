@@ -149,11 +149,13 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         default="",
         update=propsdata.on_shot_change,
     )
+
     asset_active_id: bpy.props.StringProperty(  # type: ignore
         name="Active Asset ID",
         description="ID that refers to the active asset on server",
         default="",
     )
+
     asset_type_active_id: bpy.props.StringProperty(  # type: ignore
         name="Active Asset Type ID",
         description="ID that refers to the active asset type on server",
