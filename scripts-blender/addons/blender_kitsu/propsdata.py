@@ -105,7 +105,10 @@ def get_task_type_name_file_suffix() -> str:
 
 
 def get_playblast_dir(self: Any) -> str:
-    # .../110_rextoria/110_0030_A/110_0030_A.anim.
+    # shared/editorial/footage/{dev,pre,pro,post}
+    # shared/editorial/<episode>/footage/{dev,pre,pro,post}
+
+    # shared/editorial/footage//110_rextoria/110_0030/110_0030-anim
 
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     if not addon_prefs.is_playblast_root_valid:
@@ -114,13 +117,17 @@ def get_playblast_dir(self: Any) -> str:
     episode = cache.episode_active_get()
     sequence = cache.sequence_active_get()
     shot = cache.shot_active_get()
+    delimiter = bkglobals.FILE_DELIMITER
 
     # Start building path
     playblast_dir = addon_prefs.shot_playblast_root_path
 
-    # Inject episode name if available
-    if episode:
-        playblast_dir = playblast_dir / episode.name
+    # Inject episode name if available (and if specified as <episode>)
+    if episode and '<episode>' in playblast_dir.parts:
+        i = playblast_dir.parts.index('<episode>')
+        playblast_dir = Path(*playblast_dir.parts[:i]).joinpath(
+            episode.name, *playblast_dir.parts[i + 1 :]
+        )
 
     if context_core.is_sequence_context():
         playblast_dir = playblast_dir / sequence.name / 'sequence_previews'
@@ -129,7 +136,7 @@ def get_playblast_dir(self: Any) -> str:
     task_type_name_suffix = get_task_type_name_file_suffix()
 
     playblast_dir = (
-        playblast_dir / sequence.name / shot.name / f"{shot.name}-{task_type_name_suffix}"
+        playblast_dir / sequence.name / shot.name / f"{shot.name}{delimiter}{task_type_name_suffix}"
     )
     return playblast_dir.as_posix()
 
@@ -140,8 +147,8 @@ def get_playblast_file(self: Any) -> str:
 
     task_type_name_suffix = get_task_type_name_file_suffix()
     version = self.playblast_version
-    shot_active = cache.shot_active_get()
-    seq_active = cache.sequence_active_get()
+    shot = cache.shot_active_get()
+    sequence = cache.sequence_active_get()
     delimiter = bkglobals.FILE_DELIMITER
 
     # 070_0010_A-anim-v001.mp4.
@@ -150,9 +157,11 @@ def get_playblast_file(self: Any) -> str:
     kitsu_props.get("category")
 
     if context_core.is_sequence_context():
-        entity_name = seq_active.name
+        entity_name = sequence.name
+    elif context_core.is_shot_context():
+        entity_name = shot.name
     else:
-        entity_name = shot_active.name
+        entity_name = ''
 
     file_name = f"{entity_name}{delimiter}{task_type_name_suffix}{delimiter}{version}.mp4"
 
