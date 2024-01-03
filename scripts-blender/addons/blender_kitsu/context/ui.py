@@ -167,25 +167,27 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         if not prefs.session_auth(context) or not project_active:
             row.enabled = False
 
-        # Sequence (if context is Shot or Sequence)
+        # Episode selector
+        if project_active.nb_episodes > 0:
+            self.draw_episode_selector(layout, project_active, episode_active)
+
+        # Sequence selector (if context is Sequence)
         if context_core.is_sequence_context():
-            if project_active.nb_episodes > 0:
-                self.draw_episode_selector(layout, project_active, episode_active)
             self.draw_sequence_selector(layout, project_active, episode_active)
 
-        # Shot
+        # Shot selector
         if context_core.is_shot_context():
             if project_active.nb_episodes > 0:
                 self.draw_episode_selector(layout, project_active, episode_active)
             self.draw_sequence_selector(layout, project_active, episode_active)
             self.draw_shot_selector(layout, project_active)
 
-        # AssetType (if context is Asset)
+        # AssetType selector (if context is Asset)
         if context_core.is_asset_context():
             self.draw_asset_type_selector(layout, project_active)
             self.draw_asset_selector(layout, project_active)
 
-        # Task Type.
+        # Task Type selector
         t_text = "Select Task Type"
         task_type_active = cache.task_type_active_get()
         if task_type_active:
