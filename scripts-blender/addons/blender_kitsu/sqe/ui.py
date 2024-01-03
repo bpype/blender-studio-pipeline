@@ -97,7 +97,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        if not context_core.is_edit_file():
+        if not context_core.is_edit_context():
             return False
         sqe = context.scene.sequence_editor
         return bool(prefs.session_auth(context) or (sqe and sqe.sequences_all))
@@ -653,7 +653,7 @@ class KITSU_PT_sqe_general_tools(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        if not context_core.is_edit_file():
+        if not context_core.is_edit_context():
             return False
         selshots = context.selected_sequences
 
@@ -715,7 +715,7 @@ class KITSU_PT_edit_task(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        if not context_core.is_edit_file():
+        if not context_core.is_edit_context():
             return False
 
     def draw(self, context: bpy.types.Context) -> None:

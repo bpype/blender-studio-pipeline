@@ -48,7 +48,7 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        if context_core.is_edit_file():
+        if context_core.is_edit_context():
             return False
         return bool(prefs.session_auth(context))
 
