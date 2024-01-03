@@ -587,9 +587,7 @@ class Shot(Entity):
         return [Task.from_dict(t) for t in gazu.task.all_tasks_for_shot(asdict(self))]
 
     def get_all_assets(self) -> List[Asset]:
-        return [
-            Asset.from_dict(t) for t in gazu.asset.all_assets_for_shot(asdict(self))
-        ]
+        return [Asset.from_dict(t) for t in gazu.asset.all_assets_for_shot(asdict(self))]
 
     def get_sequence(self) -> Sequence:
         return Sequence.from_dict(gazu.shot.get_sequence_from_shot(asdict(self)))
