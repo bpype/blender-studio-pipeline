@@ -315,7 +315,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 # Set category.
                 context.scene.kitsu.category = "SHOTS"
 
-                # Detect ad load seqeunce.
+                # Detect ad load sequence.
                 sequence = active_project.get_sequence_by_name(item_group)
                 if not sequence:
                     self.report({"ERROR"}, f"Failed to find sequence: '{item_group}' on server")
