@@ -3,9 +3,7 @@ from pathlib import Path
 
 
 def is_edit_file():
-    # TODO Improve how this is checked
-    if bpy.data.filepath != "":
-        return Path(bpy.data.filepath).parents[0].name == 'edit'
+    return bpy.context.scene.kitsu.category == "EDIT"
 
 
 # Category values are defined in enum props.py KITSU_property_group_scene under category

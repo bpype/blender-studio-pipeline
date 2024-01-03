@@ -49,8 +49,6 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        if context_core.is_edit_file():
-            return False
         return prefs.session_auth(context)
 
     @classmethod
@@ -164,7 +162,7 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
 
         # Entity context
         row = layout.row(align=True)
-        row.prop(context.scene.kitsu, "category", expand=True)
+        row.prop(context.scene.kitsu, "category")
 
         if not prefs.session_auth(context) or not project_active:
             row.enabled = False

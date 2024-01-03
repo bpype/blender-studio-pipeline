@@ -127,10 +127,13 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
     """"""
 
     category: bpy.props.EnumProperty(  # type: ignore
+        name="Type",
+        description="Kitsu entity type",
         items=(
-            ("ASSETS", "Assets", "Asset related tasks", "FILE_3D", 0),
-            ("SHOTS", "Shots", "Shot related tasks", "FILE_MOVIE", 1),
-            ("SEQS", "Sequences", "Sequence related tasks", "RENDER_ANIMATION", 2),
+            ("ASSETS", "Asset", "Asset related tasks", 0),
+            ("SHOTS", "Shot", "Shot related tasks", 1),
+            ("SEQS", "Sequence", "Sequence related tasks", 2),
+            ("EDIT", "Edit", "Edit related tasks", 3),
         ),
         default="SHOTS",
         update=propsdata.reset_task_type,
