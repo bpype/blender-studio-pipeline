@@ -313,7 +313,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 # TODO: check if frame range update gets triggered.
 
                 # Set category.
-                context.scene.kitsu.category = "SHOTS"
+                context.scene.kitsu.category = "SHOT"
 
                 # Detect ad load sequence.
                 sequence = active_project.get_sequence_by_name(item_group)
@@ -350,7 +350,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
             if category == bkglobals.SEQ_DIR_NAME:
                 # Set category.
-                context.scene.kitsu.category = "SEQS"
+                context.scene.kitsu.category = "SEQ"
 
                 # Detect and load seqeunce.
                 sequence = active_project.get_sequence_by_name(item_group)
@@ -379,7 +379,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
         elif category == bkglobals.ASSET_DIR_NAME:
             # Set category.
-            context.scene.kitsu.category = "ASSETS"
+            context.scene.kitsu.category = "ASSET"
 
             # Detect and load asset type.
             kitsu_asset_type_name = self._find_in_mapping(

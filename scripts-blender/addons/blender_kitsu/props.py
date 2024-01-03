@@ -130,12 +130,12 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         name="Type",
         description="Kitsu entity type",
         items=(
-            ("ASSETS", "Asset", "Asset related tasks", 0),
-            ("SHOTS", "Shot", "Shot related tasks", 1),
-            ("SEQS", "Sequence", "Sequence related tasks", 2),
+            ("ASSET", "Asset", "Asset related tasks", 0),
+            ("SHOT", "Shot", "Shot related tasks", 1),
+            ("SEQ", "Sequence", "Sequence related tasks", 2),
             ("EDIT", "Edit", "Edit related tasks", 3),
         ),
-        default="SHOTS",
+        default="SHOT",
         update=propsdata.reset_task_type,
     )
 
