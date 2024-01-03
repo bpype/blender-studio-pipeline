@@ -191,16 +191,12 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
             # Initialize.
             if strip.type not in checkstrip.VALID_STRIP_TYPES:
-                row.label(
-                    text=f"Only sequence strips of types: {checkstrip.VALID_STRIP_TYPES }"
-                )
+                row.label(text=f"Only sequence strips of types: {checkstrip.VALID_STRIP_TYPES }")
                 return
 
             if not strip.kitsu.initialized:
                 # Init active.
-                row.operator(
-                    KITSU_OT_sqe_init_strip.bl_idname, text=f"Init {noun}", icon="ADD"
-                )
+                row.operator(KITSU_OT_sqe_init_strip.bl_idname, text=f"Init {noun}", icon="ADD")
                 # Link active.
                 row.operator(
                     KITSU_OT_sqe_link_shot.bl_idname,
@@ -302,12 +298,8 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         if not strip.kitsu.sequence_id:
             sub_row = split.row(align=True)
             sub_row.prop(strip.kitsu, "sequence_name_display", text="")
-            sub_row.operator(
-                KITSU_OT_sqe_link_sequence.bl_idname, text="", icon="DOWNARROW_HLT"
-            )
-            sub_row.operator(
-                KITSU_OT_sqe_push_new_sequence.bl_idname, text="", icon="ADD"
-            )
+            sub_row.operator(KITSU_OT_sqe_link_sequence.bl_idname, text="", icon="DOWNARROW_HLT")
+            sub_row.operator(KITSU_OT_sqe_push_new_sequence.bl_idname, text="", icon="ADD")
 
         else:
             # Lots of splitting because color prop is too big by default
@@ -315,19 +307,13 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
             sub_split.prop(strip.kitsu, "sequence_name_display", text="")
 
             sub_split = sub_split.split(factor=0.3, align=True)
-            sub_split.operator(
-                KITSU_OT_sqe_link_sequence.bl_idname, text="", icon="DOWNARROW_HLT"
-            )
+            sub_split.operator(KITSU_OT_sqe_link_sequence.bl_idname, text="", icon="DOWNARROW_HLT")
 
             sub_sub_split = sub_split.split(factor=0.4, align=True)
-            sub_sub_split.operator(
-                KITSU_OT_sqe_push_new_sequence.bl_idname, text="", icon="ADD"
-            )
+            sub_sub_split.operator(KITSU_OT_sqe_push_new_sequence.bl_idname, text="", icon="ADD")
 
             try:
-                sequence_color_item = context.scene.kitsu.sequence_colors[
-                    strip.kitsu.sequence_id
-                ]
+                sequence_color_item = context.scene.kitsu.sequence_colors[strip.kitsu.sequence_id]
             except KeyError:
                 sub_sub_split.operator(
                     KITSU_OT_sqe_add_sequence_color.bl_idname, text="", icon="COLOR"
@@ -354,9 +340,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         row.prop(strip, "kitsu_frame_start", text="In")
         row.prop(strip, "kitsu_frame_end", text="Out")
         row.prop(strip, "kitsu_frame_duration", text="Duration")
-        row.operator(
-            KITSU_OT_sqe_init_strip_start_frame.bl_idname, text="", icon="FILE_REFRESH"
-        )
+        row.operator(KITSU_OT_sqe_init_strip_start_frame.bl_idname, text="", icon="FILE_REFRESH")
 
         """
         split = col.split(factor=split_factor)
@@ -397,19 +381,13 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
         # Counter.
         row = box.row()
-        row.prop(
-            context.window_manager, "shot_counter_start", text="Shot Counter Start"
-        )
+        row.prop(context.window_manager, "shot_counter_start", text="Shot Counter Start")
         row.prop(context.window_manager, "show_advanced", text="")
 
         if context.window_manager.show_advanced:
             # Counter.
-            box.row().prop(
-                addon_prefs, "shot_counter_digits", text="Shot Counter Digits"
-            )
-            box.row().prop(
-                addon_prefs, "shot_counter_increment", text="Shot Counter Increment"
-            )
+            box.row().prop(addon_prefs, "shot_counter_digits", text="Shot Counter Digits")
+            box.row().prop(addon_prefs, "shot_counter_increment", text="Shot Counter Increment")
 
             # Variables.
             row = box.row(align=True)
@@ -519,9 +497,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         row = box.row()
         if strips_to_meta:
             col = row.column(align=True)
-            noun = get_selshots_noun(
-                len(strips_to_meta), prefix=f"{len(strips_to_meta)}"
-            )
+            noun = get_selshots_noun(len(strips_to_meta), prefix=f"{len(strips_to_meta)}")
             col.operator(
                 KITSU_OT_sqe_push_shot_meta.bl_idname,
                 text=f"Metadata {noun}",
@@ -565,9 +541,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         # Submit operator.
         if nr_of_shots > 0:
             if strips_to_submit:
-                noun = get_selshots_noun(
-                    len(strips_to_submit), prefix=f"{len(strips_to_submit)}"
-                )
+                noun = get_selshots_noun(len(strips_to_submit), prefix=f"{len(strips_to_submit)}")
                 row = box.row()
                 col = row.column(align=True)
                 col.operator(
@@ -616,9 +590,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
         layout = self.layout
         if strips_to_meta:
-            noun = get_selshots_noun(
-                len(strips_to_meta), prefix=f"{len(strips_to_meta)}"
-            )
+            noun = get_selshots_noun(len(strips_to_meta), prefix=f"{len(strips_to_meta)}")
             row = box.row()
             row.operator(
                 KITSU_OT_sqe_pull_shot_meta.bl_idname,
