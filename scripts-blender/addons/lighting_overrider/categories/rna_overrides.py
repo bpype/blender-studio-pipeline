@@ -24,6 +24,7 @@ def apply_settings(data):
 
     for path in data:
         try:
+            utils.mute_animation_on_rna_path(path)
             if data[path][1] == 'STRING':
                 exec(path+f" = '{data[path][0]}'")
             elif type(eval(path)) == idprop.types.IDPropertyArray:

@@ -4,21 +4,85 @@ import json
 import idprop
 from pathlib import Path
 
+
+
+def parse_rna_path_to_elements(rna_path, delimiter='.'):
+    ''' Returns the element strings of an RNA path split by '.' delimiter, disregarding any delimiter in a string within the path.
+    '''
+    if not delimiter in rna_path:
+        return [rna_path]
+    
+    parse = rna_path
+    
+    # replace escape chars with whitespaces
+    parse_elements = parse.split(r'\\')
+    parse = '  '.join(parse_elements)
+        
+    parse_elements = parse.split('\\')
+    parse = parse_elements[0]
+    for el in parse_elements[1:]:
+        parse += '  '
+        parse += el[1:]
+    
+    # replace strings within path with whitespaces
+    parse_elements = parse.split('"')
+    parse = parse_elements[0]
+    for el1, el2 in zip(parse_elements[1::2], parse_elements[2::2]):
+        parse += '"'+' '*len(el1)+'"'
+        parse += el2
+    
+    parse_elements = parse.split(delimiter)
+    
+    elements = []
+    for el in parse_elements:
+        elements += [rna_path[:len(el)]]
+        rna_path = rna_path[len(el)+len(delimiter):]
+    
+    return elements
+
+def mute_fcurve(db, path):
+    if not db.animation_data:
+        return
+    if not db.animation_data.action:
+        return
+    
+    fcurve = db.animation_data.action.fcurves.find(path)
+    c = 0
+    while fcurve or c<=4:
+        if fcurve:
+            fcurve.mute = True
+        c += 1
+        fcurve = db.animation_data.action.fcurves.find(path, index=c)
+    return
+
+def mute_driver(db, path):
+    if not db.animation_data:
+        return
+    if not db.animation_data.drivers:
+        return
+    
+    driver = db.animation_data.drivers.find(path)
+    c = 0
+    while driver or c<=4:
+        if driver:
+            driver.mute = True
+        c += 1
+        driver = db.animation_data.drivers.find(path, index=c)
+    return
+
+def mute_animation_on_rna_path(rna_path):
+    path_elements = parse_rna_path_to_elements(rna_path)
+    data_block = eval('.'.join(path_elements[:3]))
+    path = '.'.join(path_elements[3:])
+    
+    mute_fcurve(data_block, path)
+    mute_driver(data_block, path)
+    return
+
 def split_by_suffix(list, sfx):
     with_suffix = [name[:-len(sfx)] for name in list if name.endswith(sfx)]
     without_suffix = [name for name in list if not name.endswith(sfx)]
     return without_suffix, with_suffix
-    
-def mute_fcurve(ob, path):
-    if not ob.animation_data:
-        return
-    if not ob.animation_data.action:
-        return
-    fcurve = ob.animation_data.action.fcurves.find(path)
-    if fcurve:
-        fcurve.mute = True
-    return
-
 def get_properties_bone(ob, prefix='Properties_'):
     
     if not ob.type == 'ARMATURE':
@@ -153,6 +217,7 @@ def apply_rna_overrides(data):
 
     for path in data:
         try:
+            mute_animation_on_rna_path(path)
             if data[path][1] == 'STRING':
                 exec(path+f" = '{data[path][0]}'")
             elif type(eval(path)) == idprop.types.IDPropertyArray:

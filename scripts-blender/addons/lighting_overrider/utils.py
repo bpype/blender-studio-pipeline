@@ -68,16 +68,6 @@ def mark_dirty(self, context):
     settings.is_dirty = True
     return
 
-def mute_fcurve(ob, path):
-    if not ob.animation_data:
-        return
-    if not ob.animation_data.action:
-        return
-    fcurve = ob.animation_data.action.fcurves.find(path)
-    if fcurve:
-        fcurve.mute = True
-    return
-
 def reload_libraries():
     for lib in bpy.data.libraries:
         lib.reload()
@@ -158,3 +148,44 @@ def parse_rna_path_for_custom_property(rna_path):
         return False
     parse_elements = parse_rna_path_to_elements(rna_path, delimiter='][')
     return parse_elements[0]+']', '"'.join(parse_elements[1].split('"')[1:-1])
+
+def mute_fcurve(db, path):
+    if not db.animation_data:
+        return
+    if not db.animation_data.action:
+        return
+    
+    fcurve = db.animation_data.action.fcurves.find(path)
+    c = 0
+    while fcurve or c<=4:
+        if fcurve:
+            fcurve.mute = True
+        c += 1
+        fcurve = db.animation_data.action.fcurves.find(path, index=c)
+    return
+
+def mute_driver(db, path):
+    if not db.animation_data:
+        return
+    if not db.animation_data.drivers:
+        return
+    
+    driver = db.animation_data.drivers.find(path)
+    c = 0
+    while driver or c<=4:
+        if driver:
+            driver.mute = True
+        c += 1
+        driver = db.animation_data.drivers.find(path, index=c)
+    return
+
+def mute_animation_on_rna_path(rna_path):
+    path_elements = parse_rna_path_to_elements(rna_path)
+    data_block = eval('.'.join(path_elements[:3]))
+    path = '.'.join(path_elements[3:])
+    
+    print(path_elements)
+
+    mute_fcurve(data_block, path)
+    mute_driver(data_block, path)
+    return

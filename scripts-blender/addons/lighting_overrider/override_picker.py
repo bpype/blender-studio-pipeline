@@ -211,6 +211,7 @@ class LOR_OT_override_picker(bpy.types.Operator):
             del context.scene['override']
             return {'CANCELLED'}
 
+        utils.mute_animation_on_rna_path(self.rna_path)
         if type(eval(self.rna_path)) == idprop.types.IDPropertyArray:
             exec(self.rna_path+f'[:] = context.scene.override') # workaround for Blender not retaining UI data of property (see https://projects.blender.org/blender/blender/pulls/109203)
         else:
@@ -233,6 +234,7 @@ class LOR_OT_override_picker(bpy.types.Operator):
             else:
                 rna_path = f'bpy.data.objects["{ob.name}"].{subpath}'
 
+            utils.mute_animation_on_rna_path(rna_path)
             try:
                 eval(rna_path)
             except:
