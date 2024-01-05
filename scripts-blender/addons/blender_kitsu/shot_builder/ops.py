@@ -222,10 +222,8 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
 
         # Create Output Collection & Link Camera
         if bkglobals.OUTPUT_COL_CREATE.get(task_type_short_name):
-            output_col = create_task_type_output_collection(
-                context.scene, shot, task_type
-            )
-        if task_type_short_name == 'anim':
+            output_col = create_task_type_output_collection(context.scene, shot, task_type)
+        if task_type_short_name == 'anim' or task_type_short_name == 'layout':
             link_camera_rig(context.scene, output_col)
 
             # Load Assets
