@@ -596,22 +596,36 @@ class Shot(Entity):
         gazu.shot.update_shot(asdict(self))
         return self
 
-    def get_shot_task_name(self, task_type_short_name: str) -> str:  #
+    def get_3d_start(self) -> int:
+        try:
+            logger.info(f"3d_start not found on server, defaulting to '{bkglobals.FRAME_START}'")
+            return int(self.data["3d_start"])
+        except:
+            return bkglobals.FRAME_START
+
+    def get_task_name(self, task_type_short_name: str) -> str:  #
         return f"{self.name}{bkglobals.FILE_DELIMITER}{task_type_short_name}"
 
     def get_output_collection_name(self, task_type_short_name: str) -> str:
-        return f"{self.get_shot_task_name(task_type_short_name)}{bkglobals.FILE_DELIMITER}output"
+        return f"{self.get_task_name(task_type_short_name)}{bkglobals.FILE_DELIMITER}output"
 
-    def get_shot_dir(self, context) -> str:
+    def get_dir(self, context) -> str:
         project_root_dir = prefs.project_root_dir_get(context)
         all_shots_dir = project_root_dir.joinpath('pro').joinpath('shots')
+
+        # Add Episode to Path if avaliable
+        if self.episode_id:
+            base_dir = all_shots_dir.joinpath(self.episode_name)
+        else:
+            base_dir = all_shots_dir
+
         seq = self.get_sequence()
-        shot_dir = all_shots_dir.joinpath(seq.name).joinpath(self.name)
+        shot_dir = base_dir.joinpath(seq.name).joinpath(self.name)
         return shot_dir.__str__()
 
-    def get_shot_filepath(self, context, task_type_short_name: str) -> str:
-        file_name = self.get_shot_task_name(task_type_short_name) + '.blend'
-        return Path(self.get_shot_dir(context)).joinpath(file_name).__str__()
+    def get_filepath(self, context, task_type_short_name: str) -> str:
+        file_name = self.get_task_name(task_type_short_name) + '.blend'
+        return Path(self.get_dir(context)).joinpath(file_name).__str__()
 
     def update_data(self, data: Dict[str, Any]) -> Shot:
         gazu.shot.update_shot_data(asdict(self), data=data)

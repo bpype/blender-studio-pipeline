@@ -23,9 +23,7 @@ from .hooks import Hooks
 active_project = None
 
 
-def get_shots_for_seq(
-    self: Any, context: bpy.types.Context
-) -> List[Tuple[str, str, str]]:
+def get_shots_for_seq(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
     if self.seq_id != '':
         seq = active_project.get_sequence(self.seq_id)
         shot_enum = cache.get_shots_enum_for_seq(self, context, seq)
@@ -34,9 +32,7 @@ def get_shots_for_seq(
     return [('NONE', "No Shots Found", '')]
 
 
-def get_tasks_for_shot(
-    self: Any, context: bpy.types.Context
-) -> List[Tuple[str, str, str]]:
+def get_tasks_for_shot(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
     global active_project
     if not (self.shot_id == '' or self.shot_id == 'NONE'):
         shot = active_project.get_shot(self.shot_id)
@@ -186,9 +182,7 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
 
         self.production_name = project.name
 
-        return cast(
-            Set[str], context.window_manager.invoke_props_dialog(self, width=400)
-        )
+        return cast(Set[str], context.window_manager.invoke_props_dialog(self, width=400))
 
     def _get_task_type_for_shot(self, context, shot):
         for task_type in shot.get_all_task_types():
@@ -202,13 +196,13 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         shot = active_project.get_shot(self.shot_id)
         task_type = self._get_task_type_for_shot(context, shot)
         task_type_short_name = task_type.get_short_name()
-        shot_file_path_str = shot.get_shot_filepath(context, task_type_short_name)
+        shot_file_path_str = shot.get_filepath(context, task_type_short_name)
 
         # Open Template File
         replace_workspace_with_template(context, task_type_short_name)
 
         # Set Up Scene + Naming
-        shot_task_name = shot.get_shot_task_name(task_type.get_short_name())
+        shot_task_name = shot.get_task_name(task_type.get_short_name())
         scene = set_shot_scene(context, shot_task_name)
         remove_all_data()
         set_resolution_and_fps(active_project, scene)
@@ -250,9 +244,7 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         if self.save_file:
             save_shot_builder_file(file_path=shot_file_path_str)
 
-        self.report(
-            {"INFO"}, f"Successfully Built Shot:`{shot.name}` Task: `{task_type.name}`"
-        )
+        self.report({"INFO"}, f"Successfully Built Shot:`{shot.name}` Task: `{task_type.name}`")
         return {"FINISHED"}
 
 

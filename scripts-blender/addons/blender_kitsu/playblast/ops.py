@@ -493,12 +493,11 @@ def draw_frame_range_warning(self, context):
     layout.label(
         text="Frame Range on server does not match the active shot. Please 'pull' the correct frame range from the server"
     )
-    layout.label(
-        text=f"   File Frame Range: {context.scene.frame_start}-{context.scene.frame_end}"
-    )
+    layout.label(text=f"   File Frame Range: {context.scene.frame_start}-{context.scene.frame_end}")
     if active_shot:
+        kitsu_3d_start = active_shot.get_3d_start()
         layout.label(
-            text=f'   Server Frame Range: {int(active_shot.data["3d_start"])}-{int(active_shot.data["3d_start"]) + int(active_shot.nb_frames) - 1}'
+            text=f'Server Frame Range: {kitsu_3d_start}-{kitsu_3d_start + int(active_shot.nb_frames) - 1}'
         )
     else:
         layout.label(text=f'   Server Frame Range: not found')

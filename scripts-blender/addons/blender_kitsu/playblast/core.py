@@ -288,14 +288,9 @@ def get_frame_range():  # TODO return type
 
     # Pull update for shot.
     cache.shot_active_pull_update()
-    if "3d_start" not in active_shot.data:
-        logger.warning(
-            "Failed to check frame range. Shot %s missing '3d_start' attribute on server",
-            active_shot.name,
-        )
-        return
-    frame_in = int(active_shot.data["3d_start"])
-    frame_out = int(active_shot.data["3d_start"]) + int(active_shot.nb_frames) - 1
+    kitsu_3d_start = active_shot.get_3d_start()
+    frame_in = kitsu_3d_start
+    frame_out = kitsu_3d_start + int(active_shot.nb_frames) - 1
     return frame_in, frame_out
 
 

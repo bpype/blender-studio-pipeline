@@ -34,7 +34,9 @@ Sets are more tricky to define, since they can differ even on a shot level. In p
 
 ## Shots
 
-**Location:** `{project root}/pro/shots/{sequence number}/{shot identifier}/{shot identifier}-{task identifier}.blend`
+**Standard Location:** `{project root}/pro/shots/{sequence number}/{shot identifier}/{shot identifier}-{task identifier}.blend`
+
+**TV Show Location:** `{project root}/pro/shots/{episode identifier}/{sequence number}/{shot identifier}/{shot identifier}-{task identifier}.blend`
 
 ##
 Example: `prop-dresser_wood.faded-modeling.png`

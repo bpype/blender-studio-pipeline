@@ -49,7 +49,7 @@ class KITSU_PT_vi3d_anim_tools(bpy.types.Panel):
     def poll(cls, context: bpy.types.Context) -> bool:
         return bool(
             prefs.session_auth(context)
-            and cache.task_type_active_get().name == 'Animation'
+            and cache.task_type_active_get().name in ['Animation', 'Layout']
         )
 
     def draw(self, context: bpy.types.Context) -> None:

@@ -33,11 +33,7 @@ logger = LoggerFactory.getLogger()
 def shot_meta(strip: bpy.types.Sequence, shot: Shot) -> None:
     # Update shot info.
 
-    # Only set 3d_start if none is found
-    try:
-        kitsu_3d_start = shot.data["3d_start"]
-    except:
-        kitsu_3d_start = bkglobals.FRAME_START
+    kitsu_3d_start = shot.get_3d_start()
     shot.name = strip.kitsu.shot_name
     shot.description = strip.kitsu.shot_description
     shot.data["frame_in"] = strip.frame_final_start

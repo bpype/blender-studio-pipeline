@@ -2,7 +2,6 @@ import bpy
 from .. import prefs
 from pathlib import Path
 import re
-from .core import get_3d_start
 
 
 def editorial_export_get_latest(
@@ -41,7 +40,7 @@ def editorial_export_get_latest(
 
     # Update shift frame range prop.
     frame_in = shot.data.get("frame_in")
-    frame_3d_start = get_3d_start(shot)
+    frame_3d_start = shot.get_3d_start()
     frame_3d_offset = frame_3d_start - addon_prefs.shot_builder_frame_offset
     edit_export_offset = addon_prefs.edit_export_frame_offset
 

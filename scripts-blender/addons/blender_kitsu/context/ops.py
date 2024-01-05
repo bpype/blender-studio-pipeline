@@ -87,7 +87,6 @@ class KITSU_OT_con_episodes_load(bpy.types.Operator):
         return bool(prefs.session_auth(context) and cache.project_active_get())
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-
         # Store vars to check if project / seq / shot changed.
         zep_prev_id = cache.episode_active_get().id
 
@@ -303,7 +302,17 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         # Update kitsu metadata.
         filepath = Path(bpy.data.filepath)
         active_project = cache.project_active_get()
-        category = filepath.parents[2].name
+
+        # TODO REFACTOR THIS WHOLE THING, BAD HACK
+        # Path is different for tvshow
+        if (
+            active_project.production_type == 'tvshow'
+            and filepath.parents[3].name == bkglobals.SHOT_DIR_NAME
+        ):
+            category = filepath.parents[3].name
+        else:
+            category = filepath.parents[2].name
+
         item_group = filepath.parents[1].name
         item = filepath.parents[0].name
         item_task_type = filepath.stem.split(bkglobals.FILE_DELIMITER)[-1]

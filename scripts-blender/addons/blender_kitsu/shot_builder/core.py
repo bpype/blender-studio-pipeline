@@ -55,9 +55,7 @@ def remove_all_data():
     for obj in bpy.data.objects:
         bpy.data.objects.remove(obj)
 
-    bpy.ops.outliner.orphans_purge(
-        do_local_ids=True, do_linked_ids=True, do_recursive=True
-    )
+    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
 
 def set_shot_scene(context: bpy.types.Context, scene_name: str) -> bpy.types.Scene:
@@ -84,19 +82,12 @@ def set_resolution_and_fps(project: Project, scene: bpy.types.Scene):
     scene.render.resolution_percentage = 100
 
 
-def get_3d_start(shot: Shot):
-    if shot.data and shot.data.get("3d_start"):  # shot.data and
-        return int(shot.data.get("3d_start"))
-    else:
-        return bkglobals.FRAME_START
-
-
 def set_frame_range(shot: Shot, scene: bpy.types.Scene):
-    start_3d = get_3d_start(shot)
-    scene.frame_start = start_3d
+    kitsu_start_3d = shot.get_3d_start()
+    scene.frame_start = kitsu_start_3d
     if not shot.nb_frames:
         raise Exception(f"{shot.name} has missing frame duration information")
-    scene.frame_end = start_3d + shot.nb_frames - 1
+    scene.frame_end = kitsu_start_3d + shot.nb_frames - 1
 
 
 def link_data_block(file_path: str, data_block_name: str, data_block_type: str):
@@ -151,9 +142,7 @@ def link_camera_rig(
         output_collection.objects.link(camera_object)
         return
 
-    collection_name = (
-        "CA-camera_rig"  # TODO Rename the asset itself, this breaks convention
-    )
+    collection_name = "CA-camera_rig"  # TODO Rename the asset itself, this breaks convention
 
     override_camera_col = link_and_override_collection(
         file_path=path, collection_name=collection_name, scene=scene
@@ -180,9 +169,7 @@ def create_task_type_output_collection(
         scene.collection.children.link(output_collection)
 
     for view_layer in scene.view_layers:
-        view_layer_output_collection = view_layer.layer_collection.children.get(
-            output_col_name
-        )
+        view_layer_output_collection = view_layer.layer_collection.children.get(output_col_name)
         view_layer_output_collection.exclude = True
     return output_collection
 
@@ -192,11 +179,9 @@ def link_task_type_output_collections(shot: Shot, task_type: TaskType):
     if bkglobals.OUTPUT_COL_LINK_MAPPING.get(task_type_short_name) == None:
         return
     for short_name in bkglobals.OUTPUT_COL_LINK_MAPPING.get(task_type_short_name):
-        external_filepath = shot.get_shot_filepath(bpy.context, short_name)
+        external_filepath = shot.get_filepath(bpy.context, short_name)
         if not Path(external_filepath).exists():
-            print(
-                f"Unable to link output collection for {Path(external_filepath).name}"
-            )
+            print(f"Unable to link output collection for {Path(external_filepath).name}")
         file_path = external_filepath.__str__()
         colection_name = shot.get_output_collection_name(short_name)
         link_data_block(file_path, colection_name, 'Collection')

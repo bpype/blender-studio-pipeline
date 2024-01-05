@@ -1868,22 +1868,8 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
     def _apply_strip_slip_from_shot(
         self, context: bpy.types.Context, strip: bpy.types.Sequence, shot: Shot
     ) -> None:
-        if "3d_start" not in shot.data:
-            logger.warning(
-                "%s no update to frame_start_offset. '3d_start' key not in shot.data",
-                shot.name,
-            )
-            return
-
-        if not shot.data["3d_start"]:
-            logger.warning(
-                "%s no update to frame_start_offset. '3d_start' key invalid value: %i",
-                shot.name,
-                shot.data["3d_start"],
-            )
-            return
         # get offset
-        offset = strip.kitsu_frame_start - int(shot.data["3d_start"])
+        offset = strip.kitsu_frame_start - int(shot.get_3d_start())
 
         # Deselect everything.
         if context.selected_sequences:
