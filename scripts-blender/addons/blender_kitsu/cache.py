@@ -69,6 +69,15 @@ _task_types_shots_enum_list: List[Tuple[str, str, str]] = []
 _task_statuses_enum_list: List[Tuple[str, str, str]] = []
 _user_all_tasks_enum_list: List[Tuple[str, str, str]] = []
 
+_asset_cache_proj_id: str = ""
+_episode_cache_proj_id: str = ""
+_all_shot_tasks_cache_proj_id: str = ""
+_all_task_type_cache_proj_id: str = ""
+_seq_cache_proj_id: str = ""
+_shot_cache_seq_id: str = ""
+_task_type_cache_shot_id: str = ""
+_asset_cache_asset_type_id: str = ''
+
 
 def _addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
     """
@@ -260,6 +269,7 @@ def get_episodes_enum_list(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
     global _episodes_enum_list
+    global _episode_cache_proj_id
 
     if not _addon_prefs_get(context).session.is_auth():
         return []
@@ -267,6 +277,13 @@ def get_episodes_enum_list(
     project_active = project_active_get()
     if not project_active:
         return []
+
+    # Return Cached list if project hasn't changed
+    if _episode_cache_proj_id == project_active.id:
+        return _episodes_enum_list
+
+    # Update Cache Sequence ID
+    _episode_cache_proj_id = project_active.id
 
     _episodes_enum_list.clear()
     _episodes_enum_list.extend(
@@ -279,13 +296,22 @@ def get_sequences_enum_list(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
     global _sequence_enum_list
+    global _seq_cache_proj_id
 
     project_active = project_active_get()
     episode_active = episode_active_get()
     if not project_active:
         return []
 
+    # Return Cached list if project hasn't changed
+    if _seq_cache_proj_id == project_active.id:
+        return _sequence_enum_list
+
+    # Update Cache Sequence ID
+    _seq_cache_proj_id = project_active.id
+
     _sequence_enum_list.clear()
+
     if episode_active:
         _sequence_enum_list.extend(
             [(s.id, s.name, s.description or "") for s in episode_active.get_sequences_all()]
@@ -301,15 +327,23 @@ def get_shots_enum_for_active_seq(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
     global _shot_enum_list
+    global _shot_cache_seq_id
 
-    zseq_active = sequence_active_get()
+    seq_active = sequence_active_get()
 
-    if not zseq_active:
+    if not seq_active:
         return []
+
+    # Return Cached list if sequence hasn't changed
+    if _shot_cache_seq_id == seq_active.id:
+        return _shot_enum_list
+
+    # Update Cache Sequence ID
+    _shot_cache_seq_id = seq_active.id
 
     _shot_enum_list.clear()
     _shot_enum_list.extend(
-        [(s.id, s.name, s.description or "") for s in zseq_active.get_all_shots()]
+        [(s.id, s.name, s.description or "") for s in seq_active.get_all_shots()]
     )
     return _shot_enum_list
 
@@ -328,10 +362,18 @@ def get_assetypes_enum_list(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
     global _asset_types_enum_list
+    global _asset_cache_proj_id
 
     project_active = project_active_get()
     if not project_active:
         return []
+
+    # Return Cached list if project hasn't changed
+    if _asset_cache_proj_id == project_active.id:
+        return _asset_types_enum_list
+
+    # Update Cache Sequence ID
+    _asset_cache_proj_id = project_active.id
 
     _asset_types_enum_list.clear()
     _asset_types_enum_list.extend(
@@ -344,6 +386,7 @@ def get_assets_enum_for_active_asset_type(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
     global _asset_enum_list
+    global _asset_cache_asset_type_id
 
     project_active = project_active_get()
     asset_type_active = asset_type_active_get()
@@ -351,6 +394,11 @@ def get_assets_enum_for_active_asset_type(
 
     if not project_active or not asset_type_active:
         return []
+
+    if _asset_cache_asset_type_id == asset_type_active.id:
+        return _asset_enum_list
+
+    _asset_cache_asset_type_id = asset_type_active.id
 
     all_assets = project_active.get_all_assets_for_type(asset_type_active)
 
@@ -392,7 +440,18 @@ def get_task_types_enum_for_current_context(
 def get_shot_task_types_enum(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
+    # Returns all avaliable task types across all shots in the current project
     global _task_types_shots_enum_list
+    global _all_shot_tasks_cache_proj_id
+
+    project_active = project_active_get()
+
+    # Return Cached list if project hasn't changed
+    if _all_shot_tasks_cache_proj_id == project_active.id:
+        return _task_types_shots_enum_list
+
+    # Update Cache project ID
+    _all_shot_tasks_cache_proj_id = project_active.id
 
     items = [(t.id, t.name, "") for t in TaskType.all_shot_task_types()]
 
@@ -405,8 +464,15 @@ def get_shot_task_types_enum(
 def get_shot_task_types_enum_for_shot(  # TODO Rename
     self: bpy.types.Operator, context: bpy.types.Context, shot: Shot
 ) -> List[Tuple[str, str, str]]:
-    # TODO why do we have global variables here can't I just return the items directly? We clear the list every time how is this a cahe?
     global _task_types_shots_enum_list
+    global _task_type_cache_shot_id
+
+    # Return Cached list if shot hasn't changed
+    if _task_type_cache_shot_id == shot.id:
+        return _task_types_shots_enum_list
+
+    # Update Cache Sequence ID
+    _task_type_cache_shot_id = shot.id
 
     items = [(t.id, t.name, "") for t in shot.get_all_task_types()]
 
@@ -420,6 +486,16 @@ def get_all_task_statuses_enum(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
     global _task_statuses_enum_list
+    global _all_task_type_cache_proj_id
+
+    project_active = project_active_get()
+
+    # Return Cached list if project hasn't changed
+    if _all_task_type_cache_proj_id == project_active.id:
+        return _task_statuses_enum_list
+
+    # Update Cache project ID
+    _all_task_type_cache_proj_id = project_active.id
 
     items = [(t.id, t.name, "") for t in TaskStatus.all_task_statuses()]
 
