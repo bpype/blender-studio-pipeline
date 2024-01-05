@@ -1,20 +1,20 @@
-[project] 
+[project]
 name = "blender-studio-pipeline"
 version = "0.0.2"
 description = """
-    The complete collection of documents, add-ons, scripts and tools that 
+    The complete collection of documents, add-ons, scripts and tools that
     make up the Blender Studio pipeline.
 """
 authors = [
-    {"Francesco Siddi" <fsiddi@blender.org>}, 
-    {"Nick Alberelli <nick@blender.org>"}, 
-    {"Sebastian Parborg" <sebastian@blender.org>}, 
-    {"Demeter Dzadik" <demeter@blender.org>}, 
-    {"Simon Thommes" <simon@blender.org>}
+    "Francesco Siddi <fsiddi@blender.org>",
+    "Nick Alberelli <nick@blender.org>",
+    "Sebastian Parborg <sebastian@blender.org>",
+    "Demeter Dzadik <demeter@blender.org>",
+    "Simon Thommes <simon@blender.org>"
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
 
-[tool.black] 
-line-length = 100 
+[tool.black]
+line-length = 100
 skip_string_normalization = true
