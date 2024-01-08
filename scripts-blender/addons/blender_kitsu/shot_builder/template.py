@@ -19,9 +19,9 @@ def get_template_for_task_type(task_type_short_name: str) -> Path:
             return file
 
 
-def replace_workspace_with_template(
-    context: bpy.types.Context, task_type_short_name: str
-):
+def replace_workspace_with_template(context: bpy.types.Context, task_type_short_name: str):
+    if task_type_short_name is None:
+        return
     file_path = get_template_for_task_type(task_type_short_name).resolve().absolute()
     remove_prefix = "REMOVE-"
     if not file_path.exists():
