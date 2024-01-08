@@ -78,7 +78,7 @@ def index_assets():
     json_file_path = asset_dir.joinpath("asset_index.json").__str__()
     script_path = get_bbatch_script_path()
     project_blender = get_blender_path(project_path)
-    # RESET INDEX FILE
+    # Reset Index File
     with open(json_file_path, 'w') as json_file:
         json.dump({}, json_file, indent=4)
     print(project_blender)
