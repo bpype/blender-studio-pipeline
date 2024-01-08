@@ -20,6 +20,7 @@ import os
 import platform
 import subprocess
 import sys
+import json
 
 
 def cancel_program(message: str) -> None:
@@ -57,9 +58,7 @@ def get_blender_path(project_path: Path) -> str:
     if system_name == 'linux':
         blender_path = blender_path_base / 'blender'
     elif system_name == 'darwin':
-        blender_path = (
-            blender_path_base / 'Blender.app' / 'Contents' / 'MacOS' / 'Blender'
-        )
+        blender_path = blender_path_base / 'Blender.app' / 'Contents' / 'MacOS' / 'Blender'
     elif system_name == 'windows':
         blender_path = blender_path_base / 'blender.exe'
     return blender_path.absolute().__str__()
@@ -72,15 +71,16 @@ def index_assets():
     project_path = Path(args.path)
     if not project_path.exists():
         cancel_program("Provided Path does not exist")
-    asset_dir = (
-        project_path.joinpath("svn").joinpath("pro").joinpath("assets").absolute()
-    )
+    asset_dir = project_path.joinpath("svn").joinpath("pro").joinpath("assets").absolute()
     if not asset_dir.exists():
         cancel_program("Asset Library does not exist at provided path")
     asset_dir_path = asset_dir.__str__()
     json_file_path = asset_dir.joinpath("asset_index.json").__str__()
     script_path = get_bbatch_script_path()
     project_blender = get_blender_path(project_path)
+    # RESET INDEX FILE
+    with open(json_file_path, 'w') as json_file:
+        json.dump({}, json_file, indent=4)
     print(project_blender)
     os.chdir("../bbatch")
     cmd_list = (
