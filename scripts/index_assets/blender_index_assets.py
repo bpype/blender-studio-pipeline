@@ -44,6 +44,15 @@ def dump_json_file(asset_dict: dict, json_file_path: str) -> None:
         json.dump(asset_dict, json_file, indent=4)
 
 
+def get_realtive_path(json_file_path: str):
+    """Store all Paths as relative to the parent directory
+    of the JSON File, this will be the root of the asset
+    directory which is being indexed."""
+    asset_dir = Path(json_file_path).parent
+    filepath = Path(bpy.data.filepath)
+    return str(filepath.relative_to(asset_dir))
+
+
 def find_save_assets():
     """Find all collections marked as asset in the current
     .blend file, and add them to a dictionary, saved as a JSON"""
@@ -57,7 +66,7 @@ def find_save_assets():
             print(f"Found Asset {col.name}")
             asset_dict[col.name] = {
                 'type': type(col).bl_rna.name,
-                'filepath': bpy.data.filepath,
+                'filepath': get_realtive_path(json_file_path),
             }
     print('Asset Index Completed')
     dump_json_file(asset_dict, json_file_path)
