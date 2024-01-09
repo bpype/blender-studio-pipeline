@@ -34,8 +34,9 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
             layout.label(text="File is not saved", icon="ERROR")
             return
 
-        if asset_pipe.sync_error or asset_pipe.asset_collection.name.endswith(
-            constants.LOCAL_SUFFIX
+        if asset_pipe.asset_collection is not None and (
+            asset_pipe.sync_error
+            or asset_pipe.asset_collection.name.endswith(constants.LOCAL_SUFFIX)
         ):
             layout.alert = True
             row = layout.row()
@@ -58,9 +59,7 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
 
         staged = is_staged_publish(Path(bpy.data.filepath))
         sync_target_name = "Staged" if staged else "Active"
-        layout.operator(
-            "assetpipe.sync_push", text=f"Push to {sync_target_name}", icon="TRIA_UP"
-        )
+        layout.operator("assetpipe.sync_push", text=f"Push to {sync_target_name}", icon="TRIA_UP")
         layout.operator(
             "assetpipe.sync_pull",
             text=f"Pull from {sync_target_name}",
@@ -140,7 +139,9 @@ class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
             layout.label(text="Open valid 'Asset Pipeline' file", icon="ERROR")
             return
 
-        if context.collection in list(asset_pipe.asset_collection.children):
+        if asset_pipe.asset_collection is not None and context.collection in list(
+            asset_pipe.asset_collection.children
+        ):
             col = context.collection
             row = layout.row()
             row.label(
@@ -159,11 +160,7 @@ class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
         row.label(text=f"{obj.name}: ", icon="OBJECT_DATA")
 
         if obj.get("asset_id_surrender"):
-            enabled = (
-                False
-                if obj.asset_id_owner in asset_pipe.get_local_task_layers()
-                else True
-            )
+            enabled = False if obj.asset_id_owner in asset_pipe.get_local_task_layers() else True
             row.enabled = enabled
             col = row.column()
             col.operator("assetpipe.update_surrendered_object")
