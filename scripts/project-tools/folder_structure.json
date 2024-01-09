@@ -12,8 +12,8 @@
                 "launch_blender_mac.command": "file",
                 "launch_blender_win.bat": "file",
                 "rollback_blender.py": "file",
-                "rollback_blender_local.py": "file",
                 "run_blender.py": "file",
+                "run_blender_previous.py": "file",
                 "update_addons.py": "file",
                 "update_blender.py": "file"
             }

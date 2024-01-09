@@ -76,13 +76,13 @@ cd your_project_name/svn/tools
 ```
 
 
-### Rollback Blender Locally
+### Run a previous version of Blender Locally
 
-In some cases user may want to roll their machine's local blender to a previous version without affecting other users. 
+In some cases users may want to run a previous version of Blender on their machine without affecting other users. 
 
 ```bash
 cd your_project_name/svn/tools
-./rollback_blender_local.py
+./run_blender_previous.py
 ```
 
 ## Update Blender Add-Ons

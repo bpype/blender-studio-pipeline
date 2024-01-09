@@ -2,14 +2,12 @@
 
 from pathlib import Path
 import filecmp
-import os
-import shutil
 import sys
 from run_blender import update_blender, launch_blender
 
 # The project base path (where shared, local and svn are located)
 PATH_BASE = Path(__file__).resolve().parent.parent.parent
-PATH_ROLLBACK_LOCAL = PATH_BASE / 'local' / 'blender_local_rollback'
+PATH_ROLLBACK_LOCAL = PATH_BASE / 'local' / 'blender_previous'
 PATH_ARTIFACTS = PATH_BASE / 'shared' / 'artifacts' / 'blender'
 PATH_PREVIOUS = PATH_ARTIFACTS / 'previous'
 
@@ -41,7 +39,7 @@ if num_prev_versions == 0:
     sys.exit(1)
 
 while True:
-    index_str = input("Select which Blender build number to switch to. (press ENTER to confirm): ")
+    index_str = input("Select which Blender build number to run. (press ENTER to confirm): ")
     if not index_str.isnumeric():
         print(input_error_mess)
         continue
