@@ -21,7 +21,7 @@ def get_transfer_data_owner(
     asset_pipe: 'bpy.types.AssetPipeline',
     td_type_key: str,
     name="",
-):
+) -> [str, bool]:
     default_tl, auto_surrender = get_default_task_layer_owner(td_type_key, name)
     if default_tl in asset_pipe.get_local_task_layers():
         # If the default owner is local to the file, don't use auto_surrender

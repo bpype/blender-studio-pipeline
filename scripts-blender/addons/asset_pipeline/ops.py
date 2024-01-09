@@ -5,9 +5,7 @@ from . import constants
 from . import config
 from .prefs import get_addon_prefs
 from .merge.naming import task_layer_prefix_transfer_data_update
-from .merge.task_layer import (
-    draw_task_layer_selection,
-)
+from .merge.task_layer import draw_task_layer_selection, get_transfer_data_owner
 from .merge.publish import (
     get_next_published_file,
     find_all_published,
@@ -607,6 +605,8 @@ class ASSETPIPE_OT_update_surrendered_object(bpy.types.Operator):
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
         self._obj = context.active_object
         self._old_onwer = self._obj.asset_id_owner
+        # Set Asset ID Owner to a local ID
+        self._obj.asset_id_owner = context.scene.asset_pipeline.get_local_task_layers()[0]
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
@@ -649,7 +649,12 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
             if transfer_data_item.name == self.transfer_data_item_name:
                 self._surrendered_transfer_data = transfer_data_item
                 self._old_onwer = self._surrendered_transfer_data.owner
-        print(f"Found Surrended Item: {self._surrendered_transfer_data.name}")
+        # Set Default Owner
+        asset_pipe = context.scene.asset_pipeline
+        owner, _ = get_transfer_data_owner(
+            asset_pipe, self._surrendered_transfer_data.type, self._surrendered_transfer_data.name
+        )
+        self._surrendered_transfer_data.owner = owner
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
