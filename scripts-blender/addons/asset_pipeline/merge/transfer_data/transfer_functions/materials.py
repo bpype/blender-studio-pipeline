@@ -84,3 +84,9 @@ def transfer_materials(target_obj: bpy.types.Object, source_obj):
 
     if source_obj.data.attributes.get(constants.MATERIAL_ATTRIBUTE_NAME):
         transfer_attribute(constants.MATERIAL_ATTRIBUTE_NAME, target_obj, source_obj)
+
+    # Transfer Active Color Attribute
+    active_color_name = source_obj.data.color_attributes.active_color_name
+    for color_attribute in target_obj.data.color_attributes:
+        if color_attribute.name == active_color_name:
+            target_obj.data.color_attributes.active_color = color_attribute
