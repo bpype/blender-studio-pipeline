@@ -177,8 +177,6 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
 
         # Shot selector
         if context_core.is_shot_context():
-            if project_active.nb_episodes > 0:
-                self.draw_episode_selector(layout, project_active, episode_active)
             self.draw_sequence_selector(layout, project_active, episode_active)
             self.draw_shot_selector(layout, project_active)
 
