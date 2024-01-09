@@ -4,7 +4,7 @@ from ..transfer_util import (
     transfer_data_item_is_missing,
     check_transfer_data_entry,
 )
-from ...naming import task_layer_prefix_name_get
+from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
 from .transfer_function_util.drivers import find_drivers, copy_driver
 from .transfer_function_util.visibility import override_obj_visability
 from ...task_layer import get_transfer_data_owner
@@ -12,9 +12,7 @@ from .... import constants
 
 
 def constraints_clean(obj):
-    transfer_data_clean(
-        obj=obj, data_list=obj.constraints, td_type_key=constants.CONSTRAINT_KEY
-    )
+    transfer_data_clean(obj=obj, data_list=obj.constraints, td_type_key=constants.CONSTRAINT_KEY)
 
 
 def constraint_is_missing(transfer_data_item):
@@ -63,22 +61,18 @@ def transfer_constraint(constraint_name, target_obj, source_obj):
             idx = 0
             if i > 0:
                 name_prev = source_obj.constraints[i - 1].name
-                for target_mod_i, target_constraint in enumerate(
-                    target_obj.constraints
-                ):
-                    if target_constraint.name == name_prev:
+                for target_mod_i, target_constraint in enumerate(target_obj.constraints):
+                    if task_layer_prefix_basename_get(
+                        target_constraint.name
+                    ) == task_layer_prefix_basename_get(name_prev):
                         idx = target_mod_i + 1
 
             if idx != i:
                 with override_obj_visability(obj=target_obj, scene=context.scene):
                     with context.temp_override(object=target_obj):
-                        bpy.ops.constraint.move_to_index(
-                            constraint=constraint_new.name, index=idx
-                        )
+                        bpy.ops.constraint.move_to_index(constraint=constraint_new.name, index=idx)
             constraint_target = target_obj.constraints.get(constraint.name)
-            props = [
-                p.identifier for p in constraint.bl_rna.properties if not p.is_readonly
-            ]
+            props = [p.identifier for p in constraint.bl_rna.properties if not p.is_readonly]
             for prop in props:
                 value = getattr(constraint, prop)
                 setattr(constraint_target, prop, value)

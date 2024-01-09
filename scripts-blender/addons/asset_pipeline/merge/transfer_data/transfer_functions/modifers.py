@@ -6,15 +6,13 @@ from ..transfer_util import (
     transfer_data_item_is_missing,
     check_transfer_data_entry,
 )
-from ...naming import task_layer_prefix_name_get
+from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
 from ...task_layer import get_transfer_data_owner
 from .... import constants
 
 
 def modifiers_clean(obj):
-    transfer_data_clean(
-        obj=obj, data_list=obj.modifiers, td_type_key=constants.MODIFIER_KEY
-    )
+    transfer_data_clean(obj=obj, data_list=obj.modifiers, td_type_key=constants.MODIFIER_KEY)
 
 
 def modifier_is_missing(transfer_data_item):
@@ -65,13 +63,13 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
             if i > 0:
                 name_prev = source_obj.modifiers[i - 1].name
                 for target_mod_i, target_mod in enumerate(target_obj.modifiers):
-                    if target_mod.name == name_prev:
+                    if task_layer_prefix_basename_get(
+                        target_mod.name
+                    ) == task_layer_prefix_basename_get(name_prev):
                         idx = target_mod_i + 1
             with override_obj_visability(obj=target_obj, scene=scene):
                 with context.temp_override(object=target_obj):
-                    bpy.ops.object.modifier_move_to_index(
-                        modifier=mod_new.name, index=idx
-                    )
+                    bpy.ops.object.modifier_move_to_index(modifier=mod_new.name, index=idx)
             mod_target = target_obj.modifiers.get(mod.name)
             props = [p.identifier for p in mod.bl_rna.properties if not p.is_readonly]
             for prop in props:
@@ -92,27 +90,21 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
                 continue
             for i in range(2):
                 with override_obj_visability(obj=target_obj, scene=scene):
-                    with context.temp_override(
-                        object=target_obj, active_object=target_obj
-                    ):
+                    with context.temp_override(object=target_obj, active_object=target_obj):
                         bpy.ops.object.surfacedeform_bind(modifier=mod.name)
         elif mod.type == 'MESH_DEFORM':
             if not mod.is_bound:
                 continue
             for i in range(2):
                 with override_obj_visability(obj=target_obj, scene=scene):
-                    with context.temp_override(
-                        object=target_obj, active_object=target_obj
-                    ):
+                    with context.temp_override(object=target_obj, active_object=target_obj):
                         bpy.ops.object.meshdeform_bind(modifier=mod.name)
         elif mod.type == 'CORRECTIVE_SMOOTH':
             if not mod.is_bind:
                 continue
             for i in range(2):
                 with override_obj_visability(obj=target_obj, scene=scene):
-                    with context.temp_override(
-                        object=target_obj, active_object=target_obj
-                    ):
+                    with context.temp_override(object=target_obj, active_object=target_obj):
                         bpy.ops.object.correctivesmooth_bind(modifier=mod.name)
         fcurves = find_drivers(source_obj, 'modifiers', modifier_name)
         for fcurve in fcurves:
