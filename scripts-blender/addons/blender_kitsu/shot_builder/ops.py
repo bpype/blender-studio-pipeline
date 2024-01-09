@@ -242,7 +242,12 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
 
         # Save File
         if self.save_file:
-            save_shot_builder_file(file_path=shot_file_path_str)
+            if not save_shot_builder_file(file_path=shot_file_path_str):
+                self.report(
+                    {"WARNING"},
+                    f"Failed to save file at path `{shot_file_path_str}`",
+                )
+                return {"FINISHED"}
 
         self.report({"INFO"}, f"Successfully Built Shot:`{shot.name}` Task: `{task_type.name}`")
         return {"FINISHED"}
