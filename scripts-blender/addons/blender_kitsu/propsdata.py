@@ -60,7 +60,7 @@ def _resolve_pattern(pattern: str, var_lookup_table: Dict[str, str]) -> str:
 
 
 def _get_sequences(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
-    addon_prefs = bpy.context.preferences.addons["blender_kitsu"].preferences
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
     project_active = cache.project_active_get()
 
     if not project_active or not addon_prefs.session.is_auth:
@@ -71,7 +71,7 @@ def _get_sequences(self: Any, context: bpy.types.Context) -> List[Tuple[str, str
 
 
 def _gen_shot_preview(self: Any) -> str:
-    addon_prefs = bpy.context.preferences.addons["blender_kitsu"].preferences
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
     shot_counter_increment = addon_prefs.shot_counter_increment
     shot_counter_digits = addon_prefs.shot_counter_digits
     shot_counter_start = self.shot_counter_start

@@ -33,7 +33,7 @@ logger = LoggerFactory.getLogger(name=__name__)
 
 
 def is_auth() -> bool:
-    return bpy.context.preferences.addons["blender_kitsu"].preferences.session.is_auth()
+    return bpy.context.preferences.addons[__package__].preferences.session.is_auth()
 
 
 def get_project() -> Optional[types.Project]:
@@ -49,7 +49,7 @@ def is_auth_and_project() -> bool:
 
 
 def addon_prefs() -> bpy.types.AddonPreferences:
-    return bpy.context.preferences.addons["blender_kitsu"].preferences
+    return bpy.context.preferences.addons[__package__].preferences
 
 
 def create_meta_strip(

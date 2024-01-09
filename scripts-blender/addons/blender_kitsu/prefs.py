@@ -500,7 +500,7 @@ def session_get(context: bpy.types.Context) -> Session:
     """
     Shortcut to get session from blender_kitsu addon preferences
     """
-    prefs = context.preferences.addons["blender_kitsu"].preferences
+    prefs = context.preferences.addons[__package__].preferences
     return prefs.session  # type: ignore
 
 
@@ -508,7 +508,7 @@ def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
     """
     Shortcut to get blender_kitsu addon preferences
     """
-    return context.preferences.addons["blender_kitsu"].preferences
+    return context.preferences.addons[__package__].preferences
 
 
 def project_root_dir_get(context: bpy.types.Context):
@@ -541,7 +541,7 @@ def register():
 
 def unregister():
     # Log user out.
-    addon_prefs = bpy.context.preferences.addons["blender_kitsu"].preferences
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
     if addon_prefs.session.is_auth():
         addon_prefs.session.end()
 

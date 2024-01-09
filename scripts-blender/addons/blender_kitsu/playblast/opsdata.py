@@ -38,7 +38,7 @@ def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
     """
     shortcut to get blender_kitsu addon preferences
     """
-    return context.preferences.addons["blender_kitsu"].preferences
+    return context.preferences.addons[__package__].preferences
 
 
 def init_playblast_file_model(

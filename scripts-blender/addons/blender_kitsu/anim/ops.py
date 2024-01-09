@@ -132,7 +132,7 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         active_shot = cache.shot_active_get()
-        addon_prefs = bpy.context.preferences.addons["blender_kitsu"].preferences
+        addon_prefs = bpy.context.preferences.addons[__package__].preferences
 
         existing_action_names = [a.name for a in bpy.data.actions]
         failed = []

@@ -34,7 +34,7 @@ def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
 
 
 def is_blender_kitsu_enabled() -> bool:
-    return "blender_kitsu" in bpy.context.preferences.addons
+    return __package__ in bpy.context.preferences.addons
 
 
 class RR_OT_enable_blender_kitsu(bpy.types.Operator):

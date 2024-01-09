@@ -34,7 +34,7 @@ def draw_error_active_project_unset(box: bpy.types.UILayout) -> bpy.types.UILayo
     row.label(text="No Active Project")
     row.operator(
         "preferences.addon_show", text="Open Addon Preferences"
-    ).module = "blender_kitsu"
+    ).module = __package__
 
 
 def draw_error_invalid_playblast_root_dir(
@@ -44,7 +44,7 @@ def draw_error_invalid_playblast_root_dir(
     row.label(text="Invalid Playblast Root Directory")
     row.operator(
         "preferences.addon_show", text="Open Addon Preferences"
-    ).module = "blender_kitsu"
+    ).module = __package__
 
 
 def draw_error_frame_range_outdated(
@@ -63,7 +63,7 @@ def draw_error_invalid_render_preset_dir(
     row.label(text="Invalid Render Preset Directory")
     row.operator(
         "preferences.addon_show", text="Open Addon Preferences"
-    ).module = "blender_kitsu"
+    ).module = __package__
 
 
 def draw_error_invalid_project_root_dir(
@@ -73,7 +73,7 @@ def draw_error_invalid_project_root_dir(
     row.label(text="Invalid Project Root Directory")
     row.operator(
         "preferences.addon_show", text="Open Addon Preferences"
-    ).module = "blender_kitsu"
+    ).module = __package__
 
 
 def draw_error_config_dir_not_exists(
