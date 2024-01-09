@@ -1,6 +1,8 @@
+from typing import Set
 import bpy
 import os
 from pathlib import Path
+
 from . import constants
 from . import config
 from .prefs import get_addon_prefs
@@ -22,6 +24,8 @@ from .sync import (
     sync_execute_pull,
     sync_execute_push,
 )
+
+from .asset_catalog import get_asset_cat_enum_items
 
 
 class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
@@ -423,8 +427,12 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
                 f"Only '{constants.REVIEW_PUBLISH_KEY}' Publish is supported when a version is staged",
             )
             return {'CANCELLED'}
-
-        create_next_published_file(Path(bpy.data.filepath), self.publish_types)
+        catalog_id = context.scene.asset_pipeline.asset_catalog_id
+        create_next_published_file(
+            current_file=Path(bpy.data.filepath),
+            publish_type=self.publish_types,
+            catalog_id=catalog_id,
+        )
         return {'FINISHED'}
 
 
@@ -463,7 +471,8 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
         )
         # Delete Staged File
         staged_file.unlink()
-        create_next_published_file(current_file)
+        catalog_id = context.scene.asset_pipeline.asset_catalog_id
+        create_next_published_file(current_file=current_file, catalog_id=catalog_id)
         return {'FINISHED'}
 
 
@@ -866,7 +875,6 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         layout.row(align=True).prop(self, "data_source", expand=True)
 
         layout.prop(self, "data_type", expand=True)
-
         filter_owner_row = layout.row()
         filter_owner_row.enabled = grey_out
         if advanced_mode:
@@ -945,6 +953,17 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class ASSETPIPE_OT_refresh_asset_cat(bpy.types.Operator):
+    bl_idname = "assetpipe.refresh_asset_cat"
+    bl_label = "Refresh Asset Catalogs"
+    bl_description = """Refresh Asset Catalogs"""
+
+    def execute(self, context: bpy.types.Context):
+        get_asset_cat_enum_items()
+        self.report({'INFO'}, "Asset Catalogs Refreshed!")
+        return {'FINISHED'}
+
+
 classes = (
     ASSETPIPE_OT_update_ownership,
     ASSETPIPE_OT_sync_push,
@@ -959,6 +978,7 @@ classes = (
     ASSETPIPE_OT_update_surrendered_object,
     ASSETPIPE_OT_update_surrendered_transfer_data,
     ASSETPIPE_OT_batch_ownership_change,
+    ASSETPIPE_OT_refresh_asset_cat,
 )
 
 

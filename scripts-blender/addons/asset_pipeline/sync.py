@@ -151,7 +151,10 @@ def sync_execute_pull(self, context):
 
 
 def sync_execute_push(self, context):
+    _catalog_id = None
     temp_file_path = create_temp_file_backup(self, context)
+
+    _catalog_id = context.scene.asset_pipeline.asset_catalog_id
 
     file_path = self._sync_target.__str__()
     bpy.ops.wm.open_mainfile(filepath=file_path)
@@ -173,6 +176,11 @@ def sync_execute_push(self, context):
         context.scene.asset_pipeline.sync_error = True
         self.report({'ERROR'}, error_msg)
         return {'CANCELLED'}
+
+    asset_pipe = context.scene.asset_pipeline
+    asset_col = asset_pipe.asset_collection
+    if _catalog_id != '' or _catalog_id != 'NONE':
+        asset_col.asset_data.catalog_id = _catalog_id
 
     bpy.ops.wm.save_as_mainfile(filepath=file_path)
     bpy.ops.wm.open_mainfile(filepath=self._current_file.__str__())

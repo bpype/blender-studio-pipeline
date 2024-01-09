@@ -88,6 +88,9 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
+        cat_row = layout.row(align=True)
+        cat_row.prop(context.scene.asset_pipeline, 'asset_catalog_id')
+        cat_row.operator("assetpipe.refresh_asset_cat", icon='FILE_REFRESH', text="")
         layout.operator("assetpipe.batch_ownership_change")
         layout.operator("assetpipe.revert_file", icon="FILE_TICK")
 

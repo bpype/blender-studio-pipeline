@@ -49,8 +49,25 @@ def get_next_published_file(
     )
 
 
+def get_asset_catalogues():
+    folder = Path(bpy.data.filepath).parent
+    target_catalog = "Catalog"
+
+    with (folder / "blender_assets.cats.txt").open() as f:
+        for line in f.readlines():
+            if line.startswith(("#", "VERSION", "\n")):
+                continue
+            # Each line contains : 'uuid:catalog_tree:catalog_name' + eol ('\n')
+            name = line.split(":")[2].split("\n")[0]
+            if name == target_catalog:
+                uuid = line.split(":")[0]
+                obj = bpy.data.objects["Suzanne"]  # Object name, case-sensitive !
+                asset_data = obj.asset_data
+                asset_data.catalog_id = uuid
+
+
 def create_next_published_file(
-    current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY
+    current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY, catalog_id: str = ''
 ) -> None:
     """Creates new Published version of a given Publish Type
 
@@ -58,11 +75,16 @@ def create_next_published_file(
         current_file (Path): Current file, which must be a task file at root of asset directory
         publish_type (_type_, optional): Publish type, 'publish', 'staged', 'review'. Defaults to 'publish'.
     """
+    # TODO Set Catalogue here
+
     new_file_path = get_next_published_file(current_file, publish_type)
+    asset_col = bpy.context.scene.asset_pipeline.asset_collection
     if publish_type == constants.ACTIVE_PUBLISH_KEY:
-        bpy.context.scene.asset_pipeline.asset_collection.asset_mark()
+        asset_col.asset_mark()
+        if catalog_id != '' or catalog_id != 'NONE':
+            asset_col.asset_data.catalog_id = catalog_id
     bpy.ops.wm.save_as_mainfile(filepath=new_file_path.__str__(), copy=True)
-    bpy.context.scene.asset_pipeline.asset_collection.asset_clear()
+    asset_col.asset_clear()
 
 
 def find_all_published(current_file: Path, publish_type: str) -> list[Path]:
