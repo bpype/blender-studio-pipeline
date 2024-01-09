@@ -43,14 +43,15 @@ class AssetTransferMapping:
 
         self.conflict_ids: list[bpy.types.ID] = []
         self.conflict_transfer_data = []  # Item of bpy.types.CollectionProperty
+        self.transfer_data_map: Dict[bpy.types.Collection, bpy.types.Collection] = {}
 
         self.generate_mapping()
 
     def generate_mapping(self) -> None:
         self.object_map = self._gen_object_map()
         self.collection_map = self._gen_collection_map()
-        self.transfer_data_map = self._gen_transfer_data_map()
         self.shared_id_map = self._gen_shared_id_map()
+        self._gen_transfer_data_map()
 
     def _get_external_object(self, local_obj):
         external_obj_name = merge_get_target_name(
@@ -161,7 +162,7 @@ class AssetTransferMapping:
 
         return coll_map
 
-    def _get_transfer_data_map_item(self, obj, target_obj, transfer_data_item):
+    def _transfer_data_get_map_content(self, obj, target_obj, transfer_data_item):
         temp_transfer_data = bpy.context.scene.asset_pipeline.temp_transfer_data
         temp_transfer_data_item_index = len(temp_transfer_data)
         temp_transfer_data_item = transfer_data_add_entry(
@@ -182,92 +183,95 @@ class AssetTransferMapping:
         name = transfer_data_item.name + '_' + transfer_data_item.type + obj.name
         return name, map_item
 
-    def _check_transfer_data_conflict(self, obj, transfer_data_item):
-        other_obj = bpy.data.objects.get(merge_get_target_name(obj.name))
-        check_transfer_data_item = None
-        if not other_obj:
+    def _transfer_data_pair_not_local(self, td_1, td_2):
+        # Returns true if neither owners are local to current file
+        if td_1.owner not in self._local_tls and td_2.owner not in self._local_tls:
+            return True
+
+    def _transfer_data_pair_local(self, td_1, td_2):
+        # Returns true both owners are local to current file
+        if td_1.owner in self._local_tls and td_2.owner in self._local_tls:
+            return True
+
+    def _transfer_data_check_conflict(self, obj, transfer_data_item):
+        matching_transfer_data_item = self._transfer_data_get_matching(transfer_data_item)
+        if matching_transfer_data_item is None:
             return
-        for other_transfer_data_item in other_obj.transfer_data_ownership:
-            if other_transfer_data_item.type == transfer_data_item.type and (
-                task_layer_prefix_basename_get(other_transfer_data_item.name)
-                == task_layer_prefix_basename_get(transfer_data_item.name)
-            ):
-                check_transfer_data_item = other_transfer_data_item
-        if check_transfer_data_item is None:
+        if self._transfer_data_pair_not_local(matching_transfer_data_item, transfer_data_item):
             return
-        if check_transfer_data_item.owner != transfer_data_item.owner and not (
-            check_transfer_data_item.surrender or transfer_data_item.surrender
+        if matching_transfer_data_item.owner != transfer_data_item.owner and not (
+            matching_transfer_data_item.surrender or transfer_data_item.surrender
         ):
-            # In the case where we have a modifier where I changed my local task layer
-            # this should not return as a conflict
-            # Do this only if both task layers are local to the current file
-            if (
-                check_transfer_data_item.owner in self._local_tls
-                and transfer_data_item.owner in self._local_tls
-            ):
+            # Skip conflict checker if both owners are local to current file
+            if self._transfer_data_pair_local(matching_transfer_data_item, transfer_data_item):
                 return
             self.conflict_transfer_data.append(transfer_data_item)
             print("CONFLICT FOUND")
             return True
 
-    def transfer_data_get_other(self, transfer_data_item):
-        # THIS IS FOR WHEN SURRENDERED DATA HAS BEEN REPLACED
+    def _transfer_data_get_matching(self, transfer_data_item):
         obj = transfer_data_item.id_data
         other_obj = bpy.data.objects.get(merge_get_target_name(obj.name))
         # Find Related Transferable Data Item on Target/Source Object
         for other_obj_transfer_data_item in other_obj.transfer_data_ownership:
-            if task_layer_prefix_basename_get(
-                other_obj_transfer_data_item.name
-            ) == task_layer_prefix_basename_get(transfer_data_item.name):
+            if other_obj_transfer_data_item.type == transfer_data_item.type and (
+                task_layer_prefix_basename_get(other_obj_transfer_data_item.name)
+                == task_layer_prefix_basename_get(transfer_data_item.name)
+            ):
                 return other_obj_transfer_data_item
         return None
 
+    def _transfer_data_is_surrendered(self, transfer_data_item):
+        matching_td = self._transfer_data_get_matching(transfer_data_item)
+        if matching_td:
+            if (
+                transfer_data_item.surrender
+                and not matching_td.surrender
+                and transfer_data_item.owner != matching_td.owner
+            ):
+                return True
+        return False
+
+    def _transfer_data_map_item_add(self, source_obj, target_obj, transfer_data_item):
+        """Adds item to Transfer Data Map"""
+        if self._transfer_data_is_surrendered(transfer_data_item):
+            return
+
+        name, map_item = self._transfer_data_get_map_content(
+            source_obj, target_obj, transfer_data_item
+        )
+        self.transfer_data_map[name] = map_item
+
+    def _transfer_data_map_item(self, source_obj, target_obj, transfer_data_item):
+        """Verifies if Transfer Data Item is valid/can be mapped"""
+
+        # If item is locally owned and is part of local file
+        if transfer_data_item.owner in self._local_tls and source_obj.name.endswith(
+            constants.LOCAL_SUFFIX
+        ):
+            self._transfer_data_map_item_add(source_obj, target_obj, transfer_data_item)
+
+        # If item is externally owned and is not part of local file
+        if (
+            transfer_data_item.owner not in self._local_tls
+            and transfer_data_item.owner != "NONE"
+            and source_obj.name.endswith(constants.EXTERNAL_SUFFIX)
+        ):
+            self._transfer_data_map_item_add(source_obj, target_obj, transfer_data_item)
+
     def _gen_transfer_data_map(self):
-        context = bpy.context  # Bruh.
-        transfer_data_map: Dict[bpy.types.Collection, bpy.types.Collection] = {}
-        temp_transfer_data = context.scene.asset_pipeline.temp_transfer_data
+        # Generate Mapping for Transfer Data Items
+        temp_transfer_data = bpy.context.scene.asset_pipeline.temp_transfer_data
         temp_transfer_data.clear()
         for objs in self.object_map.items():
             source_obj, target_obj = objs
             for obj in objs:
+                # Must execute for both objs in map (so we map external and local TD)
                 for transfer_data_item in obj.transfer_data_ownership:
-                    self._check_transfer_data_conflict(obj, transfer_data_item)
-                    if (
-                        transfer_data_item.owner in self._local_tls
-                        and obj.name.endswith(constants.LOCAL_SUFFIX)
-                    ):
-                        other_td = self.transfer_data_get_other(transfer_data_item)
-                        if other_td:
-                            if (
-                                transfer_data_item.surrender
-                                and not other_td.surrender
-                                and transfer_data_item.owner != other_td.owner
-                            ):
-                                continue
-                        name, map_item = self._get_transfer_data_map_item(
-                            obj, target_obj, transfer_data_item
-                        )
-                        transfer_data_map[name] = map_item
-
-                    if (
-                        transfer_data_item.owner not in self._local_tls
-                        and transfer_data_item.owner != "NONE"
-                        and obj.name.endswith(constants.EXTERNAL_SUFFIX)
-                    ):
-                        other_td = self.transfer_data_get_other(transfer_data_item)
-                        if other_td:
-                            if (
-                                transfer_data_item.surrender
-                                and not other_td.surrender
-                                and transfer_data_item.owner != other_td.owner
-                            ):
-                                continue
-
-                        name, map_item = self._get_transfer_data_map_item(
-                            obj, target_obj, transfer_data_item
-                        )
-                        transfer_data_map[name] = map_item
-        return transfer_data_map
+                    if self._transfer_data_check_conflict(obj, transfer_data_item):
+                        continue
+                    self._transfer_data_map_item(obj, target_obj, transfer_data_item)
+        return self.transfer_data_map
 
     def _gen_shared_id_map(self):
         shared_id_map: Dict[bpy.types.ID, bpy.types.ID] = {}
@@ -278,10 +282,7 @@ class AssetTransferMapping:
             if not external_id:
                 continue
             self._check_id_conflict(external_id, local_id)
-            if (
-                local_id.asset_id_owner in self._local_tls
-                and local_id.asset_id_owner != "NONE"
-            ):
+            if local_id.asset_id_owner in self._local_tls and local_id.asset_id_owner != "NONE":
                 if external_id:
                     shared_id_map[external_id] = local_id
             else:
