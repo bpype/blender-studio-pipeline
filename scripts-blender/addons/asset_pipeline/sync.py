@@ -179,7 +179,7 @@ def sync_execute_push(self, context):
 
     asset_pipe = context.scene.asset_pipeline
     asset_col = asset_pipe.asset_collection
-    if _catalog_id != '' or _catalog_id != 'NONE':
+    if not (_catalog_id == '' or _catalog_id == 'NONE'):
         asset_col.asset_data.catalog_id = _catalog_id
 
     bpy.ops.wm.save_as_mainfile(filepath=file_path)
