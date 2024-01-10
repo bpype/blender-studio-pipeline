@@ -3,6 +3,9 @@ from .attributes import transfer_attribute
 from ..transfer_util import check_transfer_data_entry
 from ...task_layer import get_transfer_data_owner
 from .... import constants
+from .transfer_function_util.proximity_core import (
+    is_obdata_identical,
+)
 
 
 def materials_clean(obj):
@@ -87,6 +90,7 @@ def transfer_materials(target_obj: bpy.types.Object, source_obj):
 
     transfer_active_color_attribute_index(source_obj, target_obj)
     transfer_active_uv_layer_index(source_obj, target_obj)
+    transfer_uv_seams(source_obj, target_obj)
 
 
 def transfer_active_color_attribute_index(source_obj, target_obj):
@@ -105,3 +109,21 @@ def transfer_active_uv_layer_index(source_obj, target_obj):
     for uv_layer in target_obj.data.uv_layers:
         if uv_layer.name == active_uv.name:
             target_obj.data.uv_layers.active = uv_layer
+
+
+def transfer_uv_seams(source_obj, target_obj):
+    if is_obdata_identical(source_obj, target_obj):
+        for edge_from, edge_to in zip(source_obj.data.edges, target_obj.data.edges):
+            edge_to.use_seam = edge_from.use_seam
+    else:
+        # DEBUG IF THIS EVEN WORKS
+        with bpy.context.temp_override(
+            object=source_obj,
+            active_object=source_obj,
+            selected_editable_objects=[source_obj, target_obj],
+        ):
+            bpy.ops.object.data_transfer(
+                data_type="SEAM",
+                edge_mapping="NEAREST",
+                mix_mode="REPLACE",
+            )

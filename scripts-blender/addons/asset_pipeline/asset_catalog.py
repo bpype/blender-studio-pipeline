@@ -19,7 +19,7 @@ def find_asset_cat_file(directory):
 
     parent_dir = os.path.dirname(directory)
     if parent_dir == directory:
-        raise FileNotFoundError("blender_assets.cats.txt not found")
+        return None
 
     return find_asset_cat_file(parent_dir)
 
@@ -31,6 +31,9 @@ def get_asset_cat_enum_items(reload: bool = False):
     items = []
     items.append(('NONE', 'None', ''))
     asset_cat_file = find_asset_cat_file(Path(bpy.data.filepath).parent.__str__())
+    if asset_cat_file is None:
+        return items
+
     with (Path(asset_cat_file)).open() as file:
         for line in file.readlines():
             if line.startswith(("#", "VERSION", "\n")):
