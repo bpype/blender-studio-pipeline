@@ -88,15 +88,11 @@ def transfer_materials(target_obj: bpy.types.Object, source_obj):
     # Transfer Active Color Attribute
     active_color_name = source_obj.data.color_attributes.active_color_name
     for color_attribute in target_obj.data.color_attributes:
-        if not active_color_name:
-            break
         if color_attribute.name == active_color_name:
             target_obj.data.color_attributes.active_color = color_attribute
 
     # Transfer Active UV Layer
-    active_uv = source_obj.data.uv_layers.active
+    active_uv_name = source_obj.data.uv_layers.active.name
     for uv_layer in target_obj.data.uv_layers:
-        if not active_uv:
-            break
-        if uv_layer.name == active_uv.name:
+        if uv_layer.name == active_uv_name:
             target_obj.data.uv_layers.active = uv_layer
