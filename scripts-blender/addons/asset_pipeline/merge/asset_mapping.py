@@ -52,6 +52,7 @@ class AssetTransferMapping:
         self.collection_map = self._gen_collection_map()
         self.shared_id_map = self._gen_shared_id_map()
         self._gen_transfer_data_map()
+        self.index_map = self._gen_active_index_map()
 
     def _get_external_object(self, local_obj):
         external_obj_name = merge_get_target_name(
@@ -272,6 +273,29 @@ class AssetTransferMapping:
                         continue
                     self._transfer_data_map_item(obj, target_obj, transfer_data_item)
         return self.transfer_data_map
+
+    def _gen_active_index_map(self):
+        # Generate a Map of Indexes that need to be set post merge
+        # Stores active_uv & active_color_attribute
+        index_map = {}
+        for _, item in self.transfer_data_map.items():
+            temp_transfer_data = bpy.context.scene.asset_pipeline.temp_transfer_data
+            temp_transfer_data_item = temp_transfer_data[item.get('transfer_data_item_index')]
+            source_obj = item.get('source_obj')
+            target_obj = item.get('target_obj')
+
+            if temp_transfer_data_item.type != constants.MATERIAL_SLOT_KEY:
+                continue
+
+            active_uv_name = source_obj.data.uv_layers.active.name
+            active_color_attribute_name = source_obj.data.color_attributes.active_color_name
+            index_map[source_obj] = {
+                'active_uv_name': active_uv_name,
+                'active_color_attribute_name': active_color_attribute_name,
+                'target_obj': target_obj,
+            }
+
+        return index_map
 
     def _gen_shared_id_map(self):
         shared_id_map: Dict[bpy.types.ID, bpy.types.ID] = {}

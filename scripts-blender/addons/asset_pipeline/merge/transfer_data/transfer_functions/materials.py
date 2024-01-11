@@ -88,27 +88,7 @@ def transfer_materials(target_obj: bpy.types.Object, source_obj):
     if source_obj.data.attributes.get(constants.MATERIAL_ATTRIBUTE_NAME):
         transfer_attribute(constants.MATERIAL_ATTRIBUTE_NAME, target_obj, source_obj)
 
-    transfer_active_color_attribute_index(source_obj, target_obj)
-    transfer_active_uv_layer_index(source_obj, target_obj)
     transfer_uv_seams(source_obj, target_obj)
-
-
-def transfer_active_color_attribute_index(source_obj, target_obj):
-    active_color_name = source_obj.data.color_attributes.active_color_name
-    if active_color_name is None or active_color_name == "":
-        return
-    for color_attribute in target_obj.data.color_attributes:
-        if color_attribute.name == active_color_name:
-            target_obj.data.color_attributes.active_color = color_attribute
-
-
-def transfer_active_uv_layer_index(source_obj, target_obj):
-    active_uv = source_obj.data.uv_layers.active
-    if active_uv is None:
-        return
-    for uv_layer in target_obj.data.uv_layers:
-        if uv_layer.name == active_uv.name:
-            target_obj.data.uv_layers.active = uv_layer
 
 
 def transfer_uv_seams(source_obj, target_obj):
