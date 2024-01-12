@@ -287,7 +287,7 @@ class AssetTransferMapping:
             if temp_transfer_data_item.type != constants.MATERIAL_SLOT_KEY:
                 continue
 
-            active_uv_name = source_obj.data.uv_layers.active.name
+            active_uv_name = source_obj.data.uv_layers.active.name if source_obj.data.uv_layers.active else ''
             active_color_attribute_name = source_obj.data.color_attributes.active_color_name
             index_map[source_obj] = {
                 'active_uv_name': active_uv_name,
