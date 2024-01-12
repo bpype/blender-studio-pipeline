@@ -652,6 +652,8 @@ class MV_OT_screen_full_area(bpy.types.Operator):
 
         # active_media_area_obj = area_media
         ctx = opsdata.get_context_for_area(area_media)
+        # TODO temp hack to delete the screen until Campbell fixes the issues with using a overitten screen and screen_full_area.
+        del ctx["screen"]
         with context.temp_override(**ctx):
             bpy.ops.screen.screen_full_area(use_hide_panels=True)
         is_fullscreen = not is_fullscreen
