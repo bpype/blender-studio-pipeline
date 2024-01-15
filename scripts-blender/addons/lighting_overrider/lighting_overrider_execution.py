@@ -73,6 +73,8 @@ def mute_driver(db, path):
 def mute_animation_on_rna_path(rna_path):
     path_elements = parse_rna_path_to_elements(rna_path)
     data_block = eval('.'.join(path_elements[:3]))
+    if data_block.id_type in ['ACTION', 'BRUSH', 'COLLECTION', 'IMAGE', 'LIBRARY', 'PALETTE', 'PAINTCURVE', 'SCREEN', 'TEXT', 'WINDOWMANAGER', 'WORKSPACE']:
+        return
     path = '.'.join(path_elements[3:])
     
     mute_fcurve(data_block, path)
