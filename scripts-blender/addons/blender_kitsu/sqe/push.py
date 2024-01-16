@@ -85,6 +85,7 @@ def new_shot(
 def new_sequence(strip: bpy.types.Sequence, project: Project) -> Sequence:
     sequence = project.create_sequence(
         strip.kitsu.sequence_name,
+        strip.kitsu.episode_id
     )
     logger.info(
         "Pushed create sequence: %s for project: %s", sequence.name, project.name

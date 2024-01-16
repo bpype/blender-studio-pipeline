@@ -338,6 +338,7 @@ class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
             return {"CANCELLED"}
 
         project_active = cache.project_active_get()
+        episode_active = cache.episode_active_get()
 
         sequence = project_active.get_sequence_by_name(self.sequence_name)
 
@@ -349,7 +350,10 @@ class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Create sequence.
-        sequence = project_active.create_sequence(self.sequence_name)
+        sequence = project_active.create_sequence(
+            self.sequence_name,
+            episode_active.id if episode_active else None,
+        )
 
         # Push sequence color.
         opsdata.push_sequence_color(context, sequence)

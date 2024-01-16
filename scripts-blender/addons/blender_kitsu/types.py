@@ -319,9 +319,12 @@ class Project(Entity):
         ]
         return sorted(sequences, key=lambda x: x.name)
 
-    def create_sequence(self, sequence_name: str) -> Sequence:
+    def create_sequence(self, sequence_name: str, episode_id: Optional[str] = None) -> Sequence:
         # This function returns a seq dict even if seq already exists, it does not override.
-        seq_dict = gazu.shot.new_sequence(asdict(self), sequence_name, episode=None)
+        seq_dict = gazu.shot.new_sequence(
+            asdict(self),
+            sequence_name,
+            episode=episode_id)
         return Sequence.from_dict(seq_dict)
 
     # SHOT
