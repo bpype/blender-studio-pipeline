@@ -168,17 +168,13 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         for obj in bpy.data.objects:
             bpy.data.objects.remove(obj)
 
-        bpy.ops.outliner.orphans_purge(
-            do_local_ids=True, do_linked_ids=False, do_recursive=True
-        )
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=False, do_recursive=True)
 
     def _task_layer_collections_set(self, context, asset_col, local_tls):
         for task_layer_key in config.TASK_LAYER_TYPES:
             if task_layer_key not in local_tls:
                 continue
-            col_name = (
-                f"{self._name}{constants.NAME_DELIMITER}{task_layer_key}"
-            ).lower()
+            col_name = (f"{self._name}{constants.NAME_DELIMITER}{task_layer_key}").lower()
             bpy.data.collections.new(col_name)
             task_layer_col = bpy.data.collections.get(col_name)
             task_layer_col.asset_id_owner = task_layer_key
@@ -278,7 +274,7 @@ class ASSETPIPE_OT_update_ownership(bpy.types.Operator):
 
 class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
     bl_idname = "assetpipe.sync_pull"
-    bl_label = "Pull from Publish"
+    bl_label = "Pull Asset"
     bl_description = """Pull Task Layers from the published sync target"""
 
     _temp_transfer_data = None
@@ -328,8 +324,8 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
 
 class ASSETPIPE_OT_sync_push(bpy.types.Operator):
     bl_idname = "assetpipe.sync_push"
-    bl_label = "Push from Publish"
-    bl_description = """Push the current Task Layer to the published sync target"""
+    bl_label = "Sync Asset"
+    bl_description = """Sync the current Task Layer to the published sync target. File will be saved as part of the Push process"""
 
     _temp_transfer_data = None
     _invalid_objs = []
@@ -350,12 +346,6 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         description="Pull in any new data from the Published file before Pushing",
     )
 
-    save: bpy.props.BoolProperty(
-        name="Save File & Images",
-        default=True,
-        description="Save Current File and Images before Push",
-    )
-
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         if context.mode == 'OBJECT':
@@ -368,16 +358,15 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
-        prefs = get_addon_prefs()
-        if prefs.is_advanced_mode:
-            self.layout.prop(self, "pull")
-        self.layout.prop(self, "save")
+        if not self.pull:
+            col = self.layout.column()
+            col.label(text="Force Pushing without pulling can cause data loss", icon="ERROR")
+            col.separator()
         sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
-        if self.save:
-            save_images()
-            bpy.ops.wm.save_mainfile()
+        save_images()
+        bpy.ops.wm.save_mainfile()
 
         # Find current task Layer
         sync_execute_update_ownership(self, context)
@@ -466,9 +455,7 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
         current_file = Path(bpy.data.filepath)
-        staged_file = find_latest_publish(
-            current_file, publish_type=constants.STAGED_PUBLISH_KEY
-        )
+        staged_file = find_latest_publish(current_file, publish_type=constants.STAGED_PUBLISH_KEY)
         # Delete Staged File
         staged_file.unlink()
         catalog_id = context.scene.asset_pipeline.asset_catalog_id
@@ -479,9 +466,7 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
 class ASSETPIPE_OT_reset_ownership(bpy.types.Operator):
     bl_idname = "assetpipe.reset_ownership"
     bl_label = "Reset Ownership"
-    bl_description = (
-        """Reset the Object owner and Transferable Data on selected object(s)"""
-    )
+    bl_description = """Reset the Object owner and Transferable Data on selected object(s)"""
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -510,9 +495,7 @@ class ASSETPIPE_OT_update_local_task_layers(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         asset_pipe = context.scene.asset_pipeline
-        new_local_tl = [
-            tl.name for tl in asset_pipe.all_task_layers if tl.is_local == True
-        ]
+        new_local_tl = [tl.name for tl in asset_pipe.all_task_layers if tl.is_local == True]
         local_tl = [tl.name for tl in asset_pipe.local_task_layers]
         if new_local_tl == local_tl:
             cls.poll_message_set("Local Task Layers already match current selection")
@@ -529,9 +512,7 @@ class ASSETPIPE_OT_update_local_task_layers(bpy.types.Operator):
             text="Caution, this only affects current file.",
             icon="ERROR",
         )
-        layout.label(
-            text="Two files owning the same task layer can break merge process."
-        )
+        layout.label(text="Two files owning the same task layer can break merge process.")
 
     def execute(self, context: bpy.types.Context):
         asset_pipe = context.scene.asset_pipeline
@@ -544,9 +525,7 @@ class ASSETPIPE_OT_update_local_task_layers(bpy.types.Operator):
 class ASSETPIPE_OT_revert_file(bpy.types.Operator):
     bl_idname = "assetpipe.revert_file"
     bl_label = "Revert File"
-    bl_description = (
-        """Revert File to Pre-Sync State. Revert will not affect Published files"""
-    )
+    bl_description = """Revert File to Pre-Sync State. Revert will not affect Published files"""
 
     _temp_file = ""
     _source_file = ""
@@ -645,9 +624,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
     bl_label = "Claim Surrendered"
     bl_description = """Claim Surrended Transferable Data Owner"""
 
-    transfer_data_item_name: bpy.props.StringProperty(
-        name="Transferable Data Item Name"
-    )
+    transfer_data_item_name: bpy.props.StringProperty(name="Transferable Data Item Name")
 
     _surrendered_transfer_data = None
     _old_onwer = ""
@@ -776,9 +753,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         transfer_data_items_to_update = []
         if self.data_type == "TRANSFER_DATA":
             for obj in objs:
-                filtered_transfer_data = self._filter_by_name(
-                    context, obj.transfer_data_ownership
-                )
+                filtered_transfer_data = self._filter_by_name(context, obj.transfer_data_ownership)
                 for transfer_data_item in filtered_transfer_data:
                     if self.transfer_data_type != "NONE":
                         if transfer_data_item.type == self.transfer_data_type:
@@ -790,8 +765,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
             return [
                 item
                 for item in transfer_data_items_to_update
-                if item.surrender
-                and item.owner not in asset_pipe.get_local_task_layers()
+                if item.surrender and item.owner not in asset_pipe.get_local_task_layers()
             ]
 
         if self.filter_owners == "LOCAL":
@@ -801,17 +775,13 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
                 if item.owner in asset_pipe.get_local_task_layers()
             ]
         if self.set_surrender:
-            return [
-                item for item in transfer_data_items_to_update if not item.surrender
-            ]
+            return [item for item in transfer_data_items_to_update if not item.surrender]
 
         return transfer_data_items_to_update
 
     def _get_objects(self, context):
         asset_objs = context.scene.asset_pipeline.asset_collection.all_objects
-        selected_asset_objs = [
-            obj for obj in asset_objs if obj in context.selected_objects
-        ]
+        selected_asset_objs = [obj for obj in asset_objs if obj in context.selected_objects]
         return asset_objs if self.data_source == "ALL" else selected_asset_objs
 
     def _get_filtered_objects(self, context):
@@ -840,11 +810,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
             transfer_data_items_to_update = self._get_transfer_data_to_update(context)
             data_type_name = "Transferable Data Item(s)"
 
-            length = (
-                len(transfer_data_items_to_update)
-                if transfer_data_items_to_update
-                else 0
-            )
+            length = len(transfer_data_items_to_update) if transfer_data_items_to_update else 0
         if self.claim_surrender:
             action = "Claim Surrendered on"
         if self.set_surrender:

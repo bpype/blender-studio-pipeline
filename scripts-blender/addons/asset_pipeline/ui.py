@@ -59,12 +59,17 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
 
         staged = is_staged_publish(Path(bpy.data.filepath))
         sync_target_name = "Staged" if staged else "Active"
-        layout.operator("assetpipe.sync_push", text=f"Push to {sync_target_name}", icon="TRIA_UP")
         layout.operator(
             "assetpipe.sync_pull",
             text=f"Pull from {sync_target_name}",
             icon="TRIA_DOWN",
         )
+        layout.operator(
+            "assetpipe.sync_push", text=f"Sync from {sync_target_name}", icon="FILE_REFRESH"
+        ).pull = True
+        layout.operator(
+            "assetpipe.sync_push", text=f"Force Push to {sync_target_name}", icon="TRIA_UP"
+        ).pull = False
 
         layout.separator()
         if staged:
