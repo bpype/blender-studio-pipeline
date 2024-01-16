@@ -18,9 +18,7 @@ from .transfer_util import (
 )
 
 
-def copy_transfer_data_ownership(
-    transfer_data_item, target_obj: bpy.types.Object
-) -> None:
+def copy_transfer_data_ownership(transfer_data_item, target_obj: bpy.types.Object) -> None:
     """Copy Transferable Data item to object if non entry exists
 
     Args:
@@ -67,7 +65,6 @@ def transfer_data_is_missing(transfer_data_item) -> bool:
         or constraints.constraint_is_missing(transfer_data_item)
         or shape_keys.shape_key_is_missing(transfer_data_item)
         or attributes.attribute_is_missing(transfer_data_item)
-        or parent.parent_is_missing(transfer_data_item)
     )
 
 
@@ -115,9 +112,7 @@ def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
     for name in transfer_data_map:
         temp_transfer_data = context.scene.asset_pipeline.temp_transfer_data
         transfer_data = transfer_data_map[name]
-        transfer_data_item = temp_transfer_data[
-            transfer_data.get('transfer_data_item_index')
-        ]
+        transfer_data_item = temp_transfer_data[transfer_data.get('transfer_data_item_index')]
         target_obj = transfer_data.get('target_obj')
         source_obj = transfer_data.get('source_obj')
         if target_obj is None:

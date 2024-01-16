@@ -33,11 +33,8 @@ def init_parent(scene, obj):
     name = constants.PARENT_TRANSFER_DATA_ITEM_NAME
     transfer_data = obj.transfer_data_ownership
 
-    # Only Execute if Material Slots exist on object
-    if obj.parent == None:
-        return
-    if obj.parent not in list(asset_pipe.asset_collection.all_objects):
-        raise Exception("Object parent cannot be outside of asset collection")
+    if obj.parent not in list(asset_pipe.asset_collection.all_objects) and obj.parent is not None:
+        raise Exception(f"Object parent {obj.parent.name} cannot be outside of asset collection")
     matches = check_transfer_data_entry(transfer_data, name, td_type_key)
     # Only add new ownership transfer_data_item if vertex group doesn't have an owner
     if len(matches) == 0:
