@@ -195,3 +195,12 @@ def on_shot_change(self: Any, context: bpy.types.Context) -> None:
 
     # Check frame range.
     ops_playblast.load_post_handler_check_frame_range(context)
+
+
+def reset_all_kitsu_props(self: Any, context: bpy.types.Context) -> None:
+    cache.sequence_active_reset(context)
+    cache.asset_type_active_reset(context)
+    cache.shot_active_reset(context)
+    cache.asset_active_reset(context)
+    cache.episode_active_reset(context)
+    cache.task_type_active_reset(context)

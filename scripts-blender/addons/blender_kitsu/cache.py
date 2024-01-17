@@ -74,6 +74,7 @@ _episode_cache_proj_id: str = ""
 _all_shot_tasks_cache_proj_id: str = ""
 _all_task_type_cache_proj_id: str = ""
 _seq_cache_proj_id: str = ""
+_seq_cache_episode_id: str = ""
 _shot_cache_seq_id: str = ""
 _task_type_cache_shot_id: str = ""
 _asset_cache_asset_type_id: str = ''
@@ -127,11 +128,15 @@ def episode_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None
     logger.debug("Set active episode to %s", _episode_active.name)
 
 
-def episode_active_reset(context: bpy.types.Context) -> None:
+def episode_active_reset_entity():
     global _episode_active
-
     _episode_active = Episode()
+
+
+def episode_active_reset(context: bpy.types.Context) -> None:
+    episode_active_reset_entity()
     context.scene.kitsu.episode_active_id = ""
+    context.scene.kitsu.episode_active_name = ""
     logger.debug("Reset active episode")
 
 
@@ -147,11 +152,15 @@ def sequence_active_set_by_id(context: bpy.types.Context, entity_id: str) -> Non
     logger.debug("Set active sequence to %s", _sequence_active.name)
 
 
-def sequence_active_reset(context: bpy.types.Context) -> None:
+def sequence_active_reset_entity() -> None:
     global _sequence_active
-
     _sequence_active = Sequence()
+
+
+def sequence_active_reset(context: bpy.types.Context) -> None:
+    sequence_active_reset_entity()
     context.scene.kitsu.sequence_active_id = ""
+    context.scene.kitsu.sequence_active_name = ""
     logger.debug("Reset active sequence")
 
 
@@ -177,11 +186,15 @@ def shot_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None:
     logger.debug("Set active shot to %s", _shot_active.name)
 
 
-def shot_active_reset(context: bpy.types.Context) -> None:
+def shot_active_reset_entity() -> None:
     global _shot_active
-
     _shot_active = Shot()
+
+
+def shot_active_reset(context: bpy.types.Context) -> None:
+    shot_active_reset_entity()
     context.scene.kitsu.shot_active_id = ""
+    context.scene.kitsu.shot_active_name = ""
     logger.debug("Reset active shot")
 
 
@@ -199,11 +212,15 @@ def asset_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None:
     logger.debug("Set active asset to %s", _asset_active.name)
 
 
-def asset_active_reset(context: bpy.types.Context) -> None:
+def asset_active_reset_entity() -> None:
     global _asset_active
-
     _asset_active = Asset()
+
+
+def asset_active_reset(context: bpy.types.Context) -> None:
+    asset_active_reset_entity()
     context.scene.kitsu.asset_active_id = ""
+    context.scene.kitsu.asset_active_name = ""
     logger.debug("Reset active asset")
 
 
@@ -221,11 +238,15 @@ def asset_type_active_set_by_id(context: bpy.types.Context, entity_id: str) -> N
     logger.debug("Set active asset type to %s", _asset_type_active.name)
 
 
-def asset_type_active_reset(context: bpy.types.Context) -> None:
+def asset_type_active_reset_entity() -> None:
     global _asset_type_active
-
     _asset_type_active = AssetType()
+
+
+def asset_type_active_reset(context: bpy.types.Context) -> None:
+    asset_type_active_reset_entity()
     context.scene.kitsu.asset_type_active_id = ""
+    context.scene.kitsu.asset_type_active_name = ""
     logger.debug("Reset active asset type")
 
 
@@ -243,11 +264,15 @@ def task_type_active_set_by_id(context: bpy.types.Context, entity_id: str) -> No
     logger.debug("Set active task type to %s", _task_type_active.name)
 
 
-def task_type_active_reset(context: bpy.types.Context) -> None:
+def task_type_active_reset_entity() -> None:
     global _task_type_active
-
     _task_type_active = TaskType()
+
+
+def task_type_active_reset(context: bpy.types.Context) -> None:
+    task_type_active_reset_entity()
     context.scene.kitsu.task_type_active_id = ""
+    context.scene.kitsu.task_type_active_name = ""
     logger.debug("Reset active task type")
 
 
@@ -297,6 +322,7 @@ def get_sequences_enum_list(
 ) -> List[Tuple[str, str, str]]:
     global _sequence_enum_list
     global _seq_cache_proj_id
+    global _seq_cache_episode_id
 
     project_active = project_active_get()
     episode_active = episode_active_get()
@@ -304,7 +330,7 @@ def get_sequences_enum_list(
         return []
 
     # Return Cached list if project hasn't changed
-    if _seq_cache_proj_id == project_active.id:
+    if _seq_cache_proj_id == project_active.id and _seq_cache_episode_id == episode_active.id:
         return _sequence_enum_list
 
     # Update Cache Sequence ID

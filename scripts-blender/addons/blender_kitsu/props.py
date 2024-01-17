@@ -19,13 +19,14 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 
-from typing import Any, Union, List, Dict, Optional
+from typing import Any, Union, List, Dict, Optional, Tuple
 
 import bpy
 from bpy.app.handlers import persistent
 
 from . import propsdata, bkglobals
 from .logger import LoggerFactory
+from . import cache
 
 logger = LoggerFactory.getLogger()
 
@@ -123,8 +124,326 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         self.linked = False
 
 
+def set_kitsu_entity_id_via_enum_name(
+    self,
+    items: List[Tuple[str, str, str]],
+    input_name: str,
+    name_prop: str,
+    id_prop: str,
+) -> str:
+    """Set the ID and Name of a Kitsu entity by finding the matching ID for a given name
+    and updating both values in their corrisponding String Properties (Kitsu Context Properties)
+
+    Args:
+        items (List[Tuple[str, str, str]]): Enum items in the format List[Tuple[id, name, description]]
+        input_name (str): Name, used to find matching ID in a tuple
+        name_prop (str): Name of String Property where Kitsu Enitity's Name is stored
+        id_prop (str): Name of String Property where Kitsu Enitity's ID is stored
+
+    Returns:
+        str: ID of Kitsu entity
+    """
+
+    if input_name == "":
+        self[id_prop] = ""
+        self[name_prop] = input_name
+        return
+    for key, value, _ in items:
+        if value == input_name:
+            self[id_prop] = key
+            self[name_prop] = input_name
+            return key
+
+
+def get_enum_item_names(enum_items: List[Tuple[str, str, str]]) -> List[str]:
+    """Return a list of names from a list of enum items used by (Kitsu Context Properties)
+
+    Args:
+        enum_items (List[Tuple[str, str, str]]): Enum items in the format List[Tuple[id, name, description]]
+
+    Returns:
+       List[str]: List of avaliable names
+    """
+    return [item[1] for item in enum_items]
+
+
+def get_safely_string_prop(self, name: str) -> str:
+    """Return Value of String Property, and return "" if value isn't set"""
+    try:
+        return self[name]
+    except KeyError:
+        return ""
+
+
 class KITSU_property_group_scene(bpy.types.PropertyGroup):
     """"""
+
+    ################################
+    # Kitsu Context Properties
+    ################################
+    """
+    Kitsu Context Properties
+    
+    These are properties used to store/manage the current "Context"
+    for a Kitsu Entity. Kitsu Entities represents things like Asset, 
+    Shot and Sequence for a given production.
+    
+    Each Enitity has an 'ID' Property which is used internally by the add-on
+    and a 'Name' Property which is used as part of the user interface. When a user selects
+    the 'Name' of a Kitsu Entity a custom Set function on the property will also update 
+    the Entity's ID.
+    
+    NOTE: It would be nice to have searchable enums instead of doing all this work manually.
+    """
+
+    ###########
+    # Sequence
+    ###########
+    sequence_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Active Sequence ID",
+        description="ID that refers to the active sequence on server",
+        default="",
+    )
+
+    def get_sequences_via_name(self):
+        return get_safely_string_prop(self, "sequence_active_name")
+
+    def set_sequences_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_sequences_enum_list(self, bpy.context),
+            name_prop='sequence_active_name',
+            id_prop='sequence_active_id',
+        )
+        if key:
+            cache.sequence_active_set_by_id(bpy.context, key)
+        else:
+            cache.sequence_active_reset_entity()
+        return
+
+    def get_sequence_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+
+    sequence_active_name: bpy.props.StringProperty(
+        name="Sequence",
+        description="Sequence",
+        default="",  # type: ignore
+        get=get_sequences_via_name,
+        set=set_sequences_via_name,
+        options=set(),
+        search=get_sequence_search_list,
+        search_options={'SORT'},
+    )
+
+    ###########
+    # Episode
+    ###########
+    episode_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Active Episode ID",
+        description="ID that refers to the active episode on server",
+        default="",
+    )
+
+    def get_episode_via_name(self):
+        return get_safely_string_prop(self, "episode_active_name")
+
+    def set_episode_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_episodes_enum_list(self, bpy.context),
+            name_prop='episode_active_name',
+            id_prop='episode_active_id',
+        )
+
+        # Clear active shot when sequence changes.
+        if cache.episode_active_get().id != key:
+            cache.sequence_active_reset(bpy.context)
+            cache.asset_type_active_reset(bpy.context)
+            cache.shot_active_reset(bpy.context)
+            cache.asset_active_reset(bpy.context)
+
+        if key:
+            cache.episode_active_set_by_id(bpy.context, key)
+        return
+
+    def get_episode_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_episodes_enum_list(self, bpy.context))
+
+    episode_active_name: bpy.props.StringProperty(
+        name="Episode",
+        description="Selet Active Episode",
+        default="",  # type: ignore
+        get=get_episode_via_name,
+        set=set_episode_via_name,
+        options=set(),
+        search=get_episode_search_list,
+        search_options={'SORT'},
+    )
+
+    ###########
+    # Shot
+    ###########
+    shot_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Active Shot ID",
+        description="IDthat refers to the active shot on server",
+        default="",
+        # update=propsdata.on_shot_change,
+    )
+
+    def get_shot_via_name(self):
+        return get_safely_string_prop(self, "shot_active_name")
+
+    def set_shot_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_shots_enum_for_active_seq(self, bpy.context),
+            name_prop='shot_active_name',
+            id_prop='shot_active_id',
+        )
+        if key:
+            cache.shot_active_set_by_id(bpy.context, key)
+        else:
+            cache.shot_active_reset_entity()
+        return
+
+    def get_shot_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_shots_enum_for_active_seq(self, bpy.context))
+
+    shot_active_name: bpy.props.StringProperty(
+        name="Shot",
+        description="Shot",
+        default="",  # type: ignore
+        get=get_shot_via_name,
+        set=set_shot_via_name,
+        options=set(),
+        search=get_shot_search_list,
+        search_options={'SORT'},
+    )
+
+    ###########
+    # Asset
+    ###########
+    asset_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Active Asset ID",
+        description="ID that refers to the active asset on server",
+        default="",
+    )
+
+    def get_asset_via_name(self):
+        return get_safely_string_prop(self, "asset_active_name")
+
+    def set_asset_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_assets_enum_for_active_asset_type(self, bpy.context),
+            name_prop='asset_active_name',
+            id_prop='asset_active_id',
+        )
+        if key:
+            cache.asset_active_set_by_id(bpy.context, key)  # TODO
+        else:
+            cache.asset_active_reset_entity()
+        return
+
+    def get_asset_type_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_assets_enum_for_active_asset_type(self, bpy.context))
+
+    asset_active_name: bpy.props.StringProperty(
+        name="Asset",
+        description="Active Asset",
+        default="",  # type: ignore
+        get=get_asset_via_name,
+        set=set_asset_via_name,
+        options=set(),
+        search=get_asset_type_search_list,
+        search_options={'SORT'},
+    )
+
+    ############
+    # Asset Type
+    ############
+
+    asset_type_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Active Asset Type ID",
+        description="ID that refers to the active asset type on server",
+        default="",
+    )
+
+    def get_asset_type_via_name(self):
+        return get_safely_string_prop(self, "asset_type_active_name")
+
+    def set_asset_type_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_assetypes_enum_list(self, bpy.context),
+            name_prop='asset_type_active_name',
+            id_prop='asset_type_active_id',
+        )
+        if key:
+            cache.asset_type_active_set_by_id(bpy.context, key)
+        else:
+            cache.asset_type_active_reset_entity()
+        return
+
+    def get_asset_type_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_assetypes_enum_list(self, bpy.context))
+
+    asset_type_active_name: bpy.props.StringProperty(
+        name="Asset Type",
+        description="Active Asset Type Name",
+        default="",  # type: ignore
+        get=get_asset_type_via_name,
+        set=set_asset_type_via_name,
+        options=set(),
+        search=get_asset_type_search_list,
+        search_options={'SORT'},
+    )
+
+    ############
+    # Task Type
+    ############
+
+    task_type_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Active Task Type ID",
+        description="ID that refers to the active task type on server",
+        default="",
+    )
+
+    def get_task_type_via_name(self):
+        return get_safely_string_prop(self, "task_type_active_name")
+
+    def set_task_type_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_task_types_enum_for_current_context(self, bpy.context),
+            name_prop='task_type_active_name',
+            id_prop='task_type_active_id',
+        )
+        if key:
+            cache.task_type_active_set_by_id(bpy.context, key)
+        else:
+            cache.task_type_active_reset_entity()
+        return
+
+    def get_task_type_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_task_types_enum_for_current_context(self, bpy.context))
+
+    task_type_active_name: bpy.props.StringProperty(
+        name="Task Type",
+        description="Active Task Type Name",
+        default="",  # type: ignore
+        get=get_task_type_via_name,
+        set=set_task_type_via_name,
+        options=set(),
+        search=get_task_type_search_list,
+        search_options={'SORT'},
+    )
 
     category: bpy.props.EnumProperty(  # type: ignore
         name="Type",
@@ -136,46 +455,7 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
             ("EDIT", "Edit", "Edit related tasks", 3),
         ),
         default="SHOT",
-        update=propsdata.reset_task_type,
-    )
-
-    # Context props.
-
-    sequence_active_id: bpy.props.StringProperty(  # type: ignore
-        name="Active Sequence ID",
-        description="ID that refers to the active sequence on server",
-        default="",
-    )
-
-    episode_active_id: bpy.props.StringProperty(  # type: ignore
-        name="Active Episode ID",
-        description="ID that refers to the active episode on server",
-        default="",
-    )
-
-    shot_active_id: bpy.props.StringProperty(  # type: ignore
-        name="Active Shot ID",
-        description="IDthat refers to the active shot on server",
-        default="",
-        update=propsdata.on_shot_change,
-    )
-
-    asset_active_id: bpy.props.StringProperty(  # type: ignore
-        name="Active Asset ID",
-        description="ID that refers to the active asset on server",
-        default="",
-    )
-
-    asset_type_active_id: bpy.props.StringProperty(  # type: ignore
-        name="Active Asset Type ID",
-        description="ID that refers to the active asset type on server",
-        default="",
-    )
-
-    task_type_active_id: bpy.props.StringProperty(  # type: ignore
-        name="Active Task Type ID",
-        description="ID that refers to the active task type on server",
-        default="",
+        update=propsdata.reset_all_kitsu_props,
     )
 
     # Thumbnail props.

@@ -23,13 +23,7 @@ import bpy
 from ..context import core as context_core
 from .. import cache, prefs, ui
 from ..context.ops import (
-    KITSU_OT_con_sequences_load,
-    KITSU_OT_con_shots_load,
-    KITSU_OT_con_asset_types_load,
-    KITSU_OT_con_assets_load,
-    KITSU_OT_con_task_types_load,
     KITSU_OT_con_detect_context,
-    KITSU_OT_con_episodes_load,
 )
 
 
@@ -56,86 +50,10 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         project_active = cache.project_active_get()
         return bool(not project_active)
 
-    def draw_episode_selector(self, layout, project_active, episode_active):
-        row = layout.row(align=True)
-
-        if not project_active:
-            row.enabled = False
-
-        label_text = "Select Episode" if not episode_active else episode_active.name
-
-        if project_active.nb_episodes > 0:
-            row.operator(
-                KITSU_OT_con_episodes_load.bl_idname,
-                text=label_text,
-                icon="DOWNARROW_HLT",
-            )
-
-    def draw_sequence_selector(self, layout, project_active, episode_active):
-        row = layout.row(align=True)
-
-        if not project_active:
-            row.enabled = False
-
-        elif project_active.nb_episodes > 0 and not episode_active:
-            row.enabled = False
-
-        sequence = cache.sequence_active_get()
-        label_text = "Select Sequence" if not sequence else sequence.name
-
-        row.operator(
-            KITSU_OT_con_sequences_load.bl_idname,
-            text=label_text,
-            icon="DOWNARROW_HLT",
-        )
-
-    def draw_asset_type_selector(self, layout, project_active):
-        row = layout.row(align=True)
-
-        if not project_active:
-            row.enabled = False
-
-        asset_type = cache.asset_type_active_get()
-        label_text = "Select Asset Type" if not asset_type else asset_type.name
-
-        row.operator(
-            KITSU_OT_con_asset_types_load.bl_idname,
-            text=label_text,
-            icon="DOWNARROW_HLT",
-        )
-
-    def draw_shot_selector(self, layout, project_active):
-        row = layout.row(align=True)
-
-        if not project_active:
-            row.enabled = False
-
-        shot = cache.shot_active_get()
-        label_text = "Select Shot" if not shot else shot.name
-
-        row.operator(
-            KITSU_OT_con_shots_load.bl_idname,
-            text=label_text,
-            icon="DOWNARROW_HLT",
-        )
-
-    def draw_asset_selector(self, layout, project_active):
-        row = layout.row(align=True)
-
-        if not project_active:
-            row.enabled = False
-
-        asset = cache.asset_active_get()
-        label_text = "Select Asset" if not asset else asset.name
-
-        row.operator(
-            KITSU_OT_con_assets_load.bl_idname,
-            text=label_text,
-            icon="DOWNARROW_HLT",
-        )
-
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
         project_active = cache.project_active_get()
         episode_active = cache.episode_active_get()
 
@@ -160,38 +78,36 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             emboss=False,
         )
 
+        flow = layout.grid_flow(
+            row_major=True, columns=0, even_columns=True, even_rows=False, align=False
+        )
+        col = flow.column()
         # Entity context
-        row = layout.row(align=True)
-        row.prop(context.scene.kitsu, "category")
+        col.prop(context.scene.kitsu, "category")
 
         if not prefs.session_auth(context) or not project_active:
             row.enabled = False
 
         # Episode selector
         if project_active.nb_episodes > 0:
-            self.draw_episode_selector(layout, project_active, episode_active)
+            context_core.draw_episode_selector(context, col)
 
         # Sequence selector (if context is Sequence)
         if context_core.is_sequence_context():
-            self.draw_sequence_selector(layout, project_active, episode_active)
+            context_core.draw_sequence_selector(context, col)
 
         # Shot selector
         if context_core.is_shot_context():
-            self.draw_sequence_selector(layout, project_active, episode_active)
-            self.draw_shot_selector(layout, project_active)
+            context_core.draw_sequence_selector(context, col)
+            context_core.draw_shot_selector(context, col)
 
         # AssetType selector (if context is Asset)
         if context_core.is_asset_context():
-            self.draw_asset_type_selector(layout, project_active)
-            self.draw_asset_selector(layout, project_active)
+            context_core.draw_asset_type_selector(context, col)
+            context_core.draw_asset_selector(context, col)
 
         # Task Type selector
-        t_text = "Select Task Type"
-        task_type_active = cache.task_type_active_get()
-        if task_type_active:
-            t_text = task_type_active.name
-        row = layout.row(align=True)
-        row.operator(KITSU_OT_con_task_types_load.bl_idname, text=t_text, icon="DOWNARROW_HLT")
+        context_core.draw_task_type_selector(context, col)
 
 
 class KITSU_PT_comp_context(KITSU_PT_vi3d_context):
