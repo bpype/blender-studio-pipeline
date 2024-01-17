@@ -171,7 +171,41 @@ export default defineConfig({
         text: 'TD Guide',
         collapsed: true,
         items: [
-          {text: 'Project Tools Setup', link: '/td-guide/project-tools-setup'},
+          {text: 'Introduction', link: '/td-guide/project-tools-setup'},
+          {text: 'Repository', link: '/td-guide/repository'},
+          {text: 'Python', link: '/td-guide/python'},
+          
+          {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
+          {
+            text: 'Shared',
+            collapsed: true,
+            items: [
+              {text: 'Syncthing Setup', link: '/td-guide/syncthing-setup'},
+              {text: 'Populating Shared', link: '/td-guide/populating_shared'},
+            ],
+          },
+          {
+            text: 'SVN',
+            collapsed: true,
+            items: [
+              {text: 'SVN Setup', link: '/td-guide/svn-setup'},
+              {text: 'Populating SVN', link: '/td-guide/populating_svn'},
+            ],
+          },
+          
+          
+          
+          {text: 'Kitsu', link: '/td-guide/kitsu_server'},
+          {
+            text: 'Blender',
+            collapsed: true,
+            items: [
+              {text: 'Blender Setup', link: '/td-guide/blender_setup'},
+              {text: 'Add-Ons Setup', link: '/td-guide/addon_setup'},
+            ],
+          },
+          
+          
         ]
       },
       {

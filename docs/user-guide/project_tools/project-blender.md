@@ -2,13 +2,33 @@
 
 Project Tools will store a version of Blender within the `shared` directory. This version of Blender is internal to that project. This allows for multiple Blenders to be installed on your system, each with their own preferences tailored specifically to that project. The main advantage to running/managing Blender using the Project Tools scripts is that it will synchronize the Blender version and Shared Add-Ons across for all users contributing the the project. Project Tools also allows you to run a custom build of Blender with the Add-Ons and preferences set for your project. 
 
-## Create Blender Shortcut
+## Blender Setup
+The next step is to deploy the required software onto each of the studio's workstations.
+
+1. Download the latest Blender
+```bash
+# Linux/Mac
+cd ~/data/your_project_name/svn/tools
+./update_blender.py
+```
+```bash
+# Windows
+cd %HOMEPATH%\data\your_project_name\svn\tools
+python update_blender.py
+```
+
+This will download the latest blender to `data/your_project_name/local/blender`
+
+::: info Choosing Branch to Install
+You can specify a [daily build](https://builder.blender.org/download/daily/) branch to fetch by editing the `BLENDER_BRANCH` variable in the script file.
+:::
+## Create Shortcut
 
 Once your project has been setup using the "Project Tools" scripts Blender should be available inside your application's native application launcher. The run Blender script will take the correct blender version for your operating system from `your_project_name/shared/artifacts/blender` and extract it to the local directory. Along with any add-ons in the `your_project_name/shared/artifacts/addons` folder. Your Blender preferences are stored on a per project basis in `{directory-path}`
 
 ### Create Linux Shortcut
 ```bash
-cd your_project_name/svn/tools
+cd ~/data/your_project_name/svn/tools
 ./install_desktop_file.sh
 ```
 ::: info Available on Gentoo
@@ -32,22 +52,28 @@ TODO Replace Image with Project-Tools version
 
 ### Create Windows Shortcut
 
-1. Open the directory `your_project_name/svn/tools` 
+1. Open the directory `%HOMEPATH%\data\your_project_name\svn\tools` 
 2. Create a shortcut to `launch_blender_win.bat` on your desktop
 
 ### Create Mac Shortcut
 
-1. Open the directory `your_project_name/svn/tools` 
+1. Open the directory `~/data/your_project_name/svn/tools` 
 2. In finder, select the `launch_blender_mac.command` and press `ctrl+shift+command+t` to add it to the dock.
 
 
-## Launch Blender from Terminal 
+## Launch via Terminal 
 
 To launch Blender from the terminal, open the tools directory within your project folder, and from the terminal use the run Blender script.
 
 ```bash
-cd your_project_name/svn/tools
+# Linux/Mac
+cd ~/data/your_project_name/svn/tools
 ./run_blender.py
+```
+```bash
+# Windows
+cd %HOMEPATH%\data\your_project_name\svn\tools
+python run_blender.py
 ```
 
 ::: warning Command Line Arguments
@@ -63,16 +89,28 @@ Internally to the Blender Studio only, the blender inside your project is automa
 :::
 
 ```bash
-cd your_project_name/svn/tools
+# Linux/Mac
+cd ~/data/your_project_name/svn/tools
 ./update_blender.py
+```
+```bash
+# Windows
+cd %HOMEPATH%\data\your_project_name\svn\tools
+python update_blender.py
 ```
 ## Rollback Blender
 
 Use `rollback_blender.py` to switch the "current" version hosted in `your_project_name/shared/artifacts/blender` to one the older downloads, rolling back affects all users using your project. This is intended to be used to rollback to an older version in case of bugs in newer downloaded versions.
 
 ```bash
-cd your_project_name/svn/tools
+# Linux/Mac
+cd ~/data/your_project_name/svn/tools
 ./rollback_blender.py
+```
+```bash
+# Windows
+cd %HOMEPATH%\data\your_project_name\svn\tools
+python rollback_blender.py
 ```
 
 
@@ -81,19 +119,42 @@ cd your_project_name/svn/tools
 In some cases users may want to run a previous version of Blender on their machine without affecting other users. 
 
 ```bash
-cd your_project_name/svn/tools
+# Linux/Mac
+cd ~/data/your_project_name/svn/tools
 ./run_blender_previous.py
 ```
+```bash
+# Windows
+cd %HOMEPATH%\your_project_name\svn\tools
+python rollback_blender_local.py
+```
 
-## Update Blender Add-Ons
+## Install/Update Add-Ons
 Blender Add-ons can be packaged directly from the [Blender Studio Pipeline](https://projects.blender.org/studio/blender-studio-pipeline) repository. Personal Add-Ons can be installed [normally](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#installing-add-ons).
 
+1. Enter Directory
+
 ```bash
-cd blender-studio-pipeline/scripts/pipeline-release
+cd ~/data/blender-studio-pipeline/scripts/pipeline-release # Linux/Mac
+```
+```bash
+cd %HOMEPATH%\data\blender-studio-pipeline\scripts\pipeline-release # Windows
+```
+
+2. Update Git 
+```bash
+# Windows & Linux/Mac
 git checkout main # Checkout main branch
 git reset --hard # Remove any changes stored in your branch
 git pull --rebase origin # Pull to update to latest commit
-./package_local.py your_project_name/shared/artifacts/addons
+```
+
+3. Run Package Local Script
+```bash
+./package_local.py ~/data/your_project_name/shared/artifacts/addons # Linux/Mac
+```
+```bash
+python package_local.py %HOMEPATH%\data\your_project_name\shared\artifacts\addons # Windows
 ```
 
 
