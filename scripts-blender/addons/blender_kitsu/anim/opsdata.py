@@ -83,9 +83,7 @@ def get_output_coll_name(shot: Shot) -> str:
     return f"{shot.name}.anim.output"
 
 
-def find_rig(
-    coll: bpy.types.Collection, log: bool = True
-) -> Optional[bpy.types.Armature]:
+def find_rig(coll: bpy.types.Collection, log: bool = True) -> Optional[bpy.types.Armature]:
     valid_rigs = []
 
     for obj in coll.all_objects:
@@ -101,13 +99,10 @@ def find_rig(
     if not valid_rigs:
         return None
 
-    elif len(valid_rigs) == 1:
-        if log:
-            logger.info("Found rig: %s", valid_rigs[0].name)
-        return valid_rigs[0]
-    else:
-        logger.warning("%s found multiple rigs %s", coll.name, str(valid_rigs))
-        return None
+    if log:
+        for rig in valid_rigs:
+            logger.info("Found rig: %s", rig.name)
+    return valid_rigs
 
 
 def find_asset_collections(log: bool = True) -> List[bpy.types.Collection]:

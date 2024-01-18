@@ -221,9 +221,10 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
         # Find rig of each asset collection.
         asset_rigs: List[Tuple[bpy.types.Collection, bpy.types.Armature]] = []
         for coll in asset_colls:
-            rig = opsdata.find_rig(coll, log=False)
-            if rig:
-                asset_rigs.append((coll, rig))
+            rigs = opsdata.find_rig(coll, log=False)
+            if rigs:
+                for rig in rigs:
+                    asset_rigs.append((coll, rig))
 
         if not asset_rigs:
             self.report(
