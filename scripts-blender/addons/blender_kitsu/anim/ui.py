@@ -49,7 +49,8 @@ class KITSU_PT_vi3d_anim_tools(bpy.types.Panel):
     def poll(cls, context: bpy.types.Context) -> bool:
         return bool(
             prefs.session_auth(context)
-            and cache.task_type_active_get().name in ['Animation', 'Layout']
+            # HACK to accomodate custom task types @ blender studio (Anim3D, Anim2D)
+            and cache.task_type_active_get().name in ['Animation', 'Layout', 'Anim3D', 'Anim2D']
         )
 
     def draw(self, context: bpy.types.Context) -> None:
