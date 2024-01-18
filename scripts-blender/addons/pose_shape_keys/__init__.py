@@ -34,9 +34,10 @@ from . import pose_key
 from . import ui_list
 from . import reset_rig
 from . import symmetrize_shape_key
+from . import prefs
 
 # Each module can have register() and unregister() functions and a list of classes to register called "registry".
-modules = [ui, pose_key, ui_list, reset_rig, symmetrize_shape_key]
+modules = [prefs, ui, pose_key, ui_list, reset_rig, symmetrize_shape_key]
 
 
 def register_unregister_modules(modules, register: bool):
