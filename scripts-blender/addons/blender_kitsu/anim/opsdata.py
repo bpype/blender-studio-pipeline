@@ -250,7 +250,8 @@ def gen_action_name(
             version = util.get_version(armature.animation_data.action.name) or "v001"
 
     # Action name for single aset.
-    action_name = f"{action_prefix}-{asset_name}.{shot_name}.{version}"
+    fd = bkglobals.FILE_DELIMITER  # Currently set to '-'
+    action_name = f"{action_prefix}{fd}{asset_name}{fd}{shot_name}{fd}{version}"
 
     if is_multi_asset(asset_name):
         existing_postfixes = []
