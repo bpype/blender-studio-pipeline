@@ -22,10 +22,7 @@ from typing import List, Set, Tuple
 
 import bpy
 
-from .. import (
-    cache,
-    util,
-)
+from .. import cache, util, prefs
 from ..logger import LoggerFactory
 
 from . import opsdata
@@ -132,7 +129,7 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         active_shot = cache.shot_active_get()
-        addon_prefs = bpy.context.preferences.addons[__package__].preferences
+        addon_prefs = prefs.addon_prefs_get(context)
 
         existing_action_names = [a.name for a in bpy.data.actions]
         failed = []
