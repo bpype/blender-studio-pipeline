@@ -421,7 +421,7 @@ class OBJECT_OT_PoseKey_Save(Operator, OperatorWithWarning, SaveAndRestoreState)
         rigged_ob_eval = rigged_ob.evaluated_get(depsgraph)
         rigged_ob_eval_mesh = rigged_ob_eval.data
 
-        storage_ob_name = rigged_ob.name + "." + pose_key.name
+        storage_ob_name = rigged_ob.name + "-" + pose_key.name
         storage_ob_mesh = bpy.data.meshes.new_from_object(rigged_ob)
         storage_ob_mesh.name = storage_ob_name
 
