@@ -23,6 +23,7 @@ Checkout the [Asset Pipeline Demo](https://projects.blender.org/studio/blender-s
         - [Staged](#staged)
         - [Review](#review)
     - [Creating Custom Task Layers](#creating-custom-task-layers)
+    - [Hooks](#hooks)
     - [Gotchas](#gotchas)
         - [Multi-User Object Data](#multi-user-object-data)
 
@@ -173,7 +174,56 @@ Add your own custom Task Layers to the asset pipeline addon. To create a custom 
 
 ```
 
+## Hooks
+Hooks are used to add custom functionality to the asset pipeline. Hooks are optional. The hooks are defined in a python file. There are two types of Hooks, Production Level and Asset Level. Production Hooks are used globally on all assets. Asset Hooks are used only on a specific asset. 
 
+    - Production hooks: `your_project_name/pro/svn/assets/scripts/asset_pipeline/hooks.py`
+    - Asset hooks: `your_project_name/pro/svn/assets/{asset_type}/{asset_name}/hooks.py` 
+
+
+Hook files can be automatically created using the `Create Production Hook` and `Create Asset Hook` operators, from the tools sub-panel in the asset pipeline side panel. Below is an example of a hook file.
+
+**Example Hook File**
+```python
+import bpy
+from asset_pipeline.hooks import hook
+
+'''
+
+Rules:
+    merge_mode: ['pull', 'push'] # Run hook only during pull or push (both if left blank)
+    merge_status: ['pre', 'post'] # Run hook either before or after push/pull (both if left blank)
+
+Keyword Arguments:
+    asset_col: bpy.types.Collection # Get the top level collection for the current asset
+'''
+
+@hook(merge_mode='pull', merge_status="pre")
+def prod_pre_pull(asset_col: bpy.types.Collection, **kwargs):
+    # Only runs before pull
+    print(f"Asset Collection Name '{asset_col.name}'")
+    print("PRE PULL production level asset hook running!")
+
+
+@hook(merge_mode='pull', merge_status="post")
+def prod_post_pull(**kwargs):
+    # Only runs after pull
+    print("POST PULL production level asset hook running!")
+
+
+@hook(merge_mode='push', merge_status="pre")
+def prod_pre_push(**kwargs):
+    # Only runs before push
+    print("PRE PUSH production level asset hook running!")
+
+
+@hook(merge_mode='push', merge_status="post")
+def prod_post_push(**kwargs):
+    # Only runs after push
+    print("POST PUSH production level asset hook running!")
+```
+
+**Important** Function naming must be unique between the production hooks and asset hooks files.
 ## Gotchas
 
 ### Multi-User Object Data

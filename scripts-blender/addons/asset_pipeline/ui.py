@@ -98,6 +98,10 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
         cat_row.operator("assetpipe.refresh_asset_cat", icon='FILE_REFRESH', text="")
         layout.operator("assetpipe.batch_ownership_change")
         layout.operator("assetpipe.revert_file", icon="FILE_TICK")
+        layout.separator()
+        col = layout.column(align=True)
+        col.operator("assetpipe.save_production_hook", text="Create Production Hook").mode = 'PROD'
+        col.operator("assetpipe.save_production_hook", text="Create Asset Hook").mode = 'ASSET'
 
 
 class ASSETPIPE_PT_sync_advanced(bpy.types.Panel):

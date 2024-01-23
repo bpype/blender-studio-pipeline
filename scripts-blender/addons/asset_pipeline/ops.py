@@ -3,8 +3,8 @@ import bpy
 import os
 from pathlib import Path
 
-from . import constants
-from . import config
+from . import constants, config
+from .hooks import Hooks, get_production_hook_dir, get_asset_hook_dir
 from .prefs import get_addon_prefs
 from .merge.naming import task_layer_prefix_transfer_data_update
 from .merge.task_layer import draw_task_layer_selection, get_transfer_data_owner
@@ -312,13 +312,20 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
         sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
+        asset_col = context.scene.asset_pipeline.asset_collection
         if self.save:
             save_images()
             bpy.ops.wm.save_mainfile()
+
+        hooks_instance = Hooks()
+        hooks_instance.load_hooks(context)
+        hooks_instance.execute_hooks(merge_mode="pull", merge_status='pre', asset_col=asset_col)
         # Find current task Layer
         sync_execute_update_ownership(self, context)
         sync_execute_prepare_sync(self, context)
         sync_execute_pull(self, context)
+
+        hooks_instance.execute_hooks(merge_mode="pull", merge_status='post', asset_col=asset_col)
         return {'FINISHED'}
 
 
@@ -365,6 +372,10 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
+        asset_col = context.scene.asset_pipeline.asset_collection
+        hooks_instance = Hooks()
+        hooks_instance.load_hooks(context)
+        hooks_instance.execute_hooks(merge_mode="push", merge_status='pre', asset_col=asset_col)
         save_images()
         bpy.ops.wm.save_mainfile()
 
@@ -373,10 +384,16 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         sync_execute_prepare_sync(self, context)
 
         if self.pull:
+            hooks_instance.execute_hooks(merge_mode="pull", merge_status='pre', asset_col=asset_col)
             sync_execute_pull(self, context)
+            hooks_instance.execute_hooks(
+                merge_mode="pull", merge_status='post', asset_col=asset_col
+            )
         bpy.ops.wm.save_mainfile(filepath=self._current_file.__str__())
 
         sync_execute_push(self, context)
+        asset_col = context.scene.asset_pipeline.asset_collection
+        hooks_instance.execute_hooks(merge_mode="push", merge_status='post', asset_col=asset_col)
         return {'FINISHED'}
 
 
@@ -930,6 +947,57 @@ class ASSETPIPE_OT_refresh_asset_cat(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class ASSETPIPE_OT_save_asset_hook(bpy.types.Operator):
+    bl_idname = "assetpipe.save_production_hook"
+    bl_label = "Save Production Hook"
+    bl_description = """Save new hook file based on example file. Production hooks are used across all assets. Asset hooks are only used in the current asset.
+    - Production hooks: 'assets/scripts' directory.
+    - Asset hooks are stored at the root of the asset's directory'"""
+    mode: bpy.props.EnumProperty(
+        name="Hooks Mode",
+        description="Choose to either save production level or asset level hooks",
+        items=[
+            ('PROD', 'Production', 'Save Prododuction Level Hooks'),
+            ('ASSET', 'Asset', 'Save Asset Level Hooks'),
+        ],
+    )
+
+    def execute(self, context: bpy.types.Context):
+        if self.mode == 'PROD':
+            example_hooks_dir = (
+                Path(__file__).parent.joinpath("hook_examples").joinpath('prod_hooks.py')
+            )
+            save_hook_path = get_production_hook_dir().joinpath('hooks.py').resolve()
+        else:  # if self.mode == 'ASSET'
+            example_hooks_dir = (
+                Path(__file__).parent.joinpath("hook_examples").joinpath('asset_hooks.py')
+            )
+            save_hook_path = get_asset_hook_dir().joinpath('hooks.py').resolve()
+
+        if not example_hooks_dir.exists():
+            self.report(
+                {'ERROR'},
+                "Cannot find example hook file",
+            )
+            return {'CANCELLED'}
+
+        if save_hook_path.exists():
+            self.report(
+                {'ERROR'},
+                f"Cannot overwrite existing hook file at  '{save_hook_path.__str__()}'",
+            )
+            return {'CANCELLED'}
+
+        with example_hooks_dir.open() as source:
+            contents = source.read()
+
+        # Write contents to target file
+        with save_hook_path.open('w') as target:
+            target.write(contents)
+        self.report({'INFO'}, f"Hook File saved to {save_hook_path.__str__()}")
+        return {'FINISHED'}
+
+
 classes = (
     ASSETPIPE_OT_update_ownership,
     ASSETPIPE_OT_sync_push,
@@ -945,6 +1013,7 @@ classes = (
     ASSETPIPE_OT_update_surrendered_transfer_data,
     ASSETPIPE_OT_batch_ownership_change,
     ASSETPIPE_OT_refresh_asset_cat,
+    ASSETPIPE_OT_save_asset_hook,
 )
 
 
