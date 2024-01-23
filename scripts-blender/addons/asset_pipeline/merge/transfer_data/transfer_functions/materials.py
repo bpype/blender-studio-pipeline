@@ -85,10 +85,11 @@ def transfer_materials(target_obj: bpy.types.Object, source_obj):
         for spl_to, spl_from in zip(target_obj.data.splines, source_obj.data.splines):
             spl_to.material_index = spl_from.material_index
 
-    if source_obj.data.attributes.get(constants.MATERIAL_ATTRIBUTE_NAME):
-        transfer_attribute(constants.MATERIAL_ATTRIBUTE_NAME, target_obj, source_obj)
+    if source_obj.type == "MESH":
+        if source_obj.data.attributes.get(constants.MATERIAL_ATTRIBUTE_NAME):
+            transfer_attribute(constants.MATERIAL_ATTRIBUTE_NAME, target_obj, source_obj)
 
-    transfer_uv_seams(source_obj, target_obj)
+        transfer_uv_seams(source_obj, target_obj)
 
 
 def transfer_uv_seams(source_obj, target_obj):
