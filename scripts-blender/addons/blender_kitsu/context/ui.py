@@ -21,7 +21,7 @@
 import bpy
 
 from ..context import core as context_core
-from .. import cache, prefs, ui
+from .. import cache, prefs, ui, bkglobals
 from ..context.ops import (
     KITSU_OT_con_detect_context,
 )
@@ -89,7 +89,7 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             row.enabled = False
 
         # Episode selector
-        if project_active.nb_episodes > 0:
+        if project_active.production_type == bkglobals.KITSU_TV_PROJECT:
             context_core.draw_episode_selector(context, col)
 
         # Sequence selector (if context is Sequence)

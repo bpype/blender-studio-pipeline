@@ -90,7 +90,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         # TODO REFACTOR THIS WHOLE THING, BAD HACK
         # Path is different for tvshow
         if (
-            active_project.production_type == 'tvshow'
+            active_project.production_type == bkglobals.KITSU_TV_PROJECT
             and filepath.parents[3].name == bkglobals.SHOT_DIR_NAME
         ):
             category = filepath.parents[3].name

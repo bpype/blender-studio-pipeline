@@ -85,6 +85,7 @@ MULTI_ASSETS = [
 
 ASSET_COLL_PREFIXES = ["CH-", "PR-", "SE-", "FX-"]
 
+KITSU_TV_PROJECT = 'tvshow'
 
 RES_DIR_PATH = Path(os.path.abspath(__file__)).parent.joinpath("res")
 

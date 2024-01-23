@@ -1,5 +1,5 @@
 import bpy
-from .. import cache
+from .. import cache, bkglobals
 
 
 # Category values are defined in enum props.py KITSU_property_group_scene under category
@@ -32,7 +32,7 @@ def active_episode_row(layout: bpy.types.UILayout) -> None:
     episode_active = cache.episode_active_get()
     project_active = cache.project_active_get()
     row = active_project_row(layout)
-    if project_active.nb_episodes > 0 and not episode_active:
+    if project_active.production_type == bkglobals.KITSU_TV_PROJECT and not episode_active:
         row.enabled = False
     return row
 
