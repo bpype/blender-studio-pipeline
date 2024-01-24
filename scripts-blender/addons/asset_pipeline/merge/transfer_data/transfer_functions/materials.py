@@ -96,7 +96,7 @@ def transfer_uv_seams(source_obj, target_obj):
     if is_obdata_identical(source_obj, target_obj):
         for edge_from, edge_to in zip(source_obj.data.edges, target_obj.data.edges):
             edge_to.use_seam = edge_from.use_seam
-    else:
+    elif len(source_obj.data.edges) > 0 and len(target_obj.data.edges) > 0:
         # Create proxy object as transfer source to avoid transferring from evaluated mesh
         temp_source_obj = bpy.data.objects.new('TEMP', source_obj.data)
         with bpy.context.temp_override(
