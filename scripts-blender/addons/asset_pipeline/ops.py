@@ -804,19 +804,34 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
     def _get_filtered_objects(self, context):
         asset_pipe = context.scene.asset_pipeline
         objs = self._get_objects(context)
+        filtered_objs = self._filter_by_name(context, objs)
         if self.filter_owners == "LOCAL" and self.data_type == "OBJECT":
-            return [
+            filtered_objs = [
                 item
-                for item in self._filter_by_name(context, objs)
+                for item in filtered_objs
                 if item.asset_id_owner in asset_pipe.get_local_task_layers()
             ]
         if self.filter_owners == "OWNED" and self.data_type == "OBJECT":
+            filtered_objs = [item for item in filtered_objs if item.asset_id_owner != "NONE"]
+
+        if self.claim_surrender:
+            claim_objs = self._get_objects(context)
+            claim_filtered_objs = self._filter_by_name(context, claim_objs)
             return [
                 item
-                for item in self._filter_by_name(context, objs)
-                if item.asset_id_owner != "NONE"
+                for item in claim_filtered_objs
+                if item.asset_id_surrender
+                and item.asset_id_owner not in asset_pipe.get_local_task_layers()
             ]
-        return self._filter_by_name(context, objs)
+
+        if self.set_surrender:
+            return [
+                item
+                for item in filtered_objs
+                if not item.asset_id_surrender
+                and item.asset_id_owner in asset_pipe.get_local_task_layers()
+            ]
+        return filtered_objs
 
     def _get_message(self, context) -> str:
         objs = self._get_filtered_objects(context)
@@ -847,9 +862,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         advanced_mode = prefs.is_advanced_mode
         grey_out = True
 
-        if (
-            self.set_surrender and self.data_type == "TRANSFER_DATA"
-        ):  # TODO Remove Transfer Data check after OBJS are included
+        if self.set_surrender:
             grey_out = False
             self.filter_owners = "LOCAL"
 
@@ -892,10 +905,9 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         if advanced_mode:
             owner_row.prop(self, "avaliable_owners", text="")
 
-        if self.data_type == "TRANSFER_DATA":  # TODO Make surrender work on OBJS too
-            row = layout.row(align=True)
-            row.prop(self, 'set_surrender', toggle=True)
-            row.prop(self, 'claim_surrender', toggle=True)
+        row = layout.row(align=True)
+        row.prop(self, 'set_surrender', toggle=True)
+        row.prop(self, 'claim_surrender', toggle=True)
 
         bottom_label = layout.row()
         bottom_label_split = bottom_label.split(factor=0.4)
@@ -918,6 +930,11 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
 
         if self.data_type == "OBJECT":
             for obj in objs:
+                if self.claim_surrender:
+                    obj.asset_id_surrender = False
+                if self.set_surrender:
+                    obj.asset_id_surrender = True
+                    continue
                 obj.asset_id_owner = self.owner_selection
         else:
             transfer_data_items_to_update = self._get_transfer_data_to_update(context)
