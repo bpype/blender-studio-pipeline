@@ -13,6 +13,7 @@ from .core import (
     link_task_type_output_collections,
     remove_all_data,
 )
+from ..context import core as context_core
 
 from .editorial import editorial_export_get_latest
 from .file_save import save_shot_builder_file
@@ -119,24 +120,6 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         options=set(),
     )
 
-    seq_id: bpy.props.EnumProperty(
-        name="Sequence ID",
-        description="Sequence ID of the shot to build",
-        items=cache.get_sequences_enum_list,
-    )
-
-    shot_id: bpy.props.EnumProperty(
-        name="Shot ID",
-        description="Shot ID of the shot to build",
-        items=get_shots_for_seq,
-    )
-
-    task_type: bpy.props.EnumProperty(
-        name="Task",
-        description="Task to create the shot file for",
-        items=get_tasks_for_shot,
-    )
-
     save_file: bpy.props.BoolProperty(
         name="Save after building.",
         description="Automatically save build file after 'Shot Builder' is complete.",
@@ -144,14 +127,23 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
     )
 
     def draw(self, context: bpy.types.Context) -> None:
+        global active_project
         layout = self.layout
-        row = layout.row()
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        flow = layout.grid_flow(
+            row_major=True, columns=0, even_columns=True, even_rows=False, align=False
+        )
+        col = flow.column()
+        row = col.row()
         row.enabled = False
         row.prop(self, "production_name")
-        layout.prop(self, "seq_id")
-        layout.prop(self, "shot_id")
-        layout.prop(self, "task_type")
-        layout.prop(self, "save_file")
+        if active_project.production_type == bkglobals.KITSU_TV_PROJECT:
+            context_core.draw_episode_selector(context, col)
+        context_core.draw_sequence_selector(context, col)
+        context_core.draw_shot_selector(context, col)
+        context_core.draw_task_type_selector(context, col)
+        col.prop(self, "save_file")
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
         global active_project
@@ -192,9 +184,16 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
     def execute(self, context: bpy.types.Context):
         # Get Properties
         global active_project
-        seq = active_project.get_sequence(self.seq_id)
-        shot = active_project.get_shot(self.shot_id)
-        task_type = self._get_task_type_for_shot(context, shot)
+        seq = cache.sequence_active_get()
+        shot = cache.shot_active_get()
+        task_type = cache.task_type_active_get()
+
+        if seq.id == "" or shot.id == "" or task_type.id == "":
+            self.report(
+                {'ERROR'}, "Please select a sequence, shot and task type to build a shot file"
+            )
+            return {'CANCELLED'}
+
         task_type_short_name = task_type.get_short_name()
         shot_file_path_str = shot.get_filepath(context, task_type_short_name)
 
