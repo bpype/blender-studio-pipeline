@@ -1708,7 +1708,8 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
         existing = []
         channel = context.scene.kitsu.pull_edit_channel
         active_project = cache.project_active_get()
-        sequences = active_project.get_sequences_all()
+        active_episode = cache.episode_active_get()
+        sequences = active_episode.get_sequences_all() if active_episode else active_project.get_sequences_all()
         shot_strips = checksqe.get_shot_strips(context)
         occupied_ranges = checksqe.get_occupied_ranges(context)
         all_shots = active_project.get_shots_all()
@@ -1744,11 +1745,11 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
                     continue
 
                 # Get frame range information.
-                frame_start = shot.data["frame_in"]
-                frame_end = shot.data["frame_out"]
+                frame_start = shot.data.get("frame_in", None)
+                frame_end = shot.data.get("frame_out", None)
 
                 # Continue if frame range information is missing.
-                if not frame_start or not frame_end:
+                if frame_start is None or frame_end is None:
                     failed.append(shot)
                     logger.error(
                         "Failed to create shot %s. Missing frame range information",
