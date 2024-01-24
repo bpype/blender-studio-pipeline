@@ -108,5 +108,6 @@ def transfer_uv_seams(source_obj, target_obj):
                 data_type="SEAM",
                 edge_mapping="NEAREST",
                 mix_mode="REPLACE",
+                use_object_transform=False,
             )
         bpy.data.objects.remove(temp_source_obj)
