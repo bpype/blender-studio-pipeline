@@ -149,7 +149,22 @@ export default defineConfig({
             collapsed: true,
             items: [
               { text: 'Project Overview', link: '/user-guide/project_tools/project-overview' },
-              { text: 'Project Usage', link: '/user-guide/project_tools/project-usage'},
+              { },
+              {
+                text: 'Project Usage',
+                collapsed: true,
+                items: [
+                  {text: 'Introduction', link: '/user-guide/project_tools/project-usage'},
+                  {text: 'Prepare Edit', link: '/user-guide/project_tools/usage-sync-edit'},
+                  {text: 'Building Shots', link: '/user-guide/project_tools/usage-build-shot'},
+                  {text: 'Playblast Shot', link: '/user-guide/project_tools/usage-playblast'},
+                  {text: 'Update Shot', link: '/user-guide/project_tools/usage-update-shot'},
+                  {text: 'Flamenco Render', link: '/user-guide/project_tools/usage-render-flamenco'},
+                  {text: 'Render Review', link: '/user-guide/project_tools/usage-render-review'},
+                  {text: 'Final Render', link: '/user-guide/project_tools/usage-final-render'},
+                ],
+              },
+              {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
               { text: 'Project Blender', link: '/user-guide/project_tools/project-blender' },
             ],
           },
