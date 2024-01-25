@@ -130,7 +130,12 @@ class Hooks:
 
 def get_production_hook_dir() -> Path:
     root_dir = Path(prefs.project_root_dir_get())
-    return root_dir.joinpath("svn/pro/assets/scripts/asset_pipeline")
+    asset_dir = root_dir.joinpath("svn/pro/assets/scripts")
+    if not asset_dir.exists():
+        raise Exception("Directory {str(asset_dir)} doesn't exist")
+    hook_dir = asset_dir.joinpath("asset_pipeline")
+    hook_dir.mkdir(exist_ok=True)
+    return hook_dir
 
 
 def get_asset_hook_dir() -> Path:

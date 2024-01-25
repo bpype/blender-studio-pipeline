@@ -42,6 +42,7 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
     )
 
     def draw(self, context):
+        self.layout.prop(self, "project_root_dir")
         self.layout.prop(self, "custom_task_layers_dir")
         self.layout.prop(self, "save_images_path")
         self.layout.prop(self, "is_advanced_mode")
