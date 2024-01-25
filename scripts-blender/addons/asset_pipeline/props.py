@@ -68,11 +68,30 @@ class AssetPipeline(bpy.types.PropertyGroup):
         description="Depreciated files do not recieve any updates when syncing from a task layer",
         default=False,
     )
-    asset_collection: bpy.props.PointerProperty(
-        type=bpy.types.Collection,
+
+    @property
+    def asset_collection(self):
+        return bpy.data.collections.get(self.asset_collection_name) or bpy.data.collections.get(
+            self.asset_collection_name + "." + constants.LOCAL_SUFFIX
+        )
+
+    @asset_collection.setter
+    def asset_collection(self, coll):
+        self.asset_collection_name = coll.name
+
+    asset_collection_name: bpy.props.StringProperty(
         name="Asset",
+        default="",
         description="Top Level Collection of the Asset, all other collections of the asset will be children of this collection",
     )
+
+    # Commented out - Let's use a weak ref for now because this causes the collection to evaluate even when hidden, causing performance nightmares
+    # asset_collection: bpy.props.PointerProperty(
+    #     type=bpy.types.Collection,
+    #     name="Asset",
+    #     description="Top Level Collection of the Asset, all other collections of the
+    # asset will be children of this collection",
+    # )
 
     temp_transfer_data: bpy.props.CollectionProperty(type=AssetTransferDataTemp)
 
@@ -102,9 +121,7 @@ class AssetPipeline(bpy.types.PropertyGroup):
     )
     name: bpy.props.StringProperty(name="Name", description="Name for new Asset")
 
-    prefix: bpy.props.StringProperty(
-        name="Prefix", description="Prefix for new Asset", default=""
-    )
+    prefix: bpy.props.StringProperty(name="Prefix", description="Prefix for new Asset", default="")
 
     task_layer_config_type: bpy.props.EnumProperty(
         name="Task Layer Preset",
@@ -132,18 +149,12 @@ class AssetPipeline(bpy.types.PropertyGroup):
     # UI BOOLS: used to show/hide Transferable Data elements
     # The names are also hard coded in constants.py under TRANSFER_DATA_TYPES
     # any changes will need to be reflected both here and in that enum
-    group_vertex_ui_bool: bpy.props.BoolProperty(
-        name="Show/Hide Vertex Groups", default=False
-    )
+    group_vertex_ui_bool: bpy.props.BoolProperty(name="Show/Hide Vertex Groups", default=False)
     modifier_ui_bool: bpy.props.BoolProperty(name="Show/Hide Modifiers", default=False)
-    constraint_ui_bool: bpy.props.BoolProperty(
-        name="Show/Hide Constraints", default=False
-    )
+    constraint_ui_bool: bpy.props.BoolProperty(name="Show/Hide Constraints", default=False)
     material_ui_bool: bpy.props.BoolProperty(name="Show/Hide Materials", default=False)
     shapekey_ui_bool: bpy.props.BoolProperty(name="Show/Hide Shape Keys", default=False)
-    attribute_ui_bool: bpy.props.BoolProperty(
-        name="Show/Hide Attributes", default=False
-    )
+    attribute_ui_bool: bpy.props.BoolProperty(name="Show/Hide Attributes", default=False)
     file_parent_ui_bool: bpy.props.BoolProperty(name="Show/Hide Parent", default=False)
 
     def get_asset_catalogs(self, context):
@@ -154,6 +165,18 @@ class AssetPipeline(bpy.types.PropertyGroup):
         items=get_asset_catalogs,
         description="Select Asset Library Catalog for the current Asset, this value will be updated each time you Push to an 'Active' Publish",
     )
+
+
+@bpy.app.handlers.persistent
+def set_asset_collection_name_post_file_load(_):
+    # Version the PointerProperty to the StringProperty, and the left-over pointer.
+    for scene in bpy.data.scenes:
+        if 'asset_collection' not in scene.asset_pipeline:
+            continue
+        coll = scene.asset_pipeline['asset_collection']
+        if coll:
+            scene.asset_pipeline.asset_collection_name = coll.name
+            del scene.asset_pipeline['asset_collection']
 
 
 classes = (
@@ -167,14 +190,13 @@ classes = (
 def register():
     for i in classes:
         bpy.utils.register_class(i)
-    bpy.types.Object.transfer_data_ownership = bpy.props.CollectionProperty(
-        type=AssetTransferData
-    )
+    bpy.types.Object.transfer_data_ownership = bpy.props.CollectionProperty(type=AssetTransferData)
     bpy.types.Scene.asset_pipeline = bpy.props.PointerProperty(type=AssetPipeline)
     bpy.types.ID.asset_id_owner = bpy.props.StringProperty(name="Owner", default="NONE")
     bpy.types.ID.asset_id_surrender = bpy.props.BoolProperty(
         name="Surrender Ownership", default=False
     )
+    bpy.app.handlers.load_post.append(set_asset_collection_name_post_file_load)
 
 
 def unregister():
@@ -183,3 +205,4 @@ def unregister():
     del bpy.types.Object.transfer_data_ownership
     del bpy.types.Scene.asset_pipeline
     del bpy.types.ID.asset_id_owner
+    bpy.app.handlers.load_post.remove(set_asset_collection_name_post_file_load)

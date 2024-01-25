@@ -26,7 +26,7 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
                 layout.prop(asset_pipe, "prefix")
                 layout.prop(asset_pipe, "dir")
             else:
-                layout.prop(asset_pipe, "asset_collection")
+                layout.prop_search(asset_pipe, 'asset_collection_name', bpy.data, 'collections')
             layout.operator("assetpipe.create_new_asset")
             return
 
@@ -55,7 +55,7 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
         for task_layer in asset_pipe.local_task_layers:
             row.label(text=task_layer.name)
 
-        layout.prop(asset_pipe, "asset_collection")
+        layout.prop_search(asset_pipe, 'asset_collection_name', bpy.data, 'collections')
 
         staged = is_staged_publish(Path(bpy.data.filepath))
         sync_target_name = "Staged" if staged else "Active"
