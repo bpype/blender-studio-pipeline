@@ -375,16 +375,16 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         asset_col = context.scene.asset_pipeline.asset_collection
         hooks_instance = Hooks()
         hooks_instance.load_hooks(context)
-        hooks_instance.execute_hooks(merge_mode="push", merge_status='pre', asset_col=asset_col)
         save_images()
         bpy.ops.wm.save_mainfile()
 
+        if self.pull:
+            hooks_instance.execute_hooks(merge_mode="pull", merge_status='pre', asset_col=asset_col)
         # Find current task Layer
         sync_execute_update_ownership(self, context)
         sync_execute_prepare_sync(self, context)
 
         if self.pull:
-            hooks_instance.execute_hooks(merge_mode="pull", merge_status='pre', asset_col=asset_col)
             sync_execute_pull(self, context)
             hooks_instance.execute_hooks(
                 merge_mode="pull", merge_status='post', asset_col=asset_col
@@ -392,8 +392,6 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         bpy.ops.wm.save_mainfile(filepath=self._current_file.__str__())
 
         sync_execute_push(self, context)
-        asset_col = context.scene.asset_pipeline.asset_collection
-        hooks_instance.execute_hooks(merge_mode="push", merge_status='post', asset_col=asset_col)
         return {'FINISHED'}
 
 

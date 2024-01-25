@@ -13,8 +13,8 @@ from .merge.core import (
 )
 from .merge.transfer_data.transfer_ui import draw_transfer_data
 from .merge.shared_ids import get_shared_id_icon
-from . import constants
-from . import config
+from . import constants, config
+from .hooks import Hooks
 from .merge.task_layer import draw_task_layer_selection
 
 
@@ -152,8 +152,12 @@ def sync_execute_pull(self, context):
 
 def sync_execute_push(self, context):
     _catalog_id = None
+    hooks_instance = Hooks()
+    hooks_instance.load_hooks(context)
     temp_file_path = create_temp_file_backup(self, context)
-
+    asset_pipe = context.scene.asset_pipeline
+    asset_col = asset_pipe.asset_collection
+    hooks_instance.execute_hooks(merge_mode="push", merge_status='pre', asset_col=asset_col)
     _catalog_id = context.scene.asset_pipeline.asset_catalog_id
 
     file_path = self._sync_target.__str__()
@@ -177,10 +181,10 @@ def sync_execute_push(self, context):
         self.report({'ERROR'}, error_msg)
         return {'CANCELLED'}
 
-    asset_pipe = context.scene.asset_pipeline
-    asset_col = asset_pipe.asset_collection
     if not (_catalog_id == '' or _catalog_id == 'NONE'):
         asset_col.asset_data.catalog_id = _catalog_id
+
+    hooks_instance.execute_hooks(merge_mode="push", merge_status='post', asset_col=asset_col)
 
     bpy.ops.wm.save_as_mainfile(filepath=file_path)
     bpy.ops.wm.open_mainfile(filepath=self._current_file.__str__())
