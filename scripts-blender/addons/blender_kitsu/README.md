@@ -318,7 +318,7 @@ Shot Builder uses hooks to extend the functionality of the shot builder. To crea
 2. Search for the `Blender Kitsu` Add-On
 3. In the `Blender Kitsu` Add-On preferences find the `Shot Builder` section
 4. Run the Operator `Save Shot Builder Hook File`
-5. Edit the file `your_project/svn/pro/assets/scripts/shot-builder/hooks.py` to customize your hooks. 
+5. Edit the file `your_project_name/svn/pro/config/shot_builder/hooks.py` to customize your hooks. 
 
 ```
 Arguments to use in hooks

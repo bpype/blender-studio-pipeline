@@ -12,6 +12,7 @@ from .core import (
     set_frame_range,
     link_task_type_output_collections,
     remove_all_data,
+    get_shot_builder_hooks_dir,
 )
 from ..context import core as context_core
 
@@ -46,7 +47,7 @@ def get_tasks_for_shot(self: Any, context: bpy.types.Context) -> List[Tuple[str,
 class KITSU_OT_save_shot_builder_hooks(bpy.types.Operator):
     bl_idname = "kitsu.save_shot_builder_hooks"
     bl_label = "Save Shot Builder Hook File"
-    bl_description = "Save hook.py file to `your_project/svn/pro/assets/scripts/shot-builder` directory. Hooks are used to customize shot builder behaviour."
+    bl_description = "Save hook.py file to `your_project_name/svn/pro/config/shot_builder` directory. Hooks are used to customize shot builder behaviour."
 
     def execute(self, context: bpy.types.Context):
         addon_prefs = prefs.addon_prefs_get(context)
@@ -72,8 +73,7 @@ class KITSU_OT_save_shot_builder_hooks(bpy.types.Operator):
             )
             return {'CANCELLED'}
 
-        root_dir = prefs.project_root_dir_get(context)
-        config_dir = root_dir.joinpath("pro/assets/scripts/shot-builder")
+        config_dir = get_shot_builder_hooks_dir(context)
         if not config_dir.exists():
             config_dir.mkdir(parents=True)
         hook_file_path = config_dir.joinpath("hooks.py")

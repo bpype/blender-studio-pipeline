@@ -18,6 +18,19 @@ from .. import prefs
 CAMERA_NAME = 'CAM-camera'
 
 
+def get_shot_builder_hooks_dir(context: bpy.types.Context) -> Path:
+    """Returns directory Shot Builder Hooks are stored in
+
+    Args:
+        context (bpy.types.Context): Blender Context
+
+    Returns:
+        Path: Path object to Shot Builder Hooks Directory
+    """
+    root_dir = prefs.project_root_dir_get(context)
+    return root_dir.joinpath("config/pro/shot_builder")
+
+
 def get_file_dir(seq: Sequence, shot: Shot, task_type: TaskType) -> Path:
     """Returns Path to Directory for Current Shot, will ensure that
     file path exists if it does not.
