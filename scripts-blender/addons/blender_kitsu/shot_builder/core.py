@@ -28,7 +28,7 @@ def get_shot_builder_hooks_dir(context: bpy.types.Context) -> Path:
         Path: Path object to Shot Builder Hooks Directory
     """
     root_dir = prefs.project_root_dir_get(context)
-    return root_dir.joinpath("config/pro/shot_builder")
+    return root_dir.joinpath("pro/config/shot_builder")
 
 
 def get_file_dir(seq: Sequence, shot: Shot, task_type: TaskType) -> Path:
