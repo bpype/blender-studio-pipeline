@@ -389,6 +389,7 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
             hooks_instance.execute_hooks(
                 merge_mode="pull", merge_status='post', asset_col=asset_col
             )
+        hooks_instance.execute_hooks(merge_mode="push", merge_status='pre', asset_col=asset_col)
         bpy.ops.wm.save_mainfile(filepath=self._current_file.__str__())
 
         sync_execute_push(self, context)

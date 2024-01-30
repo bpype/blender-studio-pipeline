@@ -101,7 +101,7 @@ class Hooks:
                 importlib.reload(production_hooks)
                 self.register_hooks(production_hooks)
             except ModuleNotFoundError:
-                print("Production has no `hooks.py` configuration file for assets")
+                print(f"Production did not find `hooks.py` configuration file at {path}")
 
     def load_hooks(self, context):
         prod_hooks = get_production_hook_dir()

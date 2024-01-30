@@ -155,14 +155,12 @@ def sync_execute_push(self, context):
     hooks_instance = Hooks()
     hooks_instance.load_hooks(context)
     temp_file_path = create_temp_file_backup(self, context)
-    asset_pipe = context.scene.asset_pipeline
-    asset_col = asset_pipe.asset_collection
-    hooks_instance.execute_hooks(merge_mode="push", merge_status='pre', asset_col=asset_col)
     _catalog_id = context.scene.asset_pipeline.asset_catalog_id
 
     file_path = self._sync_target.__str__()
     bpy.ops.wm.open_mainfile(filepath=file_path)
-
+    asset_pipe = context.scene.asset_pipeline
+    asset_col = asset_pipe.asset_collection
     update_temp_file_paths(self, context, temp_file_path)
 
     local_tls = [
@@ -184,7 +182,9 @@ def sync_execute_push(self, context):
     if not (_catalog_id == '' or _catalog_id == 'NONE'):
         asset_col.asset_data.catalog_id = _catalog_id
 
-    hooks_instance.execute_hooks(merge_mode="push", merge_status='post', asset_col=asset_col)
+    hooks_instance.execute_hooks(
+        merge_mode="push", merge_status='post', asset_col=asset_pipe.asset_collection
+    )
 
     bpy.ops.wm.save_as_mainfile(filepath=file_path)
     bpy.ops.wm.open_mainfile(filepath=self._current_file.__str__())
