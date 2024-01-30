@@ -177,7 +177,7 @@ Add your own custom Task Layers to the asset pipeline addon. To create a custom 
 ## Hooks
 Hooks are used to add custom functionality to the asset pipeline. Hooks are optional. The hooks are defined in a python file. There are two types of Hooks, Production Level and Asset Level. Production Hooks are used globally on all assets. Asset Hooks are used only on a specific asset. 
 
-    - Production hooks: `your_project_name/pro/svn/assets/scripts/asset_pipeline/hooks.py`
+    - Production hooks: `your_project_name/pro/svn/pro/config/asset_pipeline/hooks.py`
     - Asset hooks: `your_project_name/pro/svn/assets/{asset_type}/{asset_name}/hooks.py` 
 
 
