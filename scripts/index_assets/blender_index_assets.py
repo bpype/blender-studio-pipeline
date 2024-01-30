@@ -62,8 +62,8 @@ def find_save_assets():
 
     asset_dict = load_json_file(json_file_path)
     for col in bpy.data.collections:
-        if col.asset_data:
-            print(f"Found Asset {col.name}")
+        if col.asset_data and not col.library and not col.override_library:
+            print(f"Found Asset '{col.name}' at path '{bpy.data.filepath}'")
             asset_dict[col.name] = {
                 'type': type(col).bl_rna.name,
                 'filepath': get_realtive_path(json_file_path),
