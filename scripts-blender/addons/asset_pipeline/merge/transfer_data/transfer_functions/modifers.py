@@ -55,9 +55,9 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
         target_obj.modifiers.remove(old_mod)
 
     # transfer new modifiers
-    for i, mod in enumerate(source_obj.modifiers):
-        if mod.name == modifier_name:
-            mod_new = target_obj.modifiers.new(mod.name, mod.type)
+    for i, source_mod in enumerate(source_obj.modifiers):
+        if source_mod.name == modifier_name:
+            mod_new = target_obj.modifiers.new(source_mod.name, source_mod.type)
             # sort new modifier at correct index (default to beginning of the stack)
             idx = 0
             if i > 0:
@@ -70,40 +70,51 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
             with override_obj_visability(obj=target_obj, scene=scene):
                 with context.temp_override(object=target_obj):
                     bpy.ops.object.modifier_move_to_index(modifier=mod_new.name, index=idx)
-            mod_target = target_obj.modifiers.get(mod.name)
-            props = [p.identifier for p in mod.bl_rna.properties if not p.is_readonly]
+            target_mod = target_obj.modifiers.get(source_mod.name)
+            props = [p.identifier for p in source_mod.bl_rna.properties if not p.is_readonly]
             for prop in props:
-                value = getattr(mod, prop)
-                setattr(mod_target, prop, value)
+                value = getattr(source_mod, prop)
+                setattr(target_mod, prop, value)
 
-            if mod.type == 'NODES':
+            if source_mod.type == 'NODES':
                 # Transfer geo node attributes
-                for key, value in mod.items():
-                    mod_target[key] = value
+                for key, value in source_mod.items():
+                    target_mod[key] = value
+
+                # Transfer geo node bake settings
+                target_mod.bake_directory = source_mod.bake_directory
+                for index, target_bake in enumerate(target_mod.bakes):
+                    source_bake = source_mod.bakes[index]
+                    props = [
+                        p.identifier for p in source_bake.bl_rna.properties if not p.is_readonly
+                    ]
+                    for prop in props:
+                        value = getattr(source_bake, prop)
+                        setattr(target_bake, prop, value)
 
     # rebind modifiers (corr. smooth, surf. deform, mesh deform)
-    for mod in target_obj.modifiers:
-        if mod.type == 'SURFACE_DEFORM':
-            if not mod.is_bound:
+    for source_mod in target_obj.modifiers:
+        if source_mod.type == 'SURFACE_DEFORM':
+            if not source_mod.is_bound:
                 continue
             for i in range(2):
                 with override_obj_visability(obj=target_obj, scene=scene):
                     with context.temp_override(object=target_obj, active_object=target_obj):
-                        bpy.ops.object.surfacedeform_bind(modifier=mod.name)
-        elif mod.type == 'MESH_DEFORM':
-            if not mod.is_bound:
+                        bpy.ops.object.surfacedeform_bind(modifier=source_mod.name)
+        elif source_mod.type == 'MESH_DEFORM':
+            if not source_mod.is_bound:
                 continue
             for i in range(2):
                 with override_obj_visability(obj=target_obj, scene=scene):
                     with context.temp_override(object=target_obj, active_object=target_obj):
-                        bpy.ops.object.meshdeform_bind(modifier=mod.name)
-        elif mod.type == 'CORRECTIVE_SMOOTH':
-            if not mod.is_bind:
+                        bpy.ops.object.meshdeform_bind(modifier=source_mod.name)
+        elif source_mod.type == 'CORRECTIVE_SMOOTH':
+            if not source_mod.is_bind:
                 continue
             for i in range(2):
                 with override_obj_visability(obj=target_obj, scene=scene):
                     with context.temp_override(object=target_obj, active_object=target_obj):
-                        bpy.ops.object.correctivesmooth_bind(modifier=mod.name)
+                        bpy.ops.object.correctivesmooth_bind(modifier=source_mod.name)
         fcurves = find_drivers(source_obj, 'modifiers', modifier_name)
         for fcurve in fcurves:
             copy_driver(from_fcurve=fcurve, target=target_obj)
