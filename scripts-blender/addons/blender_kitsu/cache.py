@@ -443,19 +443,32 @@ def get_task_types_enum_for_current_context(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
     global _task_types_enum_list
+    global _project_active
 
     # Import within function to avoid circular import
     from .context import core as context_core
 
     items = []
     if context_core.is_shot_context():
-        items = [(t.id, t.name, "") for t in TaskType.all_shot_task_types()]
+        items = [
+            (t.id, t.name, "")
+            for t in TaskType.all_shot_task_types()
+            if t.id in _project_active.task_types
+        ]
 
     if context_core.is_asset_context():
-        items = [(t.id, t.name, "") for t in TaskType.all_asset_task_types()]
+        items = [
+            (t.id, t.name, "")
+            for t in TaskType.all_asset_task_types()
+            if t.id in _project_active.task_types
+        ]
 
     if context_core.is_sequence_context():
-        items = [(t.id, t.name, "") for t in TaskType.all_sequence_task_types()]
+        items = [
+            (t.id, t.name, "")
+            for t in TaskType.all_sequence_task_types()
+            if t.id in _project_active.task_types
+        ]
 
     _task_types_enum_list.clear()
     _task_types_enum_list.extend(items)
@@ -479,7 +492,7 @@ def get_shot_task_types_enum(
     # Update Cache project ID
     _all_shot_tasks_cache_proj_id = project_active.id
 
-    items = [(t.id, t.name, "") for t in TaskType.all_shot_task_types()]
+    items = [(t.id, t.name, "") for t in TaskType.all_shot_task_types()  if t.id in project_active.task_types]
 
     _task_types_shots_enum_list.clear()
     _task_types_shots_enum_list.extend(items)
