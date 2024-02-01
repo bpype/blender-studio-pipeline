@@ -717,6 +717,7 @@ class KITSU_PT_edit_task(bpy.types.Panel):
     def poll(cls, context: bpy.types.Context) -> bool:
         if not context_core.is_edit_context():
             return False
+        return True
 
     def draw(self, context: bpy.types.Context) -> None:
         self.layout.operator("kitsu.vse_publish_edit_revision")
