@@ -911,6 +911,7 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self, width=width)
 
     def get_edit_filepath(self, strip: bpy.types.Sequence) -> Path:
+        delimiter = vars.DELIMITER
         render_dir = opsdata.get_strip_folder(strip)
         shot_previews_dir = opsdata.get_shot_previews_path(strip)
 
@@ -931,7 +932,7 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
 
                 if (
                     file.name.replace(version, "")
-                    == f"{opsdata.get_shot_dot_task_type(render_dir)}..mp4"
+                    == f"{opsdata.get_shot_dot_task_type(render_dir)}{delimiter}.mp4"
                 ):
                     existing_files.append(file)
 
@@ -945,7 +946,7 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
         # Compose edit filepath of new mp4 file.
         edit_filepath = (
             shot_previews_dir
-            / f"{opsdata.get_shot_dot_task_type(render_dir)}.{increment}.mp4"
+            / f"{opsdata.get_shot_dot_task_type(render_dir)}{delimiter}{increment}.mp4"
         )
         return edit_filepath
 
