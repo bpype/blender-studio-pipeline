@@ -22,10 +22,8 @@ from typing import List, Dict, Union, Any, Set, Optional
 import bpy
 
 from render_review import util
-from blender_kitsu import cache
-from blender_kitsu import types
+from blender_kitsu import cache, types, prefs
 from blender_kitsu.sqe import opsdata, pull, push
-
 from render_review.log import LoggerFactory
 
 
@@ -33,7 +31,7 @@ logger = LoggerFactory.getLogger(name=__name__)
 
 
 def is_auth() -> bool:
-    return bpy.context.preferences.addons[__package__].preferences.session.is_auth()
+    return prefs.addon_prefs_get(bpy.context).session.is_auth()
 
 
 def get_project() -> Optional[types.Project]:
@@ -49,7 +47,7 @@ def is_auth_and_project() -> bool:
 
 
 def addon_prefs() -> bpy.types.AddonPreferences:
-    return bpy.context.preferences.addons[__package__].preferences
+    return prefs.addon_prefs_get(bpy.context)
 
 
 def create_meta_strip(
