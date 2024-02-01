@@ -111,17 +111,17 @@ def extract_zip(file_path: Path, dst_path: Path):
     shutil.rmtree(temp_dir)
 
 
-def update_addon(addon_zip_name):
+def update_addon(addon_zip_name, folder_name='addons'):
     addon_zip_sha = addon_zip_name + '.sha256'
     # This is the file that records all toplevel folders/files installed by this addon
     # It is used to cleanup old files and folders when updating or removing addons
     addon_zip_files = addon_zip_name + '.files'
 
     # Check if we have the latest add-ons from shared
-    addon_artifacts_folder = PATH_ARTIFACTS / 'addons'
+    addon_artifacts_folder = PATH_ARTIFACTS / folder_name
     artifact_archive = addon_artifacts_folder / addon_zip_name
     artifact_checksum = addon_artifacts_folder / addon_zip_sha
-    local_artifact_dir = PATH_LOCAL / 'artifacts' / 'addons'
+    local_artifact_dir = PATH_LOCAL / 'artifacts' / folder_name
 
     # Sanity check
     if not local_artifact_dir.exists():
@@ -153,7 +153,7 @@ def update_addon(addon_zip_name):
     with zipfile.ZipFile(artifact_archive, 'r') as zip_ref:
         zip_ref.extractall(src_path_base)
 
-    dst_path_base = PATH_LOCAL / 'scripts' / 'addons'
+    dst_path_base = PATH_LOCAL / 'scripts' / folder_name
 
     # Remove all files previously installed by the archive
     local_installed_files = local_artifact_dir / addon_zip_files
@@ -292,6 +292,16 @@ def update_addons():
         update_addon(zip_name)
 
 
+def update_presets():
+    preset_artifacts_folder = PATH_ARTIFACTS / 'presets'
+    if not preset_artifacts_folder.exists():
+        logger.info("Presets artifacts folder not found at: " + str(preset_artifacts_folder))
+        logger.info("Skipping preset updates.")
+        return
+    presets_list = [entry.name for entry in preset_artifacts_folder.iterdir() if entry.suffix == ".zip"]
+    for zip_name in presets_list:
+        update_addon(zip_name, 'presets')
+
 if __name__ == '__main__':
 
     args = parser.parse_args()
@@ -305,6 +315,8 @@ if __name__ == '__main__':
 
     logger.info('Updating Add-ons')
     update_addons()
+    logger.info('Updating Presets')
+    update_presets()
     logger.info('Updating Blender')
     update_blender()
     logger.info('Launching Blender')
