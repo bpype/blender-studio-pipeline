@@ -50,9 +50,7 @@ def copy_driver(
     return new_fc
 
 
-def find_drivers(
-    id: bpy.types.ID, target_type: str, target_name: str
-) -> list[bpy.types.FCurve]:
+def find_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> list[bpy.types.FCurve]:
     """_summary_
 
     Args:
@@ -71,3 +69,27 @@ def find_drivers(
         if f'{target_type}["{target_name}"]' in driver.data_path:
             found_drivers.append(driver)
     return found_drivers
+
+
+def transfer_drivers(
+    source_obj: bpy.types.Object, target_obj: bpy.types.Object, target_type: str, target_name: str
+) -> None:
+    """Transfers Drivers from one object to another, will copy and new drivres from source to from
+    source to target, and will remove any drivers on the target that are not in the source.
+
+    Args:
+        source_obj (bpy.types.Object): Source Object, containing drivers to copy
+        target_obj (bpy.types.Object): Target Object, which will recieve the drivers from source
+        target_type (str): Name of driver target's type, like `modifier` or `constraint`
+        target_name (str): Name of driver target, e.g. name of a modifier or contraint
+    """
+    source_fcurves = find_drivers(source_obj, 'modifiers', target_name)
+    target_fcurves = find_drivers(target_obj, 'modifiers', target_name)
+
+    # Clear old drivers
+    for old_fcurve in list(set(target_fcurves) - set(source_fcurves)):
+        target_obj.animation_data.drivers.remove(old_fcurve)
+
+    # Transfer new drivers
+    for fcurve in source_fcurves:
+        copy_driver(from_fcurve=fcurve, target=target_obj)

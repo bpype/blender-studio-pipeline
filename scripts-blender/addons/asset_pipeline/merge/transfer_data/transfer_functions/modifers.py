@@ -1,5 +1,5 @@
 import bpy
-from .transfer_function_util.drivers import find_drivers, copy_driver
+from .transfer_function_util.drivers import transfer_drivers
 from .transfer_function_util.visibility import override_obj_visability
 from ..transfer_util import (
     transfer_data_clean,
@@ -115,6 +115,5 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
                 with override_obj_visability(obj=target_obj, scene=scene):
                     with context.temp_override(object=target_obj, active_object=target_obj):
                         bpy.ops.object.correctivesmooth_bind(modifier=source_mod.name)
-        fcurves = find_drivers(source_obj, 'modifiers', modifier_name)
-        for fcurve in fcurves:
-            copy_driver(from_fcurve=fcurve, target=target_obj)
+
+        transfer_drivers(source_obj, target_obj, 'modifiers', modifier_name)

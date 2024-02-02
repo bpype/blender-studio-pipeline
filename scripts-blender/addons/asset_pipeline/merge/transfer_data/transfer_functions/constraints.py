@@ -5,7 +5,7 @@ from ..transfer_util import (
     check_transfer_data_entry,
 )
 from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
-from .transfer_function_util.drivers import find_drivers, copy_driver
+from .transfer_function_util.drivers import transfer_drivers
 from .transfer_function_util.visibility import override_obj_visability
 from ...task_layer import get_transfer_data_owner
 from .... import constants
@@ -84,7 +84,4 @@ def transfer_constraint(constraint_name, target_obj, source_obj):
                     new_target.target = target_item.target
                     new_target.subtarget = target_item.subtarget
 
-    fcurves = find_drivers(source_obj, 'constraints', constraint_name)
-
-    for fcurve in fcurves:
-        copy_driver(from_fcurve=fcurve, target=target_obj)
+    transfer_drivers(source_obj, target_obj, 'constraints', constraint_name)

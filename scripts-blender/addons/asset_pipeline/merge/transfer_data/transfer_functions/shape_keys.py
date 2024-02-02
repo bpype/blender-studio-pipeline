@@ -7,7 +7,7 @@ from .transfer_function_util.proximity_core import (
     closest_face_to_point,
     closest_tri_on_face,
 )
-from .transfer_function_util.drivers import find_drivers, copy_driver
+from .transfer_function_util.drivers import transfer_drivers
 from ..transfer_util import (
     transfer_data_item_is_missing,
     transfer_data_item_init,
@@ -98,9 +98,7 @@ def transfer_shape_key(
     if sk_source.relative_key != sk_source:
         relative_key = None
         if target_obj.data.shape_keys:
-            relative_key = target_obj.data.shape_keys.key_blocks.get(
-                sk_source.relative_key.name
-            )
+            relative_key = target_obj.data.shape_keys.key_blocks.get(sk_source.relative_key.name)
         if relative_key:
             sk_target.relative_key = relative_key
         else:
@@ -129,9 +127,7 @@ def transfer_shape_key(
         (tri, point) = closest_tri_on_face(tris_dict, face, p)
         if not tri:
             continue
-        weights = mathutils.interpolate.poly_3d_calc(
-            [tri[i].vert.co for i in range(3)], point
-        )
+        weights = mathutils.interpolate.poly_3d_calc([tri[i].vert.co for i in range(3)], point)
 
         vals_weighted = [
             weights[i]
@@ -147,10 +143,4 @@ def transfer_shape_key(
     if source_obj.data.shape_keys is None:
         return
 
-    fcurves = find_drivers(
-        source_obj.data.shape_keys,
-        'key_blocks',
-        shape_key_name,
-    )
-    for fcurve in fcurves:
-        copy_driver(from_fcurve=fcurve, target=target_obj.data.shape_keys)
+    transfer_drivers(source_obj, target_obj, 'key_blocks', shape_key_name)
