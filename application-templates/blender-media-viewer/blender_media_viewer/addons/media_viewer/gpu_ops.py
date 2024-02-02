@@ -23,7 +23,6 @@ from pathlib import Path
 
 import bpy
 import gpu
-import bgl
 import gpu_extras.presets
 from mathutils import Matrix
 
@@ -232,8 +231,7 @@ class MV_OT_render_review_img_editor(bpy.types.Operator):
         with frame_buffer.bind():
 
             # Debugging: Flood image with color.
-            # bgl.glClearColor(0, 1, 0, 1)
-            # bgl.glClear(bgl.GL_COLOR_BUFFER_BIT)
+            #frame_buffer.clear(color=(0.0, 0.0, 0.0, 1.0), depth=1.0, stencil=0)
 
             with gpu.matrix.push_pop():
                 # Our drawing is not in the right place, we need to use
@@ -257,12 +255,7 @@ class MV_OT_render_review_img_editor(bpy.types.Operator):
                 # Draw grease pencil over it.
                 gpu_opsdata.draw_callback(GP_DRAWER, frame=frame)
 
-            # Create the buffer with dimensions: r, g, b, a (width * height * 4)
-            # Make sure that we use bgl.GL_FLOAT as this solves the colorspace issue
-            # that the saved image would be in linear space. (?)
-            buffer = bgl.Buffer(bgl.GL_FLOAT, width * height * 4)
-            bgl.glReadBuffer(bgl.GL_BACK)
-            bgl.glReadPixels(0, 0, width, height, bgl.GL_RGBA, bgl.GL_FLOAT, buffer)
+            buffer = gpu.texture.read()
 
             # new_image.scale(width, height) does not seem to do a difference?
             # Set new_image.pixels to the composited buffer.

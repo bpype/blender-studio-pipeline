@@ -23,7 +23,6 @@ from typing import List, Dict, Tuple, Union, Any, Optional, Set
 
 import bpy
 import gpu
-import bgl
 from gpu_extras.batch import batch_for_shader
 
 from . import ops
@@ -146,9 +145,8 @@ class GPDrawerCustomShader:
         if not coords:
             return
 
-        # TODO: replace with gpu.state.line_width_set(width)
-        bgl.glEnable(bgl.GL_BLEND)
-        bgl.glLineWidth(line_widht)
+        gpu.state.blend_set('ALPHA')
+        gpu.state.line_width_set(line_widht)
 
         colors = [color for c in coords]
 
@@ -180,8 +178,8 @@ class GPDrawerBuiltInShader:
         # Question: Can I change the line width using attributes?
         # Or do I have to do it this way?
         # TODO: replace with gpu.state.line_width_set(width)
-        bgl.glEnable(bgl.GL_BLEND)
-        bgl.glLineWidth(line_width)
+        gpu.state.blend_set('ALPHA')
+        gpu.state.line_width_set(line_width)
 
         # print(f"Drawing coords: {coords}")
         batch = batch_for_shader(self.shader, "LINES", {"pos": coords})
