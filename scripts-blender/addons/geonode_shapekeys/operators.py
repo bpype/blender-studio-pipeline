@@ -10,7 +10,7 @@ COLLECTION_NAME = "GeoNode Shape Keys"
 def geomod_get_identifier(modifier: bpy.types.Modifier, param_name: str) -> str:
     if hasattr(modifier.node_group, 'interface'):
         # 4.0
-        input = modifier.node_group.interface.items_tree[param_name]
+        input = modifier.node_group.interface.items_tree.get(param_name)
     else:
         # 3.6
         input = modifier.node_group.inputs.get(param_name)
@@ -104,9 +104,6 @@ def ensure_shapekey_collection(context: bpy.types.Context) -> bpy.types.Collecti
         scene.collection.children.link(coll)
 
     context.view_layer.layer_collection.children[coll.name].exclude = False
-
-    for obj in coll.all_objects:
-        obj.hide_set(True)
 
     return coll
 
@@ -308,6 +305,7 @@ class GNSK_add_shape(bpy.types.Operator):
         self.restore_modifiers(obj, modifier_states)
 
         obj.hide_set(True)
+        sk_ob.hide_set(False)
         sk_ob.select_set(True)
         context.view_layer.objects.active = sk_ob
 
@@ -397,7 +395,7 @@ class GNSK_remove_shape(bpy.types.Operator):
             # Remove the storage object.
             bpy.data.objects.remove(storage_ob)
             # Remove collection if it's empty.
-            coll = ensure_shapekey_collection(context.scene)
+            coll = ensure_shapekey_collection(context)
             if len(coll.all_objects) == 0:
                 bpy.data.collections.remove(coll)
 
