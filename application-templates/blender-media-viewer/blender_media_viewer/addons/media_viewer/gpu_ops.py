@@ -217,6 +217,7 @@ class MV_OT_render_review_img_editor(bpy.types.Operator):
             layer_index=layer_idx,
             pass_index=pass_idx,
         )
+        image_gpu_tex = gpu.texture.from_image(image)
 
         # Create a Buffer on GPU that will be used to first render the image into,
         # then the annotation.
@@ -250,16 +251,16 @@ class MV_OT_render_review_img_editor(bpy.types.Operator):
                 gpu.matrix.load_projection_matrix(mat)
 
                 # Draw the texture.
-                gpu_extras.presets.draw_texture_2d(image.bindcode, (0, 0), 1, 1)
+                gpu_extras.presets.draw_texture_2d(image_gpu_tex, (0, 0), 1, 1)
 
                 # Draw grease pencil over it.
                 gpu_opsdata.draw_callback(GP_DRAWER, frame=frame)
 
-            buffer = gpu.texture.read()
+            buffer = gpu_texture.read()
 
             # new_image.scale(width, height) does not seem to do a difference?
             # Set new_image.pixels to the composited buffer.
-            new_image.pixels = [v for v in buffer]
+            new_image.pixels = [f_val for row in buffer.to_list() for color in row for f_val in color]
 
         return new_image
 
