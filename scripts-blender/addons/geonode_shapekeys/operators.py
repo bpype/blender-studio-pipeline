@@ -8,7 +8,13 @@ COLLECTION_NAME = "GeoNode Shape Keys"
 
 
 def geomod_get_identifier(modifier: bpy.types.Modifier, param_name: str) -> str:
-    input = modifier.node_group.inputs.get(param_name)
+    if hasattr(modifier.node_group, 'interface'):
+        # 4.0
+        input = modifier.node_group.interface.items_tree[param_name]
+    else:
+        # 3.6
+        input = modifier.node_group.inputs.get(param_name)
+
     if input:
         return input.identifier
 
@@ -16,24 +22,27 @@ def geomod_get_identifier(modifier: bpy.types.Modifier, param_name: str) -> str:
 def geomod_get_data_path(modifier: bpy.types.Modifier, param_name: str) -> str:
     return f'modifiers["{modifier.name}"]["{geomod_get_identifier(modifier, param_name)}"]'
 
+
 def geomod_set_param_value(modifier: bpy.types.Modifier, param_name: str, param_value: Any):
     input_id = geomod_get_identifier(modifier, param_name)
     # Note: Must use setattr, see T103865.
     setattr(modifier, f'["{input_id}"]', param_value)
 
+
 def geomod_get_param_value(modifier: bpy.types.Modifier, param_name: str):
     input_id = geomod_get_identifier(modifier, param_name)
     return modifier[input_id]
 
+
 def geomod_set_param_use_attribute(modifier: bpy.types.Modifier, param_name: str, use_attrib: bool):
     input_id = geomod_get_identifier(modifier, param_name)
-    modifier[input_id+"_use_attribute"] = use_attrib
+    modifier[input_id + "_use_attribute"] = use_attrib
 
 
 def geomod_set_param_attribute(modifier: bpy.types.Modifier, param_name: str, attrib_name: str):
     input_id = geomod_get_identifier(modifier, param_name)
-    modifier[input_id+"_use_attribute"] = True
-    modifier[input_id+"_attribute_name"] = attrib_name
+    modifier[input_id + "_use_attribute"] = True
+    modifier[input_id + "_attribute_name"] = attrib_name
 
 
 def get_resource_blend_path(context) -> Tuple[str, bool]:
@@ -42,11 +51,16 @@ def get_resource_blend_path(context) -> Tuple[str, bool]:
     addon_prefs = context.preferences.addons[__package__].preferences
 
     # Hardcoding for Pet Projects. Relies on the SVN add-on being enabled.
-    if hasattr(context.scene, 'svn') and context.scene.svn.svn_url == 'https://svn.blender.studio/repo/pets':
+    if (
+        hasattr(context.scene, 'svn')
+        and context.scene.svn.svn_url == 'https://svn.blender.studio/repo/pets'
+    ):
         svn_dir = context.scene.svn.svn_directory
         filepath = Path(svn_dir) / Path("pro/lib/nodes/GeoNodeShapeKey.blend")
         if not filepath.exists():
-            raise FileNotFoundError(f"Node tree file not found: '{filepath.as_posix()}'. Browse it in the add-on preferences.")
+            raise FileNotFoundError(
+                f"Node tree file not found: '{filepath.as_posix()}'. Browse it in the add-on preferences."
+            )
         return filepath.as_posix(), True
 
     if addon_prefs.node_import_type == 'APPEND':
@@ -56,7 +70,9 @@ def get_resource_blend_path(context) -> Tuple[str, bool]:
     elif addon_prefs.node_import_type == 'LINK':
         filepath = Path(addon_prefs.blend_path)
         if not filepath.exists():
-            raise FileNotFoundError(f"Node tree file not found: '{filepath.as_posix()}'. Browse it in the add-on preferences.")
+            raise FileNotFoundError(
+                f"Node tree file not found: '{filepath.as_posix()}'. Browse it in the add-on preferences."
+            )
 
     return filepath.as_posix(), addon_prefs.node_import_type == 'LINK'
 
@@ -98,28 +114,34 @@ def ensure_shapekey_collection(context: bpy.types.Context) -> bpy.types.Collecti
 def get_gnsk_targets(gnsk):
     return gnsk.storage_object.geonode_shapekey_targets
 
+
 def get_active_gnsk_targets(obj):
     active_gnsk = obj.geonode_shapekeys[obj.geonode_shapekey_index]
     return get_gnsk_targets(active_gnsk)
 
+
 class GNSK_add_shape(bpy.types.Operator):
     """Create a GeoNode modifier set-up and a duplicate object"""
+
     bl_idname = "object.add_geonode_shape_key"
     bl_label = "Add GeoNode Shape Key"
     bl_options = {'REGISTER', 'UNDO'}
 
     # Maybe add an option to keyframe this to only be active on this frame.
     shape_name: StringProperty(
-        name="Shape Name", description="Name to identify this shape (used in the shape key and modifier names)")
+        name="Shape Name",
+        description="Name to identify this shape (used in the shape key and modifier names)",
+    )
     uv_name: StringProperty(
-        name="UVMap", description="UV Map to use for the deform space magic. All selected objects must have a map with this name, or the default will be used")
+        name="UVMap",
+        description="UV Map to use for the deform space magic. All selected objects must have a map with this name, or the default will be used",
+    )
 
     def invoke(self, context, _event):
         for o in context.selected_objects:
             uvs = o.data.uv_layers
             if len(uvs) == 0:
-                self.report(
-                    {'ERROR'}, 'All selected mesh objects must have a UV Map!')
+                self.report({'ERROR'}, 'All selected mesh objects must have a UV Map!')
                 return {'CANCELLED'}
 
         uvs = context.object.data.uv_layers
@@ -131,8 +153,7 @@ class GNSK_add_shape(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        layout.prop_search(self, 'uv_name', context.object.data,
-                           'uv_layers', icon='GROUP_UVS')
+        layout.prop_search(self, 'uv_name', context.object.data, 'uv_layers', icon='GROUP_UVS')
         layout.prop(self, 'shape_name')
 
     def execute(self, context):
@@ -143,8 +164,7 @@ class GNSK_add_shape(bpy.types.Operator):
         mesh_objs = context.selected_objects
         for obj in mesh_objs:
             if self.uv_name not in obj.data.uv_layers:
-                self.report(
-                    {'ERROR'}, f'Object "{obj.name}" has no UV Map named "{self.uv_name}"!')
+                self.report({'ERROR'}, f'Object "{obj.name}" has no UV Map named "{self.uv_name}"!')
                 return {'CANCELLED'}
 
         sk_ob = self.make_combined_sculpt_mesh(context, mesh_objs)
@@ -157,7 +177,7 @@ class GNSK_add_shape(bpy.types.Operator):
             mod = obj.modifiers.new(gnsk.name, type='NODES')
             mod.node_group = link_shape_key_node_tree(context)
 
-            # Find desired modifier index: After any other GNSK modifier, or if 
+            # Find desired modifier index: After any other GNSK modifier, or if
             # none, before the SubSurf modifier.
             mod_index = self.get_desired_modifier_index(obj, mod)
             with context.temp_override(object=obj):
@@ -186,7 +206,9 @@ class GNSK_add_shape(bpy.types.Operator):
 
         return {'FINISHED'}
 
-    def make_combined_sculpt_mesh(self, context, mesh_objs: List[bpy.types.Object]) -> bpy.types.Object:
+    def make_combined_sculpt_mesh(
+        self, context, mesh_objs: List[bpy.types.Object]
+    ) -> bpy.types.Object:
         # Save evaluated objects into a new, combined object.
         for obj in mesh_objs:
             self.make_evaluated_object(context, obj)
@@ -197,10 +219,7 @@ class GNSK_add_shape(bpy.types.Operator):
         sk_ob.name = self.shape_name
         return sk_ob
 
-    def get_desired_modifier_index(self,
-                                   obj: bpy.types.Object,
-                                   mod: bpy.types.Modifier
-                                   ) -> int:
+    def get_desired_modifier_index(self, obj: bpy.types.Object, mod: bpy.types.Modifier) -> int:
         """Figure out the desired index to insert the next GeoNodes ShapeKey modifier at.
         If there are any other GNSK modifiers, we should insert after the last one.
         Otherwise, insert before any SubSurf modifiers, if any.
@@ -211,7 +230,7 @@ class GNSK_add_shape(bpy.types.Operator):
             if m == mod:
                 continue
             if m.type == 'NODES' and m.node_group == mod.node_group:
-                return i+1
+                return i + 1
 
         for i, m in enumerate(obj.modifiers):
             if m.type == 'SUBSURF':
@@ -258,11 +277,10 @@ class GNSK_add_shape(bpy.types.Operator):
                     if fc:
                         fc.mute = False
 
-    def make_evaluated_object(self,
-                              context: bpy.types.Context,
-                              obj: bpy.types.Object
-                              ) -> bpy.types.Object:
-        
+    def make_evaluated_object(
+        self, context: bpy.types.Context, obj: bpy.types.Object
+    ) -> bpy.types.Object:
+
         obj.override_library.is_system_override = False
 
         # Disable the first SubSurf and all subsequent modifiers.
@@ -271,7 +289,7 @@ class GNSK_add_shape(bpy.types.Operator):
         eval_dg = context.evaluated_depsgraph_get()
 
         sk_mesh = bpy.data.meshes.new_from_object(obj.evaluated_get(eval_dg))
-        sk_ob = bpy.data.objects.new(obj.name+"."+self.shape_name, sk_mesh)
+        sk_ob = bpy.data.objects.new(obj.name + "." + self.shape_name, sk_mesh)
         sk_ob.data.name = sk_ob.name
         sk_coll = ensure_shapekey_collection(context)
         sk_coll.objects.link(sk_ob)
@@ -298,12 +316,16 @@ class GNSK_add_shape(bpy.types.Operator):
 
 class GNSK_remove_shape(bpy.types.Operator):
     """Create a GeoNode modifier set-up and a duplicate object"""
+
     bl_idname = "object.remove_geonode_shape_key"
     bl_label = "Add GeoNode Shape Key"
     bl_options = {'REGISTER', 'UNDO'}
 
     remove_from_all: BoolProperty(
-        name="Remove From All?", description="Remove this shape from all affected objects, and delete the local object", default=False)
+        name="Remove From All?",
+        description="Remove this shape from all affected objects, and delete the local object",
+        default=False,
+    )
 
     def invoke(self, context, _event):
         if len(get_active_gnsk_targets(context.object)) > 1:
@@ -353,8 +375,7 @@ class GNSK_remove_shape(bpy.types.Operator):
             ob.geonode_shapekeys.remove(gnsk_idx)
 
             # Fix the active index
-            ob.geonode_shapekey_index = min(
-                gnsk_idx, len(ob.geonode_shapekeys)-1)
+            ob.geonode_shapekey_index = min(gnsk_idx, len(ob.geonode_shapekeys) - 1)
 
             # Remove the target reference from the storage object
             for i, target in enumerate(storage_ob.geonode_shapekey_targets):
@@ -366,11 +387,11 @@ class GNSK_remove_shape(bpy.types.Operator):
 
             # Give feedback
             if mod_removed:
-                self.report(
-                    {'INFO'}, f'{ob.name}: Successfully deleted Object and Modifier.')
+                self.report({'INFO'}, f'{ob.name}: Successfully deleted Object and Modifier.')
             else:
                 self.report(
-                    {'WARNING'}, f'{ob.name}: Modifier for "{active_gnsk.name}" was not found.')
+                    {'WARNING'}, f'{ob.name}: Modifier for "{active_gnsk.name}" was not found.'
+                )
 
         if delete_storage:
             # Remove the storage object.
@@ -385,6 +406,7 @@ class GNSK_remove_shape(bpy.types.Operator):
 
 class GNSK_toggle_object(bpy.types.Operator):
     """Swap between the sculpt and overridden objects"""
+
     bl_idname = "object.geonode_shapekey_switch_focus"
     bl_label = "GeoNode Shape Keys: Switch Focus"
     bl_options = {'REGISTER', 'UNDO'}
@@ -417,8 +439,8 @@ class GNSK_toggle_object(bpy.types.Operator):
                 target_ob.select_set(True)
                 context.view_layer.objects.active = target_ob
 
-                # Trigger an update... otherwise, since we insert the modifier 
-                # somewhere other than the bottom of the stack, it sometimes 
+                # Trigger an update... otherwise, since we insert the modifier
+                # somewhere other than the bottom of the stack, it sometimes
                 # doesn't update live.
                 target_ob.name = target_ob.name
 
@@ -449,18 +471,19 @@ class GNSK_toggle_object(bpy.types.Operator):
 
 class GNSK_influence_slider(bpy.types.Operator):
     """Change the influence on all affected meshes"""
+
     bl_idname = "object.geonode_shapekey_influence_slider"
     bl_label = "Change Influence of All Selected"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     gnsk_index: IntProperty(default=0)
     # TODO: If one day, Library Overrides support adding drivers (and saving and reloading the file),
-    # this should be changed to instead allow assigning the active object's influence as the 
+    # this should be changed to instead allow assigning the active object's influence as the
     # driver for all others.
     insert_keyframe: BoolProperty(
-        name="Insert Keyframe", 
-        description="Insert a keyframe on all affected values", 
-        default=False
+        name="Insert Keyframe",
+        description="Insert a keyframe on all affected values",
+        default=False,
     )
 
     def update_slider(self, context):
@@ -476,16 +499,19 @@ class GNSK_influence_slider(bpy.types.Operator):
                     break
 
     slider_value: FloatProperty(
-        name="Influence", 
-        description="Influence to set on all affected objects", 
+        name="Influence",
+        description="Influence to set on all affected objects",
         update=update_slider,
-        min=0, max=1
+        min=0,
+        max=1,
     )
 
     def invoke(self, context, _event):
         self.insert_keyframe = context.scene.tool_settings.use_keyframe_insert_auto
         wm = context.window_manager
-        self.slider_value = geomod_get_param_value(context.object.geonode_shapekeys[self.gnsk_index].modifier, 'Factor')
+        self.slider_value = geomod_get_param_value(
+            context.object.geonode_shapekeys[self.gnsk_index].modifier, 'Factor'
+        )
         return wm.invoke_props_dialog(self)
 
     def draw(self, context):
@@ -503,13 +529,14 @@ class GNSK_influence_slider(bpy.types.Operator):
             row = layout.row()
             row.enabled = False
             row.prop(target, 'obj', text="")
-    
+
     def execute(self, context):
         return {'FINISHED'}
 
 
 class GNSK_select_objects(bpy.types.Operator):
     """Select objects that share a sculpt object with this GeoNode ShapeKey"""
+
     bl_idname = "object.geonode_shapekey_select_objects"
     bl_label = "Select Objects"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -519,7 +546,7 @@ class GNSK_select_objects(bpy.types.Operator):
     def execute(self, context):
         obj = context.object
         gnsk = obj.geonode_shapekeys[self.gnsk_index]
-        
+
         count_hidden = 0
         count_selected = 0
         for target in gnsk.storage_object.geonode_shapekey_targets:
@@ -529,17 +556,18 @@ class GNSK_select_objects(bpy.types.Operator):
                 count_selected += 1
             else:
                 count_hidden += 1
-        
+
         if count_hidden > 0:
             self.report({'WARNING'}, f"{count_hidden} hidden objects were not selected.")
         else:
             self.report({'INFO'}, f"All {count_selected} objects were selected.")
-        
+
         return {'FINISHED'}
 
 
 class GNSK_setup_uvs(bpy.types.Operator):
     """Ensure a set of non-overlapping UVs in a UVMap across all selected meshes"""
+
     bl_idname = "object.geonode_shapekey_ensure_uvmap"
     bl_label = "Ensure GNSK UVMap"
     bl_options = {'REGISTER', 'UNDO'}
@@ -567,8 +595,9 @@ class GNSK_setup_uvs(bpy.types.Operator):
         for ob, layer in active_layers_bkp.items():
             ob.data.uv_layers.active = ob.data.uv_layers.get(layer)
             print(ob.name, layer)
-        
+
         return {'FINISHED'}
+
 
 registry = [
     GNSK_add_shape,
@@ -576,5 +605,5 @@ registry = [
     GNSK_toggle_object,
     GNSK_influence_slider,
     GNSK_select_objects,
-    GNSK_setup_uvs
+    GNSK_setup_uvs,
 ]
