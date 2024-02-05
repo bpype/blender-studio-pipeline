@@ -81,6 +81,8 @@ class AssetTransferMapping:
             # Skip items with no owner
             if local_obj.asset_id_owner == "NONE":
                 continue
+            if local_obj.library:
+                continue
             external_obj = self._get_external_object(local_obj)
             if not external_obj:
                 print(f"Couldn't find external obj for {local_obj}")
@@ -114,6 +116,8 @@ class AssetTransferMapping:
 
         # Find new objects to add to local_col
         for external_obj in self._external_col.all_objects:
+            if local_obj.library:
+                continue
             local_col_objs = self._local_top_col.all_objects
             obj = local_col_objs.get(merge_get_target_name(external_obj.name))
             if not obj and external_obj.asset_id_owner not in self._local_tls:
@@ -289,7 +293,9 @@ class AssetTransferMapping:
             if source_obj.type != 'MESH':
                 continue
 
-            active_uv_name = source_obj.data.uv_layers.active.name if source_obj.data.uv_layers.active else ''
+            active_uv_name = (
+                source_obj.data.uv_layers.active.name if source_obj.data.uv_layers.active else ''
+            )
             active_color_attribute_name = source_obj.data.color_attributes.active_color_name
             index_map[source_obj] = {
                 'active_uv_name': active_uv_name,
