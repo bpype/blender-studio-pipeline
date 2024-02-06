@@ -54,43 +54,48 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
     if old_mod:
         target_obj.modifiers.remove(old_mod)
 
-    # transfer new modifiers
+    # get modifier index
     for i, source_mod in enumerate(source_obj.modifiers):
         if source_mod.name == modifier_name:
-            mod_new = target_obj.modifiers.new(source_mod.name, source_mod.type)
-            # sort new modifier at correct index (default to beginning of the stack)
-            idx = 0
-            if i > 0:
-                name_prev = source_obj.modifiers[i - 1].name
-                for target_mod_i, target_mod in enumerate(target_obj.modifiers):
-                    if task_layer_prefix_basename_get(
-                        target_mod.name
-                    ) == task_layer_prefix_basename_get(name_prev):
-                        idx = target_mod_i + 1
-            with override_obj_visability(obj=target_obj, scene=scene):
-                with context.temp_override(object=target_obj):
-                    bpy.ops.object.modifier_move_to_index(modifier=mod_new.name, index=idx)
-            target_mod = target_obj.modifiers.get(source_mod.name)
-            props = [p.identifier for p in source_mod.bl_rna.properties if not p.is_readonly]
+            source_index = i
+            break
+
+    # create target mod
+    mod_new = target_obj.modifiers.new(source_mod.name, source_mod.type)
+
+    # move new modifier at correct index (default to beginning of the stack)
+    idx = 0
+    if source_index > 0:
+        name_prev = source_obj.modifiers[i - 1].name
+        for target_mod_i, target_mod in enumerate(target_obj.modifiers):
+            if task_layer_prefix_basename_get(target_mod.name) == task_layer_prefix_basename_get(
+                name_prev
+            ):
+                idx = target_mod_i + 1
+
+    with override_obj_visability(obj=target_obj, scene=scene):
+        with context.temp_override(object=target_obj):
+            bpy.ops.object.modifier_move_to_index(modifier=mod_new.name, index=idx)
+
+    target_mod = target_obj.modifiers.get(source_mod.name)
+    props = [p.identifier for p in source_mod.bl_rna.properties if not p.is_readonly]
+    for prop in props:
+        value = getattr(source_mod, prop)
+        setattr(target_mod, prop, value)
+
+    if source_mod.type == 'NODES':
+        # Transfer geo node attributes
+        for key, value in source_mod.items():
+            target_mod[key] = value
+
+        # Transfer geo node bake settings
+        target_mod.bake_directory = source_mod.bake_directory
+        for index, target_bake in enumerate(target_mod.bakes):
+            source_bake = source_mod.bakes[index]
+            props = [p.identifier for p in source_bake.bl_rna.properties if not p.is_readonly]
             for prop in props:
-                value = getattr(source_mod, prop)
-                setattr(target_mod, prop, value)
-
-            if source_mod.type == 'NODES':
-                # Transfer geo node attributes
-                for key, value in source_mod.items():
-                    target_mod[key] = value
-
-                # Transfer geo node bake settings
-                target_mod.bake_directory = source_mod.bake_directory
-                for index, target_bake in enumerate(target_mod.bakes):
-                    source_bake = source_mod.bakes[index]
-                    props = [
-                        p.identifier for p in source_bake.bl_rna.properties if not p.is_readonly
-                    ]
-                    for prop in props:
-                        value = getattr(source_bake, prop)
-                        setattr(target_bake, prop, value)
+                value = getattr(source_bake, prop)
+                setattr(target_bake, prop, value)
 
     # rebind modifiers (corr. smooth, surf. deform, mesh deform)
     for source_mod in target_obj.modifiers:
