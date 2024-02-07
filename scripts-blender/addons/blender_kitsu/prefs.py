@@ -29,6 +29,7 @@ from pathlib import Path
 import bpy
 
 from . import cache, bkglobals
+from .props import get_safely_string_prop
 
 # TODO: restructure this to not access ops_playblast_data.
 from .playblast import opsdata as ops_playblast_data
@@ -44,6 +45,16 @@ from .shot_builder.editorial import editorial_export_check_latest
 
 
 logger = LoggerFactory.getLogger()
+
+
+def draw_file_path(
+    self, layout: bpy.types.UILayout, bool_prop: bool, bool_prop_name: str, path_prop_name: str
+) -> None:
+    # Draw auto-filled file path with option to override/edit this path
+    icon = "MODIFIER_ON" if bool_prop else "MODIFIER_OFF"
+    seq_row = layout.row(align=True)
+    seq_row.prop(self, path_prop_name)
+    seq_row.prop(self, bool_prop_name, icon=icon, text="")
 
 
 class KITSU_task(bpy.types.PropertyGroup):
@@ -191,36 +202,88 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         description="Metadata that is required for lookdev",
     )
 
+    def get_shot_playblast_root_dir(self) -> str:
+        frames_dir = self.project_root_path.joinpath("shared/editorial/footage/pro/")
+        if frames_dir.exists():
+            return frames_dir.as_posix()
+        return ""
+
+    def set_shot_playblast_root_dir(self, input):
+        self['shot_playblast_root_dir'] = input
+        return
+
+    def get_shot_playblast_root_dir(
+        self,
+    ) -> str:
+        if get_safely_string_prop(self, 'shot_playblast_root_dir') == "" and self.project_root_path:
+            dir = self.project_root_path.joinpath("shared/editorial/footage/pro/")
+            if dir.exists():
+                return dir.as_posix()
+        return get_safely_string_prop(self, 'shot_playblast_root_dir')
+
     shot_playblast_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Shot Playblasts",
         description="Directory path to shot playblast root folder. Should point to: {project}/editorial/footage/pro",
-        default="/data/gold/shared/editorial/footage/pro/",
+        default="",
         subtype="DIR_PATH",
         update=init_playblast_file_model,
+        get=get_shot_playblast_root_dir,
+        set=set_shot_playblast_root_dir,
     )
+
+    def set_seq_playblast_root_dir(self, input):
+        self['seq_playblast_root_dir'] = input
+        return
+
+    def get_seq_playblast_root_dir(
+        self,
+    ) -> str:
+        if get_safely_string_prop(self, 'seq_playblast_root_dir') == "" and self.project_root_path:
+            dir = self.project_root_path.joinpath("shared/editorial/footage/pre/")
+            if dir.exists():
+                return dir.as_posix()
+        return get_safely_string_prop(self, 'seq_playblast_root_dir')
 
     seq_playblast_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Sequence Playblasts",
         description="Directory path to sequence playblast root folder. Should point to: {project}/editorial/footage/pre",
-        default="/data/gold/shared/editorial/footage/pre/",
+        default="",
         subtype="DIR_PATH",
+        get=get_seq_playblast_root_dir,
+        set=set_seq_playblast_root_dir,
+        options=set(),
     )
+
+    def set_frames_root_dir(self, input):
+        self['frames_root_dir'] = input
+        return
+
+    def get_frames_root_dir(
+        self,
+    ) -> str:
+        if get_safely_string_prop(self, 'frames_root_dir') == "" and self.project_root_path:
+            dir = self.project_root_path.joinpath("shared/editorial/footage/post/")
+            if dir.exists():
+                return dir.as_posix()
+        return get_safely_string_prop(self, 'frames_root_dir')
 
     frames_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Rendered Frames",
         description="Directory path to rendered frames root folder. Should point to: {project}/editorial/footage/post",
-        default="/data/gold/shared/editorial/footage/post/",
+        default="",
         subtype="DIR_PATH",
+        get=get_frames_root_dir,
+        set=set_frames_root_dir,
     )
 
     project_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Project Root Directory",
         description=(
             "Directory path to the root of the project"
-            "In this directory blender kitsu searches for ./pipeline/blender_kitsu"
-            "folder to configure the addon per project"
+            "In this directory blender kitsu searches for the svn/ & shared/ directories"
+            "Directory should follow `you_project_name/` format without any subdirectories"
         ),
-        default="",
+        default="/data/gold/",
         subtype="DIR_PATH",
     )
     config_dir: bpy.props.StringProperty(  # type: ignore
@@ -295,18 +358,48 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         subtype='DIR_PATH',
     )
 
+    def set_edit_export_dir(self, input):
+        self['edit_export_dir'] = input
+        return
+
+    def get_edit_export_dir(
+        self,
+    ) -> str:
+        if get_safely_string_prop(self, 'edit_export_dir') == "" and self.project_root_path:
+            dir = self.project_root_path.joinpath("shared/editorial/export/")
+            if dir.exists():
+                return dir.as_posix()
+        return get_safely_string_prop(self, 'edit_export_dir')
+
     edit_export_dir: bpy.props.StringProperty(  # type: ignore
         name="Editorial Export Directory",
         options={"HIDDEN", "SKIP_SAVE"},
         description="Directory path to editorial's export folder containing storyboard/animatic exports. Path should be similar to '~/shared-{proj_name}/editorial/export/'",
         subtype="DIR_PATH",
+        get=get_edit_export_dir,
+        set=set_edit_export_dir,
     )
+
+    def set_edit_export_file_pattern(self, input):
+        self['edit_export_file_pattern'] = input
+        return
+
+    def get_edit_export_file_pattern(
+        self,
+    ) -> str:
+        active_project = cache.project_active_get()
+        if get_safely_string_prop(self, 'edit_export_file_pattern') == "" and active_project:
+            proj_name = active_project.name.replace(' ', bkglobals.SPACE_REPLACER).lower()
+            return f"{proj_name}-edit-v###.mp4"
+        return get_safely_string_prop(self, 'edit_export_file_pattern')
 
     edit_export_file_pattern: bpy.props.StringProperty(  # type: ignore
         name="Editorial Export File Pattern",
         options={"HIDDEN", "SKIP_SAVE"},
-        description="File pattern to search for latest editorial export. Typically '{proj_name}_v\d\d\d.mp4'",
-        default="petprojects_v\d\d\d.mp4",
+        description="File pattern for latest editorial export file. Typically '{proj_name}-edit-v###.mp4' where # represents a number",
+        default="",
+        get=get_edit_export_file_pattern,
+        set=set_edit_export_file_pattern,
     )
 
     edit_export_frame_offset: bpy.props.IntProperty(  # type: ignore
@@ -339,10 +432,16 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        flow = layout.grid_flow(
+            row_major=True, columns=0, even_columns=True, even_rows=True, align=False
+        )
+        col = flow.column()
         project_active = cache.project_active_get()
 
         # Login.
-        box = layout.box()
+        box = col.box()
         box.label(text="Login and Host Settings", icon="URL")
         if not self.session.is_auth():
             box.row().prop(self, "host")
@@ -357,7 +456,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             box.row().operator(KITSU_OT_session_end.bl_idname, text="Logout", icon="PANEL_CLOSE")
 
         # Project
-        box = layout.box()
+        box = col.box()
         box.label(text="Project", icon="FILEBROWSER")
         row = box.row(align=True)
 
@@ -374,7 +473,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         box.row().prop(self, "project_root_dir")
 
         # Previews
-        box = layout.box()
+        box = col.box()
         box.label(text="Previews", icon="RENDER_ANIMATION")
         box.row().prop(self, "shot_playblast_root_dir")
         box.row().prop(self, "seq_playblast_root_dir")
@@ -383,10 +482,10 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         box.row().prop(self, "pb_open_vse")
 
         # Lookdev tools settings.
-        self.lookdev.draw(context, layout)
+        self.lookdev.draw(context, col)
 
         # Sequence editor include paths.
-        box = layout.box()
+        box = col.box()
         box.label(text="Media Update Search Paths", icon="SEQUENCE")
         box.label(
             text="Only the movie strips that have their source media coming from one of these folders (recursive) will be checked for media updates"
@@ -411,7 +510,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         )
 
         # Shot_Builder settings.
-        box = layout.box()
+        box = col.box()
         box.label(text="Shot Builder", icon="MOD_BUILD")
         box.row().prop(self, "edit_export_dir")
         box.row().prop(self, "edit_export_file_pattern")
@@ -426,7 +525,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         box.operator("kitsu.save_shot_builder_hooks", icon='FILE_SCRIPT')
 
         # Misc settings.
-        box = layout.box()
+        box = col.box()
         box.label(text="Miscellaneous", icon="MODIFIER")
         box.row().prop(self, "thumbnail_dir")
         box.row().prop(self, "sqe_render_dir")
@@ -513,7 +612,7 @@ def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
 
 def project_root_dir_get(context: bpy.types.Context):
     addon_prefs = addon_prefs_get(context)
-    return Path(addon_prefs.project_root_dir).resolve()
+    return Path(addon_prefs.project_root_dir).joinpath('svn').resolve()
 
 
 def session_auth(context: bpy.types.Context) -> bool:

@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union, Optional
 
 import bpy
-
+from .. import bkglobals
 from ..logger import LoggerFactory
 from ..types import Sequence, Task, TaskStatus, Shot, TaskType
 
@@ -171,7 +171,7 @@ def upload_preview(
     context: bpy.types.Context, filepath: Path, task_type: TaskType, comment: str = ""
 ) -> None:
     # Get shot by id which is in filename of thumbnail.
-    shot_id = filepath.name.split("_")[0]
+    shot_id = filepath.name.split(bkglobals.SPACE_REPLACER)[0]
     shot = Shot.by_id(shot_id)
 
     # Find task from task type for that shot, ca be None of no task was added for that task type.

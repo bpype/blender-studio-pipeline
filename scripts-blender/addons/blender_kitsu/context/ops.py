@@ -99,7 +99,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
         item_group = filepath.parents[1].name
         item = filepath.parents[0].name
-        item_task_type = filepath.stem.split(bkglobals.FILE_DELIMITER)[-1]
+        item_task_type = filepath.stem.split(bkglobals.DELIMITER)[-1]
 
         if category == bkglobals.SHOT_DIR_NAME or category == bkglobals.SEQ_DIR_NAME:
             if category == bkglobals.SHOT_DIR_NAME:

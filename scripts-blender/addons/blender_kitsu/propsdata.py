@@ -117,7 +117,7 @@ def get_playblast_dir(self: Any) -> str:
     episode = cache.episode_active_get()
     sequence = cache.sequence_active_get()
     shot = cache.shot_active_get()
-    delimiter = bkglobals.FILE_DELIMITER
+    delimiter = bkglobals.DELIMITER
 
     # Start building path
     playblast_dir = addon_prefs.shot_playblast_root_path
@@ -149,7 +149,7 @@ def get_playblast_file(self: Any) -> str:
     version = self.playblast_version
     shot = cache.shot_active_get()
     sequence = cache.sequence_active_get()
-    delimiter = bkglobals.FILE_DELIMITER
+    delimiter = bkglobals.DELIMITER
 
     # 070_0010_A-anim-v001.mp4.
 

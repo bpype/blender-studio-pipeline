@@ -164,9 +164,9 @@ def get_ref_coll(coll: bpy.types.Collection) -> bpy.types.Collection:
 
 def find_asset_name(name: str) -> str:
     name = _kill_increment_end(name)
-    if name.endswith("_rig"):
+    if name.endswith(bkglobals.SPACE_REPLACER + "rig"):
         name = name[:-4]
-    return name.split("-")[-1]  # CH-rex -> 'rex'
+    return name.split(bkglobals.DELIMITER)[-1]  # CH-rex -> 'rex'
 
 
 def _kill_increment_end(str_value: str) -> str:
@@ -211,9 +211,9 @@ def gen_action_name(
 
     def _find_postfix(action_name: str) -> Optional[str]:
         # ANI-lady_bug_A.030_0020_A.v001.
-        split1 = action_name.split("-")[-1]  # lady_bug_A.030_0020_A.v001
+        split1 = action_name.split(bkglobals.DELIMITER)[-1]  # lady_bug_A.030_0020_A.v001
         split2 = split1.split(".")[0]  # lady_bug_A
-        split3 = split2.split("_")[-1]  # A
+        split3 = split2.split(bkglobals.SPACE_REPLACER)[-1]  # A
         if len(split3) == 1:
             # is postfix
             # print(f"{action.name} found postfix: {split3}")
@@ -224,7 +224,7 @@ def gen_action_name(
     ref_coll = get_ref_coll(collection)
     action_prefix = "ANI"
     asset_name = find_asset_name(ref_coll.name).lower()
-    asset_name = asset_name.replace(".", "_")
+    asset_name = asset_name.replace(".", bkglobals.SPACE_REPLACER)
 
     # Track on which repition we are of the same asset.
     if asset_name == _current_asset:
@@ -245,7 +245,7 @@ def gen_action_name(
             version = util.get_version(armature.animation_data.action.name) or "v001"
 
     # Action name for single aset.
-    fd = bkglobals.FILE_DELIMITER  # Currently set to '-'
+    fd = bkglobals.DELIMITER  # Currently set to '-'
     action_name = f"{action_prefix}{fd}{asset_name}{fd}{shot_name}{fd}{version}"
 
     if is_multi_asset(asset_name):

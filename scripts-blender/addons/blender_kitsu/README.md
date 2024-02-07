@@ -339,7 +339,7 @@ Shot Builder can load Exports from Editorial to the .blend's VSE for reference.
 2. Search for the `Blender Kitsu` Add-On
 3. In the `Blender Kitsu` Add-On preferences find the `Shot Builder` section
 4. Set your `Editorial Export Directory` to `your_project/shared/editorial/export/`
-5. Set your `Editorial File Pattern` to `your_project_v\d\d\d.mp4` where `\d` represents a digit. This pattern matches a file named `your_movie_v001.mp4`.
+5. Set your `Editorial File Pattern` to `your_project-edit-v###.mp4` where `#` represents a digit. This pattern matches a file named `your_project-edit-v001.mp4`.
 
 #### Run Shot Builder
 1. Open Blender

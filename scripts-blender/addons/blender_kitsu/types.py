@@ -607,10 +607,10 @@ class Shot(Entity):
             return bkglobals.FRAME_START
 
     def get_task_name(self, task_type_short_name: str) -> str:  #
-        return f"{self.name}{bkglobals.FILE_DELIMITER}{task_type_short_name}"
+        return f"{self.name}{bkglobals.DELIMITER}{task_type_short_name}"
 
     def get_output_collection_name(self, task_type_short_name: str) -> str:
-        return f"{self.get_task_name(task_type_short_name)}{bkglobals.FILE_DELIMITER}output"
+        return f"{self.get_task_name(task_type_short_name)}{bkglobals.DELIMITER}output"
 
     def get_dir(self, context) -> str:
         project_root_dir = prefs.project_root_dir_get(context)

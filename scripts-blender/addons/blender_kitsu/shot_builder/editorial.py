@@ -74,7 +74,8 @@ def editorial_export_check_latest(context: bpy.types.Context):
 
 def editorial_export_is_valid_edit_name(file_pattern: str, filename: str) -> bool:
     """Verify file name matches file pattern set in preferences"""
-    match = re.search(file_pattern, filename)
+    # Replace `#` with `\d` to represent digits
+    match = re.search(file_pattern, filename.replace('#', '\d'))
     if match:
         return True
     return False
