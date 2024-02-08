@@ -2,6 +2,12 @@
 
 Project Tools will store a version of Blender within the `shared` directory. This version of Blender is internal to that project. This allows for multiple Blenders to be installed on your system, each with their own preferences tailored specifically to that project. The main advantage to running/managing Blender using the Project Tools scripts is that it will synchronize the Blender version and Shared Add-Ons across for all users contributing the the project. Project Tools also allows you to run a custom build of Blender with the Add-Ons and preferences set for your project. 
 
+<!---
+TODO Note from Julien:
+An important info atm is that the `datafiles` folder is NOT being used from the Project Blender. This folder is directly referenced from the primary Blender preferences (on Linux at `/home/<user>/.config/blender/<version>/datafiles/`)
+So if there are any World HDRIs and Matcaps that you'd like to use, these will be availible on both Blender versions.
+--->
+
 ## Blender Setup
 The next step is to deploy the required software onto each of the studio's workstations.
 
