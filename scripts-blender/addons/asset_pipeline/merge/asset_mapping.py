@@ -116,7 +116,7 @@ class AssetTransferMapping:
 
         # Find new objects to add to local_col
         for external_obj in self._external_col.all_objects:
-            if local_obj.library:
+            if external_obj.library:
                 continue
             local_col_objs = self._local_top_col.all_objects
             obj = local_col_objs.get(merge_get_target_name(external_obj.name))
