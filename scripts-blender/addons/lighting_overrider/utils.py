@@ -181,10 +181,17 @@ def mute_driver(db, path):
 
 def mute_animation_on_rna_path(rna_path):
     path_elements = parse_rna_path_to_elements(rna_path)
-    data_block = eval('.'.join(path_elements[:3]))
+    db_path = '.'.join(path_elements[:3])
+    if 'session_uid' in dir(eval(db_path)):
+        data_block = eval(db_path)
+        path = '.'.join(path_elements[3:])
+    else: # handle custom props
+        db_path, c_prop = parse_rna_path_for_custom_property(rna_path)
+        data_block = eval(db_path)
+        path = f'["{c_prop}"]'
+
     if data_block.id_type in ['ACTION', 'BRUSH', 'COLLECTION', 'IMAGE', 'LIBRARY', 'PALETTE', 'PAINTCURVE', 'SCREEN', 'TEXT', 'WINDOWMANAGER', 'WORKSPACE']:
         return
-    path = '.'.join(path_elements[3:])
 
     mute_fcurve(data_block, path)
     mute_driver(data_block, path)

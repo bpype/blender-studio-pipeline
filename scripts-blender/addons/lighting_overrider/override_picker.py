@@ -220,19 +220,29 @@ class LOR_OT_override_picker(bpy.types.Operator):
         add_info=[self.name_string, self.rna_path, context.scene.override, self.type]
         rna_overrides.add_rna_override(context, add_info)
 
+
+        # TODO deduplicate with utils
         if path_elements[2].startswith('objects'):
-            exec('.'.join(path_elements[:3])+'.update_tag()')
+            db_path = '.'.join(path_elements[:3])
+            if 'session_uid' in dir(eval(db_path)):
+                data_block = eval(db_path)
+                subpath = f'.{".".join(path_elements[3:])}'
+            else: # handle custom props
+                db_path, c_prop = utils.parse_rna_path_for_custom_property(self.rna_path)
+                data_block = eval(db_path)
+                subpath = f'["{c_prop}"]'
+
+            data_block.update_tag()
 
         if not self.batch_override:
             del context.scene['override']
             return {'FINISHED'}
 
         for ob in context.selected_objects:
-            subpath = '.'.join(path_elements[3:])
             if ob.library:
-                rna_path = f'bpy.data.objects["{ob.name}", "{ob.library.filepath}"].{subpath}'
+                rna_path = f'bpy.data.objects["{ob.name}", "{ob.library.filepath}"]{subpath}'
             else:
-                rna_path = f'bpy.data.objects["{ob.name}"].{subpath}'
+                rna_path = f'bpy.data.objects["{ob.name}"]{subpath}'
 
             utils.mute_animation_on_rna_path(rna_path)
             try:

@@ -1,6 +1,7 @@
 from .. import utils
 from ..templates import *
 import bpy
+import idprop
 
 import inspect
 
