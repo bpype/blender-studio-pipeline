@@ -114,6 +114,7 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
     _built_shot = False
     _add_vse_area = False
     _file_path = ''
+    _current_kitsu_context = ""
     production_name: bpy.props.StringProperty(  # type: ignore
         name="Production",
         description="Name of the production to create a shot file for",
@@ -147,6 +148,11 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
         global active_project
+
+        # Temporarily change kitsu context to shit
+        self._current_kitsu_context = context.scene.kitsu.category
+        context.scene.kitsu.category = "SHOT"
+
         addon_prefs = prefs.addon_prefs_get(bpy.context)
         project = cache.project_active_get()
         active_project = project
@@ -180,6 +186,11 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         for task_type in shot.get_all_task_types():
             if task_type.id == self.task_type:
                 return task_type
+
+    def cancel(self, context: bpy.types.Context):
+        # Restore kitsu context if cancelled
+        context.scene.kitsu.category = self._current_kitsu_context
+        return {'CANCELLED'}
 
     def execute(self, context: bpy.types.Context):
         # Get Properties
