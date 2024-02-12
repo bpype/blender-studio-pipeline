@@ -179,8 +179,9 @@ def sync_execute_push(self, context):
         self.report({'ERROR'}, error_msg)
         return {'CANCELLED'}
 
-    if not (_catalog_id == '' or _catalog_id == 'NONE'):
-        asset_col.asset_data.catalog_id = _catalog_id
+    if asset_col.asset_data:
+        if not (_catalog_id == '' or _catalog_id == 'NONE'):
+            asset_col.asset_data.catalog_id = _catalog_id
 
     hooks_instance.execute_hooks(
         merge_mode="push", merge_status='post', asset_col=asset_pipe.asset_collection
