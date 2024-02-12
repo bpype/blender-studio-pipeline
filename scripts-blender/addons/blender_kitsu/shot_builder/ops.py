@@ -190,7 +190,6 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
     def cancel(self, context: bpy.types.Context):
         # Restore kitsu context if cancelled
         context.scene.kitsu.category = self._current_kitsu_context
-        return {'CANCELLED'}
 
     def execute(self, context: bpy.types.Context):
         # Get Properties
