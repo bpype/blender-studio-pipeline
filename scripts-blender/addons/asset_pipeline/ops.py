@@ -156,7 +156,8 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         else:
             bpy.data.collections.new(self._name)
             asset_col = bpy.data.collections.get(self._name)
-            context.scene.collection.children.link(asset_col)
+            if asset_col not in list(asset_col.children):
+                context.scene.collection.children.link(asset_col)
             self._asset_pipe.asset_collection = asset_col
         return asset_col
 
@@ -178,7 +179,8 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
             bpy.data.collections.new(col_name)
             task_layer_col = bpy.data.collections.get(col_name)
             task_layer_col.asset_id_owner = task_layer_key
-            asset_col.children.link(task_layer_col)
+            if task_layer_col not in list(asset_col.children):
+                asset_col.children.link(task_layer_col)
 
     def _first_file_create(self, context, local_tls, asset_directory) -> str:
         self._asset_pipe.is_asset_pipeline_file = True
