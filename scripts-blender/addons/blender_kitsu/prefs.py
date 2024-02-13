@@ -409,7 +409,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     edit_export_frame_offset: bpy.props.IntProperty(  # type: ignore
         name="Editorial Export Offset",
         description="Shift Editorial Export by this frame-range after set-up.",
-        default=-102,  # HARD CODED FOR PET PROJECTS BLENDER FILM
+        default=-101,  # HARD CODED FOR GOLD PROJECTS BLENDER FILM
     )
 
     shot_builder_frame_offset: bpy.props.IntProperty(  # type: ignore
