@@ -101,6 +101,7 @@ def set_frame_range(shot: Shot, scene: bpy.types.Scene):
     if not shot.nb_frames:
         raise Exception(f"{shot.name} has missing frame duration information")
     scene.frame_end = kitsu_start_3d + shot.nb_frames - 1
+    scene.frame_current = kitsu_start_3d
 
 
 def link_data_block(file_path: str, data_block_name: str, data_block_type: str):
