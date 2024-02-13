@@ -19,6 +19,8 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 import os
+import re
+import gazu
 import contextlib
 import colorsys
 import random
@@ -26,7 +28,6 @@ from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple, Any
 import datetime
 import bpy
-import gazu
 from .. import cache, util, prefs, bkglobals
 from ..sqe import push, pull, checkstrip, opsdata, checksqe
 
@@ -39,8 +40,6 @@ from ..types import (
     TaskStatus,
     Task,
 )
-
-from ..playblast.core import override_render_path, override_render_format
 
 logger = LoggerFactory.getLogger()
 
@@ -2201,9 +2200,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
     bl_description = "Import image sequences for selected clips"
     bl_options = {"REGISTER", "UNDO"}
 
-    def get_used_channels(
-        self: Any, context: bpy.types.Context
-    ) -> List[Tuple[str, str, str]]:
+    def get_used_channels(self: Any, context: bpy.types.Context, edit_text: str) -> List[str]:
         used_channels = []
         for seq in context.scene.sequence_editor.sequences_all:
             used_channels.append(seq.channel)
@@ -2213,19 +2210,13 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
             if channel not in used_channels:
                 aval_channels.append(channel)
 
-        return [
-            (
-                f"{channel}",
-                f"{channel}",
-                f"{channel}",
-            )
-            for channel in aval_channels
-        ]
+        return [f"{channel}" for channel in aval_channels]
 
-    channel_selection: bpy.props.EnumProperty(
+    channel_selection: bpy.props.StringProperty(
         name="Channel",
         description="Choose an empty target channel to place image sequences onto",
-        items=get_used_channels,
+        search=get_used_channels,
+        search_options={'SORT'},
     )
     file_type: bpy.props.EnumProperty(
         name="File Type",
@@ -2276,8 +2267,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
             scene.view_settings.view_transform = 'Filmic'
 
     def invoke(self, context, event):
-        channels = [int(x[1]) for x in self.get_used_channels(context)]
-        self.get_used_channels(context)
+        channels = [int(x) for x in self.get_used_channels(context, "")]
         strip = context.selected_sequences[0]
         channel = min(channels, key=lambda x: abs(x - strip.channel))
         self.channel_selection = f"{channel}"
@@ -2290,13 +2280,19 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         layout.prop(self, "set_color_space")
 
     def get_shot_name(self, strip):
-        return strip.name.split(".")[0]
+        filepath = strip.filepath
+        name = Path(filepath).name
+        match = re.search(r"^(\w+)-", name)
+        if match:
+            return match.group(1)
+        return
 
     def get_metastrip(self, context, strip):
         name = self.get_shot_name(strip)
         for strip in context.scene.sequence_editor.sequences_all:
             if strip.name == name:
                 return strip
+        return
 
     def import_strip(self, context, strip, directory, channel):
         # https://blender.stackexchange.com/questions/286946/how-to-add-image-sequence-in-sequencer-via-python
@@ -2305,18 +2301,29 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
 
         files = []
         metastrip = self.get_metastrip(context, strip)
-        shot = gazu.shot.get_shot(metastrip.kitsu.shot_id)
-        start_frame = shot["data"].get("3d_start")
+        if not metastrip:
+            self.report({'ERROR'}, f"No Metastrip found for {strip.name}")
+            return {'CANCELLED'}
+        shot = Shot.by_id(metastrip.kitsu.shot_id)
+        start_frame = (
+            shot.data.get('3d_start') if shot.data.get('3d_start') else bkglobals.FRAME_START
+        )
         for file in sorted(list(directory.iterdir())):
+            if file.name.endswith("mp4"):
+                continue
             frame_number = int(file.name.split(".")[0])
             duration = strip.frame_duration + start_frame
             if self.file_type in file.name and frame_number < duration:
                 files.append({"name": file.name})
 
         area_type = 'SEQUENCE_EDITOR'
-        areas = [
-            area for area in bpy.context.window.screen.areas if area.type == area_type
-        ]
+        areas = [area for area in bpy.context.window.screen.areas if area.type == area_type]
+
+        if files == []:
+            self.report({'ERROR'}, "No files found")
+            return {'CANCELLED'}
+
+        len_strip = len(context.scene.sequence_editor.sequences_all)
 
         with bpy.context.temp_override(
             window=bpy.context.window,
@@ -2336,6 +2343,10 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
                 channel=channel,
                 fit_method='FIT',
             )
+        if len_strip + 1 != len(context.scene.sequence_editor.sequences_all):
+            print(f"Failed to import image sequence for {strip.name}")
+            return
+
         new_strip = context.selected_sequences[0]
 
         new_strip.animation_offset_end = strip.animation_offset_end
@@ -2374,7 +2385,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         if self.set_color_space:
             self.set_scene_colorspace(context)
 
-        for strip in context.selected_sequences:
+        for strip in [strip for strip in context.selected_sequences if strip.type == 'MOVIE']:
             directory = self.get_shot_seq_directory(context, strip)
             if not directory.exists():
                 self.report({"ERROR"}, f"{directory._str} does not exist")
@@ -2553,180 +2564,6 @@ class KITSU_OT_sqe_change_strip_source(bpy.types.Operator):
         return {"FINISHED"}
 
 
-def set_entity_data(entity, key: str, value: int):
-    if get_entity_data(entity, key) is not None:
-        entity['data'][key] = value
-        return entity
-
-
-def get_entity_data(entity, key: str):
-    if entity.get("data").get(key) is not None:
-        return entity.get("data").get(key)
-
-
-def get_dict_len(items: dict):
-    try:
-        return len(items)
-    except TypeError:
-        return None
-
-
-def set_revision_int(prev_rev=None):
-    if prev_rev is None:
-        return 1
-    return prev_rev + 1
-
-
-class KITSU_OT_vse_publish_edit_revision(bpy.types.Operator):
-    bl_idname = "kitsu.vse_publish_edit_revision"
-    bl_label = "Render and 'Publish as Revision'"
-    bl_description = "Renders current VSE Edit as .mp4 and publishes as revision on 'Edit Task'.\nWill not overwrite existing files"
-
-    def get_edit_entry_items(
-        self: Any, context: bpy.types.Context
-    ) -> List[Tuple[str, str, str]]:
-        sorted_edits = []
-        active_project = cache.project_active_get()
-
-        for edit in gazu.edit.all_edits_for_project(active_project.id):
-            sorted_edits.append(edit)
-
-        return [
-            (
-                item.get("id"),
-                item.get("name"),
-                f'Created at: "{item.get("created_at")}" {item.get("description")}',
-            )
-            for item in sorted_edits
-        ]
-
-    def get_edit_task_items(
-        self: Any, context: bpy.types.Context
-    ) -> List[Tuple[str, str, str]]:
-        tasks = gazu.task.all_tasks_for_edit(self.edit_entry)
-        return [
-            (
-                item.get("id"),
-                item.get("name"),
-                f'Created at: "{item.get("created_at")}" {item.get("description")}',
-            )
-            for item in tasks
-        ]
-
-    comment: bpy.props.StringProperty(name="Comment")
-    edit_entry: bpy.props.EnumProperty(name="Edit", items=get_edit_entry_items)
-    task: bpy.props.EnumProperty(name="Edit", items=get_edit_task_items)
-    render_dir: bpy.props.StringProperty(
-        name="Folder",
-        subtype="DIR_PATH",
-    )
-    use_frame_start: bpy.props.BoolProperty(
-        name="Submit update to 'frame_start'.", default=False
-    )
-    frame_start: bpy.props.IntProperty(
-        name="Frame Start",
-        description="Send an integerfor the 'frame_start' value of the current Kitsu Edit. \nThis is used by Watchtower to pad the edit in the timeline.",
-        default=0,
-    )
-
-    @classmethod
-    def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(prefs.session_auth(context) and cache.project_active_get())
-
-    def invoke(self, context, event):
-        # Ensure user has permissions to access edit data
-        try:
-            active_project = cache.project_active_get()
-            edits = gazu.edit.all_edits_for_project(active_project.id)
-        except gazu.exception.NotAllowedException:
-            self.report(
-                {"ERROR"}, "Kitsu User doesn't have permissions to access edit data."
-            )
-            return {"CANCELLED"}
-
-        # Remove file name if set in render.filepath
-        dir_path = bpy.path.abspath(context.scene.render.filepath)
-        if not os.path.isdir(Path(dir_path)):
-            dir_path = Path(dir_path).parent
-        self.render_dir = str(dir_path)
-
-        #'frame_start' is optionally property appearring on all edit_entries for a project if it exists
-        server_frame_start = get_entity_data(
-            gazu.edit.get_edit(self.edit_entry), 'frame_start'
-        )
-        if server_frame_start is int:
-            self.frame_start = server_frame_start
-        self.use_frame_start = bool(server_frame_start is not None)
-        return context.window_manager.invoke_props_dialog(self)
-
-    def draw(self, context: bpy.types.Context) -> None:
-        layout = self.layout
-        layout.prop(self, "edit_entry")
-        if len(self.get_edit_task_items(context)) >= 2:
-            layout.prop(self, "task")
-        layout.prop(self, "comment")
-        layout.prop(self, "render_dir")
-
-        # Only set `frame_start` if exists on current project
-        if self.use_frame_start:
-            layout.prop(self, "frame_start")
-
-    def execute(self, context: bpy.types.Context) -> Set[str]:
-        if self.task == "":
-            self.report(
-                {"ERROR"}, "Selected edit doesn't have any task associated with it  ."
-            )
-            return {"CANCELLED"}
-
-        active_project = cache.project_active_get()
-
-        existing_previews = gazu.edit.all_previews_for_edit(self.edit_entry)
-        len_previews = get_dict_len(existing_previews)
-        revision = str(set_revision_int(len_previews)).zfill(3)
-
-        # Build render_path
-        render_dir = bpy.path.abspath(self.render_dir)
-        if not os.path.isdir(Path(render_dir)):
-            self.report(
-                {"ERROR"}, f"Render path is not set to a directory. '{self.render_dir}'"
-            )
-            return {"CANCELLED"}
-        edit_entry = gazu.edit.get_edit(self.edit_entry)
-        prod_name = active_project.name.lower().replace(' ', '')
-        render_name = f"{prod_name}_v{revision}.mp4"
-        render_path = Path(render_dir).joinpath(render_name)
-        # check path exists
-        if render_path.is_file():
-            self.report(
-                {"ERROR"}, f"File '{render_name}' already exists at '{self.render_dir}'"
-            )
-            return {"CANCELLED"}
-
-        # Render Sequence to .mp4
-        with override_render_path(self, context, render_path.as_posix()):
-            with override_render_format(self, context):
-                bpy.ops.render.opengl(animation=True, sequencer=True)
-
-        # Create comment with video
-        task_entity = gazu.task.get_task(self.task)
-        new_comment = gazu.task.add_comment(
-            task_entity, task_entity["task_status"], self.comment
-        )
-        new_preview = gazu.task.add_preview(task_entity, new_comment, render_path)
-
-        # Update edit_entry's frame_start if 'frame_start' is found on server
-        if self.use_frame_start:
-            edit_entity_update = set_entity_data(
-                edit_entry, 'frame_start', self.frame_start
-            )
-            updated_edit_entity = gazu.edit.update_edit(
-                edit_entity_update
-            )  # TODO add a generic function to update entites
-
-        self.report({"INFO"}, f"Submitted new comment 'Revision {revision}'")
-        return {"FINISHED"}
-
-
 # ---------REGISTER ----------.
 
 classes = [
@@ -2756,7 +2593,6 @@ classes = [
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
     KITSU_OT_sqe_clear_update_indicators,
-    KITSU_OT_vse_publish_edit_revision,
     KITSU_OT_shot_image_sequence,
 ]
 

@@ -2,15 +2,16 @@ import bpy
 from .. import prefs
 from pathlib import Path
 import re
+from ..edit import core as edit_core
 
 
-def editorial_export_get_latest(
+def edit_export_import_latest(
     context: bpy.types.Context, shot
 ) -> list[bpy.types.Sequence]:  # TODO add info to shot
     """Loads latest export from editorial department"""
     addon_prefs = prefs.addon_prefs_get(context)
     strip_channel = 1
-    latest_file = editorial_export_check_latest(context)
+    latest_file = edit_core.edit_export_get_latest(context)
     if not latest_file:
         return None
     # Check if Kitsu server returned empty shot
@@ -50,32 +51,3 @@ def editorial_export_get_latest(
             -frame_in + (strip_frame_start * 2) + frame_3d_offset + edit_export_offset
         )
     return new_strips
-
-
-def editorial_export_check_latest(context: bpy.types.Context):
-    """Find latest export in editorial export directory"""
-    addon_prefs = prefs.addon_prefs_get(context)
-
-    edit_export_path = Path(addon_prefs.edit_export_dir)
-
-    files_list = [
-        f
-        for f in edit_export_path.iterdir()
-        if f.is_file()
-        and editorial_export_is_valid_edit_name(
-            addon_prefs.edit_export_file_pattern, f.name
-        )
-    ]
-    if len(files_list) >= 1:
-        files_list = sorted(files_list, reverse=True)
-        return files_list[0]
-    return None
-
-
-def editorial_export_is_valid_edit_name(file_pattern: str, filename: str) -> bool:
-    """Verify file name matches file pattern set in preferences"""
-    # Replace `#` with `\d` to represent digits
-    match = re.search(file_pattern, filename.replace('#', '\d'))
-    if match:
-        return True
-    return False

@@ -62,5 +62,10 @@ def draw_asset_selector(context: bpy.types.Context, layout: bpy.types.UILayout) 
     row.prop(context.scene.kitsu, "asset_active_name")
 
 
+def draw_edit_selector(context: bpy.types.Context, layout: bpy.types.UILayout) -> None:
+    row = active_project_row(layout)
+    row.prop(context.scene.kitsu, "edit_active_name")
+
+
 def draw_task_type_selector(context: bpy.types.Context, layout: bpy.types.UILayout):
     layout.prop(context.scene.kitsu, "task_type_active_name")

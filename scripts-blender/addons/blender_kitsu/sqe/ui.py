@@ -50,6 +50,7 @@ from ..sqe.ops import (
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
     KITSU_OT_sqe_clear_update_indicators,
+    KITSU_OT_shot_image_sequence,
 )
 from pathlib import Path
 
@@ -683,6 +684,7 @@ class KITSU_PT_sqe_general_tools(bpy.types.Panel):
         box = layout.box()
         box.label(text="General", icon="MODIFIER")
 
+        box.operator(KITSU_OT_shot_image_sequence.bl_idname)
         # Scan for outdated media and reset operator.
         row = box.row(align=True)
         row.operator(
@@ -706,31 +708,12 @@ class KITSU_PT_sqe_general_tools(bpy.types.Panel):
             ).go_latest = True
 
 
-class KITSU_PT_edit_task(bpy.types.Panel):
-    bl_category = "Kitsu"
-    bl_label = "Edit Tasks"
-    bl_space_type = "SEQUENCE_EDITOR"
-    bl_region_type = "UI"
-    bl_options = {"DEFAULT_CLOSED"}
-
-    @classmethod
-    def poll(cls, context: bpy.types.Context) -> bool:
-        if not context_core.is_edit_context():
-            return False
-        return True
-
-    def draw(self, context: bpy.types.Context) -> None:
-        self.layout.operator("kitsu.vse_publish_edit_revision")
-        self.layout.operator("kitsu.shot_image_sequence")
-
-
 # ---------REGISTER ----------.
 
 classes = [
     KITSU_MT_sqe_advanced_delete,
     KITSU_PT_sqe_shot_tools,
     KITSU_PT_sqe_general_tools,
-    KITSU_PT_edit_task,
 ]
 
 

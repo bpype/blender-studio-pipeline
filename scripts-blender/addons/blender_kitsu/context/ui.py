@@ -106,6 +106,9 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
             context_core.draw_asset_type_selector(context, col)
             context_core.draw_asset_selector(context, col)
 
+        if context_core.is_edit_context():
+            context_core.draw_edit_selector(context, col)
+
         # Task Type selector
         context_core.draw_task_type_selector(context, col)
 

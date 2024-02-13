@@ -458,6 +458,56 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         update=propsdata.reset_all_kitsu_props,
     )
 
+    ############
+    # Edit
+    ############
+    edit_active_id: bpy.props.StringProperty(  # type: ignore
+        name="Active Edit ID",
+        description="ID that refers to the active edit on server",
+        default="",
+    )
+
+    def get_edit_via_name(self):
+        return get_safely_string_prop(self, "edit_active_name")
+
+    def set_edit_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_all_edits_enum_for_active_project(self, bpy.context),
+            name_prop='edit_active_name',
+            id_prop='edit_active_id',
+        )
+        if key:
+            cache.edit_active_set_by_id(bpy.context, key)
+        else:
+            cache.edit_active_reset_entity()
+        return
+
+    def get_edit_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_all_edits_enum_for_active_project(self, bpy.context))
+
+    edit_active_name: bpy.props.StringProperty(
+        name="Edit",
+        description="Active Edit Name",
+        default="",  # type: ignore
+        get=get_edit_via_name,
+        set=set_edit_via_name,
+        options=set(),
+        search=get_edit_search_list,
+        search_options={'SORT'},
+    )
+
+    edit_render_version: bpy.props.StringProperty(name="Version", default="v001")
+
+    edit_render_file: bpy.props.StringProperty(  # type: ignore
+        name="Edit Render Filepath",
+        description="Output filepath of Edit Render",
+        default="",
+        subtype="FILE_PATH",
+        get=propsdata.get_edit_render_file,
+    )
+
     # Thumbnail props.
     task_type_thumbnail_id: bpy.props.StringProperty(  # type: ignore
         name="Thumbnail Task Type ID",

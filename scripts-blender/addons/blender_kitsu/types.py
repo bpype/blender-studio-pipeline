@@ -34,7 +34,6 @@ D = TypeVar("D", bound="BaseDataClass")
 
 
 class Session:
-
     """
     Class that will be instanced to blender_kitsu addon preferences.
     It's used to authenticate user against backend.
@@ -321,10 +320,7 @@ class Project(Entity):
 
     def create_sequence(self, sequence_name: str, episode_id: Optional[str] = None) -> Sequence:
         # This function returns a seq dict even if seq already exists, it does not override.
-        seq_dict = gazu.shot.new_sequence(
-            asdict(self),
-            sequence_name,
-            episode=episode_id)
+        seq_dict = gazu.shot.new_sequence(asdict(self), sequence_name, episode=episode_id)
         return Sequence.from_dict(seq_dict)
 
     # SHOT
@@ -398,6 +394,12 @@ class Project(Entity):
 
     def __bool__(self) -> bool:
         return bool(self.id)
+
+    # EDITS
+    # ---------------
+    def get_all_edits(self) -> List[Edit]:
+        edits = [Edit.from_dict(t) for t in gazu.edit.all_edits_for_project(asdict(self))]
+        return sorted(edits, key=lambda x: x.name)
 
 
 @dataclass
@@ -765,6 +767,10 @@ class TaskType(Entity):
         return [
             cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Sequence"
         ]
+
+    @classmethod
+    def all_edit_task_types(cls) -> List[TaskType]:
+        return [cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Edit"]
 
     def get_short_name(self) -> str:
         # HACK to accomodate custom task types @ blender studio
@@ -1211,6 +1217,51 @@ class Person(Entity):
 
     def __bool__(self) -> bool:
         return bool(self.id)
+
+
+@dataclass
+class Edit(Entity):
+    """
+    Class to get object oriented representation of backend edit data structure.
+    Can shortcut some functions from gazu api because active project is given through class instance.
+    Has multiple constructor functions (by_name, by_id, init>by_dict)
+    """
+
+    id: str = ""
+    name: str = ""
+    frame_start: str = ""
+    description: Optional[str] = None
+
+    @classmethod
+    def by_name(cls, project: Project, edit_name: str) -> Optional[Edit]:
+        # Can return None if edit does not exist.
+        edit_dict = gazu.shot.get_edit_by_name(asdict(project), edit_name)
+        if edit_dict:
+            return cls.from_dict(edit_dict)
+        return None
+
+    @classmethod
+    def by_id(cls, ep_id: str) -> Edit:
+        ep_dict = gazu.edit.get_edit(ep_id)
+        return cls.from_dict(ep_dict)
+
+    def __bool__(self) -> bool:
+        return bool(self.id)
+
+    def get_previews(self):
+        return gazu.edit.all_previews_for_edit(asdict(self))
+
+    def get_frame_start(self):
+        try:
+            return int(self.frame_start)
+        except ValueError:
+            return
+
+    def set_frame_start(self, frame_start):
+        # TODO Test/Debug
+        self.frame_start = frame_start
+        gazu.edit.update_edit(asdict(self))
+        return
 
 
 class Cache:

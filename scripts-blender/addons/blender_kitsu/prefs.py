@@ -41,7 +41,7 @@ from .auth.ops import (
 )
 from .context.ops import KITSU_OT_con_productions_load
 from .lookdev.prefs import LOOKDEV_preferences
-from .shot_builder.editorial import editorial_export_check_latest
+from .edit.core import edit_export_get_latest
 
 
 logger = LoggerFactory.getLogger()
@@ -396,7 +396,11 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     edit_export_file_pattern: bpy.props.StringProperty(  # type: ignore
         name="Editorial Export File Pattern",
         options={"HIDDEN", "SKIP_SAVE"},
-        description="File pattern for latest editorial export file. Typically '{proj_name}-edit-v###.mp4' where # represents a number",
+        description=(
+            "File pattern for latest editorial export file. "
+            "Typically '{proj_name}-edit-v###.mp4' where # represents a number. "
+            "Pattern must contain exactly v### representing the version, pattern must end in .mp4"
+        ),
         default="",
         get=get_edit_export_file_pattern,
         set=set_edit_export_file_pattern,
@@ -481,6 +485,14 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         box.row().prop(self, "pb_open_webbrowser")
         box.row().prop(self, "pb_open_vse")
 
+        # Editorial Settings
+        box = col.box()
+        box.label(text="Video Sequence Editor", icon="SEQ_SEQUENCER")
+        box.row().prop(self, "edit_export_dir")
+        file_pattern_row = box.row(align=True)
+        file_pattern_row.alert = not self.is_edit_render_pattern_valid
+        file_pattern_row.prop(self, "edit_export_file_pattern")
+
         # Lookdev tools settings.
         self.lookdev.draw(context, col)
 
@@ -512,8 +524,6 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         # Shot_Builder settings.
         box = col.box()
         box.label(text="Shot Builder", icon="MOD_BUILD")
-        box.row().prop(self, "edit_export_dir")
-        box.row().prop(self, "edit_export_file_pattern")
         box.row().prop(self, "edit_export_frame_offset")
         box.row().prop(self, "shot_builder_show_advanced")
         if self.shot_builder_show_advanced:
@@ -560,6 +570,22 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         return True
 
     @property
+    def is_edit_render_root_valid(self) -> bool:
+        if self.edit_export_dir.strip() == "":
+            return False
+        if not Path(self.edit_export_dir).exists():
+            return False
+        return True
+
+    @property
+    def is_edit_render_pattern_valid(self) -> bool:
+        if not self.edit_export_file_pattern.endswith(".mp4"):
+            return False
+        if not "###" in self.edit_export_file_pattern:
+            return False
+        return True
+
+    @property
     def project_root_path(self) -> Optional[Path]:
         if not self.project_root_dir:
             return None
@@ -587,7 +613,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
 
     @property
     def is_editorial_dir_valid(self) -> bool:
-        if editorial_export_check_latest(bpy.context) is None:
+        if edit_export_get_latest(bpy.context) is None:
             logger.error(
                 "Failed to initialize editorial export file model. Invalid path/pattern. Check addon preferences"
             )

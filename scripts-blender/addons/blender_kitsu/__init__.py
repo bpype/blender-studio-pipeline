@@ -41,6 +41,7 @@ from . import (
     anim,
     tasks,
     ui,
+    edit,
 )
 
 
@@ -83,6 +84,7 @@ if _need_reload:
     context.reload()
     tasks.reload()
     anim.reload()
+    edit.reload()
 
 
 def register():
@@ -98,6 +100,7 @@ def register():
     playblast.register()
     anim.register()
     shot_builder.register()
+    edit.register()
 
     LoggerLevelManager.configure_levels()
     logger.info("Registered blender-kitsu")
@@ -116,6 +119,7 @@ def unregister():
     lookdev.unregister()
     playblast.unregister()
     shot_builder.unregister()
+    edit.unregister()
     LoggerLevelManager.restore_levels()
 
 

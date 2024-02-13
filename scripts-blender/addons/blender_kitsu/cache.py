@@ -27,6 +27,7 @@ from bpy.app.handlers import persistent
 from .types import (
     Project,
     Episode,
+    Edit,
     Sequence,
     Shot,
     Asset,
@@ -50,6 +51,7 @@ _episode_active: Episode = Episode()
 _sequence_active: Sequence = Sequence()
 _shot_active: Shot = Shot()
 _asset_active: Asset = Asset()
+_edit_active: Edit = Edit()
 _asset_type_active: AssetType = AssetType()
 _task_type_active: TaskType = TaskType()
 _user_active: User = User()
@@ -68,6 +70,7 @@ _task_types_enum_list: List[Tuple[str, str, str]] = []
 _task_types_shots_enum_list: List[Tuple[str, str, str]] = []
 _task_statuses_enum_list: List[Tuple[str, str, str]] = []
 _user_all_tasks_enum_list: List[Tuple[str, str, str]] = []
+_all_edits_enum_list: List[Tuple[str, str, str]] = []
 
 _asset_cache_proj_id: str = ""
 _episode_cache_proj_id: str = ""
@@ -78,6 +81,7 @@ _seq_cache_episode_id: str = ""
 _shot_cache_seq_id: str = ""
 _task_type_cache_shot_id: str = ""
 _asset_cache_asset_type_id: str = ''
+_all_edits_cache_proj_id: str = ""
 
 
 def _addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
@@ -237,7 +241,6 @@ def asset_type_active_set_by_id(context: bpy.types.Context, entity_id: str) -> N
     context.scene.kitsu.asset_type_active_id = entity_id
     logger.debug("Set active asset type to %s", _asset_type_active.name)
 
-
 def asset_type_active_reset_entity() -> None:
     global _asset_type_active
     _asset_type_active = AssetType()
@@ -274,6 +277,32 @@ def task_type_active_reset(context: bpy.types.Context) -> None:
     context.scene.kitsu.task_type_active_id = ""
     context.scene.kitsu.task_type_active_name = ""
     logger.debug("Reset active task type")
+
+
+def edit_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None:
+    global _edit_active
+
+    _edit_active = Edit.by_id(entity_id)
+    context.scene.kitsu.edit_active_id = entity_id
+    logger.debug("Set active edit to %s", _task_type_active.name)
+
+
+def edit_active_reset_entity() -> None:
+    global _edit_active
+    _edit_active = TaskType()
+
+
+def edit_active_get() -> Project:
+    global _edit_active
+
+    return _edit_active
+
+
+def task_type_active_reset(context: bpy.types.Context) -> None:
+    edit_active_reset_entity()
+    context.scene.kitsu.edit_active_id = ""
+    context.scene.kitsu.edit_active_name = ""
+    logger.debug("Reset active edit")
 
 
 def get_projects_enum_list(
@@ -470,6 +499,13 @@ def get_task_types_enum_for_current_context(
             if t.id in _project_active.task_types
         ]
 
+    if context_core.is_edit_context():
+        items = [
+            (t.id, t.name, "")
+            for t in TaskType.all_edit_task_types()
+            if t.id in _project_active.task_types
+        ]
+
     _task_types_enum_list.clear()
     _task_types_enum_list.extend(items)
 
@@ -519,6 +555,27 @@ def get_shot_task_types_enum_for_shot(  # TODO Rename
     _task_types_shots_enum_list.extend(items)
 
     return _task_types_shots_enum_list
+
+
+def get_all_edits_enum_for_active_project(
+    self: bpy.types.Operator, context: bpy.types.Context
+) -> List[Tuple[str, str, str]]:
+    global _project_active
+    global _all_edits_cache_proj_id
+    global _all_edits_enum_list
+
+    if _all_edits_cache_proj_id == _project_active.id:
+        return _all_edits_enum_list
+
+    # Update Cache Project ID
+    _all_edits_cache_proj_id = _project_active.id
+
+    items = [(t.id, t.name, "") for t in _project_active.get_all_edits()]
+
+    _all_edits_enum_list.clear()
+    _all_edits_enum_list.extend(items)
+
+    return _all_edits_enum_list
 
 
 def get_all_task_statuses_enum(
