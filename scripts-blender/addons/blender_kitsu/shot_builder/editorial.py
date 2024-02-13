@@ -29,7 +29,7 @@ def edit_export_import_latest(
         strip_filepath,
         strip_channel + 1,
         strip_frame_start,
-        fit_method="FIT",
+        fit_method="ORIGINAL",
     )
     sound_strip = seq_editor.sequences.new_sound(
         latest_file.name,
