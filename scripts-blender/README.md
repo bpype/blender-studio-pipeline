@@ -7,6 +7,7 @@ Add-ons used by the Blender Studio pipeline. To review or report issues visit th
 |Anim Cupboard |Miscellaneous tools for animators. 
 |Asset Pipeline |Manages the Asset Pipeline, used by Modeling, Shading and Rigging departments. 
 |Blender Kitsu |Enforce conventions, build shots, manage production files and update data on kitsu server.
+|Blender Log |A place for add-ons to report issues to the user in a persistent UI element.
 |Blender SVN |UI for the SVN (Subversion) file versioning system.  
 |Blender Gizmos |Attempt to prototype a system for using meshes for the manipulation of armatures.  
 |Cache Manager |Streamline the Alembic cache workflow of assets. 

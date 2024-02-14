@@ -2,8 +2,8 @@
 
 ## Table of Contents
 - [Installation](#installation)
-- [Basic Workflow](#basic-workflow)
 - [Example Use Cases](#example-use-cases)
+- [How to use as a Python Developer](#how-to-use-as-a-python-developer)
 
 
 This add-on lets other add-ons report issues to the user in a persistent location in Blender's UI. 
