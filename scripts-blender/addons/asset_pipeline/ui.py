@@ -1,4 +1,5 @@
 import bpy
+from addon_utils import check as check_addon
 
 from pathlib import Path
 from .merge.transfer_data.transfer_ui import draw_transfer_data
@@ -64,12 +65,16 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
             text=f"Pull from {sync_target_name}",
             icon="TRIA_DOWN",
         )
-        layout.operator(
-            "assetpipe.sync_push", text=f"Sync from {sync_target_name}", icon="FILE_REFRESH"
-        ).pull = True
-        layout.operator(
-            "assetpipe.sync_push", text=f"Force Push to {sync_target_name}", icon="TRIA_UP"
-        ).pull = False
+        sync_text = f"Sync from {sync_target_name}"
+        push_text = f"Force Push to {sync_target_name}"
+        if check_addon('blender_log')[1]:
+            log_count = len(list(context.scene.blender_log.all_logs))
+            if log_count > 0:
+                issues_text = f" ({log_count} issues)"
+                sync_text += issues_text
+                push_text += issues_text
+        layout.operator("assetpipe.sync_push", text=sync_text, icon="FILE_REFRESH").pull = True
+        layout.operator("assetpipe.sync_push", text=push_text, icon="TRIA_UP").pull = False
 
         layout.separator()
         if staged:
