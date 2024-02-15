@@ -16,7 +16,7 @@ from .merge.shared_ids import get_shared_id_icon
 from . import constants, config
 from .hooks import Hooks
 from .merge.task_layer import draw_task_layer_selection
-
+from .asset_catalog import get_asset_id
 
 def sync_poll(cls, context):
     if any([img.is_dirty for img in bpy.data.images]):
@@ -155,7 +155,7 @@ def sync_execute_push(self, context):
     hooks_instance = Hooks()
     hooks_instance.load_hooks(context)
     temp_file_path = create_temp_file_backup(self, context)
-    _catalog_id = context.scene.asset_pipeline.asset_catalog_id
+    _catalog_id = get_asset_id(context.scene.asset_pipeline.asset_catalog_name)
 
     file_path = self._sync_target.__str__()
     bpy.ops.wm.open_mainfile(filepath=file_path)

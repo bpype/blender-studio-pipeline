@@ -25,7 +25,8 @@ from .sync import (
     sync_execute_push,
 )
 
-from .asset_catalog import get_asset_cat_enum_items
+from .asset_catalog import get_asset_catalog_items, get_asset_id
+from .config import verify_task_layer_json_data
 
 
 class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
@@ -65,7 +66,7 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         # Dynamically Create Task Layer Bools
         self._asset_pipe = context.scene.asset_pipeline
 
-        config.verify_json_data(Path(self._asset_pipe.task_layer_config_type))
+        config.verify_task_layer_json_data(self._asset_pipe.task_layer_config_type)
 
         all_task_layers = self._asset_pipe.all_task_layers
         all_task_layers.clear()
@@ -434,7 +435,7 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
                 f"Only '{constants.REVIEW_PUBLISH_KEY}' Publish is supported when a version is staged",
             )
             return {'CANCELLED'}
-        catalog_id = context.scene.asset_pipeline.asset_catalog_id
+        catalog_id = get_asset_id(context.scene.asset_pipeline.asset_catalog_name)
         create_next_published_file(
             current_file=Path(bpy.data.filepath),
             publish_type=self.publish_types,
@@ -476,7 +477,7 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
         staged_file = find_latest_publish(current_file, publish_type=constants.STAGED_PUBLISH_KEY)
         # Delete Staged File
         staged_file.unlink()
-        catalog_id = context.scene.asset_pipeline.asset_catalog_id
+        catalog_id = get_asset_id(context.scene.asset_pipeline.asset_catalog_name)
         create_next_published_file(current_file=current_file, catalog_id=catalog_id)
         return {'FINISHED'}
 
@@ -960,7 +961,8 @@ class ASSETPIPE_OT_refresh_asset_cat(bpy.types.Operator):
     bl_description = """Refresh Asset Catalogs"""
 
     def execute(self, context: bpy.types.Context):
-        get_asset_cat_enum_items()
+        get_asset_catalog_items(reload=True)
+        verify_task_layer_json_data()
         self.report({'INFO'}, "Asset Catalogs Refreshed!")
         return {'FINISHED'}
 

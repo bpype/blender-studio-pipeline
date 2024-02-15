@@ -4,7 +4,7 @@ from addon_utils import check as check_addon
 from pathlib import Path
 from .merge.transfer_data.transfer_ui import draw_transfer_data
 from .merge.task_layer import draw_task_layer_selection
-from .config import verify_json_data
+from .config import verify_task_layer_json_data
 from .prefs import get_addon_prefs
 from . import constants
 from .merge.publish import is_staged_publish
@@ -46,7 +46,7 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
             return
 
         # TODO Move this call out of the UI because we keep re-loading this file every draw
-        if not verify_json_data():
+        if not verify_task_layer_json_data():
             layout.label(text="Task Layer Config is invalid", icon="ERROR")
             return
 
@@ -99,7 +99,7 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         cat_row = layout.row(align=True)
-        cat_row.prop(context.scene.asset_pipeline, 'asset_catalog_id')
+        cat_row.prop(context.scene.asset_pipeline, 'asset_catalog_name')
         cat_row.operator("assetpipe.refresh_asset_cat", icon='FILE_REFRESH', text="")
         layout.operator("assetpipe.batch_ownership_change")
         layout.operator("assetpipe.revert_file", icon="FILE_TICK")
