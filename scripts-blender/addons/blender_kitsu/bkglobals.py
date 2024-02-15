@@ -105,7 +105,7 @@ OUTPUT_COL_CREATE = {
     "comp": False,
     "fx": True,
     "layout": True,
-    "lighting": True,
+    "lighting": False,
     "previz": True,
     "rendering": False,
     "smear_to_mesh": False,
@@ -114,8 +114,8 @@ OUTPUT_COL_CREATE = {
 
 OUTPUT_COL_LINK_MAPPING = {
     "anim": None,
-    "comp": ['anim', 'fx', 'lighting'],
-    "fx": ['anim', 'lighting'],
+    "comp": ['anim', 'fx'],
+    "fx": ['anim'],
     "layout": None,
     "lighting": ['anim'],
     "previz": None,
