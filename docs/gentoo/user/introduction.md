@@ -10,6 +10,16 @@
 - Could be reworded to state the advantages of the current system instead of starting with the failures of our previous unnamed one
 -->
 
+<!--- Juliens suggestions for pages of the User section
+- Collect notes from all artists at the studio on how they tend to customize the system and common shortcuts. Give some general pointers at system settings in a new section. Examples:
+   - Disable greying by opening sub-windows
+   - Multiple cursor issues with Wayland
+   - Behavior customization of Super-Key and `Alt Tab`
+- Recommend some more general purpose software packages we use like beeRef, dolphin, nomacs, mpv, OBS, spectacle
+- Ask typical non-Linux users at the studio to read some sections and see if she understands anything. 
+  Good stress for missing basic information.
+-->
+
 ## Why we installed Gentoo at the studio
 
 - The old infrastructure we used were not easily scaleable, maintainable, and easy to re-deploy.
