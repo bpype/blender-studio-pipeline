@@ -49,8 +49,10 @@ class LOR_OT_read_settings(bpy.types.Operator):
             override = context.copy()
             area_type = override['area'].type
             override['area'].type = 'TEXT_EDITOR'
+            override['region'] = override['area'].regions[0]
             override['edit_text'] = text
-            bpy.ops.text.reload(override)
+            with context.temp_override(**override):
+               bpy.ops.text.reload()
             override['area'].type = area_type
         
         data = read_data_from_json(text)
@@ -88,8 +90,10 @@ class LOR_OT_write_settings(bpy.types.Operator):
             override = context.copy()
             area_type = override['area'].type
             override['area'].type = 'TEXT_EDITOR'
+            override['region'] = override['area'].regions[0]
             override['edit_text'] = text
-            bpy.ops.text.save(override)
+            with context.temp_override(**override):
+                bpy.ops.text.save()
             override['area'].type = area_type
         settings.is_dirty = False
         
@@ -151,7 +155,7 @@ def write_data_to_json(text: bpy.types.Text, data: dict, partial=None):
     return
 
 def read_data_from_json(text: bpy.types.Text):
-    return json.loads(text.as_string())
+    return json.loads(text.as_string()) if text.as_string() else json.loads('{}')
 
 
 classes = (
