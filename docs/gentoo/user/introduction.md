@@ -4,6 +4,12 @@
 30 Apr. 2023 - The content of this page is currently being edited/updated.
 :::
 
+<!--- Feedback from Julien
+- Who is the "Introduction" addressed to? Who is the user? 
+  - Still feels like it is addressed at a TD or IT developer
+- Could be reworded to state the advantages of the current system instead of starting with the failures of our previous unnamed one
+-->
+
 ## Why we installed Gentoo at the studio
 
 - The old infrastructure we used were not easily scaleable, maintainable, and easy to re-deploy.
