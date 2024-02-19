@@ -1510,7 +1510,7 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
 
         # Find the metastrip of this strip that contains Kitsu information
         # about what sequence and shot this strip belongs to.
-        shot_name = active_strip.name.split(".")[0]
+        shot_name = active_strip.name.split(bkglobals.DELIMITER)[0]
         metastrip = context.scene.sequence_editor.sequences.get(shot_name)
         if not metastrip:
             # The metastrip should've been created by sqe_create_review_session,

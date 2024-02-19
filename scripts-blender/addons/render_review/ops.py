@@ -131,7 +131,8 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         )
 
         prev_frame_end: int = 1
-        for shot_name, shot_version_folders in shot_version_folders_dict.items():
+        for shot_task_name, shot_version_folders in shot_version_folders_dict.items():
+            shot_name = shot_task_name.split("-")[0]
             logger.info("Loading versions of shot %s", shot_name)
             imported_strips = self.import_shot_versions_as_strips(
                 context,
