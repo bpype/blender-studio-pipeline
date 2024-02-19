@@ -43,17 +43,17 @@ def init_edit_render_file_model(
 
     addon_prefs = prefs.addon_prefs_get(context)
     kitsu_props = context.scene.kitsu
-    edit_export_dir = Path(addon_prefs.edit_export_dir)
+    edit_render_dir = Path(addon_prefs.edit_render_dir)
 
     # Is None if invalid.
-    if addon_prefs.edit_export_dir == "" or not edit_export_dir.exists():
+    if addon_prefs.edit_render_dir == "" or not edit_render_dir.exists():
         logger.error(
             "Failed to initialize edit render file model. Invalid path. Check addon preferences"
         )
         return
 
     EDIT_RENDER_FILE_MODEL.reset()
-    EDIT_RENDER_FILE_MODEL.root_path = edit_export_dir
+    EDIT_RENDER_FILE_MODEL.root_path = edit_render_dir
 
     if not EDIT_RENDER_FILE_MODEL.versions:
         EDIT_RENDER_FILE_MODEL.append_item("v001")

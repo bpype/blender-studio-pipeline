@@ -121,6 +121,12 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
 class KITSU_PT_seq_playblast(KITSU_PT_vi3d_playblast):
     bl_space_type = "SEQUENCE_EDITOR"
 
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        if not context_core.is_sequence_context():
+            return False
+        return bool(prefs.session_auth(context))
+
 
 classes = (KITSU_PT_seq_playblast, KITSU_PT_vi3d_playblast)
 

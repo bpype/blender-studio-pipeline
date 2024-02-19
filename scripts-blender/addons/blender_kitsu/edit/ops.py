@@ -1,12 +1,14 @@
 import bpy
+from bpy.types import Sequence, Context
 import os
-from typing import Set
+from typing import Set, List
 from pathlib import Path
 from .. import cache, prefs, util
 from ..types import Task, TaskStatus
 from ..playblast.core import override_render_path, override_render_format
 from . import opsdata
 from ..logger import LoggerFactory
+from .core import edit_render_import_latest, edit_renders_get_all, edit_render_get_latest
 
 logger = LoggerFactory.getLogger()
 
@@ -17,7 +19,7 @@ class KITSU_OT_edit_render_publish(bpy.types.Operator):
     bl_description = (
         "Renders current VSE Edit as .mp4"
         "Saves the set version to disk and uploads it to Kitsu with the specified "
-        "comment and task type. Overrides some render settings during export. "
+        "comment and task type. Overrides some render settings during render. "
     )
 
     task_status: bpy.props.EnumProperty(name="Task Status", items=cache.get_all_task_statuses_enum)
@@ -52,7 +54,7 @@ class KITSU_OT_edit_render_publish(bpy.types.Operator):
             cls.poll_message_set("Edit Render Directory is Invalid, see Add-On preferences")
             return False
         if not addon_prefs.is_edit_render_pattern_valid:
-            cls.poll_message_set("Edit Export File Pattern is Invalid, see Add-On preferences")
+            cls.poll_message_set("Edit Render File Pattern is Invalid, see Add-On preferences")
             return False
         return True
 
@@ -146,7 +148,7 @@ class KITSU_OT_edit_render_set_version(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         addon_prefs = prefs.addon_prefs_get(context)
-        return bool(addon_prefs.edit_export_dir != "")
+        return bool(addon_prefs.edit_render_dir != "")
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         kitsu_props = context.scene.kitsu
@@ -195,10 +197,139 @@ class KITSU_OT_edit_render_increment_version(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class KITSU_OT_edit_render_import_latest(bpy.types.Operator):
+    bl_idname = "kitsu.edit_render_import_latest"
+    bl_label = "Import Latest Edit Render"
+    bl_description = (
+        "Find and import the latest editorial render found in the Editorial Render Directory for the current shot. "
+        "Will only Import if the latest render is not already imported. "
+        "Will remove any previous renders currently in the file's Video Sequence Editor"
+    )
+
+    _existing_edit_renders = []
+    _removed_movie = 0
+    _removed_audio = 0
+    _latest_render_name = ""
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        if not prefs.session_auth(context):
+            cls.poll_message_set("Login to a Kitsu Server")
+            return False
+        if not cache.project_active_get():
+            cls.poll_message_set("Select an active project")
+            return False
+        if cache.shot_active_get().id == "":
+            cls.poll_message_set("Please set an active shot in Kitsu Context UI")
+            return False
+        if not prefs.addon_prefs_get(context).is_edit_render_root_valid:
+            cls.poll_message_set("Edit Render Directory is Invalid, see Add-On Preferences")
+            return False
+        return True
+
+    def get_filepath(self, strip):
+        if hasattr(strip, "filepath"):
+            return strip.filepath
+        if hasattr(strip, "sound"):
+            return strip.sound.filepath
+
+    def compare_strip_to_path(self, strip: Sequence, compare_path: Path) -> bool:
+        strip_path = Path(bpy.path.abspath(self.get_filepath(strip)))
+        return bool(compare_path.absolute() == strip_path.absolute())
+
+    def compare_strip_to_paths(self, strip: Sequence, compare_paths: List[Path]) -> bool:
+        for compare_path in compare_paths:
+            if self.compare_strip_to_path(strip, compare_path):
+                return True
+        return False
+
+    def get_existing_edit_renders(
+        self, context: Context, all_edit_render_paths: List[Path]
+    ) -> List[Sequence]:
+        sequences = context.scene.sequence_editor.sequences
+
+        # Collect Existing Edit Renders
+        for strip in sequences:
+            if self.compare_strip_to_paths(strip, all_edit_render_paths):
+                self._existing_edit_renders.append(strip)
+        return self._existing_edit_renders
+
+    def check_if_latest_edit_render_is_imported(self, context: Context) -> bool:
+        # Check if latest edit render is already loaded.
+        for strip in self._existing_edit_renders:
+            latest_edit_render_path = edit_render_get_latest(context)
+            if self.compare_strip_to_path(strip, latest_edit_render_path):
+                self._latest_render_name = latest_edit_render_path.name
+                return True
+
+    def remove_existing_edit_renders(self, context: Context) -> None:
+        # Remove Existing Strips to make way for new Strip
+        sequences = context.scene.sequence_editor.sequences
+        for strip in self._existing_edit_renders:
+            if strip.type == "MOVIE":
+                self._removed_movie += 1
+            if strip.type == "SOUND":
+                self._removed_audio += 1
+            sequences.remove(strip)
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+        # Reset Values
+        self._existing_edit_renders = []
+        self._removed_movie = 0
+        self._removed_audio = 0
+        self._latest_render_name = ""
+
+        addon_prefs = prefs.addon_prefs_get(context)
+
+        # Get paths to all edit renders
+        all_edit_render_paths = edit_renders_get_all(context)
+        if all_edit_render_paths == []:
+            self.report(
+                {"WARNING"},
+                f"No Edit Renders found in '{addon_prefs.edit_render_dir}' using pattern '{addon_prefs.edit_render_file_pattern}' See Add-On Preferences",
+            )
+            return {"CANCELLED"}
+
+        # Collect all existing edit renders
+        self.get_existing_edit_renders(context, all_edit_render_paths)
+
+        # Stop latest render is already imported
+        if self.check_if_latest_edit_render_is_imported(context):
+            self.report(
+                {"WARNING"},
+                f"Latest Editorial Render already loaded '{self._latest_render_name}'",
+            )
+            return {"CANCELLED"}
+
+        # Remove old edit renders
+        self.remove_existing_edit_renders(context)
+
+        # Import new edit render
+        shot = cache.shot_active_get()
+        strips = edit_render_import_latest(context, shot)
+
+        if strips is None:
+            self.report({"WARNING"}, f"Loaded Latest Editorial Render failed to import!")
+            return {"CANCELLED"}
+
+        # Report.
+        if self._removed_movie > 0 or self._removed_audio > 0:
+            removed_msg = (
+                f"Removed {self._removed_movie} Movie Strips and {self._removed_audio} Audio Strips"
+            )
+            self.report(
+                {"INFO"}, f"Loaded Latest Editorial Render, '{strips[0].name}'. {removed_msg}"
+            )
+        else:
+            self.report({"INFO"}, f"Loaded Latest Editorial Render, '{strips[0].name}'")
+        return {"FINISHED"}
+
+
 classes = [
     KITSU_OT_edit_render_publish,
     KITSU_OT_edit_render_set_version,
     KITSU_OT_edit_render_increment_version,
+    KITSU_OT_edit_render_import_latest,
 ]
 
 

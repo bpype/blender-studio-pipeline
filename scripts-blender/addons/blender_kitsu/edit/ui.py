@@ -6,6 +6,7 @@ from .ops import (
     KITSU_OT_edit_render_set_version,
     KITSU_OT_edit_render_increment_version,
     KITSU_OT_edit_render_publish,
+    KITSU_OT_edit_render_import_latest,
 )
 from ..generic.ops import KITSU_OT_open_path
 
@@ -71,9 +72,34 @@ class KITSU_PT_edit_render_publish(bpy.types.Panel):
             )
 
 
-classes = [
-    KITSU_PT_edit_render_publish,
-]
+class KITSU_PT_edit_render_tools(bpy.types.Panel):
+    """
+    Panel in sequence editor that exposes a set of tools that are used to load the latest edit
+    """
+
+    bl_category = "Kitsu"
+    bl_label = "General Tools"
+    bl_space_type = "SEQUENCE_EDITOR"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+    bl_order = 50
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        if not prefs.session_auth(context):
+            return False
+
+        if not (context_core.is_sequence_context() or context_core.is_shot_context()):
+            return False
+        return True
+
+    def draw(self, context: bpy.types.Context) -> None:
+        box = self.layout.box()
+        box.label(text="General", icon="MODIFIER")
+        box.operator(KITSU_OT_edit_render_import_latest.bl_idname)
+
+
+classes = [KITSU_PT_edit_render_publish, KITSU_PT_edit_render_tools]
 
 
 def register():
