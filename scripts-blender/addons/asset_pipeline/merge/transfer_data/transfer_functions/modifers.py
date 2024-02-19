@@ -55,6 +55,7 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
         target_obj.modifiers.remove(old_mod)
 
     # get modifier index
+    source_index = 0
     for i, source_mod in enumerate(source_obj.modifiers):
         if source_mod.name == modifier_name:
             source_index = i
