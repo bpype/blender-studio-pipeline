@@ -13,8 +13,6 @@ def write_execution_script_on_save(dummy):
     meta_settings = getattr(bpy.context.scene, 'LOR_Settings')
     if not meta_settings.enabled:
         return
-    if utils.link_execution_script_from_source(bpy.context):
-        return
     bpy.ops.lighting_overrider.generate_execution_script()
     return
 
@@ -57,18 +55,6 @@ def generate_execution_script() -> str:
     script = inspect.getsource(lighting_overrider_execution)
     
     return script
-
-class LOR_OT_link_execution_script(bpy.types.Operator):
-    """
-    """
-    bl_idname = "lighting_overrider.link_execution_script"
-    bl_label = "Link Execution Script"
-    bl_description = "Link execution script from specified source file"
-    bl_options = {"REGISTER", "UNDO"}
-    
-    def execute(self, context):
-        utils.link_execution_script_from_source(context)
-        return {'FINISHED'}
     
 class LOR_OT_generate_execution_script(bpy.types.Operator):
     """
@@ -80,10 +66,12 @@ class LOR_OT_generate_execution_script(bpy.types.Operator):
     
     def execute(self, context):
         meta_settings = context.scene.LOR_Settings
-        settings = utils.get_settings(meta_settings)
         
         if not meta_settings.execution_script:
-            text = bpy.data.texts.new('lighting_overrider_execution.py')
+            meta_settings.execution_script = utils.find_execution_script()
+
+        if not meta_settings.execution_script:
+            text = bpy.data.texts.new('LOR_execution_script.py')
             meta_settings.execution_script = text
         else:
             text = meta_settings.execution_script
@@ -214,7 +202,6 @@ class LOR_OT_write_apply_JSON(bpy.types.Operator):
 classes = (
     LOR_OT_apply_JSON,
     LOR_OT_write_apply_JSON,
-    LOR_OT_link_execution_script,
     LOR_OT_generate_execution_script,
     LOR_OT_reload_libraries,
     LOR_OT_run_execution_script,

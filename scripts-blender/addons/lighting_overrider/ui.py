@@ -151,10 +151,7 @@ class LOR_PT_lighting_overrider_panel(bpy.types.Panel):
         row = box.row(align=True)
         row.prop(meta_settings, 'execution_script')
         if not meta_settings.execution_script:
-            if utils.executions_script_source_exists(context):
-                row.operator('lighting_overrider.link_execution_script', icon='LINKED', text='')
-            else:
-                row.operator('lighting_overrider.generate_execution_script', icon='FILE_CACHE', text='')
+            row.operator('lighting_overrider.generate_execution_script', icon='FILE_CACHE', text='')
         #row.operator('lighting_overrider.reload_libraries', icon='FILE_REFRESH', text='')#TODO reload libraries accurately (bug?)
         row.operator('lighting_overrider.run_execution_script', icon='PLAY', text='')
         #row = box.row()

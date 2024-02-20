@@ -8,45 +8,41 @@ def executions_script_source_exists(context):
     path = bpy.path.abspath(path)
     return os.path.isfile(path)
 
-def link_execution_script_from_source(context):
-    meta_settings = context.scene.LOR_Settings
-    if not executions_script_source_exists:
-        print(f'Warning: Execution script source file not found')
-        return False
-    with bpy.data.libraries.load(meta_settings.execution_script_source, link=True, relative=True) as (data_from, data_to):
-        data_to.texts = ["lighting_overrider_execution.py"]
-    meta_settings.execution_script = bpy.data.texts["lighting_overrider_execution.py", meta_settings.execution_script_source]
-    return
+def find_execution_script():
+    execution_script = bpy.data.texts.get('LOR_execution_script.py')
+    return execution_script
 
 def find_settings(context):
     meta_settings = getattr(context.scene, 'LOR_Settings')
-    if meta_settings:
-        sequence_name = meta_settings.sequence_settings.name
-        shot_name = meta_settings.shot_settings.name
+    if not meta_settings:
+        return None, None
+    
+    sequence_name = meta_settings.sequence_settings.name
+    shot_name = meta_settings.shot_settings.name
 
-        try:
-            sequence_settings_db = context.scene['LOR_sequence_settings']
-        except:
-            sequence_settings_db = None
+    try:
+        sequence_settings_db = context.scene['LOR_sequence_settings']
+    except:
+        sequence_settings_db = None
 
-        try:
-            shot_settings_db = context.scene['LOR_shot_settings']
-        except:
-            shot_settings_db = None
+    try:
+        shot_settings_db = context.scene['LOR_shot_settings']
+    except:
+        shot_settings_db = None
 
-        if not sequence_settings_db:
-            sequence_settings_db = bpy.data.texts.get(f'{sequence_name}.settings.json')
-        if not shot_settings_db:
-            shot_settings_db = bpy.data.texts.get(f'{shot_name}.settings.json')
+    if not sequence_settings_db:
+        sequence_settings_db = bpy.data.texts.get(f'{sequence_name}.settings.json')
+    if not shot_settings_db:
+        shot_settings_db = bpy.data.texts.get(f'{shot_name}.settings.json')
 
-        if not sequence_settings_db:
-            filepath = Path(bpy.context.blend_data.filepath)
-            path = filepath.parents[1].as_posix()+f'/{sequence_name}.settings.json'
-            if not os.path.isfile(path):
-                open(path, 'a').close()
-            bpy.ops.text.open(filepath=bpy.path.relpath(path))
-        if not shot_settings_db:
-            shot_settings_db = bpy.data.texts.new(f'{shot_name}.settings.json')
+    if not sequence_settings_db:
+        filepath = Path(bpy.context.blend_data.filepath)
+        path = filepath.parents[1].as_posix()+f'/{sequence_name}.settings.json'
+        if not os.path.isfile(path):
+            open(path, 'a').close()
+        bpy.ops.text.open(filepath=bpy.path.relpath(path))
+    if not shot_settings_db:
+        shot_settings_db = bpy.data.texts.new(f'{shot_name}.settings.json')
 
     return sequence_settings_db, shot_settings_db
 
