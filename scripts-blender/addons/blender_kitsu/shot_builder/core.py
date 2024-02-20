@@ -68,6 +68,9 @@ def remove_all_data():
     for obj in bpy.data.objects:
         bpy.data.objects.remove(obj)
 
+    for action in bpy.data.actions:
+        bpy.data.actions.remove(action)
+
     bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
 
