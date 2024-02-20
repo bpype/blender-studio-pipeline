@@ -106,10 +106,11 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
     )
     wrong: List[Tuple[bpy.types.Action, str]] = []
     created: List[bpy.types.Action] = []
+    empty_actions: List[bpy.types.Action] = []
     cleanup_empty_actions: bpy.props.BoolProperty(
         name="Delete Empty Action Data-Blocks",
         default=False,
-        description="Remove any empty action data-blocks, actions that have 0 Fcurves/Keyframes",
+        description="Remove any empty action data-blocks, actions that have 0 Fcurves/Keyframes. Even if the action has a fake user assigned to it",
     )
 
     # List of tuples that contains the action on index 0 with the wrong name
@@ -117,7 +118,13 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(cache.shot_active_get())
+        if not cache.shot_active_get():
+            cls.poll_message_set("No Shot selected")
+            return False
+        if not cache.task_type_active_get():
+            cls.poll_message_set("No Task Type selected")
+            return False
+        return True
 
     def get_action(self, action_name: str):
         if bpy.data.actions.get(action_name):
@@ -136,27 +143,12 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
         succeeded = []
         removed = []
 
+        # Clean-up Empty Actions
         if self.cleanup_empty_actions:
-            for action in bpy.data.actions:
-                if (
-                    len(action.fcurves) == 0
-                    and action.use_fake_user
-                    and action.users == 1
-                ):
-                    removed.append(action.name)
-                    action.use_fake_user = False
-                    bpy.data.actions.remove(action)
-
-        for obj in [obj for obj in bpy.data.objects if obj.type == "ARMATURE"]:
-            # Cerate Action if None Exists
-            if obj.animation_data is None or obj.animation_data.action is None:
-                base_name = obj.name.split(addon_prefs.shot_builder_armature_prefix)[-1]
-                action_name = f"{addon_prefs.shot_builder_action_prefix}{base_name}.{active_shot.name}.v001"
-                new_action = self.get_action(action_name)
-                new_action.use_fake_user = True
-                obj.animation_data_create()
-                obj.animation_data.action = new_action
-                obj.animation_data.action.name = f"{addon_prefs.shot_builder_action_prefix}{base_name}.{active_shot.name}.v001"
+            for action in self.empty_actions:
+                removed.append(action.name)
+                action.use_fake_user = False
+                bpy.data.actions.remove(action)
 
         # Rename actions.
         for action, name in self.wrong:
@@ -208,8 +200,20 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
         opsdata.action_names_cache.clear()
         opsdata.action_names_cache.extend([a.name for a in bpy.data.actions])
 
+        active_shot = cache.shot_active_get()
+        task_type = cache.task_type_active_get()
+        output_col_name = active_shot.get_output_collection_name(task_type.get_short_name())
+        output_col = context.scene.collection.children.get(output_col_name)
+
+        if not output_col:
+            self.report(
+                {"ERROR"},
+                f"Missing output collection: {output_col_name}",
+            )
+            return {"CANCELLED"}
+
         # Find all asset collections in .blend.
-        asset_colls = opsdata.find_asset_collections()
+        asset_colls = opsdata.find_asset_collections(output_col)
 
         if not asset_colls:
             self.report(
@@ -217,6 +221,12 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
                 f"Failed to find any asset collections",
             )
             return {"CANCELLED"}
+
+        # Collect Empty Actions
+        self.empty_actions = []
+        for action in bpy.data.actions:
+            if len(action.fcurves) == 0:
+                self.empty_actions.append(action)
 
         # Find rig of each asset collection.
         asset_rigs: List[Tuple[bpy.types.Collection, bpy.types.Armature]] = []
@@ -240,6 +250,9 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
                 no_action.append(rig)
                 continue
 
+            if rig.animation_data.action in self.empty_actions:
+                continue
+
             action_name_should = opsdata.gen_action_name(rig, coll, shot_active)
             action_name_is = rig.animation_data.action.name
 
@@ -258,8 +271,8 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
             # Action name of rig is correct.
             correct.append(rig)
 
-        if not self.wrong:
-            self.report({"INFO"}, "All actions names are correct")
+        if not self.wrong and self.empty_actions == []:
+            self.report({"INFO"}, "All actions names are correct, no empty actions found")
             return {"FINISHED"}
 
         self.report(
@@ -275,7 +288,11 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
             row.label(text=action.name)
             row.label(text="", icon="FORWARD")
             row.label(text=name)
-        layout.prop(self, "cleanup_empty_actions")
+        layout.prop(
+            self,
+            "cleanup_empty_actions",
+            text=f"Delete {len(self.empty_actions)} Empty Action Data-Blocks",
+        )
 
 
 class KITSU_OT_anim_enforce_naming_convention(bpy.types.Operator):

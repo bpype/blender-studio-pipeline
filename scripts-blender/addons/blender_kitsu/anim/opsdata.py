@@ -105,9 +105,11 @@ def find_rig(coll: bpy.types.Collection, log: bool = True) -> Optional[bpy.types
     return valid_rigs
 
 
-def find_asset_collections(log: bool = True) -> List[bpy.types.Collection]:
+def find_asset_collections(
+    top_level_col: bpy.types.Collection, log: bool = True
+) -> List[bpy.types.Collection]:
     asset_colls: List[bpy.types.Collection] = []
-    for coll in bpy.data.collections:
+    for coll in top_level_col.children_recursive:
         if not is_item_lib_override(coll):
             continue
 
@@ -245,8 +247,11 @@ def gen_action_name(
             version = util.get_version(armature.animation_data.action.name) or "v001"
 
     # Action name for single aset.
-    fd = bkglobals.DELIMITER  # Currently set to '-'
-    action_name = f"{action_prefix}{fd}{asset_name}{fd}{shot_name}{fd}{version}"
+    delimiter = bkglobals.DELIMITER  # Currently set to '-'
+    space = bkglobals.SPACE_REPLACER  # Currently set to '_'
+    action_name = (
+        f"{action_prefix}{delimiter}{asset_name}{delimiter}{shot_name}{delimiter}{version}"
+    )
 
     if is_multi_asset(asset_name):
         existing_postfixes = []
@@ -259,7 +264,7 @@ def gen_action_name(
                 continue
 
             # print(action_names_cache)
-            if action_name.startswith(f"{action_prefix}-{asset_name}"):
+            if action_name.startswith(f"{action_prefix}{delimiter}{asset_name}"):
                 multi_postfix = _find_postfix(action_name)
                 if multi_postfix:
                     # print(f"Found postfix {multi_postfix} for aseet : {asset_name}")
@@ -291,8 +296,6 @@ def gen_action_name(
                     final_postfix = current_postfix
 
         # Action name for multi asset.
-        action_name = (
-            f"{action_prefix}-{asset_name}_{final_postfix}.{shot_name}.{version}"
-        )
+        action_name = f"{action_prefix}{delimiter}{asset_name}{space}{final_postfix}{delimiter}{shot_name}{delimiter}{version}"
 
     return action_name
