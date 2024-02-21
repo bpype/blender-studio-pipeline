@@ -163,6 +163,7 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
 
             old_name = action.name
             action.name = name
+            action.use_fake_user = True
             existing_action_names.append(action.name)
             succeeded.append(action)
             logger.info("Renamed action %s to %s", old_name, action.name)
