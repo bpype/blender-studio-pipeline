@@ -106,7 +106,7 @@ def override_metadata_stamp_settings(
     use_stamp_note = rd.use_stamp_note
     stamp_note_text = rd.stamp_note_text
     use_stamp = rd.use_stamp
-    stamp_font_size = rd.stamp_font_size
+    # stamp_font_size = rd.stamp_font_size
     stamp_foreground = rd.stamp_foreground
     stamp_background = rd.stamp_background
     use_stamp_labels = rd.use_stamp_labels
@@ -128,7 +128,7 @@ def override_metadata_stamp_settings(
         rd.use_stamp_note = True
         rd.stamp_note_text = f"Animator: {first_name} {last_name}"
         rd.use_stamp = True
-        rd.stamp_font_size = 12
+        # rd.stamp_font_size = 12
         rd.stamp_foreground = (0.8, 0.8, 0.8, 1)
         rd.stamp_background = (0, 0, 0, 0.25)
         rd.use_stamp_labels = True
@@ -153,7 +153,7 @@ def override_metadata_stamp_settings(
         rd.use_stamp_note = use_stamp_note
         rd.stamp_note_text = stamp_note_text
         rd.use_stamp = use_stamp
-        rd.stamp_font_size = stamp_font_size
+        # rd.stamp_font_size = stamp_font_size
         rd.stamp_foreground = stamp_foreground
         rd.stamp_background = stamp_background
         rd.use_stamp_labels = use_stamp_labels
