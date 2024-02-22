@@ -8,6 +8,9 @@ DESKTOP_FILE_DST="$HOME/.local/share/applications/blender_$PROJECT_NAME.desktop"
 BLENDER_BIN_PATH=$(realpath ./run_blender.py)
 BLENDER_ICON_NAME="blender_gold"
 
+#Make sure that the desktop file directory exists
+mkdir -p $(dirname $DESKTOP_FILE_DST)
+
 echo "
 [Desktop Entry]
 Name=Blender $PROJECT_NAME
