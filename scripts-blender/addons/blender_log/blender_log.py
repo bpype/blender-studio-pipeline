@@ -154,6 +154,9 @@ class BlenderLog_Manager(PropertyGroup):
     def remove_active(self):
         self.remove(self.active_log)
 
+    def remove_category(self, cat):
+        self.categories.remove(self.get_index(cat))
+
     def get_category(self, cat_name: str):
         for cat in self.categories:
             if cat.name == cat_name:
@@ -231,6 +234,22 @@ class BLENLOG_OT_quick_fix_category(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class BLENLOG_OT_remove_category(bpy.types.Operator):
+    """Remove active log category"""
+
+    bl_idname = "blenlog.remove_category"
+    bl_label = "Remove Category"
+    bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.blender_log.active_category
+
+    def execute(self, context):
+        context.scene.blender_log.remove_category(context.scene.blender_log.active_category)
+        return {'FINISHED'}
+
+
 class BLENLOG_PT_log_panel(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -259,6 +278,8 @@ class BLENLOG_PT_log_panel(Panel):
         cat = blenlog.active_category
         if not cat:
             return
+
+        ops_col.operator(BLENLOG_OT_remove_category.bl_idname, text="", icon='REMOVE')
 
         layout.operator(BLENLOG_OT_quick_fix_category.bl_idname, icon='AUTO')
 
@@ -342,6 +363,7 @@ registry = [
     BLENLOG_MT_log_checks,
     BLENLOG_PT_log_panel,
     BLENLOG_OT_quick_fix_category,
+    BLENLOG_OT_remove_category,
     # BLENLOG_PT_stack_trace,
 ]
 
