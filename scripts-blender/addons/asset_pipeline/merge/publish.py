@@ -30,7 +30,7 @@ def get_next_published_file(
 
     Args:
         current_file (Path): Current file, which must be a task file at root of asset directory
-        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'review'. Defaults to 'publish'.
+        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'sandbox'. Defaults to 'publish'.
 
     Returns:
         Path: Path where the next published file should be saved to, path doesn't exist yet
@@ -38,6 +38,7 @@ def get_next_published_file(
     last_publish = find_latest_publish(current_file, publish_type)
     base_name = bpy.context.scene.asset_pipeline.name
     publish_dir = current_file.parent.joinpath(publish_type)
+    publish_dir.mkdir(parents=True, exist_ok=True)  # Create Directory if it doesn't exist
     if not last_publish:
         new_version_number = 1
 
@@ -68,12 +69,12 @@ def get_asset_catalogues():
 
 def create_next_published_file(
     current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY, catalog_id: str = ''
-) -> None:
+) -> str:
     """Creates new Published version of a given Publish Type
 
     Args:
         current_file (Path): Current file, which must be a task file at root of asset directory
-        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'review'. Defaults to 'publish'.
+        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'sandbox'. Defaults to 'publish'.
     """
     # TODO Set Catalogue here
 
@@ -83,8 +84,9 @@ def create_next_published_file(
         asset_col.asset_mark()
         if catalog_id != '' or catalog_id != 'NONE':
             asset_col.asset_data.catalog_id = catalog_id
-    bpy.ops.wm.save_as_mainfile(filepath=new_file_path.__str__(), copy=True)
+    bpy.ops.wm.save_as_mainfile(filepath=str(new_file_path), copy=True)
     asset_col.asset_clear()
+    return str(new_file_path)
 
 
 def find_all_published(current_file: Path, publish_type: str) -> list[Path]:
@@ -93,7 +95,7 @@ def find_all_published(current_file: Path, publish_type: str) -> list[Path]:
     root of the asset's directory
     Args:
         current_file (Path): Current file, which must be a task file at root of asset directory
-        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'review'. Defaults to 'publish'.
+        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'sandbox'. Defaults to 'publish'.
 
     Returns:
         list[Path]: list of published files of a given publish type
@@ -113,7 +115,7 @@ def find_latest_publish(
 
     Args:
         current_file (Path): Current file, which must be a task file at root of asset directory
-        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'review'. Defaults to 'publish'.
+        publish_type (_type_, optional): Publish type, 'publish', 'staged', 'sandbox'. Defaults to 'publish'.
 
     Returns:
         Path: Path to latest publish file of a given publish type

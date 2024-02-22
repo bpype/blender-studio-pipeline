@@ -21,7 +21,7 @@ Checkout the [Asset Pipeline Demo](https://projects.blender.org/studio/blender-s
     - [Publish New Version](#publish-new-version)
         - [Active](#active)
         - [Staged](#staged)
-        - [Review](#review)
+        - [Sandbox](#sandbox)
     - [Creating Custom Task Layers](#creating-custom-task-layers)
     - [Hooks](#hooks)
     - [Gotchas](#gotchas)
@@ -110,8 +110,8 @@ An active publish is a publish that can be referenced by the production into sho
 ### Staged
 A staged asset, is an publish that cannot be referenced by the production, only one staged asset can exist at a time. If a staged publish exists it will replace the active publish as the push/pull target. The staged area exists so artists can collaborate on a new version of an asset that is not ready to be used in production.
 
-### Review
-A review publish is simple a way to test out the final published version of your asset. You can create as many review publishes as you want to check your work and ensure the merge process produces results that are expected. Review publish is never used as a push/pull target and is for testing only. 
+### Sandbox
+A sandbox publish is simple a way to test out the final published version of your asset. You can create as many sandbox publishes as you want to check your work and ensure the merge process produces results that are expected. Sandbox publish is never used as a push/pull target and is for testing only. 
 
 ## Creating Custom Task Layers
 

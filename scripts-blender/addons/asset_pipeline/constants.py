@@ -93,21 +93,20 @@ PUBLISH_TYPES = [
     (
         "publish",
         "Active",
-        "Publish a new active version that will become the latest published version",
+        "Active version that will become the latest published version, used in production files",
     ),
     (
         "staged",
         "Staged",
-        """Publish a staged version that will replace the last active version as the Push/Pull target.
-        Used for internal asset pipeline use only""",
+        """Staged version that will replace the last active version as the Push/Pull/Sync target. Not used in production files""",
     ),
     (
-        "review",
-        "Review",
-        "Test the results that will be published in the review area, will not be used as Push/Pull target",
+        "sandbox",
+        "Sandbox",
+        "Test the results that will be published in the sandbox area, will not be used as Push/Pull target",
     ),
 ]
 PUBLISH_KEYS = [pub_type[0] for pub_type in PUBLISH_TYPES]
 ACTIVE_PUBLISH_KEY = PUBLISH_KEYS[0]
 STAGED_PUBLISH_KEY = PUBLISH_KEYS[1]
-REVIEW_PUBLISH_KEY = PUBLISH_KEYS[2]
+SANDBOX_PUBLISH_KEY = PUBLISH_KEYS[2]

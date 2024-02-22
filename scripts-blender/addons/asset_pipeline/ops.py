@@ -412,11 +412,26 @@ class ASSETPIPE_OT_open_file(bpy.types.Operator):
         return {'FINISHED'}
 
 
+def get_publish_type_enum(self, context):
+    sync_target = [
+        (
+            "sync_target",
+            "Sync Target",
+            "Find the Sync Target File, either Staged or Active",
+        ),
+    ]
+    return sync_target + constants.PUBLISH_TYPES
+
+
 class ASSETPIPE_OT_open_publish(bpy.types.Operator):
     bl_idname = "assetpipe.open_publish"
-    bl_label = "Open Publish"
+    bl_label = "Open Latest Publish"
     bl_description = """Open the current Published File used for Push/Pull/Sync."""
 
+    publish_types: bpy.props.EnumProperty(
+        name="Type",
+        items=get_publish_type_enum,
+    )
     save_file: bpy.props.BoolProperty(
         name="Save Changes before Closing?",
         default=False,
@@ -424,14 +439,14 @@ class ASSETPIPE_OT_open_publish(bpy.types.Operator):
     )  # type: ignore
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
-        if bpy.data.is_dirty:
-            return context.window_manager.invoke_props_dialog(self, width=400)
-        else:
-            return self.execute(context)
+        # self.publish_types = "sync_target"
+        return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
         layout = self.layout
-        layout.prop(self, "save_file")
+        layout.prop(self, "publish_types")
+        if bpy.data.is_dirty:
+            layout.prop(self, "save_file")
 
     def execute(self, context: Context):
         if not context.scene.asset_pipeline.is_asset_pipeline_file:
@@ -441,11 +456,23 @@ class ASSETPIPE_OT_open_publish(bpy.types.Operator):
             self.report({'ERROR'}, "Cannot open Publish, if current file is published")
             return {'CANCELLED'}
 
+        if self.publish_types == "sync_target":
+            published_file = find_sync_target(Path(bpy.data.filepath))
+        else:
+            published_file = find_latest_publish(Path(bpy.data.filepath), self.publish_types)
+
+        if not published_file.exists():
+            self.report(
+                {'ERROR'},
+                f"Cannot open {self.publish_types} no published file found at {str(published_file.parent)}",
+            )
+            return {'CANCELLED'}
+
         if self.save_file:
             save_images()
             bpy.ops.wm.save_mainfile()
-        sync_target = find_sync_target(Path(bpy.data.filepath))
-        bpy.ops.wm.open_mainfile(filepath=str(sync_target))
+
+        bpy.ops.wm.open_mainfile(filepath=str(published_file))
         return {'FINISHED'}
 
 
@@ -478,19 +505,20 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
     def execute(self, context: bpy.types.Context):
         if (
             is_staged_publish(Path(bpy.data.filepath))
-            and self.publish_types != constants.REVIEW_PUBLISH_KEY
+            and self.publish_types != constants.SANDBOX_PUBLISH_KEY
         ):
             self.report(
                 {'ERROR'},
-                f"Only '{constants.REVIEW_PUBLISH_KEY}' Publish is supported when a version is staged",
+                f"Only '{constants.SANDBOX_PUBLISH_KEY}' Publish is supported when a version is staged",
             )
             return {'CANCELLED'}
         catalog_id = get_asset_id(context.scene.asset_pipeline.asset_catalog_name)
-        create_next_published_file(
+        new_filepath = create_next_published_file(
             current_file=Path(bpy.data.filepath),
             publish_type=self.publish_types,
             catalog_id=catalog_id,
         )
+        self.report({'INFO'}, f"New Publish {self.publish_types} created at: {new_filepath}")
         return {'FINISHED'}
 
 

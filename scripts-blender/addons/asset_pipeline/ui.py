@@ -88,16 +88,26 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
         layout.operator("assetpipe.sync_push", text=sync_text, icon="FILE_REFRESH").pull = True
         layout.operator("assetpipe.sync_push", text=push_text, icon="TRIA_UP").pull = False
 
-        layout.separator()
+
+class ASSETPIPE_PT_publish(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Asset Pipe 2'
+    bl_label = "Publish"
+    bl_parent_id = "ASSETPIPE_PT_sync"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        return bool(not context.scene.asset_pipeline.is_published)
+
+    def draw(self, context: bpy.types.Context) -> None:
+        staged = is_staged_publish(Path(bpy.data.filepath))
+        layout = self.layout
         if staged:
             layout.operator("assetpipe.publish_staged_as_active", icon="LOOP_FORWARDS")
         layout.operator("assetpipe.publish_new_version", icon="PLUS")
-        # TODO Find new way to determine if we are in a published file more explicitly
-        # if asset_pipe.is_asset_pipeline_file and asset_pipe.task_layer_name == "NONE":
-        # asset_pipe = context.scene.asset_pipeline
-        # box = layout.box()
-        # box.label(text="Published File Settings")
-        # box.prop(asset_pipe, "is_depreciated")
+        layout.operator("assetpipe.open_publish", icon="FILE")
 
 
 class ASSETPIPE_PT_working_files(Panel):
@@ -137,7 +147,6 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
         cat_row.operator("assetpipe.refresh_asset_cat", icon='FILE_REFRESH', text="")
         layout.operator("assetpipe.batch_ownership_change")
         layout.operator("assetpipe.revert_file", icon="FILE_TICK")
-        layout.operator("assetpipe.open_publish", icon="FILE")
         layout.separator()
         col = layout.column(align=True)
         col.operator("assetpipe.save_production_hook", text="Create Production Hook").mode = 'PROD'
@@ -233,6 +242,7 @@ classes = (
     ASSETPIPE_PT_sync_advanced,
     ASSETPIPE_PT_working_files,
     ASSETPIPE_PT_sync_tools,
+    ASSETPIPE_PT_publish,
     ASSETPIPE_PT_ownership_inspector,
 )
 
