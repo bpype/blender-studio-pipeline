@@ -8,6 +8,7 @@ from .config import verify_task_layer_json_data
 from .prefs import get_addon_prefs
 from . import constants
 from .merge.publish import is_staged_publish
+from bpy.types import UILayout, Context, Panel
 
 
 class ASSETPIPE_PT_sync(bpy.types.Panel):
@@ -15,6 +16,11 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
     bl_region_type = 'UI'
     bl_category = 'Asset Pipe 2'
     bl_label = "Asset Management"
+
+    def draw_collection_selection(self, layout: UILayout, context: Context) -> None:
+        layout.prop_search(
+            context.scene.asset_pipeline, 'asset_collection_name', bpy.data, 'collections'
+        )
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
@@ -46,8 +52,15 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
             return
 
         # TODO Move this call out of the UI because we keep re-loading this file every draw
-        if not verify_task_layer_json_data():
+        if not verify_task_layer_json_data() and not asset_pipe.is_published:
             layout.label(text="Task Layer Config is invalid", icon="ERROR")
+            return
+        if asset_pipe.is_published:
+            layout.label(text="Current File is Published")
+            col = layout.column()
+            col.active = False
+            self.draw_collection_selection(col, context)
+            self.draw_work_file_selection(layout)
             return
 
         layout.label(text="Local Task Layers:")
@@ -56,7 +69,7 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
         for task_layer in asset_pipe.local_task_layers:
             row.label(text=task_layer.name)
 
-        layout.prop_search(asset_pipe, 'asset_collection_name', bpy.data, 'collections')
+        self.draw_collection_selection(layout, context)
 
         staged = is_staged_publish(Path(bpy.data.filepath))
         sync_target_name = "Staged" if staged else "Active"
@@ -88,6 +101,24 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
         # box.prop(asset_pipe, "is_depreciated")
 
 
+class ASSETPIPE_PT_working_files(Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Asset Pipe 2'
+    bl_label = "Working Files"
+    bl_parent_id = "ASSETPIPE_PT_sync"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        return context.scene.asset_pipeline.is_published
+
+    def draw(self, context: bpy.types.Context) -> None:
+        for file in Path(bpy.data.filepath).parent.parent.glob("*.blend"):
+            name = f"Open {file.name.strip('.blend')}"
+            self.layout.operator("assetpipe.open_file", text=name).filepath = str(file)
+
+
 class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -96,6 +127,10 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
 
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        return bool(not context.scene.asset_pipeline.is_published)
+
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         cat_row = layout.row(align=True)
@@ -103,6 +138,7 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
         cat_row.operator("assetpipe.refresh_asset_cat", icon='FILE_REFRESH', text="")
         layout.operator("assetpipe.batch_ownership_change")
         layout.operator("assetpipe.revert_file", icon="FILE_TICK")
+        layout.operator("assetpipe.open_publish", icon="FILE")
         layout.separator()
         col = layout.column(align=True)
         col.operator("assetpipe.save_production_hook", text="Create Production Hook").mode = 'PROD'
@@ -196,6 +232,7 @@ class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
 classes = (
     ASSETPIPE_PT_sync,
     ASSETPIPE_PT_sync_advanced,
+    ASSETPIPE_PT_working_files,
     ASSETPIPE_PT_sync_tools,
     ASSETPIPE_PT_ownership_inspector,
 )

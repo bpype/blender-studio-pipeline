@@ -78,6 +78,15 @@ class AssetPipeline(bpy.types.PropertyGroup):
         default=False,
     )
 
+    def get_is_published(self):
+        return bool(Path(bpy.data.filepath).parent.name in constants.PUBLISH_KEYS)
+
+    is_published: bpy.props.BoolProperty(
+        name="Is Published",
+        description="File is Published",
+        get=lambda self: Path(bpy.data.filepath).parent.name in constants.PUBLISH_KEYS,
+    )
+
     @property
     def asset_collection(self):
         return bpy.data.collections.get(self.asset_collection_name) or bpy.data.collections.get(

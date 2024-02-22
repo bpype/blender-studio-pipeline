@@ -3,14 +3,15 @@ import bpy
 import os
 from pathlib import Path
 
+from bpy.types import Context
+
 from . import constants, config
 from .hooks import Hooks, get_production_hook_dir, get_asset_hook_dir
 from .prefs import get_addon_prefs
 from .merge.naming import task_layer_prefix_transfer_data_update
 from .merge.task_layer import draw_task_layer_selection, get_transfer_data_owner
 from .merge.publish import (
-    get_next_published_file,
-    find_all_published,
+    find_sync_target,
     find_latest_publish,
     is_staged_publish,
     create_next_published_file,
@@ -396,6 +397,55 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         bpy.ops.wm.save_mainfile(filepath=self._current_file.__str__())
 
         sync_execute_push(self, context)
+        return {'FINISHED'}
+
+
+class ASSETPIPE_OT_open_file(bpy.types.Operator):
+    bl_idname = "assetpipe.open_file"
+    bl_label = "Open File"
+    bl_description = """Open an Asset Pipeline File, will not prompt to save current file"""
+
+    filepath: bpy.props.StringProperty(name="Filepath")
+
+    def execute(self, context: Context):
+        bpy.ops.wm.open_mainfile(filepath=self.filepath)
+        return {'FINISHED'}
+
+
+class ASSETPIPE_OT_open_publish(bpy.types.Operator):
+    bl_idname = "assetpipe.open_publish"
+    bl_label = "Open Publish"
+    bl_description = """Open the current Published File used for Push/Pull/Sync."""
+
+    save_file: bpy.props.BoolProperty(
+        name="Save Changes before Closing?",
+        default=False,
+        description="Save the file before opening Published File",
+    )  # type: ignore
+
+    def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
+        if bpy.data.is_dirty:
+            return context.window_manager.invoke_props_dialog(self, width=400)
+        else:
+            return self.execute(context)
+
+    def draw(self, context: bpy.types.Context):
+        layout = self.layout
+        layout.prop(self, "save_file")
+
+    def execute(self, context: Context):
+        if not context.scene.asset_pipeline.is_asset_pipeline_file:
+            self.report({'ERROR'}, "Cannot open Publish, current file isn't asset pipeline file")
+            return {'CANCELLED'}
+        if Path(bpy.data.filepath).parent.name in constants.PUBLISH_KEYS:
+            self.report({'ERROR'}, "Cannot open Publish, if current file is published")
+            return {'CANCELLED'}
+
+        if self.save_file:
+            save_images()
+            bpy.ops.wm.save_mainfile()
+        sync_target = find_sync_target(Path(bpy.data.filepath))
+        bpy.ops.wm.open_mainfile(filepath=str(sync_target))
         return {'FINISHED'}
 
 
@@ -1018,7 +1068,7 @@ class ASSETPIPE_OT_save_asset_hook(bpy.types.Operator):
         return {'FINISHED'}
 
 
-classes = (
+classes = [
     ASSETPIPE_OT_update_ownership,
     ASSETPIPE_OT_sync_push,
     ASSETPIPE_OT_sync_pull,
@@ -1034,7 +1084,9 @@ classes = (
     ASSETPIPE_OT_batch_ownership_change,
     ASSETPIPE_OT_refresh_asset_cat,
     ASSETPIPE_OT_save_asset_hook,
-)
+    ASSETPIPE_OT_open_publish,
+    ASSETPIPE_OT_open_file,
+]
 
 
 def register():
