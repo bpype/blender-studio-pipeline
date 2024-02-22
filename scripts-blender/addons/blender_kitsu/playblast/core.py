@@ -83,10 +83,15 @@ def override_metadata_stamp_settings(
     context,
 ):
     rd = context.scene.render
+
+    # Get shot name for stamp note text.
+    shot = cache.shot_active_get()
+
     # Get first last name for stamp note text.
     session = prefs.session_get(context)
     first_name = session.data.user["first_name"]
     last_name = session.data.user["last_name"]
+
     # Remember current render settings in order to restore them later.
 
     # Stamp metadata settings.
@@ -126,9 +131,9 @@ def override_metadata_stamp_settings(
         rd.use_stamp_marker = False
         rd.use_stamp_marker = False
         rd.use_stamp_note = True
-        rd.stamp_note_text = f"Animator: {first_name} {last_name}"
+        rd.stamp_note_text = f"Shot: {shot.name} | Animator: {first_name} {last_name}"
         rd.use_stamp = True
-        # rd.stamp_font_size = 12
+        rd.stamp_font_size = 24
         rd.stamp_foreground = (0.8, 0.8, 0.8, 1)
         rd.stamp_background = (0, 0, 0, 0.25)
         rd.use_stamp_labels = True
