@@ -60,7 +60,6 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
             col = layout.column()
             col.active = False
             self.draw_collection_selection(col, context)
-            self.draw_work_file_selection(layout)
             return
 
         layout.label(text="Local Task Layers:")
