@@ -1,3 +1,9 @@
+## 0.0.5 - 2024-02-23 
+ 
+### FIXED 
+- Fix error with multiple objects
+- 4.0 API breakage
+
 ## 0.0.4 - 2023-10-31 
  
 ### FIXED 

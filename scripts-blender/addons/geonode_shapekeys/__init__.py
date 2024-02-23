@@ -5,7 +5,7 @@ from . import operators, ui, props, prefs
 bl_info = {
     'name': "GeoNode Shape Keys",
     'author': "Demeter Dzadik",
-    "version": (0, 0, 4),
+    "version": (0, 0, 5),
     'blender': (3, 5, 0),
     'description': "Shape keys in the modifier stack",
     'location': "Properties->Mesh->Shape Keys->GeoNode ShapeKeys, only on overridden meshes",
