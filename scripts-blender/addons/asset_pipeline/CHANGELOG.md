@@ -1,0 +1,62 @@
+## 0.2.1 - 2024-02-23 
+ 
+### ADDED 
+- Add Operator to Open Publish/Working Files (#241)
+- Add Map for Geo Node Bake Settings (#220)
+- Add Set/Claim Surrendered for Objects to Batch Operator
+- Add Hooks to Merge Process (#208)
+- Add UV Seams File (#197)
+- Add Support for Asset Catalogs (#185)
+- Add Active UV Layer to Material Ownership
+- Add Active Color Attribute to Material Ownership
+- Add Claim Surrenderd Feature to Batch Operator (#182)
+- Improve Logging (#243)
+- Improve Publish UX and Rename 'Review' to 'Sandbox' (#242)
+- Store Asset Catalog in String (#230)
+- Integration with Blender Log add-on
+- Move Production hooks to `svn/pro/config` (#218)
+- Make Parent Relationships Persistent (#205)
+- Exclude Linked Items from Shared ID Map
+- Improve Error Message for Multi-User Meshes
+- Better handling of long ID names
+- Implement simple topology based transfer for vertex group data (#181)
+
+### FIXED 
+- Fix Typo in UI
+- Fix typo-level error in transfer_modifier()
+- Fix bug in modifier transfer
+- Fix Bug in 'PUSH' hooks
+- Fix execution order of Asset Hooks
+- Fix bug in Asset Hooks
+- Fix Bug Transfer UV Seams
+- Fix Bug in Material Transfer
+- fix missing nullcheck for active UV layer (#200)
+- Fix Bug when Transferring Active UVMap/Color Attribute
+- Fix Bug Setting Asset Catalog ID
+- Fix bug in Material Transfer
+- Fix bug in Material Transfer (#198)
+- Fix UI Bug if Asset Collection is not Set
+- Fix Modifier/Constraint Stack Order if Owner Changes & Enforce Black Formatting
+- Fix Conflict Bug for Previously Surrendered Data (#196)
+- Fix Bug in Parent Relationship Transfer
+- Fix some typos
+- Fix Geo Node Attribute Transfer
+- Fix Bug Staged/Review are marked as Asset
+- Fix Changelog Rendering (#125)
+- Fix line ends from DOS to UNIX (#68)
+- Null-check for asset_data
+- Avoid 2 coll linking errors
+- Typo fix
+- Clean-Up Modifier Transfer Index Code
+- Skip Linked Files during Asset Mapping
+- Use a weak ref for Asset Collection to improve performance (#213)
+- Don't transfer edgedata if 0 edges
+- Use original source data for UV seam transfer (#212)
+- Improve Push Operator UI (#199)
+- Only Create Active Index Map on Mesh Objects (#203)
+- Update Heist/Charge task_layer.py file to latest from production
+- Don't error on LINKED multi-user data
+- Don't create ownership on linked stuff
+- Cleanup- Improve Staging UX + Minor Fixes (#178)
+- Remove old Drivers during Modifier/Constraint/Shape Key Transfer
+

@@ -7,7 +7,7 @@ bl_info = {
     "author": "Nick Alberelli",
     "description": "Blender Studio Asset Pipeline Add-on",
     "blender": (4, 0, 0),
-    "version": (0, 2, 0),
+    "version": (0, 2, 1),
     "location": "View3D",
     "warning": "",
     "doc_url": "",
