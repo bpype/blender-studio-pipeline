@@ -1,3 +1,11 @@
+## 0.1.4 - 2024-02-23 
+ 
+### FIXED 
+- Fix Render Review Metastrips (use new naming convention)
+- Fix File Delimiter (#224)
+- Fix Bug loading Kitsu Project (#223)
+- Fix EXR Colorspace Name
+
 ## 0.1.3 - 2023-08-02 
  
 ### FIXED 
