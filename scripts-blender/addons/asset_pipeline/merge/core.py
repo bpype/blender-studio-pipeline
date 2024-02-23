@@ -12,7 +12,6 @@ from .transfer_data.transfer_util import transfer_data_add_entry
 from .naming import (
     merge_add_suffix_to_hierarchy,
     merge_remove_suffix_from_hierarchy,
-    asset_prefix_name_get,
     get_id_type_name,
 )
 from .transfer_data.transfer_functions.transfer_function_util.active_indexes import (
@@ -21,7 +20,7 @@ from .transfer_data.transfer_functions.transfer_function_util.active_indexes imp
 )
 from pathlib import Path
 from typing import Dict
-from .. import constants
+from .. import constants, logging
 
 
 def ownership_transfer_data_cleanup(
@@ -143,7 +142,10 @@ def remap_user(source_datablock: bpy.data, target_datablock: bpy.data) -> None:
         source_datablock (bpy.data): datablock that will be replaced by the target
         target_datablock (bpy.data): datablock that will replace the source
     """
-    print(f"REMAPPING {source_datablock.name} to {target_datablock.name}")
+    logger = logging.get_logger()
+    logger.debug(
+        f"Remapping {source_datablock.rna_type.name}: {source_datablock.name} to {target_datablock.name}"
+    )
     source_datablock.user_remap(target_datablock)
     source_datablock.name += "_Users_Remapped"
 
@@ -255,7 +257,7 @@ def import_data_from_lib(
     noun = "Appended"
     if link:
         noun = "Linked"
-
+    logger = logging.get_logger()
     data_local_collprop = getattr(bpy.data, data_category)
     with bpy.data.libraries.load(libpath.as_posix(), relative=True, link=link) as (
         data_from,
@@ -264,20 +266,20 @@ def import_data_from_lib(
         data_from_collprop = getattr(data_from, data_category)
         data_to_collprop = getattr(data_to, data_category)
         if data_name not in data_from_collprop:
-            print(
+            logger.critical(
                 f"Failed to import {data_category} {data_name} from {libpath.as_posix()}. Doesn't exist in file.",
             )
 
         # Check if datablock with same name already exists in blend file.
         existing_datablock = data_local_collprop.get(data_name)
         if existing_datablock:
-            print(
+            logger.critical(
                 f"{data_name} already in bpy.data.{data_category} of this blendfile.",
             )
 
         # Append data block.
         data_to_collprop.append(data_name)
-        print(f"{noun}:{data_name} from library: {libpath.as_posix()}")
+        logger.info(f"{noun}:{data_name} from library: {libpath.as_posix()}")
 
     if link:
         return data_local_collprop.get((data_name, bpy.path.relpath(libpath.as_posix())))

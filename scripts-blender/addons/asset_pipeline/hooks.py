@@ -6,7 +6,7 @@ import typing
 import types
 from collections.abc import Iterable
 import importlib
-from . import prefs
+from . import prefs, logging
 from pathlib import Path
 
 
@@ -94,6 +94,7 @@ class Hooks:
                 hook(*args, **kwargs)
 
     def import_hook(self, path: List[str]) -> None:
+        logger = logging.get_logger()
         with SystemPathInclude(path) as _include:
             try:
                 import hooks as production_hooks
@@ -101,7 +102,7 @@ class Hooks:
                 importlib.reload(production_hooks)
                 self.register_hooks(production_hooks)
             except ModuleNotFoundError:
-                print(f"Production did not find `hooks.py` configuration file at {path}")
+                logger.warning(f"Did not find `hooks.py` configuration file at {path}")
 
     def load_hooks(self, context):
         prod_hooks = get_production_hook_dir()

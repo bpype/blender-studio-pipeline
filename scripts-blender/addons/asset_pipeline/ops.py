@@ -1,33 +1,17 @@
-from typing import Set
 import bpy
-import os
-from pathlib import Path
-
 from bpy.types import Context
 
-from . import constants, config
-from .hooks import Hooks, get_production_hook_dir, get_asset_hook_dir
-from .prefs import get_addon_prefs
-from .merge.naming import task_layer_prefix_transfer_data_update
-from .merge.task_layer import draw_task_layer_selection, get_transfer_data_owner
-from .merge.publish import (
-    find_sync_target,
-    find_latest_publish,
-    is_staged_publish,
-    create_next_published_file,
-)
-from .images import save_images
-from .sync import (
-    sync_invoke,
-    sync_draw,
-    sync_execute_update_ownership,
-    sync_execute_prepare_sync,
-    sync_execute_pull,
-    sync_execute_push,
-)
+from pathlib import Path
+from typing import Set
+import os
 
+from . import constants, config, opscore
 from .asset_catalog import get_asset_catalog_items, get_asset_id
 from .config import verify_task_layer_json_data
+from .hooks import Hooks, get_production_hook_dir, get_asset_hook_dir
+from .images import save_images
+from .merge import publish, task_layer, naming
+from .prefs import get_addon_prefs
 
 
 class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
@@ -243,7 +227,7 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
 
         # Create intial publish based on task layers.
         self._remove_collections(context)
-        create_next_published_file(Path(starting_file), self.publish_type)
+        publish.create_next_published_file(Path(starting_file), self.publish_type)
         if starting_file:
             bpy.ops.wm.open_mainfile(filepath=starting_file)
         return {'FINISHED'}
@@ -265,14 +249,15 @@ class ASSETPIPE_OT_update_ownership(bpy.types.Operator):
     )
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
-        sync_invoke(self, context)
+        opscore.sync_invoke(self, context)
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
-        sync_draw(self, context)
+        opscore.sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
-        sync_execute_update_ownership(self, context)
+        opscore.sync_execute_update_ownership(self, context)
+        self.report({'INFO'}, "Ownership Updated")
         return {'FINISHED'}
 
 
@@ -308,12 +293,12 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
         return False
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
-        sync_invoke(self, context)
+        opscore.sync_invoke(self, context)
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
         self.layout.prop(self, "save")
-        sync_draw(self, context)
+        opscore.sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
         asset_col = context.scene.asset_pipeline.asset_collection
@@ -325,11 +310,12 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
         hooks_instance.load_hooks(context)
         hooks_instance.execute_hooks(merge_mode="pull", merge_status='pre', asset_col=asset_col)
         # Find current task Layer
-        sync_execute_update_ownership(self, context)
-        sync_execute_prepare_sync(self, context)
-        sync_execute_pull(self, context)
+        opscore.sync_execute_update_ownership(self, context)
+        opscore.sync_execute_prepare_sync(self, context)
+        opscore.sync_execute_pull(self, context)
 
         hooks_instance.execute_hooks(merge_mode="pull", merge_status='post', asset_col=asset_col)
+        self.report({'INFO'}, "Asset Pull Complete")
         return {'FINISHED'}
 
 
@@ -365,7 +351,7 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         return False
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
-        sync_invoke(self, context)
+        opscore.sync_invoke(self, context)
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
@@ -373,7 +359,7 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
             col = self.layout.column()
             col.label(text="Force Pushing without pulling can cause data loss", icon="ERROR")
             col.separator()
-        sync_draw(self, context)
+        opscore.sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
         asset_col = context.scene.asset_pipeline.asset_collection
@@ -385,18 +371,22 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         if self.pull:
             hooks_instance.execute_hooks(merge_mode="pull", merge_status='pre', asset_col=asset_col)
         # Find current task Layer
-        sync_execute_update_ownership(self, context)
-        sync_execute_prepare_sync(self, context)
+        opscore.sync_execute_update_ownership(self, context)
+        opscore.sync_execute_prepare_sync(self, context)
 
         if self.pull:
-            sync_execute_pull(self, context)
+            opscore.sync_execute_pull(self, context)
             hooks_instance.execute_hooks(
                 merge_mode="pull", merge_status='post', asset_col=asset_col
             )
         hooks_instance.execute_hooks(merge_mode="push", merge_status='pre', asset_col=asset_col)
         bpy.ops.wm.save_mainfile(filepath=self._current_file.__str__())
 
-        sync_execute_push(self, context)
+        opscore.sync_execute_push(self, context)
+        if self.pull:
+            self.report({'INFO'}, "Asset Sync Complete")
+        else:
+            self.report({'INFO'}, "Asset Force Push Complete")
         return {'FINISHED'}
 
 
@@ -457,9 +447,11 @@ class ASSETPIPE_OT_open_publish(bpy.types.Operator):
             return {'CANCELLED'}
 
         if self.publish_types == "sync_target":
-            published_file = find_sync_target(Path(bpy.data.filepath))
+            published_file = publish.find_sync_target(Path(bpy.data.filepath))
         else:
-            published_file = find_latest_publish(Path(bpy.data.filepath), self.publish_types)
+            published_file = publish.find_latest_publish(
+                Path(bpy.data.filepath), self.publish_types
+            )
 
         if not published_file.exists():
             self.report(
@@ -504,7 +496,7 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
         if (
-            is_staged_publish(Path(bpy.data.filepath))
+            publish.is_staged_publish(Path(bpy.data.filepath))
             and self.publish_types != constants.SANDBOX_PUBLISH_KEY
         ):
             self.report(
@@ -513,7 +505,7 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
             )
             return {'CANCELLED'}
         catalog_id = get_asset_id(context.scene.asset_pipeline.asset_catalog_name)
-        new_filepath = create_next_published_file(
+        new_filepath = publish.create_next_published_file(
             current_file=Path(bpy.data.filepath),
             publish_type=self.publish_types,
             catalog_id=catalog_id,
@@ -534,7 +526,7 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
                 "Save the current file and/or Pull from last publish before creating new Publish"
             )
             return False
-        if not is_staged_publish(Path(bpy.data.filepath)):
+        if not publish.is_staged_publish(Path(bpy.data.filepath)):
             cls.poll_message_set.report("No File is currently staged")
             return False
         return True
@@ -552,11 +544,13 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
         current_file = Path(bpy.data.filepath)
-        staged_file = find_latest_publish(current_file, publish_type=constants.STAGED_PUBLISH_KEY)
+        staged_file = publish.find_latest_publish(
+            current_file, publish_type=constants.STAGED_PUBLISH_KEY
+        )
         # Delete Staged File
         staged_file.unlink()
         catalog_id = get_asset_id(context.scene.asset_pipeline.asset_catalog_name)
-        create_next_published_file(current_file=current_file, catalog_id=catalog_id)
+        publish.create_next_published_file(current_file=current_file, catalog_id=catalog_id)
         return {'FINISHED'}
 
 
@@ -663,7 +657,7 @@ class ASSETPIPE_OT_fix_prefixes(bpy.types.Operator):
         for obj in objs:
             transfer_data_items = obj.transfer_data_ownership
             for transfer_data_item in transfer_data_items:
-                if task_layer_prefix_transfer_data_update(transfer_data_item):
+                if naming.get_transfer_data_owner(transfer_data_item):
                     self.report(
                         {'INFO'},
                         f"Renamed {transfer_data_item.type} on '{obj.name}'",
@@ -698,7 +692,7 @@ class ASSETPIPE_OT_update_surrendered_object(bpy.types.Operator):
         layout = self.layout
         row = layout.row()
 
-        draw_task_layer_selection(
+        task_layer.draw_task_layer_selection(
             layout=row,
             data=self._obj,
             show_all_task_layers=False,
@@ -734,7 +728,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
                 self._old_onwer = self._surrendered_transfer_data.owner
         # Set Default Owner
         asset_pipe = context.scene.asset_pipeline
-        owner, _ = get_transfer_data_owner(
+        owner, _ = task_layer.get_transfer_data_owner(
             asset_pipe, self._surrendered_transfer_data.type, self._surrendered_transfer_data.name
         )
         self._surrendered_transfer_data.owner = owner
@@ -744,7 +738,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
         layout = self.layout
         row = layout.row()
 
-        draw_task_layer_selection(
+        task_layer.draw_task_layer_selection(
             layout=row,
             data=self._surrendered_transfer_data,
             show_local_task_layers=True,
@@ -758,7 +752,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
             )
             return {'CANCELLED'}
         self._surrendered_transfer_data.surrender = False
-        task_layer_prefix_transfer_data_update(self._surrendered_transfer_data)
+        naming.get_transfer_data_owner(self._surrendered_transfer_data)
         return {'FINISHED'}
 
 
@@ -972,7 +966,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         owner_row = layout.row(align=True)
         owner_row.enabled = grey_out
 
-        draw_task_layer_selection(
+        task_layer.draw_task_layer_selection(
             layout=owner_row,
             data=self,
             data_owner_name='owner_selection',
@@ -1027,7 +1021,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
                     continue
 
                 transfer_data_item_to_update.owner = self.owner_selection
-                task_layer_prefix_transfer_data_update(transfer_data_item_to_update)
+                naming.get_transfer_data_owner(transfer_data_item_to_update)
 
         self.report({'INFO'}, message)
         return {'FINISHED'}

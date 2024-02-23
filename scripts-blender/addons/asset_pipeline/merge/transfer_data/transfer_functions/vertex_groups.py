@@ -9,7 +9,7 @@ from ..transfer_util import (
 from .transfer_function_util.proximity_core import (
     is_obdata_identical,
 )
-from .... import constants
+from .... import constants, logging
 
 
 def vertex_groups_clean(obj):
@@ -41,11 +41,12 @@ def transfer_vertex_group(
     target_obj: bpy.types.Object,
     source_obj: bpy.types.Object,
 ):
+    logger = logging.get_logger()
     if target_obj == source_obj:
         return
 
     if not source_obj.vertex_groups.get(vertex_group_name):
-        print(f"ERROR Vertex Group {vertex_group_name} not found in {source_obj.name}")
+        logger.error(f"Vertex Group {vertex_group_name} not found in {source_obj.name}")
         return
 
     # If topology matches transfer directly, otherwise use vertex proximity

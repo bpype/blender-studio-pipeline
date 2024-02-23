@@ -110,3 +110,16 @@ PUBLISH_KEYS = [pub_type[0] for pub_type in PUBLISH_TYPES]
 ACTIVE_PUBLISH_KEY = PUBLISH_KEYS[0]
 STAGED_PUBLISH_KEY = PUBLISH_KEYS[1]
 SANDBOX_PUBLISH_KEY = PUBLISH_KEYS[2]
+
+
+#############
+# Logging
+#############
+
+LOGGER_LEVEL_ITEMS = (
+    ('10', 'Debug', ''),
+    ('20', 'Info', ''),
+    ('30', 'Warning', ''),
+    ('40', 'Error', ''),
+    ('50', 'Critical', ''),
+)

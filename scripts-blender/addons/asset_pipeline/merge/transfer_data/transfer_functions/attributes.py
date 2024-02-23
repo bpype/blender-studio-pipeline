@@ -12,7 +12,7 @@ from .transfer_function_util.proximity_core import (
 from ..transfer_util import check_transfer_data_entry
 from ...naming import merge_get_basename
 from ...task_layer import get_transfer_data_owner
-from .... import constants
+from .... import constants, logging
 
 
 def attributes_get_editable(attributes):
@@ -29,6 +29,7 @@ def attributes_get_editable(attributes):
 
 
 def attribute_clean(obj):
+    logger = logging.get_logger()
     if obj.type != "MESH":
         return
     attributes = attributes_get_editable(obj.data.attributes)
@@ -44,7 +45,7 @@ def attribute_clean(obj):
 
     for attribute_name_to_remove in reversed(attributes_to_remove):
         attribute_to_remove = obj.data.attributes.get(attribute_name_to_remove)
-        print(f"Cleaning attribute {attribute.name}")
+        logger.debug(f"Cleaning attribute {attribute.name}")
         obj.data.attributes.remove(attribute_to_remove)
 
 
@@ -169,7 +170,7 @@ def proximity_transfer_single_attribute(
     # proximity fallback
     if source_attribute.data_type == 'STRING':
         # TODO: add NEAREST transfer fallback for attributes without interpolation
-        print(
+        logger.warning(
             f'Proximity based transfer for generic attributes of type STRING not supported yet. Skipping attribute {source_attribute.name} on {target_obj}.'
         )
         return
@@ -217,7 +218,7 @@ def proximity_transfer_single_attribute(
         return
     elif domain == 'EDGE':
         # TODO support proximity fallback for generic edge attributes
-        print(
+        logger.warning(
             f'Proximity based transfer of generic edge attributes not supported yet. Skipping attribute {source_attribute.name} on {target_obj}.'
         )
         return

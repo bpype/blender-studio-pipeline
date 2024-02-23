@@ -14,7 +14,7 @@ from ..transfer_util import (
     check_transfer_data_entry,
 )
 from ...naming import merge_get_basename
-from .... import constants
+from .... import constants, logging
 
 
 def shape_key_set_active(obj, shape_key_name):
@@ -80,6 +80,7 @@ def transfer_shape_key(
     target_obj: bpy.types.Object,
     source_obj: bpy.types.Object,
 ):
+    logger = logging.get_logger()
     if not source_obj.data.shape_keys:
         return
     sk_source = source_obj.data.shape_keys.key_blocks.get(shape_key_name)
@@ -105,8 +106,8 @@ def transfer_shape_key(
             # If the base shape of one of our shapes was removed by another task layer,
             # the result will probably be pretty bad, but it's not a catastrophic failure.
             # Proceed with a warning.
-            print(
-                f'Warning: Base shape "{sk_source.relative_key.name}" of Key "{sk_source.name}" was removed from "{target_obj.name}"'
+            logger.warning(
+                f'Base shape "{sk_source.relative_key.name}" of Key "{sk_source.name}" was removed from "{target_obj.name}"'
             )
 
     sk_target.slider_min = sk_source.slider_min

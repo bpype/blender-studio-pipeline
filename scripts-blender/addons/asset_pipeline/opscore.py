@@ -13,7 +13,7 @@ from .merge.core import (
 )
 from .merge.transfer_data.transfer_ui import draw_transfer_data
 from .merge.shared_ids import get_shared_id_icon
-from . import constants, config
+from . import constants, config, logging
 from .hooks import Hooks
 from .merge.task_layer import draw_task_layer_selection
 from .asset_catalog import get_asset_id
@@ -29,6 +29,8 @@ def sync_poll(cls, context):
 
 
 def sync_invoke(self, context):
+    logger = logging.get_logger()
+    logger.info("Loading Transfer Data")
     self._temp_transfer_data = context.scene.asset_pipeline.temp_transfer_data
     self._temp_transfer_data.clear()
     self._invalid_objs.clear()
@@ -38,11 +40,6 @@ def sync_invoke(self, context):
     if not local_col:
         self.report({'ERROR'}, "Top level collection could not be found")
         return {'CANCELLED'}
-    # TODO Check if file contains a valid task layer
-    # task_layer_key = context.scene.asset_pipeline.task_layer_name
-    # if task_layer_key == "NONE":
-    #     self.report({'ERROR'}, "Current File Name doesn't contain valid task layer")
-    #     return {'CANCELLED'}
 
     ownership_get(local_col, context.scene)
 
@@ -96,6 +93,8 @@ def sync_draw(self, context):
 
 
 def sync_execute_update_ownership(self, context):
+    logger = logging.get_logger()
+    logger.info("Updating Ownership")
     temp_transfer_data = context.scene.asset_pipeline.temp_transfer_data
     ownership_set(temp_transfer_data)
 
@@ -105,10 +104,6 @@ def sync_execute_prepare_sync(self, context):
     self._current_file = Path(bpy.data.filepath)
     self._temp_dir = Path(bpy.app.tempdir).parent
     self._task_layer_keys = asset_pipe.get_local_task_layers()
-    # TODO Check if file contains a valid task layer
-    # if self._task_layer_key == "NONE":
-    #     self.report({'ERROR'}, "Current File Name doesn't contain valid task layer")
-    #     return {'CANCELLED'}
 
     self._sync_target = find_sync_target(self._current_file)
     if not self._sync_target.exists():
@@ -134,9 +129,12 @@ def update_temp_file_paths(self, context, temp_file_path):
 
 
 def sync_execute_pull(self, context):
+    logger = logging.get_logger()
+    logger.info("Pulling Asset")
     temp_file_path = create_temp_file_backup(self, context)
     update_temp_file_paths(self, context, temp_file_path)
     bpy.ops.wm.save_as_mainfile(filepath=temp_file_path, copy=True)
+    logger.debug(f"Creating Backup File at {temp_file_path}")
 
     error_msg = merge_task_layer(
         context,
@@ -151,6 +149,8 @@ def sync_execute_pull(self, context):
 
 
 def sync_execute_push(self, context):
+    logger = logging.get_logger()
+    logger.info("Pushing Asset")
     _catalog_id = None
     hooks_instance = Hooks()
     hooks_instance.load_hooks(context)
@@ -180,7 +180,7 @@ def sync_execute_push(self, context):
         return {'CANCELLED'}
 
     if asset_col.asset_data:
-        if not (_catalog_id == '' or _catalog_id == 'NONE'):
+        if _catalog_id:
             asset_col.asset_data.catalog_id = _catalog_id
 
     hooks_instance.execute_hooks(

@@ -2,10 +2,12 @@ import bpy
 from ..transfer_util import check_transfer_data_entry
 from ...task_layer import get_transfer_data_owner
 from ...naming import merge_get_basename
-from .... import constants
+from .... import constants, logging
+
 
 
 def parent_clean(obj):
+    logger = logging.get_logger()
     matches = check_transfer_data_entry(
         obj.transfer_data_ownership,
         merge_get_basename(constants.PARENT_TRANSFER_DATA_ITEM_NAME),
@@ -16,7 +18,7 @@ def parent_clean(obj):
         return
 
     obj.parent = None
-    print("Cleaning Parent Relationship")
+    logger.debug("Cleaning Parent Relationship")
 
 
 def parent_is_missing(transfer_data_item):

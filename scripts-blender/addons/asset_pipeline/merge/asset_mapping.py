@@ -7,7 +7,7 @@ from .naming import (
 from .util import get_storage_of_id
 from .transfer_data.transfer_util import transfer_data_add_entry
 from .shared_ids import get_shared_ids
-from .. import constants
+from .. import constants, logging
 
 
 class AssetTransferMapping:
@@ -45,6 +45,8 @@ class AssetTransferMapping:
         self.conflict_transfer_data = []  # Item of bpy.types.CollectionProperty
         self.transfer_data_map: Dict[bpy.types.Collection, bpy.types.Collection] = {}
 
+        self.logger = logging.get_logger()
+
         self.generate_mapping()
 
     def generate_mapping(self) -> None:
@@ -60,7 +62,7 @@ class AssetTransferMapping:
         )
         external_obj = self._external_col.all_objects.get(external_obj_name)
         if not external_obj:
-            print(f"Failed to find match obj {external_obj_name} for {local_obj.name}")
+            self.logger.debug(f"Failed to find match obj {external_obj_name} for {local_obj.name}")
             self._no_match_source_objs.add(local_obj)
             return
         return external_obj
@@ -85,7 +87,7 @@ class AssetTransferMapping:
                 continue
             external_obj = self._get_external_object(local_obj)
             if not external_obj:
-                print(f"Couldn't find external obj for {local_obj}")
+                self.logger.debug(f"Couldn't find external obj for {local_obj}")
                 continue
             self._check_id_conflict(external_obj, local_obj)
             # IF ITEM IS OWNED BY LOCAL TASK LAYERS
@@ -95,7 +97,7 @@ class AssetTransferMapping:
                 and not local_obj.asset_id_surrender
                 and local_obj.asset_id_owner != external_obj.asset_id_owner
             ):
-                print(f"Skipping {external_obj} is surrendered")
+                self.logger.debug(f"Skipping {external_obj} is surrendered")
                 object_map[external_obj] = local_obj
                 continue
 
@@ -104,7 +106,7 @@ class AssetTransferMapping:
                 and not external_obj.asset_id_surrender
                 and local_obj.asset_id_owner != external_obj.asset_id_owner
             ):
-                print(f"Skipping {local_obj} is surrendered")
+                self.logger.debug(f"Skipping {local_obj} is surrendered")
                 object_map[local_obj] = external_obj
                 continue
 
@@ -139,7 +141,7 @@ class AssetTransferMapping:
                 if local_col:
                     coll_map[local_task_layer_col] = local_col
                 else:
-                    print(
+                    self.logger.debug(
                         f"Failed to find match collection {local_task_layer_col.name} for {external_col_name}"
                     )
                     self._no_match_source_colls.add(local_task_layer_col)
@@ -211,7 +213,7 @@ class AssetTransferMapping:
             if self._transfer_data_pair_local(matching_transfer_data_item, transfer_data_item):
                 return
             self.conflict_transfer_data.append(transfer_data_item)
-            print("CONFLICT FOUND")
+            self.logger.critical(f"Transfer Data Conflict for {transfer_data_item.name}")
             return True
 
     def _transfer_data_get_matching(self, transfer_data_item):

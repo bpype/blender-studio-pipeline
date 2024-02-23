@@ -1,6 +1,6 @@
 import bpy
 from . import constants
-
+from .logging import get_logger
 
 def get_addon_prefs():
     return bpy.context.preferences.addons[constants.ADDON_NAME].preferences
@@ -35,6 +35,18 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         subtype="DIR_PATH",
     )
 
+    def update_logger_level(self, context):
+        logger = get_logger()
+        logger.handlers.clear()
+
+    logger_level: bpy.props.EnumProperty(  # type: ignore
+        name="Logging Level",
+        description="Changes the level of detail of print statements in blender's console",
+        default=1,
+        items=constants.LOGGER_LEVEL_ITEMS,
+        update=update_logger_level,
+    )
+
     is_advanced_mode: bpy.props.BoolProperty(
         name="Advanced Mode",
         description="Show Advanced Options in Asset Pipeline Panels",
@@ -45,6 +57,7 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "project_root_dir")
         self.layout.prop(self, "custom_task_layers_dir")
         self.layout.prop(self, "save_images_path")
+        self.layout.prop(self, "logger_level")
         self.layout.prop(self, "is_advanced_mode")
 
 
