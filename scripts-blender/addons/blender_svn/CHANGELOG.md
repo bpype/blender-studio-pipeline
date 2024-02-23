@@ -1,3 +1,10 @@
+## 1.0.3 - 2024-02-23 
+ 
+### FIXED 
+- Fix incorrectly marking file as outdated
+- Fix >1 Status processes on Reload Scripts
+- Debug mode- 0.0.2 Clean-Up Changelogs
+
 ## 1.0.2 - 2023-10-31 
  
 ### FIXED 
