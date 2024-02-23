@@ -8,25 +8,16 @@
 - Add missing init_cache_variables
 - Add Sequence Playblast Support (#176)
 - Add 'Shot as Image Sequence' Documentation
-- Add Operator to Replace .mp4 with Image Sequences (#132)
-- Add Frame Range Pop-up (#128)
-- Add option to create tasks during Submit New Shot (#121)
-- Add option to Exclude Collections from Output Collection (#120)
-- Add Operator to Push Frame Start (#98)
-- Add option to cleanup empty actions (#73)
 - Replace "blender_kitsu" with __package__ so it can be an extension (#195)
 - Use New Kitsu Context UI in Shot Builder (#210)
 - Check if TV Show based on Production Type (#209)
 - Support Multiple Rigs in Check Action Names
 - Use Updated Naming Convention when Setting Action Names
 - Added New Kitsu Context UI (#187)
-- Shot Builder include Camera Rig in Layout Task Type
 - Episode support for playblasts
 - Move episode selection to viewport
 - Preference labels tweaks
 - Refactor Shot Builder (#183)
-- Make Frames directory customizable
-- Use New Shared Folder Structure
 
 ### FIXED 
 - Fix Render Review Metastrips (use new naming convention)
@@ -42,31 +33,6 @@
 - Fix README Table of Contents
 - Fix Typo in README Credits
 - Fix bug in `is_edit_file()` check
-- Fix Drawing Sequence Line (#157)
-- Fix Scene Name in Shot Builder Config File
-- Fix EXR Colorspace Name
-- Fix Bug "3d_start" missing on new shots
-- Fix EXR Colorspace Name
-- Fix Scene Name in Shot Builder Config File
-- Fix Bug "3d_start" missing on new shots
-- Fix Shot Builder example `assets.py`
-- Fix Shot Builder example `shots.py`
-- Fix Get Project ID from Kitsu Server in Shot Builder
-- Fix Context Override Error in Shot Builder
-- Fix Enforce Black Formatting
-- Fix Changelog Rendering (#125)
-- Fix Gazu Module out of sync (#119)
-- Fix typo in Frame Range Calculation
-- Fix Frame Range Warning if no context is found"
-- Fix Frame Range Warning if no context is found
-- Fix Shot Builder Frame Range Calculation
-- Fix Render Still/Movie from Edit (#97)
-- Fix Changelogs
-- Fix "add_preview_to_comment"
-- Fix Keep existing actions during `Check Action Names` (#75)
-- Fix bug in frame range calculation (#72)
-- Fix line ends from DOS to UNIX (#68)
-- Fix Playblast Burn In Settings
 - Set Fake User on all Actions that are Renamed
 - Only Rename Actions in Scene Collection & Fix Removing Empty Actions (#239)
 - Shot Builder Remove Actions When Building New Shots
@@ -91,10 +57,6 @@
 - Remove unused HISTORY.md
 - Remove box layout in 3D view
 - Remove episode from prefs
-- remove "boxed" ui for playblast
-- Remove dependence on Editorial Export Path
-- Remove Metastrip Filepath (#80)
-- Move Shot Builder Hooks to `svn/pro/config` (#217)
 
 ## 0.1.4 - 2023-10-31 
  
@@ -106,9 +68,7 @@
 - Fix Scene Name in Shot Builder Config File
 - Fix EXR Colorspace Name
 - Fix Bug "3d_start" missing on new shots
-- Fix EXR Colorspace Name
 - Fix Scene Name in Shot Builder Config File
-- Fix Bug "3d_start" missing on new shots
 - Fix Shot Builder example�`assets.py`
 - Fix Shot Builder example `shots.py`
 - Fix Get Project ID from Kitsu Server in Shot Builder
@@ -128,24 +88,16 @@
 - Add option to create tasks during Submit New Shot (#121)
 - Add option to Exclude Collections from Output Collection (#120)
 - Add Operator to Push Frame Start (#98)
-- Add option to cleanup empty actions (#73)
 
 ### FIXED 
 - Fix Enforce Black Formatting
 - Fix Changelog Rendering (#125)
 - Fix Gazu Module out of sync (#119)
 - Fix typo in Frame Range Calculation
-- Fix Frame Range Warning if no context is found"
 - Fix Frame Range Warning if no context is found
 - Fix Shot Builder Frame Range Calculation
 - Fix Render Still/Movie from Edit (#97)
-- Fix Changelogs
-- Fix "add_preview_to_comment"
-- Fix Keep existing actions during `Check Action Names` (#75)
-- Fix bug in frame range calculation (#72)
-- Fix line ends from DOS to UNIX (#68)
 - Shot Builder Add Directory Layout to README
-- Rename 'Render Thumbnail' to 'Render Still' (#86)
 - Fix hang when using Kitsu Server is not found during login (#79)
 
 ### REMOVED 
