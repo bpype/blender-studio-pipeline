@@ -27,7 +27,7 @@ class KITSU_OT_edit_render_publish(bpy.types.Operator):
     use_frame_start: bpy.props.BoolProperty(name="Submit update to 'frame_start'.", default=False)
     frame_start: bpy.props.IntProperty(
         name="Frame Start",
-        description="Send an integerfor the 'frame_start' value of the current Kitsu Edit. \nThis is used by Watchtower to pad the edit in the timeline.",
+        description="Send an integer for the 'frame_start' value of the current Kitsu Edit. \nThis is used by Watchtower to pad the edit in the timeline.",
         default=0,
     )
     thumbnail_frame: bpy.props.IntProperty(
@@ -35,6 +35,7 @@ class KITSU_OT_edit_render_publish(bpy.types.Operator):
         description="Frame to use as the thumbnail on Kitsu",
         min=0,
     )
+
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         kitsu_props = context.scene.kitsu
@@ -67,7 +68,7 @@ class KITSU_OT_edit_render_publish(bpy.types.Operator):
             dir_path = Path(dir_path).parent
         self.render_dir = str(dir_path)
 
-        #'frame_start' is optionally property appearring on all edit_entries for a project if it exists (used in watchtower)
+        # 'frame_start' is optionally property appearing on all edit_entries for a project if it exists (used in watchtower)
         server_frame_start = cache.edit_active_get().get_frame_start()
         if server_frame_start is int:
             self.frame_start = server_frame_start

@@ -188,7 +188,7 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
     for a Kitsu Entity. Kitsu Entities represents things like Asset, 
     Shot and Sequence for a given production.
     
-    Each Enitity has an 'ID' Property which is used internally by the add-on
+    Each Entity has an 'ID' Property which is used internally by the add-on
     and a 'Name' Property which is used as part of the user interface. When a user selects
     the 'Name' of a Kitsu Entity a custom Set function on the property will also update 
     the Entity's ID.
