@@ -45,6 +45,13 @@ parser.add_argument(
     required=True,
 )
 
+parser.add_argument(
+    "-f",
+    "--filter",
+    help="Only crawl files if their name contains the filter string.",
+    type=str,
+    required=False,
+)
 
 def get_bbatch_script_path() -> str:
     """Returns path to script that runs with bbatch"""
@@ -52,7 +59,7 @@ def get_bbatch_script_path() -> str:
     return str(dir.joinpath("resync_blend_file.py"))
 
 
-def get_files_to_crawl(project_path: str):  # -> returns list of strings
+def get_files_to_crawl(project_path: str, name_filter=None):  # -> returns list of paths
 
     blend_files = [
         f for f in Path(project_path).glob("**/*") if f.is_file() and f.suffix == ".blend"
@@ -66,6 +73,10 @@ def get_files_to_crawl(project_path: str):  # -> returns list of strings
         if not elapse_time > 86400:
             print("Skipping recently saved file:", str(blend_file))
             continue
+        # Skip files if they don't match
+        if name_filter:
+            if not name_filter in blend_file.name:
+                continue
         resync_blend_files.append(blend_file)
     return resync_blend_files
 
@@ -80,7 +91,7 @@ def main():
     if not exec_path.exists():
         cancel_program("Provided Executable path does not exist")
     script_path = get_bbatch_script_path()
-    files_to_craw = get_files_to_crawl(project_path)
+    files_to_craw = get_files_to_crawl(project_path, args.filter)
     if len(files_to_craw) < 1:
         cancel_program("No Files to resync")
 
