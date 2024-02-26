@@ -16,7 +16,7 @@ from .core import (
 )
 from ..context import core as context_core
 
-from ..edit.core import edit_render_import_latest
+from ..edit.core import edit_export_import_latest
 from .file_save import save_shot_builder_file
 from .template import replace_workspace_with_template
 from .assets import get_shot_assets
@@ -236,7 +236,7 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         link_task_type_output_collections(shot, task_type)
 
         if bkglobals.LOAD_EDITORIAL_REF.get(task_type_short_name):
-            edit_render_import_latest(context, shot)
+            edit_export_import_latest(context, shot)
 
         # Run Hooks
         hooks_instance = Hooks()

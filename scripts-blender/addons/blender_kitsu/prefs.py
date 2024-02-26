@@ -41,7 +41,7 @@ from .auth.ops import (
 )
 from .context.ops import KITSU_OT_con_productions_load
 from .lookdev.prefs import LOOKDEV_preferences
-from .edit.core import edit_render_get_latest
+from .edit.core import edit_export_get_latest
 
 
 logger = LoggerFactory.getLogger()
@@ -358,60 +358,60 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         subtype='DIR_PATH',
     )
 
-    def set_edit_render_dir(self, input):
-        self['edit_render_dir'] = input
+    def set_edit_export_dir(self, input):
+        self['edit_export_dir'] = input
         return
 
-    def get_edit_render_dir(
+    def get_edit_export_dir(
         self,
     ) -> str:
-        if get_safely_string_prop(self, 'edit_render_dir') == "" and self.project_root_path:
+        if get_safely_string_prop(self, 'edit_export_dir') == "" and self.project_root_path:
             dir = self.project_root_path.joinpath("shared/editorial/export/")
             if dir.exists():
                 return dir.as_posix()
-        return get_safely_string_prop(self, 'edit_render_dir')
+        return get_safely_string_prop(self, 'edit_export_dir')
 
-    edit_render_dir: bpy.props.StringProperty(  # type: ignore
-        name="Render Directory",
+    edit_export_dir: bpy.props.StringProperty(  # type: ignore
+        name="Edit Export Directory",
         options={"HIDDEN", "SKIP_SAVE"},
-        description="Directory path to editorial's render folder containing storyboard/animatic renders. Path should be similar to '~/shared-{proj_name}/editorial/export/'",
+        description="Directory path to editorial's export folder containing storyboard/animatic renders. Path should be similar to '~/shared-{proj_name}/editorial/export/'",
         subtype="DIR_PATH",
-        get=get_edit_render_dir,
-        set=set_edit_render_dir,
+        get=get_edit_export_dir,
+        set=set_edit_export_dir,
     )
 
-    def set_edit_render_file_pattern(self, input):
-        self['edit_render_file_pattern'] = input
+    def set_edit_export_file_pattern(self, input):
+        self['edit_export_file_pattern'] = input
         return
 
-    def get_edit_render_file_pattern(
+    def get_edit_export_file_pattern(
         self,
     ) -> str:
         active_project = cache.project_active_get()
-        if get_safely_string_prop(self, 'edit_render_file_pattern') == "" and active_project:
+        if get_safely_string_prop(self, 'edit_export_file_pattern') == "" and active_project:
             proj_name = active_project.name.replace(' ', bkglobals.SPACE_REPLACER).lower()
             # HACK for Project Gold at Blender Studio
             if proj_name == "project_gold":
                 return f"gold-edit-v###.mp4"
             return f"{proj_name}-edit-v###.mp4"
-        return get_safely_string_prop(self, 'edit_render_file_pattern')
+        return get_safely_string_prop(self, 'edit_export_file_pattern')
 
-    edit_render_file_pattern: bpy.props.StringProperty(  # type: ignore
-        name="Render File Pattern",
+    edit_export_file_pattern: bpy.props.StringProperty(  # type: ignore
+        name="Edit Export File Pattern",
         options={"HIDDEN", "SKIP_SAVE"},
         description=(
-            "File pattern for latest editorial render file. "
+            "File pattern for latest editorial export file. "
             "Typically '{proj_name}-edit-v###.mp4' where # represents a number. "
             "Pattern must contain exactly v### representing the version, pattern must end in .mp4"
         ),
         default="",
-        get=get_edit_render_file_pattern,
-        set=set_edit_render_file_pattern,
+        get=get_edit_export_file_pattern,
+        set=set_edit_export_file_pattern,
     )
 
-    edit_render_frame_offset: bpy.props.IntProperty(  # type: ignore
-        name="Render Offset",
-        description="Shift Editorial Render by this frame-range after import",
+    edit_export_frame_offset: bpy.props.IntProperty(  # type: ignore
+        name="Edit Export Offset",
+        description="Shift Editorial Export by this frame-range after import",
         default=-101,  # HARD CODED FOR GOLD PROJECTS BLENDER FILM
     )
 
@@ -491,10 +491,10 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         # Editorial Settings
         box = col.box()
         box.label(text="Editorial", icon="SEQ_SEQUENCER")
-        box.row().prop(self, "edit_render_dir")
+        box.row().prop(self, "edit_export_dir", text="Export Directory")
         file_pattern_row = box.row(align=True)
-        file_pattern_row.alert = not self.is_edit_render_pattern_valid
-        file_pattern_row.prop(self, "edit_render_file_pattern")
+        file_pattern_row.alert = not self.is_edit_export_pattern_valid
+        file_pattern_row.prop(self, "edit_export_file_pattern", text="Export File Pattern")
 
         # Lookdev tools settings.
         self.lookdev.draw(context, col)
@@ -527,7 +527,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         # Shot_Builder settings.
         box = col.box()
         box.label(text="Shot Builder", icon="MOD_BUILD")
-        box.row().prop(self, "edit_render_frame_offset")
+        box.row().prop(self, "edit_export_frame_offset")
         box.row().prop(self, "shot_builder_show_advanced")
         if self.shot_builder_show_advanced:
             start_frame_row = box.row()
@@ -573,18 +573,18 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         return True
 
     @property
-    def is_edit_render_root_valid(self) -> bool:
-        if self.edit_render_dir.strip() == "":
+    def is_edit_export_root_valid(self) -> bool:
+        if self.edit_export_dir.strip() == "":
             return False
-        if not Path(self.edit_render_dir).exists():
+        if not Path(self.edit_export_dir).exists():
             return False
         return True
 
     @property
-    def is_edit_render_pattern_valid(self) -> bool:
-        if not self.edit_render_file_pattern.endswith(".mp4"):
+    def is_edit_export_pattern_valid(self) -> bool:
+        if not self.edit_export_file_pattern.endswith(".mp4"):
             return False
-        if not "###" in self.edit_render_file_pattern:
+        if not "###" in self.edit_export_file_pattern:
             return False
         return True
 

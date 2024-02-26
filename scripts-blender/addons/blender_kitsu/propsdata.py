@@ -168,14 +168,14 @@ def get_playblast_file(self: Any) -> str:
     return Path(self.playblast_dir).joinpath(file_name).as_posix()
 
 
-def get_edit_render_file(self: Any) -> str:
+def get_edit_export_file(self: Any) -> str:
     addon_prefs = prefs.addon_prefs_get(bpy.context)
-    if not bool(addon_prefs.edit_render_dir):
+    if not bool(addon_prefs.edit_export_dir):
         return ""
-    version = self.edit_render_version
-    file_pattern = addon_prefs.edit_render_file_pattern
+    version = self.edit_export_version
+    file_pattern = addon_prefs.edit_export_file_pattern
     file_name = file_pattern.replace('v###', version)
-    return Path(addon_prefs.edit_render_dir).joinpath(file_name).as_posix()
+    return Path(addon_prefs.edit_export_dir).joinpath(file_name).as_posix()
 
 
 _active_category_cache_init: bool = False

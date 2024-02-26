@@ -47,11 +47,11 @@ def draw_error_invalid_playblast_root_dir(
     ).module = __package__
 
 
-def draw_error_invalid_edit_render_root_dir(
+def draw_error_invalid_edit_export_root_dir(
     box: bpy.types.UILayout,
 ) -> bpy.types.UILayout:
     row = box.row(align=True)
-    row.label(text="Invalid Edit Render Directory")
+    row.label(text="Invalid Edit Export Directory")
     row.operator("preferences.addon_show", text="Open Addon Preferences").module = __package__
 
 

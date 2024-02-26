@@ -8,14 +8,14 @@ from ..types import Task, TaskStatus
 from ..playblast.core import override_render_path, override_render_format
 from . import opsdata
 from ..logger import LoggerFactory
-from .core import edit_render_import_latest, edit_renders_get_all, edit_render_get_latest
+from .core import edit_export_import_latest, edit_export_get_all, edit_export_get_latest
 
 logger = LoggerFactory.getLogger()
 
 
-class KITSU_OT_edit_render_publish(bpy.types.Operator):
-    bl_idname = "kitsu.edit_render_publish"
-    bl_label = "Render & Publish"
+class KITSU_OT_edit_export_publish(bpy.types.Operator):
+    bl_idname = "kitsu.edit_export_publish"
+    bl_label = "Export & Publish"
     bl_description = (
         "Renders current VSE Edit as .mp4"
         "Saves the set version to disk and uploads it to Kitsu with the specified "
@@ -51,18 +51,18 @@ class KITSU_OT_edit_render_publish(bpy.types.Operator):
         if kitsu_props.task_type_active_id == "":
             cls.poll_message_set("Select a task type from Kitsu Context Menu")
             return False
-        if not addon_prefs.is_edit_render_root_valid:
-            cls.poll_message_set("Edit Render Directory is Invalid, see Add-On preferences")
+        if not addon_prefs.is_edit_export_root_valid:
+            cls.poll_message_set("Edit Export Directory is Invalid, see Add-On preferences")
             return False
-        if not addon_prefs.is_edit_render_pattern_valid:
-            cls.poll_message_set("Edit Render File Pattern is Invalid, see Add-On preferences")
+        if not addon_prefs.is_edit_export_pattern_valid:
+            cls.poll_message_set("Edit Export File Pattern is Invalid, see Add-On preferences")
             return False
         return True
 
     def invoke(self, context, event):
         self.thumbnail_frame = context.scene.frame_current
 
-        # Remove file name if set in render.filepath
+        # Remove file name if set in render filepath
         dir_path = bpy.path.abspath(context.scene.render.filepath)
         if not os.path.isdir(Path(dir_path)):
             dir_path = Path(dir_path).parent
@@ -101,7 +101,7 @@ class KITSU_OT_edit_render_publish(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Build render_path
-        render_path = Path(kitsu_props.edit_render_file)
+        render_path = Path(kitsu_props.edit_export_file)
         render_path_str = render_path.as_posix()
         render_name = render_path.name
         if not render_path.parent.exists():
@@ -129,27 +129,27 @@ class KITSU_OT_edit_render_publish(bpy.types.Operator):
         if self.use_frame_start:
             edit_entity.set_frame_start(self.frame_start)
 
-        self.report({"INFO"}, f"Submitted new comment 'Revision {kitsu_props.edit_render_version}'")
+        self.report({"INFO"}, f"Submitted new comment 'Revision {kitsu_props.edit_export_version}'")
         return {"FINISHED"}
 
 
-class KITSU_OT_edit_render_set_version(bpy.types.Operator):
-    bl_idname = "kitsu.edit_render_set_version"
+class KITSU_OT_edit_export_set_version(bpy.types.Operator):
+    bl_idname = "kitsu.edit_export_set_version"
     bl_label = "Version"
     bl_property = "versions"
     bl_description = (
-        "Sets version of edit render. Warning triangle in ui "
+        "Sets version of edit export. Warning triangle in ui "
         "indicates that version already exists on disk"
     )
 
     versions: bpy.props.EnumProperty(
-        items=opsdata.get_edit_render_versions_enum_list, name="Versions"
+        items=opsdata.get_edit_export_versions_enum_list, name="Versions"
     )
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         addon_prefs = prefs.addon_prefs_get(context)
-        return bool(addon_prefs.edit_render_dir != "")
+        return bool(addon_prefs.edit_export_dir != "")
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         kitsu_props = context.scene.kitsu
@@ -158,12 +158,12 @@ class KITSU_OT_edit_render_set_version(bpy.types.Operator):
         if not version:
             return {"CANCELLED"}
 
-        if kitsu_props.get('edit_render_version') == version:
+        if kitsu_props.get('edit_export_version') == version:
             return {"CANCELLED"}
 
         # Update global scene cache version prop.
-        kitsu_props.edit_render_version = version
-        logger.info("Set edit render version to %s", version)
+        kitsu_props.edit_export_version = version
+        logger.info("Set edit export version to %s", version)
 
         # Redraw ui.
         util.ui_redraw()
@@ -175,10 +175,10 @@ class KITSU_OT_edit_render_set_version(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class KITSU_OT_edit_render_increment_version(bpy.types.Operator):
-    bl_idname = "kitsu.edit_render_increment_version"
+class KITSU_OT_edit_export_increment_version(bpy.types.Operator):
+    bl_idname = "kitsu.edit_export_increment_version"
     bl_label = "Add Version Increment"
-    bl_description = "Increment the edit_render version by one"
+    bl_description = "Increment the edit export version by one"
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -186,31 +186,31 @@ class KITSU_OT_edit_render_increment_version(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         # Incremenet version.
-        version = opsdata.add_edit_render_version_increment(context)
+        version = opsdata.add_edit_export_version_increment(context)
 
         # Update cache_version prop.
-        context.scene.kitsu.edit_render_version = version
+        context.scene.kitsu.edit_export_version = version
 
         # Report.
-        self.report({"INFO"}, f"Add edit_render version {version}")
+        self.report({"INFO"}, f"Add edit export version {version}")
 
         util.ui_redraw()
         return {"FINISHED"}
 
 
-class KITSU_OT_edit_render_import_latest(bpy.types.Operator):
-    bl_idname = "kitsu.edit_render_import_latest"
-    bl_label = "Import Latest Edit Render"
+class KITSU_OT_edit_export_import_latest(bpy.types.Operator):
+    bl_idname = "kitsu.edit_export_import_latest"
+    bl_label = "Import Latest Edit Export"
     bl_description = (
-        "Find and import the latest editorial render found in the Editorial Render Directory for the current shot. "
-        "Will only Import if the latest render is not already imported. "
-        "Will remove any previous renders currently in the file's Video Sequence Editor"
+        "Find and import the latest editorial render found in the Editorial Export Directory for the current shot. "
+        "Will only Import if the latest export is not already imported. "
+        "Will remove any previous exports currently in the file's Video Sequence Editor"
     )
 
-    _existing_edit_renders = []
+    _existing_edit_exports = []
     _removed_movie = 0
     _removed_audio = 0
-    _latest_render_name = ""
+    _latest_export_name = ""
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -223,8 +223,8 @@ class KITSU_OT_edit_render_import_latest(bpy.types.Operator):
         if cache.shot_active_get().id == "":
             cls.poll_message_set("Please set an active shot in Kitsu Context UI")
             return False
-        if not prefs.addon_prefs_get(context).is_edit_render_root_valid:
-            cls.poll_message_set("Edit Render Directory is Invalid, see Add-On Preferences")
+        if not prefs.addon_prefs_get(context).is_edit_export_root_valid:
+            cls.poll_message_set("Edit Export Directory is Invalid, see Add-On Preferences")
             return False
         return True
 
@@ -244,29 +244,29 @@ class KITSU_OT_edit_render_import_latest(bpy.types.Operator):
                 return True
         return False
 
-    def get_existing_edit_renders(
-        self, context: Context, all_edit_render_paths: List[Path]
+    def get_existing_edit_exports(
+        self, context: Context, all_edit_export_paths: List[Path]
     ) -> List[Sequence]:
         sequences = context.scene.sequence_editor.sequences
 
-        # Collect Existing Edit Renders
+        # Collect Existing Edit Export
         for strip in sequences:
-            if self.compare_strip_to_paths(strip, all_edit_render_paths):
-                self._existing_edit_renders.append(strip)
-        return self._existing_edit_renders
+            if self.compare_strip_to_paths(strip, all_edit_export_paths):
+                self._existing_edit_exports.append(strip)
+        return self._existing_edit_exports
 
-    def check_if_latest_edit_render_is_imported(self, context: Context) -> bool:
-        # Check if latest edit render is already loaded.
-        for strip in self._existing_edit_renders:
-            latest_edit_render_path = edit_render_get_latest(context)
-            if self.compare_strip_to_path(strip, latest_edit_render_path):
-                self._latest_render_name = latest_edit_render_path.name
+    def check_if_latest_edit_export_is_imported(self, context: Context) -> bool:
+        # Check if latest edit export is already loaded.
+        for strip in self._existing_edit_exports:
+            latest_edit_export_path = edit_export_get_latest(context)
+            if self.compare_strip_to_path(strip, latest_edit_export_path):
+                self._latest_export_name = latest_edit_export_path.name
                 return True
 
-    def remove_existing_edit_renders(self, context: Context) -> None:
+    def remove_existing_edit_exports(self, context: Context) -> None:
         # Remove Existing Strips to make way for new Strip
         sequences = context.scene.sequence_editor.sequences
-        for strip in self._existing_edit_renders:
+        for strip in self._existing_edit_exports:
             if strip.type == "MOVIE":
                 self._removed_movie += 1
             if strip.type == "SOUND":
@@ -275,42 +275,42 @@ class KITSU_OT_edit_render_import_latest(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         # Reset Values
-        self._existing_edit_renders = []
+        self._existing_edit_exports = []
         self._removed_movie = 0
         self._removed_audio = 0
-        self._latest_render_name = ""
+        self._latest_export_name = ""
 
         addon_prefs = prefs.addon_prefs_get(context)
 
-        # Get paths to all edit renders
-        all_edit_render_paths = edit_renders_get_all(context)
-        if all_edit_render_paths == []:
+        # Get paths to all edit exports
+        all_edit_export_paths = edit_export_get_all(context)
+        if all_edit_export_paths == []:
             self.report(
                 {"WARNING"},
-                f"No Edit Renders found in '{addon_prefs.edit_render_dir}' using pattern '{addon_prefs.edit_render_file_pattern}' See Add-On Preferences",
+                f"No Edit Exports found in '{addon_prefs.edit_export_dir}' using pattern '{addon_prefs.edit_export_file_pattern}' See Add-On Preferences",
             )
             return {"CANCELLED"}
 
-        # Collect all existing edit renders
-        self.get_existing_edit_renders(context, all_edit_render_paths)
+        # Collect all existing edit exports
+        self.get_existing_edit_exports(context, all_edit_export_paths)
 
-        # Stop latest render is already imported
-        if self.check_if_latest_edit_render_is_imported(context):
+        # Stop latest export is already imported
+        if self.check_if_latest_edit_export_is_imported(context):
             self.report(
                 {"WARNING"},
-                f"Latest Editorial Render already loaded '{self._latest_render_name}'",
+                f"Latest Editorial Export already loaded '{self._latest_export_name}'",
             )
             return {"CANCELLED"}
 
-        # Remove old edit renders
-        self.remove_existing_edit_renders(context)
+        # Remove old edit exports
+        self.remove_existing_edit_exports(context)
 
-        # Import new edit render
+        # Import new edit export
         shot = cache.shot_active_get()
-        strips = edit_render_import_latest(context, shot)
+        strips = edit_export_import_latest(context, shot)
 
         if strips is None:
-            self.report({"WARNING"}, f"Loaded Latest Editorial Render failed to import!")
+            self.report({"WARNING"}, f"Loaded Latest Editorial Export failed to import!")
             return {"CANCELLED"}
 
         # Report.
@@ -319,18 +319,18 @@ class KITSU_OT_edit_render_import_latest(bpy.types.Operator):
                 f"Removed {self._removed_movie} Movie Strips and {self._removed_audio} Audio Strips"
             )
             self.report(
-                {"INFO"}, f"Loaded Latest Editorial Render, '{strips[0].name}'. {removed_msg}"
+                {"INFO"}, f"Loaded Latest Editorial Export, '{strips[0].name}'. {removed_msg}"
             )
         else:
-            self.report({"INFO"}, f"Loaded Latest Editorial Render, '{strips[0].name}'")
+            self.report({"INFO"}, f"Loaded Latest Editorial Export, '{strips[0].name}'")
         return {"FINISHED"}
 
 
 classes = [
-    KITSU_OT_edit_render_publish,
-    KITSU_OT_edit_render_set_version,
-    KITSU_OT_edit_render_increment_version,
-    KITSU_OT_edit_render_import_latest,
+    KITSU_OT_edit_export_publish,
+    KITSU_OT_edit_export_set_version,
+    KITSU_OT_edit_export_increment_version,
+    KITSU_OT_edit_export_import_latest,
 ]
 
 

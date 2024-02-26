@@ -4,32 +4,31 @@ import re
 from pathlib import Path
 
 
-def edit_render_get_latest(context: bpy.types.Context):
-    """Find latest render in editorial render directory"""
+def edit_export_get_latest(context: bpy.types.Context):
+    """Find latest render in editorial export directory"""
 
-    files_list = edit_renders_get_all(context)
+    files_list = edit_export_get_all(context)
     if len(files_list) >= 1:
         files_list = sorted(files_list, reverse=True)
         return files_list[0]
     return None
 
 
-def edit_renders_get_all(context: bpy.types.Context):
-    """Find latest render in editorial render directory"""
+def edit_export_get_all(context: bpy.types.Context):
+    """Find all renders in editorial export directory"""
     addon_prefs = prefs.addon_prefs_get(context)
 
-    edit_render_path = Path(addon_prefs.edit_render_dir)
+    edit_export_path = Path(addon_prefs.edit_export_dir)
 
     files_list = [
         f
-        for f in edit_render_path.iterdir()
-        if f.is_file()
-        and edit_render_is_valid_edit_name(addon_prefs.edit_render_file_pattern, f.name)
+        for f in edit_export_path.iterdir()
+        if f.is_file() and edit_export_is_valid_name(addon_prefs.edit_export_file_pattern, f.name)
     ]
     return files_list
 
 
-def edit_render_is_valid_edit_name(file_pattern: str, filename: str) -> bool:
+def edit_export_is_valid_name(file_pattern: str, filename: str) -> bool:
     """Verify file name matches file pattern set in preferences"""
     # Prevents un-expected matches
     file_pattern = re.escape(file_pattern)
@@ -40,13 +39,13 @@ def edit_render_is_valid_edit_name(file_pattern: str, filename: str) -> bool:
     return False
 
 
-def edit_render_import_latest(
+def edit_export_import_latest(
     context: bpy.types.Context, shot
 ) -> list[bpy.types.Sequence]:  # TODO add info to shot
-    """Loads latest render from editorial department"""
+    """Loads latest export from editorial department"""
     addon_prefs = prefs.addon_prefs_get(context)
     strip_channel = 1
-    latest_file = edit_render_get_latest(context)
+    latest_file = edit_export_get_latest(context)
     if not latest_file:
         return None
     # Check if Kitsu server returned empty shot
@@ -78,7 +77,7 @@ def edit_render_import_latest(
     frame_in = shot.data.get("frame_in")
     frame_3d_start = shot.get_3d_start()
     frame_3d_offset = frame_3d_start - addon_prefs.shot_builder_frame_offset
-    edit_export_offset = addon_prefs.edit_render_frame_offset
+    edit_export_offset = addon_prefs.edit_export_frame_offset
 
     # Set sequence strip start kitsu data.
     for strip in new_strips:

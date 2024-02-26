@@ -498,14 +498,14 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         search_options={'SORT'},
     )
 
-    edit_render_version: bpy.props.StringProperty(name="Version", default="v001")
+    edit_export_version: bpy.props.StringProperty(name="Version", default="v001")
 
-    edit_render_file: bpy.props.StringProperty(  # type: ignore
-        name="Edit Render Filepath",
-        description="Output filepath of Edit Render",
+    edit_export_file: bpy.props.StringProperty(  # type: ignore
+        name="Edit Export Filepath",
+        description="Output filepath of Edit Export",
         default="",
         subtype="FILE_PATH",
-        get=propsdata.get_edit_render_file,
+        get=propsdata.get_edit_export_file,
     )
 
     # Thumbnail props.
