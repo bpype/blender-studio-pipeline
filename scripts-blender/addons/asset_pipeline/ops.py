@@ -654,10 +654,11 @@ class ASSETPIPE_OT_fix_prefixes(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
         objs = context.selected_objects
+        asset_pipe = context.scene.asset_pipeline
         for obj in objs:
             transfer_data_items = obj.transfer_data_ownership
             for transfer_data_item in transfer_data_items:
-                if naming.get_transfer_data_owner(transfer_data_item):
+                if task_layer.get_transfer_data_owner(asset_pipe, transfer_data_item.type):
                     self.report(
                         {'INFO'},
                         f"Renamed {transfer_data_item.type} on '{obj.name}'",
@@ -745,6 +746,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
         )
 
     def execute(self, context: bpy.types.Context):
+        asset_pipe = context.scene.asset_pipeline
         if self._surrendered_transfer_data.owner == self._old_onwer:
             self.report(
                 {'ERROR'},
@@ -752,7 +754,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
             )
             return {'CANCELLED'}
         self._surrendered_transfer_data.surrender = False
-        naming.get_transfer_data_owner(self._surrendered_transfer_data)
+        task_layer.get_transfer_data_owner(asset_pipe, self._surrendered_transfer_data.type)
         return {'FINISHED'}
 
 
@@ -1021,7 +1023,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
                     continue
 
                 transfer_data_item_to_update.owner = self.owner_selection
-                naming.get_transfer_data_owner(transfer_data_item_to_update)
+                task_layer.get_transfer_data_owner(asset_pipe, transfer_data_item_to_update.type)
 
         self.report({'INFO'}, message)
         return {'FINISHED'}

@@ -18,7 +18,7 @@ def get_default_task_layer_owner(td_type: str, name="") -> [str, bool]:
 
 
 def get_transfer_data_owner(
-    asset_pipe: 'bpy.types.AssetPipeline',
+    asset_pipe: bpy.types.PropertyGroup,
     td_type_key: str,
     name="",
 ) -> [str, bool]:
