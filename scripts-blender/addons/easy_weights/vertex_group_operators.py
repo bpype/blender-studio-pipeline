@@ -190,10 +190,7 @@ def is_weight_paint_mode(context, with_rig=False, with_groups=False):
     if context.mode != 'PAINT_WEIGHT':
         return False
     if with_rig:
-        if (
-            context.pose_object == None
-            or context.pose_object != get_deforming_armature(obj)
-        ):
+        if context.pose_object == None or context.pose_object != get_deforming_armature(obj):
             return False
         ob_has_arm_mod = 'ARMATURE' in (m.type for m in obj.modifiers)
         if not ob_has_arm_mod:
@@ -271,9 +268,7 @@ def get_non_deforming_vgroups(mesh_ob: Object) -> set:
 
 def get_empty_deforming_vgroups(mesh_ob: Object) -> List[VertexGroup]:
     deforming_vgroups = get_deforming_vgroups(mesh_ob)
-    empty_deforming_groups = [
-        vg for vg in deforming_vgroups if not vgroup_has_weight(mesh_ob, vg)
-    ]
+    empty_deforming_groups = [vg for vg in deforming_vgroups if not vgroup_has_weight(mesh_ob, vg)]
 
     # If there's no Mirror modifier, we're done.
     if not 'MIRROR' in (m.type for m in mesh_ob.modifiers):
@@ -311,9 +306,7 @@ def vgroup_has_weight(mesh_ob, vgroup) -> bool:
 ### Functions for symmetrizing. ###
 
 
-def get_symmetry_mapping(
-    *, obj: Object, axis='X', symmetrize_pos_to_neg=False
-) -> Dict[int, int]:
+def get_symmetry_mapping(*, obj: Object, axis='X', symmetrize_pos_to_neg=False) -> Dict[int, int]:
     """
     Create a mapping of vertex indicies, such that the index on one side maps
     to the index on the opposite side of the mesh on a given axis.
@@ -443,6 +436,7 @@ def get_used_vgroups(mesh_ob: Object) -> List[VertexGroup]:
     # Modifiers
     for modifier in mesh_ob.modifiers:
         if modifier.type == 'NODES':
+            print(modifier.name)
             used_vgroups.extend(get_vgroups_used_by_geonodes(mesh_ob, modifier))
         else:
             used_vgroups.extend(get_referenced_vgroups(mesh_ob, modifier))
@@ -503,7 +497,18 @@ def get_vgroups_used_by_constraints_of_dependent_objects(
 
         for constraint_list in constraint_lists:
             for constraint in constraint_list:
-                if constraint.target == mesh_ob and constraint.subtarget:
+                if constraint.type == 'ARMATURE':
+                    for tgt in constraint.targets:
+                        if tgt.target == mesh_ob and tgt.subtarget:
+                            vg = mesh_ob.vertex_groups.get(constraint.subtarget)
+                            if vg:
+                                used_vgroups.append(vg)
+                elif (
+                    hasattr(constraint, 'target')
+                    and hasattr(constraint, 'subtarget')
+                    and constraint.target == mesh_ob
+                    and constraint.subtarget
+                ):
                     vg = mesh_ob.vertex_groups.get(constraint.subtarget)
                     if vg:
                         used_vgroups.append(vg)
@@ -514,12 +519,11 @@ def get_vgroups_used_by_constraints_of_dependent_objects(
     return used_vgroups
 
 
-def get_vgroups_used_by_geonodes(
-    mesh_ob: Object, modifier: Modifier
-) -> List[VertexGroup]:
+def get_vgroups_used_by_geonodes(mesh_ob: Object, modifier: Modifier) -> List[VertexGroup]:
     used_vgroups = []
     for identifier in geomod_get_input_identifiers(modifier):
-        if modifier[identifier + "_use_attribute"]:
+        use_attrib = identifier + "_use_attribute"
+        if use_attrib in modifier and modifier[use_attrib]:
             attrib_name = modifier[identifier + "_attribute_name"]
             if attrib_name in mesh_ob.vertex_groups:
                 # NOTE: Could be a false positive if this is a non-vertexgroup attribute with a matching name.
@@ -528,7 +532,18 @@ def get_vgroups_used_by_geonodes(
 
 
 def geomod_get_input_identifiers(modifier: Modifier) -> set[str]:
-    return (input.identifier for input in modifier.node_group.inputs[1:])
+    if hasattr(modifier.node_group, 'interface'):
+        # 4.0
+        return (
+            socket.identifier
+            for socket in modifier.node_group.interface.items_tree
+            if socket.item_type == 'SOCKET'
+            and socket.in_out == 'INPUT'
+            and socket.socket_type != 'NodeSocketGeometry'
+        )
+    else:
+        # 3.6
+        return (input.identifier for input in modifier.node_group.inputs[1:])
 
 
 registry = [
