@@ -1,3 +1,9 @@
+## 0.1.6 - 2024-02-28 
+ 
+### FIXED 
+- Fix Sequence Playblast from 3D Viewport UX
+- Rename Edit Render to Edit Export (#249)
+
 ## 0.1.5 - 2024-02-23 
  
 ### ADDED 
