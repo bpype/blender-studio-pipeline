@@ -233,10 +233,13 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ASSETPIPE_OT_update_ownership(bpy.types.Operator):
-    bl_idname = "assetpipe.update_ownership"
-    bl_label = "Update Ownership"
-    bl_description = """Update the Ownership of Objects and Transferable Data"""
+class ASSETPIPE_OT_prepare_sync(bpy.types.Operator):
+    bl_idname = "assetpipe.prepare_sync"
+    bl_label = "Prepare Sync"
+    bl_description = (
+        "Prepare all Objects for Sync; by updating the Ownership of Objects "
+        "and Transferable Data. Also runs Pre-Pull hooks"
+    )
 
     _temp_transfer_data = None
     _invalid_objs = []
@@ -256,6 +259,11 @@ class ASSETPIPE_OT_update_ownership(bpy.types.Operator):
         opscore.sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
+        asset_col = context.scene.asset_pipeline.asset_collection
+        hooks_instance = Hooks()
+        hooks_instance.load_hooks(context)
+        hooks_instance.execute_hooks(merge_mode="pull", merge_status='pre', asset_col=asset_col)
+
         opscore.sync_execute_update_ownership(self, context)
         self.report({'INFO'}, "Ownership Updated")
         return {'FINISHED'}
@@ -1093,7 +1101,7 @@ class ASSETPIPE_OT_save_asset_hook(bpy.types.Operator):
 
 
 classes = [
-    ASSETPIPE_OT_update_ownership,
+    ASSETPIPE_OT_prepare_sync,
     ASSETPIPE_OT_sync_push,
     ASSETPIPE_OT_sync_pull,
     ASSETPIPE_OT_publish_new_version,

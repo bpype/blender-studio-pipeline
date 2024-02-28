@@ -169,7 +169,7 @@ class ASSETPIPE_PT_sync_advanced(bpy.types.Panel):
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         box = layout.box()
-        box.operator("assetpipe.update_ownership", text="Update Ownership")
+        box.operator("assetpipe.prepare_sync")
         box.operator("assetpipe.reset_ownership", icon="LOOP_BACK")
         box = layout.box()
         box.operator("assetpipe.fix_prefixes", icon="CHECKMARK")
