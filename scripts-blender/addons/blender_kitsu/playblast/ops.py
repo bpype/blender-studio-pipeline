@@ -82,20 +82,36 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
+        if not prefs.session_auth(context):
+            cls.poll_message_set("Not logged into Kitsu Server, see Add-On Preferences")
+            return False
+
+        if not context.scene.kitsu.playblast_file:
+            cls.poll_message_set("Invalid Playblast File/Directory, see Add-On Preferences")
+            return False
+
+        if context.space_data.type == "VIEW_3D":
+            if not context.scene.camera:
+                cls.poll_message_set("No Active Camera in active Scene")
+                return False
+
         if context_core.is_sequence_context():
-            return bool(
-                prefs.session_auth(context)
-                and cache.sequence_active_get()
-                and context.scene.camera
-                and context.scene.kitsu.playblast_file
-            )
-        else:
-            return bool(
-                prefs.session_auth(context)
-                and cache.shot_active_get()
-                and context.scene.camera
-                and context.scene.kitsu.playblast_file
-            )
+            if not cache.sequence_active_get():
+                cls.poll_message_set("No Active Sequence set in Kitsu Context UI")
+                return False
+
+        if context_core.is_shot_context():
+            if not cache.shot_active_get():
+                cls.poll_message_set("No Active Shot set in Kitsu Context UI")
+                return False
+        if not cache.task_type_active_get():
+            cls.poll_message_set("No Active Task Type set in Kitsu Context UI")
+            return False
+
+        return True
+
+    def is_vse(self, context):
+        return bool(context.space_data.type == "SEQUENCE_EDITOR")
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         addon_prefs = prefs.addon_prefs_get(context)
@@ -129,7 +145,7 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         context.window_manager.progress_update(0)
 
         # Render and save playblast
-        if context_core.is_sequence_context():
+        if self.is_vse(context):
             output_path = playblast_vse(
                 self, context, context.scene.kitsu.playblast_file
             )
@@ -254,7 +270,7 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         row = layout.row(align=True)
         row.prop(self, "comment")
         row = layout.row(align=True)
-        if not context_core.is_sequence_context():
+        if not self.is_vse(context):
             row.prop(self, "use_user_shading")
         row.prop(self, "thumbnail_frame")
 
@@ -267,9 +283,7 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         task_type = TaskType.by_name(task_type_name)
 
         if not task_type:
-            raise RuntimeError(
-                "Failed to upload playblast. Task type: 'Animation' is missing"
-            )
+            raise RuntimeError("Failed to upload playblast. Task type missing on Kitsu Server")
 
         # Find / get latest task
         task = Task.by_name(entity, task_type)
