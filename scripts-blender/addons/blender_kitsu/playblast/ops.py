@@ -290,7 +290,12 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         if not task:
             # An Entity on the server can have 0 tasks even tough task types exist.
             # We have to create a task first before being able to upload a thumbnail.
-            task = Task.new_task(entity, task_type, task_status=task_status)
+            try:
+                task = Task.new_task(entity, task_type, task_status=task_status)
+            except TypeError:
+                raise RuntimeError(
+                    f"Failed to upload playblast. Task type {task_type.name} not present in {entity.type} {entity.name}"
+                )
 
         # Create a comment
         comment_text = self._gen_comment_text(context, entity)
