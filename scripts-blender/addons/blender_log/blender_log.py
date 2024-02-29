@@ -208,6 +208,11 @@ class BLENLOG_MT_log_checks(bpy.types.Menu):
             text="Report Mis-Named Object Data",
             icon='FILE_TEXT',
         )
+        layout.operator(
+            'scene.report_leftover_drivers',
+            text="Report Leftover Drivers",
+            icon='DRIVER_TRANSFORM',
+        )
 
 
 class BLENLOG_OT_quick_fix_category(bpy.types.Operator):
@@ -217,11 +222,15 @@ class BLENLOG_OT_quick_fix_category(bpy.types.Operator):
     bl_label = "Quick-Fix Issues"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
+    @classmethod
+    def poll(cls, context):
+        active_cat = context.scene.blender_log.active_category
+        return any([log.operator for log in active_cat.logs])
+
     def execute(self, context):
         active_cat = context.scene.blender_log.active_category
 
         for i, log in reversed(list(enumerate(active_cat.logs))):
-            print(i)
             active_cat.active_log_index = i
             op_idname = log.operator
             if not op_idname:
