@@ -3,7 +3,6 @@ import bpy
 
 from . import (
     easy_constraints,
-    warn_about_broken_libraries,
     bone_selection_sets,
     prefs,
     operators,
@@ -22,7 +21,6 @@ bl_info = {
 
 modules = (
     easy_constraints,
-    warn_about_broken_libraries,
     bone_selection_sets,
     prefs,
     operators,
@@ -45,9 +43,7 @@ def register_unregister_modules(modules, register: bool):
                     register_func(c)
                 except Exception as e:
                     un = 'un' if not register else ''
-                    print(
-                        f"Warning: Failed to {un}register class: {c.__name__}"
-                    )
+                    print(f"Warning: Failed to {un}register class: {c.__name__}")
                     print(e)
 
         if hasattr(m, 'modules'):
