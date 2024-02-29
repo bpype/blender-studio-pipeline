@@ -120,7 +120,10 @@ def get_playblast_dir(self: Any) -> str:
     delimiter = bkglobals.DELIMITER
 
     # Start building path
-    playblast_dir = addon_prefs.shot_playblast_root_path
+    if context_core.is_sequence_context():
+        playblast_dir = addon_prefs.seq_playblast_root_path
+    else:
+        playblast_dir = addon_prefs.shot_playblast_root_path
 
     # Inject episode name if available (and if specified as <episode>)
     if episode and '<episode>' in playblast_dir.parts:
