@@ -14,7 +14,7 @@ def override_render_format(self, context):
     """Overrides the render settings for playblast creation"""
     rd = context.scene.render
     # Format render settings.
-    percentage = rd.resolution_percentage
+    # percentage = rd.resolution_percentage
     file_format = rd.image_settings.file_format
     ffmpeg_constant_rate = rd.ffmpeg.constant_rate_factor
     ffmpeg_codec = rd.ffmpeg.codec
@@ -22,7 +22,7 @@ def override_render_format(self, context):
     ffmpeg_audio_codec = rd.ffmpeg.audio_codec
 
     try:
-        rd.resolution_percentage = 100
+        # rd.resolution_percentage = 100
         rd.image_settings.file_format = "FFMPEG"
         rd.ffmpeg.constant_rate_factor = "HIGH"
         rd.ffmpeg.codec = "H264"
@@ -32,7 +32,7 @@ def override_render_format(self, context):
         yield
 
     finally:
-        rd.resolution_percentage = percentage
+        # rd.resolution_percentage = percentage
         rd.image_settings.file_format = file_format
         rd.ffmpeg.codec = ffmpeg_codec
         rd.ffmpeg.constant_rate_factor = ffmpeg_constant_rate
