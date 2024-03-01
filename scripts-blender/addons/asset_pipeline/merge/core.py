@@ -128,6 +128,10 @@ def get_invalid_objects(
 
     invalid_obj = []
     for obj in local_col.all_objects:
+        if obj.library:
+            # Linked objects don't have or need ownership data, so they don't count
+            # as invalid.
+            continue
         if obj.asset_id_owner == "NONE":
             invalid_obj.append(obj)
         if obj not in task_layer_objs and obj.asset_id_owner in local_task_layer_keys:
