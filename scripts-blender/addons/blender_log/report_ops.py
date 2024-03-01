@@ -1,6 +1,6 @@
 import bpy
 from bpy.props import StringProperty, IntProperty
-
+from .id_types import get_id
 
 class BLENLOG_OT_report_collections_with_fake_user(bpy.types.Operator):
     """Report collections with fake user enabled"""
@@ -228,6 +228,73 @@ class BLENLOG_OT_delete_driver(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class BLENLOG_OT_rename_id(bpy.types.Operator):
+    """Rename a local ID"""
+
+    bl_idname = "object.blenlog_rename_id"
+    bl_label = "Rename Object"
+    bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
+
+    id_name: StringProperty()
+    id_type: StringProperty()
+    new_name: StringProperty()
+
+    def invoke(self, context, _event):
+        if not self.new_name:
+            self.new_name = self.id_name
+            if self.new_name[-4] == "." and str.isdecimal(self.new_name[-3:]):
+                self.new_name = self.new_name[:-4]
+
+        return context.window_manager.invoke_props_dialog(self)
+
+    def draw(self, context):
+        self.layout.prop(self, 'new_name')
+        if get_id(self.new_name, self.id_type):
+            self.layout.alert = True
+            self.layout.label(text="This name is already taken.", icon='ERROR')
+
+    def execute(self, context):
+        obj = get_id(self.id_name, self.id_type)
+        if not obj:
+            self.report({'ERROR'}, f"ID no longer exists: {self.id_name}.")
+            return {'CANCELLED'}
+        existing_obj = get_id(self.new_name, self.id_type)
+        if existing_obj:
+            self.report({'ERROR'}, f"ID name already taken: {self.new_name}.")
+            return {'CANCELLED'}
+
+        obj.name = self.new_name
+        self.report({'INFO'}, f"{self.id_type.title()} successfully renamed from {self.id_name} to {self.new_name}.")
+        return {'FINISHED'}
+
+
+class BLENLOG_OT_remap_users(bpy.types.Operator):
+    """Remap users of an ID to another of the same type"""
+    bl_idname = "object.blenlog_remap_users"
+    bl_label = "Remap Users"
+    bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
+
+    redundant_id: StringProperty()
+    id_type: StringProperty()
+    preserved_id: StringProperty()
+
+    def execute(self, context):
+        redundant_id = get_id(self.redundant_id, self.id_type)
+        if not redundant_id:
+            self.report({'ERROR'}, f"ID no longer exists: {self.redundant_id}.")
+            return {'CANCELLED'}
+        preserved_id = get_id(self.preserved_id, self.id_type)
+        if not preserved_id:
+            self.report({'ERROR'}, f"ID no longer exists: {self.preserved_id}.")
+            return {'CANCELLED'}
+
+        redundant_id.user_remap(preserved_id)
+        redundant_id.use_fake_user = False
+        self.report({'INFO'}, f"{self.redundant_id} has been replaced with {self.preserved_id}")
+
+        return {'FINISHED'}
+
+
 registry = [
     BLENLOG_OT_report_collections_with_fake_user,
     BLENLOG_OT_disable_collection_fake_user,
@@ -235,4 +302,6 @@ registry = [
     BLENLOG_OT_rename_obdata,
     BLENLOG_OT_report_leftover_drivers,
     BLENLOG_OT_delete_driver,
+    BLENLOG_OT_rename_id,
+    BLENLOG_OT_remap_users
 ]

@@ -29,7 +29,7 @@ bl_info = {
 import importlib
 import bpy
 
-from . import prefs, blender_log, report_ops
+from . import prefs, blender_log, report_ops, id_types
 
 # Each module can have register() and unregister() functions and a list of classes to register called "registry".
 modules = [prefs, blender_log, report_ops]
