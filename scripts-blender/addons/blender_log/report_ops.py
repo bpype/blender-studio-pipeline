@@ -232,12 +232,12 @@ class BLENLOG_OT_rename_id(bpy.types.Operator):
     """Rename a local ID"""
 
     bl_idname = "object.blenlog_rename_id"
-    bl_label = "Rename Object"
+    bl_label = "Rename ID"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
     id_name: StringProperty()
     id_type: StringProperty()
-    new_name: StringProperty()
+    new_name: StringProperty(name="Name")
 
     def invoke(self, context, _event):
         if not self.new_name:
@@ -265,6 +265,8 @@ class BLENLOG_OT_rename_id(bpy.types.Operator):
 
         obj.name = self.new_name
         self.report({'INFO'}, f"{self.id_type.title()} successfully renamed from {self.id_name} to {self.new_name}.")
+        logs = context.scene.blender_log
+        logs.remove(logs.active_log)
         return {'FINISHED'}
 
 
@@ -291,6 +293,9 @@ class BLENLOG_OT_remap_users(bpy.types.Operator):
         redundant_id.user_remap(preserved_id)
         redundant_id.use_fake_user = False
         self.report({'INFO'}, f"{self.redundant_id} has been replaced with {self.preserved_id}")
+
+        logs = context.scene.blender_log
+        logs.remove(logs.active_log)
 
         return {'FINISHED'}
 

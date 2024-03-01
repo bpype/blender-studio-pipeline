@@ -180,8 +180,10 @@ class BLENLOG_UL_log_list(UIList):
     def draw_item(self, _context, layout, _data, item, _icon_value, _active_data, _active_propname):
         log = item
         row = layout.row()
-        row.label(text=log.name, icon=log.icon)
-
+        if log.icon:
+            row.label(text=log.name, icon=log.icon)
+        else:
+            row.label(text=log.name)
 
 class BLENLOG_UL_cat_list(UIList):
     """UI code for list of BlenderLog_Categories."""
