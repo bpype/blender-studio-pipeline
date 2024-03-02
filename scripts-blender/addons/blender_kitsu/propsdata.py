@@ -151,6 +151,7 @@ def get_playblast_file(self: Any) -> str:
     task_type_name_suffix = get_task_type_name_file_suffix()
     version = self.playblast_version
     shot = cache.shot_active_get()
+    episode = cache.episode_active_get()
     sequence = cache.sequence_active_get()
     delimiter = bkglobals.DELIMITER
 
@@ -160,7 +161,11 @@ def get_playblast_file(self: Any) -> str:
     kitsu_props.get("category")
 
     if context_core.is_sequence_context():
-        entity_name = sequence.name
+        # Assuming sequences called 000_name, get 000
+        entity_name = sequence.name.split('_')[0]
+        if episode:
+            # If episode is present, append to the name
+            entity_name = f"{episode.name}_{entity_name}"
     elif context_core.is_shot_context():
         entity_name = shot.name
     else:
