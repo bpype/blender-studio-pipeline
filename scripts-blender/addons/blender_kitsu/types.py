@@ -618,7 +618,7 @@ class Shot(Entity):
         project_root_dir = prefs.project_root_dir_get(context)
         all_shots_dir = project_root_dir.joinpath('pro').joinpath('shots')
 
-        # Add Episode to Path if avaliable
+        # Add Episode to Path if available
         if self.episode_id:
             base_dir = all_shots_dir.joinpath(self.episode_name)
         else:
