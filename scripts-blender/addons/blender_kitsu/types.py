@@ -882,7 +882,7 @@ class Task(Entity):
         name: str = "main",
         task_status: Optional[TaskStatus] = None,
         assigner: Optional[Person] = None,
-        assignees: Optional[List[Person]] = None,
+        assignees: Optional[List[Person]] = [],
     ) -> Task:
         # Convert args.
         assigner = asdict(assigner) if assigner else assigner
