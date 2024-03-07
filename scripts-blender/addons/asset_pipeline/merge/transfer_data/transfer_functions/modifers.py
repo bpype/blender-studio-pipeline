@@ -97,6 +97,10 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
             for prop in props:
                 value = getattr(source_bake, prop)
                 setattr(target_bake, prop, value)
+        
+        # refresh node modifier UI
+        if target_mod.node_group:
+            target_mod.node_group.interface_update(context)
 
     # rebind modifiers (corr. smooth, surf. deform, mesh deform)
     for source_mod in target_obj.modifiers:
