@@ -3,64 +3,34 @@ from bpy.props import StringProperty
 from ..id_types import get_id
 
 
-class BLENLOG_OT_report_collections_with_fake_user(bpy.types.Operator):
-    """Report collections with fake user enabled"""
+class BLENLOG_OT_report_fake_users(bpy.types.Operator):
+    """Report Fake User IDs. Ignores Text and Brush IDs"""
 
-    bl_idname = "scene.report_collections_with_fake_user"
-    bl_label = "Report Fake User Collections"
+    bl_idname = "blenlog.report_fake_users"
+    bl_label = "Report Fake Users"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
     def execute(self, context):
+        user_map = bpy.data.user_map()
+
         blenlog = context.scene.blender_log
 
-        category = "Fake User Collection"
+        category = "Fake User ID"
         blenlog.clear_category(category)
 
-        counter = 0
-        for coll in bpy.data.collections:
-            if coll.library:
+        for id, users in user_map.items():
+            if id.library or id.override_library:
                 continue
-            if coll.use_fake_user:
+            if id.id_type not in {'BRUSH', 'TEXT'} and id.use_fake_user:
                 blenlog.add(
-                    name=coll.name,
+                    name=f"{id.id_type}: {id.name} (Users: {len(users)})",
                     category=category,
-                    description="Collections with fake users can get stuck in a file. It is recommended not to use this flag in order to keep files clear of trash data.",
-                    icon='OUTLINER_COLLECTION',
-                    category_icon='FAKE_USER_ON',
-                    operator=BLENLOG_OT_disable_collection_fake_user.bl_idname,
-                    op_kwargs={'coll_name': coll.name},
+                    description="Datablocks with fake users can cause further referenced datablocks to linger in the file. It is recommended not to use fake users, in order to keep files clear of trash data.",
+                    icon='FAKE_USER_ON',
+                    operator=BLENLOG_OT_clear_fake_user.bl_idname,
+                    op_kwargs={'id_name': id.name, 'id_type': id.id_type},
                     op_icon='FAKE_USER_OFF',
                 )
-                counter += 1
-
-        if counter == 0:
-            self.report({'INFO'}, "No collections with fake user.")
-        else:
-            self.report({'WARNING'}, f"Found {counter} collections with fake user.")
-
-        return {'FINISHED'}
-
-
-class BLENLOG_OT_disable_collection_fake_user(bpy.types.Operator):
-    """Disable fake user flag on the collection"""
-
-    bl_idname = "collection.clear_fake_user"
-    bl_label = "Clear Collection Fake User"
-    bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
-
-    coll_name: StringProperty()
-
-    def execute(self, context):
-        logs = context.scene.blender_log
-
-        coll = bpy.data.collections.get((self.coll_name, None))
-        if not coll:
-            self.report({'WARNING'}, "Collection no longer exists.")
-        else:
-            coll.use_fake_user = False
-            self.report({'INFO'}, "Collection fake user cleared.")
-
-        logs.remove(logs.active_log)
 
         return {'FINISHED'}
 
@@ -68,7 +38,7 @@ class BLENLOG_OT_disable_collection_fake_user(bpy.types.Operator):
 class BLENLOG_OT_remap_users(bpy.types.Operator):
     """Remap users of an ID to another of the same type"""
 
-    bl_idname = "object.blenlog_remap_users"
+    bl_idname = "blenlog.remap_users"
     bl_label = "Remap Users"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
@@ -90,14 +60,38 @@ class BLENLOG_OT_remap_users(bpy.types.Operator):
         redundant_id.use_fake_user = False
         self.report({'INFO'}, f"{self.redundant_id} has been replaced with {self.preserved_id}")
 
-        logs = context.scene.blender_log
-        logs.remove(logs.active_log)
+        context.scene.blender_log.remove_active()
+
+        return {'FINISHED'}
+
+
+class BLENLOG_OT_clear_fake_user(bpy.types.Operator):
+    """Clear the fake user flag of an ID."""
+
+    bl_idname = "blenlog.clear_fake_user"
+    bl_label = "Clear Fake User"
+    bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
+
+    id_name: StringProperty()
+    id_type: StringProperty()
+
+    def execute(self, context):
+        id = get_id(self.id_name, self.id_type)
+        if not id:
+            self.report({'INFO'}, f"{self.id_type} {self.id_name} had already been removed.")
+        else:
+            id.use_fake_user = False
+            self.report(
+                {'INFO'}, f"{self.id_type} {self.id_name} no longer marked with a fake user."
+            )
+
+        context.scene.blender_log.remove_active()
 
         return {'FINISHED'}
 
 
 registry = [
-    BLENLOG_OT_report_collections_with_fake_user,
-    BLENLOG_OT_disable_collection_fake_user,
+    BLENLOG_OT_report_fake_users,
     BLENLOG_OT_remap_users,
+    BLENLOG_OT_clear_fake_user,
 ]

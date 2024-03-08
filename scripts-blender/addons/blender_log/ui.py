@@ -130,8 +130,8 @@ class BLENLOG_MT_log_checks(Menu):
     def draw(self, context):
         layout = self.layout
         layout.operator(
-            'blenlog.report_fake_user_collections',
-            text="Report Fake User Collections",
+            'blenlog.report_fake_users',
+            text="Report Fake User Datablocks",
             icon='FAKE_USER_ON',
         )
         layout.operator(
