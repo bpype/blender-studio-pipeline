@@ -19,10 +19,6 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
     def get_id(context) -> Optional[bpy.types.ID]:
         return outliner_get_active_id(context)
 
-    @classmethod
-    def poll(cls, context):
-        return cls.get_id(context)
-
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
@@ -34,36 +30,41 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
         )
         # V
         pie.operator('outliner.better_purge', icon='TRASH')
-        # ^
 
         id = self.get_id(context)
-        id_type = ID_CLASS_TO_IDENTIFIER.get(type(id))
-        if id_type:
-            remap = pie.operator(
-                'outliner.remap_users', icon='FILE_REFRESH', text="Remap Users"
-            )
-            remap.id_type = id_type
-            remap.id_name_source = id.name
-            if id.library:
-                remap.library_path_source = id.library.filepath
-        else:
-            pie.label(text="Cannot remap unknwon ID type: " + str(type(id)))
-
-        # ^>
-        id = OUTLINER_OT_relink_overridden_asset.get_id(context)
         if id:
-            pie.operator('object.relink_overridden_asset', icon='LIBRARY_DATA_OVERRIDE')
+            # ^
+            id_type = ID_CLASS_TO_IDENTIFIER.get(type(id))
+            if id_type:
+                remap = pie.operator(
+                    'outliner.remap_users', icon='FILE_REFRESH', text="Remap Users"
+                )
+                remap.id_type = id_type
+                remap.id_name_source = id.name
+                if id.library:
+                    remap.library_path_source = id.library.filepath
+            else:
+                pie.label(text="Cannot remap unknwon ID type: " + str(type(id)))
+
+            # ^>
+            id = OUTLINER_OT_relink_overridden_asset.get_id(context)
+            if id:
+                pie.operator('object.relink_overridden_asset', icon='LIBRARY_DATA_OVERRIDE')
+            else:
+                pie.separator()
+
+            # <^
+            if id and id.override_library:
+                pie.operator(
+                    'outliner.liboverride_troubleshoot_operation',
+                    icon='UV_SYNC_SELECT',
+                    text="Resync Override Hierarchy",
+                ).type = 'OVERRIDE_LIBRARY_RESYNC_HIERARCHY_ENFORCE'
+            else:
+                pie.separator()
         else:
             pie.separator()
-
-        # <^
-        if id and id.override_library:
-            pie.operator(
-                'outliner.liboverride_troubleshoot_operation',
-                icon='UV_SYNC_SELECT',
-                text="Resync Override Hierarchy",
-            ).type = 'OVERRIDE_LIBRARY_RESYNC_HIERARCHY_ENFORCE'
-        else:
+            pie.separator()
             pie.separator()
 
         # v>
