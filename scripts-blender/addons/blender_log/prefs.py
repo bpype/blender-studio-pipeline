@@ -17,6 +17,12 @@ class BlenLog_Prefs(AddonPreferences):
         default="Blender Log",
         update=update_sidebar_panel,
     )
+    purge_on_save: BoolProperty(
+        name="Purge On Save",
+        description="Run a recursive purge on file save, rather than simply not saving unused datablocks, which is Blender's default behaviour. This ensures your file is never saved with any garbage orphan data",
+        default=True,
+    )
+
     display_stack_trace: BoolProperty(
         name="Display Stack Trace",
         description="Whether to display the Python Stack Trace of a log entry. Only useful for Python developers",
@@ -29,6 +35,9 @@ class BlenLog_Prefs(AddonPreferences):
 
         layout = layout.column(align=True)
         layout.prop(self, 'sidebar_panel')
+        layout.prop(self, 'purge_on_save')
+
+        layout.separator()
         layout.prop(self, 'display_stack_trace')
 
 
