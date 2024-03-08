@@ -69,7 +69,13 @@ def get_datablock_type_icon(datablock):
     return bpy.types.DriverTarget.bl_rna.properties['id_type'].enum_items[typ].icon
 
 
-def draw_label_with_linebreak(layout, text, alert=False, area_width=800):
+def get_sidebar_size(context):
+    for region in context.area.regions:
+        if region.type == 'UI':
+            return region.width
+
+
+def draw_label_with_linebreak(context, layout, text, alert=False):
     """Attempt to simulate a proper textbox by only displaying as many
     characters in a single label as fits in the UI.
     This only works well on specific UI zoom levels.
@@ -84,7 +90,7 @@ def draw_label_with_linebreak(layout, text, alert=False, area_width=800):
     # Try to determine maximum allowed characters per line, based on pixel width of the area.
     # Not a great metric, but I couldn't find anything better.
 
-    max_line_length = area_width / 8
+    max_line_length = get_sidebar_size(context) / 8
     for p in paragraphs:
         lines = [""]
         for word in p.split(" "):

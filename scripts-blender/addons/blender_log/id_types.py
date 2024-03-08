@@ -79,8 +79,8 @@ ID_TYPE_ENUM_ITEMS: List[Tuple[str, str, str, str, int]] = get_datablock_types_e
 ID_TYPE_INFO: Dict[str, Tuple[str, str]] = {tup[0] : (tup[1], tup[3]) for tup in ID_TYPE_ENUM_ITEMS}
 
 
-def get_id(name, type):
-	container = ID_IDENTIFIER_TO_STORAGE[type]
-	container = getattr(bpy.data, container)
-	id = container.get((name, None))
-	return id
+def get_id(name, type, libpath=None):
+    container = ID_IDENTIFIER_TO_STORAGE[type]
+    container = getattr(bpy.data, container)
+    id = container.get((name, libpath))
+    return id

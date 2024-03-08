@@ -2,6 +2,7 @@ from bpy.types import Panel, UIList, Operator, Menu
 import bpy, json
 from .util import draw_label_with_linebreak, get_addon_prefs
 
+# TODO: Button to copy log name, or ability to provide an object name and a button to select that object.
 
 class BLENLOG_PT_log_panel(Panel):
     bl_space_type = 'VIEW_3D'
@@ -10,7 +11,6 @@ class BLENLOG_PT_log_panel(Panel):
     bl_label = "Blender Log"
 
     def draw(self, context):
-        metarig = context.object
         blenlog = context.scene.blender_log
         layout = self.layout
 
@@ -55,12 +55,7 @@ class BLENLOG_PT_log_panel(Panel):
 
         layout.use_property_split = False
 
-        def get_sidebar_size(context):
-            for region in context.area.regions:
-                if region.type == 'UI':
-                    return region.width
-
-        draw_label_with_linebreak(layout, log.description, area_width=get_sidebar_size(context))
+        draw_label_with_linebreak(context, layout, log.description)
 
         if log.operator != '':
             row = layout.row()
@@ -72,9 +67,14 @@ class BLENLOG_PT_log_panel(Panel):
             if log.op_icon:
                 kwargs['icon'] = log.op_icon
             op = split.operator(log.operator, **kwargs)
-            kwargs = json.loads(log.op_kwargs)
-            for key in kwargs.keys():
-                setattr(op, key, kwargs[key])
+            if op:
+                kwargs = json.loads(log.op_kwargs)
+                for key in kwargs.keys():
+                    setattr(op, key, kwargs[key])
+            else:
+                row = split.row()
+                row.alert = True
+                row.label(text="Missing operator: " + log.operator)
 
 
 class BLENLOG_PT_stack_trace(Panel):
@@ -97,7 +97,9 @@ class BLENLOG_PT_stack_trace(Panel):
 
     def draw(self, context):
         generator = context.object.cloudrig.generator
-        draw_label_with_linebreak(self.layout, generator.active_log.pretty_stack, alert=True)
+        draw_label_with_linebreak(
+            context, self.layout, generator.active_log.pretty_stack, alert=True
+        )
 
 
 class BLENLOG_UL_log_list(UIList):
@@ -128,19 +130,24 @@ class BLENLOG_MT_log_checks(Menu):
     def draw(self, context):
         layout = self.layout
         layout.operator(
-            'scene.report_collections_with_fake_user',
+            'blenlog.report_fake_user_collections',
             text="Report Fake User Collections",
             icon='FAKE_USER_ON',
         )
         layout.operator(
-            'scene.report_obdata_name_mismatch',
+            'blenlog.report_obdata_name_mismatch',
             text="Report Mis-Named Object Data",
             icon='FILE_TEXT',
         )
         layout.operator(
-            'scene.report_leftover_drivers',
+            'blenlog.report_leftover_drivers',
             text="Report Leftover Drivers",
             icon='DRIVER_TRANSFORM',
+        )
+        layout.operator(
+            'blenlog.report_library_overrides',
+            text="Report Library Override Issues",
+            icon='LIBRARY_DATA_OVERRIDE',
         )
 
 

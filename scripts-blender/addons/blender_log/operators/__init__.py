@@ -1,3 +1,3 @@
-from . import drivers, names, users
+from . import drivers, names, users, overrides
 
-modules = [drivers, names, users]
+modules = [drivers, names, users, overrides]

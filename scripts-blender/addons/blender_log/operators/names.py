@@ -3,18 +3,28 @@ from bpy.props import StringProperty
 from ..id_types import get_id
 
 
+def get_blender_number_suffix(name):
+    if name[-4] == "." and str.isdecimal(name[-3:]):
+        return name[-4:]
+    return ""
+
+
+def name_without_number(name):
+    suffix = get_blender_number_suffix(name)
+    if suffix:
+        return name[:-4]
+
+
 class BLENLOG_OT_rename_obdata(bpy.types.Operator):
     """Disable fake user flag on the collection"""
 
-    bl_idname = "object.rename_data"
+    bl_idname = "blenlog.rename_object_data"
     bl_label = "Rename Object Data"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
     obj_name: StringProperty()
 
     def execute(self, context):
-        logs = context.scene.blender_log
-
         obj = bpy.data.objects.get((self.obj_name, None))
         if not obj:
             self.report({'WARNING'}, "Object no longer exists.")
@@ -24,7 +34,7 @@ class BLENLOG_OT_rename_obdata(bpy.types.Operator):
                 obj.data.shape_keys.name = obj.name
             self.report({'INFO'}, "Object data renamed.")
 
-        logs.remove(logs.active_log)
+        context.scene.blender_log.remove_active()
 
         return {'FINISHED'}
 
@@ -32,7 +42,7 @@ class BLENLOG_OT_rename_obdata(bpy.types.Operator):
 class BLENLOG_OT_report_obdata_names(bpy.types.Operator):
     """Report objects with data or shape keys not named the same as the object"""
 
-    bl_idname = "scene.report_obdata_name_mismatch"
+    bl_idname = "blenlog.report_obdata_name_mismatch"
     bl_label = "Report Mis-Named Object Datas"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
@@ -90,7 +100,7 @@ class BLENLOG_OT_report_obdata_names(bpy.types.Operator):
 class BLENLOG_OT_rename_id(bpy.types.Operator):
     """Rename a local ID"""
 
-    bl_idname = "object.blenlog_rename_id"
+    bl_idname = "blenlog.rename_id"
     bl_label = "Rename ID"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
@@ -101,8 +111,8 @@ class BLENLOG_OT_rename_id(bpy.types.Operator):
     def invoke(self, context, _event):
         if not self.new_name:
             self.new_name = self.id_name
-            if self.new_name[-4] == "." and str.isdecimal(self.new_name[-3:]):
-                self.new_name = self.new_name[:-4]
+            if get_blender_number_suffix(self.new_name):
+                self.new_name = name_without_number(self.new_name)
 
         return context.window_manager.invoke_props_dialog(self)
 
@@ -127,8 +137,7 @@ class BLENLOG_OT_rename_id(bpy.types.Operator):
             {'INFO'},
             f"{self.id_type.title()} successfully renamed from {self.id_name} to {self.new_name}.",
         )
-        logs = context.scene.blender_log
-        logs.remove(logs.active_log)
+        context.scene.blender_log.remove_active()
         return {'FINISHED'}
 
 

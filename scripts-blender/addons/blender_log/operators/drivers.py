@@ -5,7 +5,7 @@ from bpy.props import StringProperty, IntProperty
 class BLENLOG_OT_report_leftover_drivers(bpy.types.Operator):
     """Report drivers that point to nothing"""
 
-    bl_idname = "scene.report_leftover_drivers"
+    bl_idname = "blenlog.report_leftover_drivers"
     bl_label = "Report Leftover Drivers"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
@@ -33,7 +33,7 @@ class BLENLOG_OT_report_leftover_drivers(bpy.types.Operator):
                         icon='DRIVER_TRANSFORM',
                         name=obj.name,
                         category=category,
-                        operator='object.delete_driver',
+                        operator=BLENLOG_OT_delete_driver.bl_idname,
                         op_kwargs={
                             'object_name': obj.name,
                             'driver_path': driver.data_path,
@@ -53,7 +53,7 @@ class BLENLOG_OT_report_leftover_drivers(bpy.types.Operator):
 class BLENLOG_OT_delete_driver(bpy.types.Operator):
     """Delete a driver on a local object"""
 
-    bl_idname = "object.delete_driver"
+    bl_idname = "blenlog.delete_driver"
     bl_label = "Delete Driver"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
