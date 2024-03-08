@@ -1,8 +1,7 @@
 import bpy
 from bpy.types import AddonPreferences
-from bpy.props import BoolProperty, StringProperty, EnumProperty
-
-from .blender_log import change_ui_category
+from bpy.props import BoolProperty, StringProperty
+from .ui import change_ui_category
 from .util import get_addon_prefs
 
 

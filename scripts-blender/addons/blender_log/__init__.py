@@ -29,10 +29,10 @@ bl_info = {
 import importlib
 import bpy
 
-from . import prefs, blender_log, report_ops, id_types
+from . import prefs, props, operators, ui, id_types
 
 # Each module can have register() and unregister() functions and a list of classes to register called "registry".
-modules = [prefs, blender_log, report_ops]
+modules = [prefs, props, operators, ui]
 
 
 def register_unregister_modules(modules, register: bool):
@@ -47,10 +47,10 @@ def register_unregister_modules(modules, register: bool):
             importlib.reload(m)
         if hasattr(m, 'registry'):
             for c in m.registry:
+                un = 'un' if not register else ''
                 try:
                     register_func(c)
                 except Exception as e:
-                    un = 'un' if not register else ''
                     print(f"Warning: Failed to {un}register class: {c.__name__}")
                     print(e)
 
