@@ -8,7 +8,7 @@ from ..transfer_util import (
 )
 from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
 from ...task_layer import get_transfer_data_owner
-from .... import constants
+from .... import constants, logging
 
 
 def modifiers_clean(obj):
@@ -47,6 +47,8 @@ def init_modifiers(scene, obj):
 
 
 def transfer_modifier(modifier_name, target_obj, source_obj):
+    logger = logging.get_logger()
+
     # remove old and sync existing modifiers
     context = bpy.context
     scene = context.scene
@@ -56,10 +58,19 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
 
     # get modifier index
     source_index = 0
+    source_mod = None
     for i, source_mod in enumerate(source_obj.modifiers):
         if source_mod.name == modifier_name:
             source_index = i
             break
+
+    if not source_mod:
+        logger.debug(
+            f"Modifer Transfer cancelled, '{modifier_name}' not found on '{source_obj.name}'"
+        )
+        # This happens if a modifier's transfer data is still around, but the modifier
+        # itself was removed.
+        return
 
     # create target mod
     mod_new = target_obj.modifiers.new(source_mod.name, source_mod.type)
