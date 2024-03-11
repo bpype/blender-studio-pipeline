@@ -99,15 +99,15 @@ blender-kitsu has many feature and in this documentation they are divided in dif
 ---
 blender-kitsu sequence editor tools were constructed with the idea in mind to have a relationship between sequence strips and shots on Kitsu. This connection enables the exchange of metadata between the edit and the shots on Kitsu. Some examples are frame ranges of shots can be directly updated from the edit or thumbnails can be rendered and uploaded to Kitsu with a click of a button and many more which you will find out in this section:
 
-##### Metastrips
-Metastrips are regular Movie Strips that can be linked to a shot in kitsu. It is a good idea to create a separate metadata strip in a separate channel that represents the shot. That gives you the freedom to assemble a shot out of multiple elements, like multiple storyboard pictures, and still have one metadata strip that contains the full shot range.
+##### Metadata Strips
+Metadata Strips are regular Movie Strips that can be linked to a shot in kitsu. It is a good idea to create a separate metadata strip in a separate channel that represents the shot. That gives you the freedom to assemble a shot out of multiple elements, like multiple storyboard pictures, and still have one metadata strip that contains the full shot range.
 
 ![image info](/media/addons/blender_kitsu/metadata_strip.001.jpg)
 
 >**Good to know**: A metadata strip can have 3 states. It can be **initialized** but **not** linked yet. That means the movie strips knows I am a metadata strip but I don't have a relationship to a shot on Kitsu yet. It can be **linked**, which means the strip is already initialized and is linked to a sequence_id and shot_id on Kitsu. Only if a strip is linked you can exchange metadata, push thumbnails etc. The last state is **uninitialized** which basically means it's a regular movie strips and has nothing to do with kitsu.
 
-###### Create a Metastrip
-1. Select a sequence strip for which you want to create a metadata strip and execute the `Create Metastrip` operator.
+###### Create a Metadata Strip
+1. Select a sequence strip for which you want to create a metadata strip and execute the `Create Metadata Strip` operator.
 This will create a blank movie strip. The metadata strip will be placed one channel above the selected strips. Make sure there is enough space otherwise the metadata strip will not be created.
 
 ###### Initialize a Shot
