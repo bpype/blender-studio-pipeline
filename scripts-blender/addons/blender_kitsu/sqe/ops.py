@@ -1508,15 +1508,15 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
     def execute(self, context: bpy.types.Context) -> Set[str]:
         active_strip = context.scene.sequence_editor.active_strip
 
-        # Find the metastrip of this strip that contains Kitsu information
+        # Find the metadata strip of this strip that contains Kitsu information
         # about what sequence and shot this strip belongs to.
         shot_name = active_strip.name.split(bkglobals.DELIMITER)[0]
-        metastrip = context.scene.sequence_editor.sequences.get(shot_name)
-        if not metastrip:
-            # The metastrip should've been created by sqe_create_review_session,
+        metadata_strip = context.scene.sequence_editor.sequences.get(shot_name)
+        if not metadata_strip:
+            # The metadata strip should've been created by sqe_create_review_session,
             # if the Kitsu integration is enabled in the add-on preferences,
             # the Kitsu add-on is enabled, and valid Kitsu credentials were entered.
-            self.report({"ERROR"}, f"Could not find Kitsu metastrip: {shot_name}.")
+            self.report({"ERROR"}, f"Could not find Kitsu metadata strip: {shot_name}.")
             return {"CANCELLED"}
 
         if not self.task_status:
@@ -1524,8 +1524,8 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Set the Kitsu sequence and shot information in the context
-        cache.sequence_active_set_by_id(context, metastrip.kitsu.sequence_id)
-        cache.shot_active_set_by_id(context, metastrip.kitsu.shot_id)
+        cache.sequence_active_set_by_id(context, metadata_strip.kitsu.sequence_id)
+        cache.shot_active_set_by_id(context, metadata_strip.kitsu.shot_id)
 
         # Save playblast task status id for next time.
         context.scene.kitsu.playblast_task_status_id = self.task_status
@@ -1778,7 +1778,7 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
                             frame_end,
                         )
                         continue
-                # TODO Refactor as this reuses code from KITSU_OT_sqe_create_meta_strip
+                # TODO Refactor as this reuses code from KITSU_OT_sqe_create_metadata_strip
                 if not strip:
                     # Create new strip.
                     strip = context.scene.sequence_editor.sequences.new_movie(
@@ -1940,9 +1940,9 @@ class KITSU_OT_sqe_init_strip_start_frame(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class KITSU_OT_sqe_create_meta_strip(bpy.types.Operator):
-    bl_idname = "kitsu.sqe_create_meta_strip"
-    bl_label = "Create Meta Strip"
+class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
+    bl_idname = "kitsu.sqe_create_metadata_strip"
+    bl_label = "Create Metadata Strip"
     bl_description = (
         "Adds metadata strip for each selected strip. "
         "Tries to place metadata strip one channel above selected "
@@ -1959,24 +1959,24 @@ class KITSU_OT_sqe_create_meta_strip(bpy.types.Operator):
         failed = []
         created = []
         occupied_ranges = checksqe.get_occupied_ranges(context)
-        logger.info("-START- Creating Meta Strips")
+        logger.info("-START- Creating Metadata Strips")
 
         selected_sequences = context.selected_sequences
 
-        # Check if metastrip file actually exists.
+        # Check if metadata strip file actually exists.
         for strip in selected_sequences:
             # Get frame range information from current strip.
             strip_range = range(strip.frame_final_start, strip.frame_final_end)
             channel = strip.channel + 1
 
-            # Check if one channel above strip there is space to put the meta strip.
+            # Check if one channel above strip there is space to put the metadata strip.
             if str(channel) in occupied_ranges:
                 if checksqe.is_range_occupied(
                     strip_range, occupied_ranges[str(channel)]
                 ):
                     failed.append(strip)
                     logger.error(
-                        "Failed to create metastrip for %s. Channel: %i Range: %i - %i is occupied",
+                        "Failed to create metadata strip for %s. Channel: %i Range: %i - %i is occupied",
                         strip.name,
                         channel,
                         strip.frame_final_start,
@@ -1984,36 +1984,36 @@ class KITSU_OT_sqe_create_meta_strip(bpy.types.Operator):
                     )
                     continue
 
-            # Create new meta strip.
-            # TODO: frame range of metastrip is 1000 which is problematic because it needs to fit
+            # Create new metadata strip.
+            # TODO: frame range of metadata strip is 1000 which is problematic because it needs to fit
             # on the first try, EDIT: seems to work maybe per python overlaps of sequences possible?
-            meta_strip = context.scene.sequence_editor.sequences.new_movie(
-                f"{strip.name}_metastrip",
+            metadata_strip = context.scene.sequence_editor.sequences.new_movie(
+                f"{strip.name}{bkglobals.DELIMITER}metadata{bkglobals.SPACE_REPLACER}strip",
                 "",
                 strip.channel + 1,
                 strip.frame_final_start,
             )
-            created.append(meta_strip)
+            created.append(metadata_strip)
 
             # Set blend alpha.
-            meta_strip.blend_alpha = 0
+            metadata_strip.blend_alpha = 0
 
             # Set frame in and out.
-            meta_strip.frame_final_start = strip.frame_final_start
-            meta_strip.frame_final_end = strip.frame_final_end
-            meta_strip.channel = strip.channel + 1
+            metadata_strip.frame_final_start = strip.frame_final_start
+            metadata_strip.frame_final_end = strip.frame_final_end
+            metadata_strip.channel = strip.channel + 1
 
             # Init start frame offst.
-            opsdata.init_start_frame_offset(meta_strip)
+            opsdata.init_start_frame_offset(metadata_strip)
 
             logger.info(
-                "%s created metastrip: %s",
+                "%s created metadata strip: %s",
                 strip.name,
-                meta_strip.name,
+                metadata_strip.name,
             )
 
         # Report.
-        report_str = f"Created {len(created)} meta strips"
+        report_str = f"Created {len(created)} metadata strips"
         report_state = "INFO"
         if failed:
             report_state = "WARNING"
@@ -2025,7 +2025,7 @@ class KITSU_OT_sqe_create_meta_strip(bpy.types.Operator):
         )
 
         # Log.
-        logger.info("-END- Creating Meta Strips")
+        logger.info("-END- Creating Metadata Strips")
         util.ui_redraw()
 
         return {"FINISHED"}
@@ -2287,7 +2287,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
             return match.group(1)
         return
 
-    def get_metastrip(self, context, strip):
+    def get_metadata_strip(self, context, strip):
         name = self.get_shot_name(strip)
         for strip in context.scene.sequence_editor.sequences_all:
             if strip.name == name:
@@ -2300,11 +2300,11 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         frame_end = strip.frame_final_end
 
         files = []
-        metastrip = self.get_metastrip(context, strip)
-        if not metastrip:
-            self.report({'ERROR'}, f"No Metastrip found for {strip.name}")
+        metadata_strip = self.get_metadata_strip(context, strip)
+        if not metadata_strip:
+            self.report({'ERROR'}, f"No Metadata Strip found for {strip.name}")
             return {'CANCELLED'}
-        shot = Shot.by_id(metastrip.kitsu.shot_id)
+        shot = Shot.by_id(metadata_strip.kitsu.shot_id)
         start_frame = (
             shot.data.get('3d_start') if shot.data.get('3d_start') else bkglobals.FRAME_START
         )
@@ -2588,7 +2588,7 @@ classes = [
     KITSU_OT_sqe_debug_multi_project,
     KITSU_OT_sqe_pull_edit,
     KITSU_OT_sqe_init_strip_start_frame,
-    KITSU_OT_sqe_create_meta_strip,
+    KITSU_OT_sqe_create_metadata_strip,
     KITSU_OT_sqe_add_sequence_color,
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,

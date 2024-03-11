@@ -45,7 +45,7 @@ from ..sqe.ops import (
     KITSU_OT_sqe_debug_multi_project,
     KITSU_OT_sqe_pull_edit,
     KITSU_OT_sqe_init_strip_start_frame,
-    KITSU_OT_sqe_create_meta_strip,
+    KITSU_OT_sqe_create_metadata_strip,
     KITSU_OT_sqe_add_sequence_color,
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
@@ -204,11 +204,11 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
                     text=f"Link {noun}",
                     icon="LINKED",
                 )
-                # Create metastrip from uninitialized strip.
+                # Create metadata strip from uninitialized strip.
                 row = box.row(align=True)
                 row.operator(
-                    KITSU_OT_sqe_create_meta_strip.bl_idname,
-                    text=f"Create Metastrip {noun}",
+                    KITSU_OT_sqe_create_metadata_strip.bl_idname,
+                    text=f"Create Metadata Strip {noun}",
                 )
 
             # Unlink.
@@ -244,8 +244,8 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
                 )
                 row = box.row(align=True)
                 row.operator(
-                    KITSU_OT_sqe_create_meta_strip.bl_idname,
-                    text=f"Create {len(strips_to_init)} Metastrips",
+                    KITSU_OT_sqe_create_metadata_strip.bl_idname,
+                    text=f"Create {len(strips_to_init)} Metadata Strips",
                 )
 
             # Make row.

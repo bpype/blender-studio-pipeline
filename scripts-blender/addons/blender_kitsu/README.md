@@ -100,18 +100,18 @@ blender-kitsu has many feature and in this documentation they are divided in dif
 blender-kitsu sequence editor tools were constructed with the idea in mind to have a relationship between sequence strips and shots on Kitsu. This connection enables the exchange of metadata between the edit and the shots on Kitsu. Some examples are frame ranges of shots can be directly updated from the edit or thumbnails can be rendered and uploaded to Kitsu with a click of a button and many more which you will find out in this section:
 
 ##### Metastrips
-Metastrips are regular Movie Strips that can be linked to a shot in kitsu. It is a good idea to create a separate meta strip in a separate channel that represents the shot. That gives you the freedom to assemble a shot out of multiple elements, like multiple storyboard pictures, and still have one metastrip that contains the full shot range.
+Metastrips are regular Movie Strips that can be linked to a shot in kitsu. It is a good idea to create a separate metadata strip in a separate channel that represents the shot. That gives you the freedom to assemble a shot out of multiple elements, like multiple storyboard pictures, and still have one metadata strip that contains the full shot range.
 
-![image info](/media/addons/blender_kitsu/metastrip.001.jpg)
+![image info](/media/addons/blender_kitsu/metadata_strip.001.jpg)
 
->**Good to know**: A metastrip can have 3 states. It can be **initialized** but **not** linked yet. That means the movie strips knows I am a metastrip but I don't have a relationship to a shot on Kitsu yet. It can be **linked**, which means the strip is already initialized and is linked to a sequence_id and shot_id on Kitsu. Only if a strip is linked you can exchange metadata, push thumbnails etc. The last state is **uninitialized** which basically means it's a regular movie strips and has nothing to do with kitsu.
+>**Good to know**: A metadata strip can have 3 states. It can be **initialized** but **not** linked yet. That means the movie strips knows I am a metadata strip but I don't have a relationship to a shot on Kitsu yet. It can be **linked**, which means the strip is already initialized and is linked to a sequence_id and shot_id on Kitsu. Only if a strip is linked you can exchange metadata, push thumbnails etc. The last state is **uninitialized** which basically means it's a regular movie strips and has nothing to do with kitsu.
 
 ###### Create a Metastrip
-1. Select a sequence strip for which you want to create a metastrip and execute the `Create Metastrip` operator.
-This will import a metastrip.mp4 (1000 frame black video) file which is saved in the add-ons repository. The metastrip will be placed one channel above the selected strips. Make sure there is enough space otherwise the metastrip will not be created.
+1. Select a sequence strip for which you want to create a metadata strip and execute the `Create Metastrip` operator.
+This will create a blank movie strip. The metadata strip will be placed one channel above the selected strips. Make sure there is enough space otherwise the metadata strip will not be created.
 
 ###### Initialize a Shot
-1. Select a metastrip and open the `Kitsu` tab in the sidebar of the sequence editor. You will find multiple ways on how to initialize your strip.
+1. Select a metadata strip and open the `Kitsu` tab in the sidebar of the sequence editor. You will find multiple ways on how to initialize your strip.
 ![image info](/media/addons/blender_kitsu/sqe_init_shot.jpg)
 
 2. Case A: Shot does **already exist** on Kitsu
@@ -162,11 +162,11 @@ In the `Push` panel you will find all the operators that push data to Kitsu. <br
 The actual shot frame range (starting at 101) will be saved in `["data"]["3d_start"]` kitsu shot attribute <br/>
 
 >**Thumbnails**: Renders a thumbnail of the selected shots (will be saved to the `Thumbnail Directory` -> see addon preferences) and uploads it to Kitsu. Thumbnails are linked to a task in Kitsu. So you can select the Task Type for which you want to upload the thumbnail with the `Set Thumbnail Task Type` operator. <br/>
-If you select multiple metastrips it will always use the middle frame to create the thumbnail. If you have only one selected it will use the frame which is under the cursor (it curser is inside shot range). <br/>
+If you select multiple metadata strips it will always use the middle frame to create the thumbnail. If you have only one selected it will use the frame which is under the cursor (it curser is inside shot range). <br/>
 **Render**: Renders the shot range out of the sequence editor, saves it to disk and uploads it to Kitsu. Works very similar to the `Push Thumbnail` operator.
 
 ##### Pull
-In the `Pull` panel you will find all the operators that pull data from Kitsu to a metastrip. <br/>
+In the `Pull` panel you will find all the operators that pull data from Kitsu to a metadata strip. <br/>
 
 ![image info](/media/addons/blender_kitsu/sqe_pull.jpg)
 
@@ -177,7 +177,7 @@ If you have not sequence selected the `Pull Entire Edit` Operator will appear in
 
 ![image info](/media/addons/blender_kitsu/sqe_pull_entire_edit.jpg)
 
-After you selected the channel it will go through all shots on Kitsu, create a metastrip which will be linked to the respective shot and pulls all metadata. <br/>
+After you selected the channel it will go through all shots on Kitsu, create a metadata strip which will be linked to the respective shot and pulls all metadata. <br/>
 It will use te `frame_in` and `frame_out` attribute on Kitsu to determine the in and out points in the edit. So make sure these are up to date and don't overlap. <br/>
 
 As a result a bigger edit with nice sequence_colors can look pretty cool:
@@ -187,7 +187,7 @@ As a result a bigger edit with nice sequence_colors can look pretty cool:
 
 ##### Multi Edit
 
-The `Multi Edit` panel only appears when you select multiple metastrips that are all `initialized` but not `linked` yet. <br/>
+The `Multi Edit` panel only appears when you select multiple metadata strips that are all `initialized` but not `linked` yet. <br/>
 
 ![image info](/media/addons/blender_kitsu/sqe_multi_edit.jpg)
 
@@ -282,7 +282,7 @@ Shot Builder is a Feature of the Blender Kitsu Add-on To automatically build sho
 
 ### Getting Started
 #### Shot Setup
-The Shot Builder requires shot data including Name, Frame Rate, and Duration to be stored on a Kitsu Server. Please follow the [Sequence Editor](#sequence-editor) guide to create metastrips and Push that data to the Kitsu server or follow the [Kitsu First Production](https://kitsu.cg-wire.com/first_production/) to manually enter this data into the Kitsu Server. 
+The Shot Builder requires shot data including Name, Frame Rate, and Duration to be stored on a Kitsu Server. Please follow the [Sequence Editor](#sequence-editor) guide to create metadata strips and Push that data to the Kitsu server or follow the [Kitsu First Production](https://kitsu.cg-wire.com/first_production/) to manually enter this data into the Kitsu Server. 
 
 #### Asset Setup
 ##### Kitsu Server
