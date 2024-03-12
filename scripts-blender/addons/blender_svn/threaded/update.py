@@ -11,7 +11,7 @@ class BGP_SVN_Update(BackgroundProcess):
     name = "Update"
     needs_authentication = True
     timeout = 5*60
-    repeat_delay = 0
+    repeat_delay = 1
     debug = False
 
     def __init__(self, revision=0):
@@ -21,14 +21,19 @@ class BGP_SVN_Update(BackgroundProcess):
 
     def acquire_output(self, context, prefs):
         Processes.kill('Status')
-        command = ["svn", "up", "--accept", "postpone"]
-        if self.revision > 0:
-            command.insert(2, f"-r{self.revision}")
-        self.output = execute_svn_command(
-            context,
-            command,
-            use_cred=True
-        )
+
+        repo = context.scene.svn.get_repo(context)
+        files = [f for f in repo.external_files if f.repos_status != 'none']
+        if files:
+            file = files[0]
+            print("Updating file: ", file.svn_path)
+            command = ["svn", "up", file.svn_path, "--accept", "postpone"]
+            if self.revision > 0:
+                command.insert(2, f"-r{self.revision}")
+            self.output = execute_svn_command(context, command, use_cred=True)
+            file.repos_status = 'none'  # Without this, it would keep updating the same file.
+        else:
+            self.stop()
 
     def handle_error(self, context, error):
         Processes.start('Status')
@@ -41,9 +46,6 @@ class BGP_SVN_Update(BackgroundProcess):
             if f.status_prediction_type == 'SVN_UP':
                 f.status_prediction_type = 'SKIP_ONCE'
 
-        Processes.start('Log')
-        Processes.start('Status')
-
     def get_ui_message(self, context) -> str:
         """Return a string that should be drawn in the UI for user feedback, 
         depending on the state of the process."""
@@ -54,3 +56,5 @@ class BGP_SVN_Update(BackgroundProcess):
 
     def stop(self):
         super().stop()
+        Processes.start('Log')
+        Processes.start('Status')

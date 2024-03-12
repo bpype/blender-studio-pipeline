@@ -76,6 +76,15 @@ class SVN_file(PropertyGroup):
     def is_outdated(self):
         return self.repos_status == 'modified' and self.status == 'normal'
 
+    @property
+    def is_dir(self):
+        if self.exists():
+            return Path.is_dir(self.absolute_path)
+        else:
+            # This file may not exist locally yet, but it could still exist on the SVN,
+            # and in this case we still want to provide a guess as to whether it's a folder or not.
+            return "." not in Path(self.absolute_path).name
+
     revision: IntProperty(
         name="Revision",
         description="Revision number",
