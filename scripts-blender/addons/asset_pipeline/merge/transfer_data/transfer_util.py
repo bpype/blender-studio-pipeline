@@ -56,6 +56,8 @@ def transfer_data_clean(
         data_list (bpy.types.CollectionProperty): Collection Property containing a type of possible Transferable Data e.g. obj.modifiers
         td_type_key (str): Key for the Transferable Data type
     """
+    cleaned_item_names = set()
+
     for item in data_list:
         matches = check_transfer_data_entry(
             obj.transfer_data_ownership,
@@ -63,8 +65,10 @@ def transfer_data_clean(
             td_type_key,
         )
         if len(matches) == 0:
+            cleaned_item_names.add(item.name)
             data_list.remove(item)
 
+    return cleaned_item_names
 
 def transfer_data_item_is_missing(
     transfer_data_item, data_list: bpy.types.CollectionProperty, td_type_key: str

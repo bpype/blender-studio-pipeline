@@ -72,24 +72,37 @@ def find_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> list[b
 
 
 def transfer_drivers(
-    source_obj: bpy.types.Object, target_obj: bpy.types.Object, target_type: str, target_name: str
+    source_id: bpy.types.ID, target_id: bpy.types.ID, target_type: str, target_name: str
 ) -> None:
-    """Transfers Drivers from one object to another, will copy and new drivres from source to from
+    """Transfers Drivers from one ID to another, will copy and new drivres from source to from
     source to target, and will remove any drivers on the target that are not in the source.
 
     Args:
-        source_obj (bpy.types.Object): Source Object, containing drivers to copy
-        target_obj (bpy.types.Object): Target Object, which will recieve the drivers from source
+        source_id (bpy.types.ID): Source ID, containing drivers to copy
+        target_id (bpy.types.ID): Target ID, which will recieve the drivers from source
         target_type (str): Name of driver target's type, like `modifier` or `constraint`
         target_name (str): Name of driver target, e.g. name of a modifier or contraint
     """
-    source_fcurves = find_drivers(source_obj, 'modifiers', target_name)
-    target_fcurves = find_drivers(target_obj, 'modifiers', target_name)
+    source_fcurves = find_drivers(source_id, target_type, target_name)
+    target_fcurves = find_drivers(target_id, target_type, target_name)
 
     # Clear old drivers
     for old_fcurve in list(set(target_fcurves) - set(source_fcurves)):
-        target_obj.animation_data.drivers.remove(old_fcurve)
+        target_id.animation_data.drivers.remove(old_fcurve)
 
     # Transfer new drivers
     for fcurve in source_fcurves:
-        copy_driver(from_fcurve=fcurve, target=target_obj)
+        copy_driver(from_fcurve=fcurve, target=target_id)
+
+
+def cleanup_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> None:
+    """Remove all drivers for transfer data that has been removed.
+
+    Args:
+        object (bpy.types.ID): ID, which has drivers to remove
+        target_type (str): Name of driver target's type, like `modifier` or `constraint`
+        target_name (str): Name of driver target, e.g. name of a modifier or contraint
+    """
+    target_fcurves = find_drivers(id, target_type, target_name)
+    for fcurve in target_fcurves:
+        id.animation_data.drivers.remove(fcurve)

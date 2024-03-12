@@ -5,15 +5,20 @@ from ..transfer_util import (
     check_transfer_data_entry,
 )
 from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
-from .transfer_function_util.drivers import transfer_drivers
+from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
 from .transfer_function_util.visibility import override_obj_visability
 from ...task_layer import get_transfer_data_owner
 from .... import constants, logging
 
 
 def constraints_clean(obj):
-    transfer_data_clean(obj=obj, data_list=obj.constraints, td_type_key=constants.CONSTRAINT_KEY)
+    cleaned_names = transfer_data_clean(
+        obj=obj, data_list=obj.constraints, td_type_key=constants.CONSTRAINT_KEY
+    )
 
+    # Remove Drivers that match the cleaned item's name
+    for name in cleaned_names:
+        cleanup_drivers(obj, 'constraints', name)
 
 def constraint_is_missing(transfer_data_item):
     return transfer_data_item_is_missing(

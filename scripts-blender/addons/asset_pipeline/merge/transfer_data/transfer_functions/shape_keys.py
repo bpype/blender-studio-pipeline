@@ -7,7 +7,7 @@ from .transfer_function_util.proximity_core import (
     closest_face_to_point,
     closest_tri_on_face,
 )
-from .transfer_function_util.drivers import transfer_drivers
+from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
 from ..transfer_util import (
     transfer_data_item_is_missing,
     transfer_data_item_init,
@@ -27,6 +27,8 @@ def shape_keys_clean(obj):
     if obj.type != "MESH" or obj.data.shape_keys is None:
         return
 
+    cleaned_item_names = set()
+
     for shape_key in obj.data.shape_keys.key_blocks:
         matches = check_transfer_data_entry(
             obj.transfer_data_ownership,
@@ -34,7 +36,11 @@ def shape_keys_clean(obj):
             constants.SHAPE_KEY_KEY,
         )
         if len(matches) == 0:
+            cleaned_item_names.add(shape_key.name)
             obj.shape_key_remove(shape_key)
+
+    for name in cleaned_item_names:
+        cleanup_drivers(obj.data.shape_keys, 'key_blocks', name)
 
 
 def shape_key_is_missing(transfer_data_item):
@@ -144,4 +150,6 @@ def transfer_shape_key(
     if source_obj.data.shape_keys is None:
         return
 
-    transfer_drivers(source_obj, target_obj, 'key_blocks', shape_key_name)
+    transfer_drivers(
+        source_obj.data.shape_keys, target_obj.data.shape_keys, 'key_blocks', shape_key_name
+    )

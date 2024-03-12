@@ -1,5 +1,5 @@
 import bpy
-from .transfer_function_util.drivers import transfer_drivers
+from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
 from .transfer_function_util.visibility import override_obj_visability
 from ..transfer_util import (
     transfer_data_clean,
@@ -12,7 +12,13 @@ from .... import constants, logging
 
 
 def modifiers_clean(obj):
-    transfer_data_clean(obj=obj, data_list=obj.modifiers, td_type_key=constants.MODIFIER_KEY)
+    cleaned_names = transfer_data_clean(
+        obj=obj, data_list=obj.modifiers, td_type_key=constants.MODIFIER_KEY
+    )
+
+    # Remove Drivers that match the cleaned item's name
+    for name in cleaned_names:
+        cleanup_drivers(obj, 'modifiers', name)
 
 
 def modifier_is_missing(transfer_data_item):
