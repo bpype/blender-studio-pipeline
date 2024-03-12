@@ -258,6 +258,8 @@ def run_blender(blender_path):
     os.environ['BLENDER_USER_CONFIG'] = str(config_path)
     os.environ['BLENDER_USER_SCRIPTS'] = str(script_path)
     proc = subprocess.run([blender_path])
+    if proc.returncode != 0:
+        print("--- Blender seems to have crashed ---")
     sys.exit(proc.returncode)
 
 
