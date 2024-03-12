@@ -29,7 +29,7 @@ bl_info = {
 import importlib
 import bpy
 
-from . import prefs, props, operators, ui, app_handlers, id_types
+from . import prefs, props, operators, ui, app_handlers, id_types, hotkeys
 
 # Each module can have register() and unregister() functions and a list of classes to register called "registry".
 modules = [prefs, props, operators, ui, app_handlers]

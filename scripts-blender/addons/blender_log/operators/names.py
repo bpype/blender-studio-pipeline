@@ -29,9 +29,11 @@ class BLENLOG_OT_rename_obdata(bpy.types.Operator):
         if not obj:
             self.report({'WARNING'}, "Object no longer exists.")
         else:
-            obj.data.name = obj.name
+            if obj.data.name != obj.name:
+                obj.data.name = obj.name
             if hasattr(obj.data, 'shape_keys') and obj.data.shape_keys:
-                obj.data.shape_keys.name = obj.name
+                if obj.data.shape_keys.name != obj.name:
+                    obj.data.shape_keys.name = obj.name
             self.report({'INFO'}, "Object data renamed.")
 
         context.scene.blender_log.remove_active()
@@ -123,16 +125,17 @@ class BLENLOG_OT_rename_id(bpy.types.Operator):
             self.layout.label(text="This name is already taken.", icon='ERROR')
 
     def execute(self, context):
-        obj = get_id(self.id_name, self.id_type)
-        if not obj:
+        id = get_id(self.id_name, self.id_type)
+        if not id:
             self.report({'ERROR'}, f"ID no longer exists: {self.id_name}.")
             return {'CANCELLED'}
-        existing_obj = get_id(self.new_name, self.id_type)
-        if existing_obj:
+        existing_id = get_id(self.new_name, self.id_type)
+        if existing_id:
             self.report({'ERROR'}, f"ID name already taken: {self.new_name}.")
             return {'CANCELLED'}
 
-        obj.name = self.new_name
+        if id.name != self.new_name:
+            id.name = self.new_name
         self.report(
             {'INFO'},
             f"{self.id_type.title()} successfully renamed from {self.id_name} to {self.new_name}.",

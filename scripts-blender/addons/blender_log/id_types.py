@@ -2,60 +2,27 @@ import bpy
 from bpy import types
 from typing import List, Tuple, Dict
 
+
 # List of datablock type information tuples:
 # (type_class, type_enum_string, bpy.data.<collprop_name>)
-ID_INFO = [
-	# High level containers
-	(types.WindowManager,		'WINDOWMANAGER',	'window_managers'),
-	(types.Scene,				'SCENE',			'scenes'),
-	(types.World,				'WORLD',			'worlds'),
-	(types.Collection,			'COLLECTION',		'collections'),
-	(types.WorkSpace,			'WORKSPACE',		'workspaces'),
-	(types.Screen,				'SCREEN',			'screens'),
-	(types.Library,				'LIBRARY',			'libraries'),
+def get_id_info() -> List[Tuple[type, str, str]]:
+	bpy_prop_collection = type(bpy.data.objects)
+	id_info = []
+	for prop_name in dir(bpy.data):
+		prop = getattr(bpy.data, prop_name)
+		if type(prop) == bpy_prop_collection:
+			if len(prop) == 0:
+				# We can't get full info about the ID type if there isn't at least one entry of it.
+				# But we shouldn't need it, since we don't have any entries of it!
+				continue
+			id_info.append((type(prop[0]), prop[0].id_type, prop_name))
+	return id_info
 
-	# Object Datas
-	(types.Object,				'OBJECT',			'objects'),
-	(types.Armature,			'ARMATURE',			'armatures'),
-	(types.Mesh,				'MESH',				'meshes'),
-	(types.Curve,				'CURVE',			'curves'),
-	(types.Curves,				'CURVES',			'hair_curves'),
-	(types.Camera,				'CAMERA',			'cameras'),
-	(types.Lattice,				'LATTICE',			'lattices'),
-	(types.GreasePencil,		'GREASEPENCIL',		'grease_pencils'),
-	(types.Light,				'LIGHT',			'lights'),
-	(types.LightProbe,			'LIGHT_PROBE',		'lightprobes'),
-	(types.Speaker,				'SPEAKER',			'speakers'),
-	(types.Volume,				'VOLUME',			'volumes'),
-	(types.MetaBall,			'METABALL',			'metaballs'),
 
-	# Sub-data
-	(types.Action,				'ACTION',			'actions'),
-	(types.Key,					'KEY',				'shape_keys'),
-	(types.Material,			'MATERIAL',			'materials'),
-	(types.NodeTree,			'NODETREE',			'node_groups'),
-	(types.PointCloud,			'POINT_CLOUD',		'pointclouds'),
-	(types.ParticleSettings,	'PARTICLE',			'particles'),
-	(types.CacheFile,			'CACHE_FILE',		'cache_files'),
-
-	# 2D
-	(types.Image,				'IMAGE',			'images'),
-	(types.Brush,				'BRUSH',			'brushes'),
-	(types.Texture,				'TEXTURE',			'textures'),
-	(types.Palette,				'PALETTE',			'palettes'),
-	(types.PaintCurve,			'PAINT_CURVE',		'paint_curves'),
-	(types.FreestyleLineStyle,	'LINESTYLE',		'linestyles'),
-	(types.VectorFont,			'FONT',				'fonts'),
-
-	# Misc
-	(types.Sound,				'SOUND',			'sounds'),
-	(types.MovieClip,			'MOVIECLIP',		'movieclips'),
-	(types.Mask,				'MASK',				'masks'),
-	(types.Text,				'TEXT',				'texts'),
-]
-
-# Map datablock type enum strings to the name of the collprop in bpy.data that stores such datablocks.
-ID_IDENTIFIER_TO_STORAGE: Dict[str, str] = {tup[1] : tup[2] for tup in ID_INFO}
+def get_id_storage_by_type_str(typ_name: str):
+	for typ, typ_str, container_str in get_id_info():
+		if typ_str == typ_name:
+			return getattr(bpy.data, container_str)
 
 def get_datablock_types_enum_items() -> List[Tuple[str, str, str, str, int]]:
 	"""Return the items needed to define an EnumProperty representing a datablock type selector."""
@@ -80,7 +47,6 @@ ID_TYPE_INFO: Dict[str, Tuple[str, str]] = {tup[0] : (tup[1], tup[3]) for tup in
 
 
 def get_id(name, type, libpath=None):
-    container = ID_IDENTIFIER_TO_STORAGE[type]
-    container = getattr(bpy.data, container)
-    id = container.get((name, libpath))
-    return id
+	container = get_id_storage_by_type_str(type)
+	id = container.get((name, libpath))
+	return id

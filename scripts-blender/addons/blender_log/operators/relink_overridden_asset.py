@@ -1,18 +1,7 @@
 import bpy
 from typing import List, Dict, Set, Optional, Tuple
 from bpy.types import Collection, Object, Operator
-
-
-class OUTLINER_OT_better_purge(Operator):
-    """Like Blender's purge, but clears fake users from linked IDs and collections"""
-    bl_idname = "outliner.better_purge"
-    bl_label = "Better Purge"
-
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        better_purge(context)
-        return {'FINISHED'}
+from .better_purge import better_purge
 
 
 def outliner_get_active_id(context):
@@ -27,8 +16,10 @@ def outliner_get_active_id(context):
         # Blender 3.6 and below: We can only hope first selected ID happens to be the active one.
         return context.selected_ids[0]
 
+
 class OUTLINER_OT_relink_overridden_asset(Operator):
     """Relink an overridden asset. Can be useful to recover assets from all sorts of broken states, but may lose un-keyed overridden values. Should preserve bone constraints, active actions of armatures, and any outside references to objects within the asset. Will also purge the .blend file and unlink the OVERRIDE_HIDDEN collection if present, out of necessity"""
+
     bl_idname = "object.relink_overridden_asset"
     bl_label = "Relink Overridden Asset"
 
@@ -70,6 +61,7 @@ class OUTLINER_OT_relink_overridden_asset(Operator):
 
         return {'FINISHED'}
 
+
 def relink_all_override_hierarchies(context):
     hierarchy_roots = get_override_hierarchy_roots()
     new_hierarchy_roots = []
@@ -90,6 +82,7 @@ def relink_all_override_hierarchies(context):
     for new_hierarchy_root in new_hierarchy_roots:
         restore_names(new_hierarchy_root)
 
+
 def get_override_hierarchy_roots():
     hierarchy_roots = set()
     for coll in bpy.data.collections:
@@ -100,6 +93,7 @@ def get_override_hierarchy_roots():
                 continue
             hierarchy_roots.add(coll.override_library.hierarchy_root)
     return hierarchy_roots
+
 
 def relink_single_override_hierarchy(context, hierarchy_root: Collection):
     new_hierarchy_root = recreate_override_hierarchy(context, hierarchy_root)
@@ -143,18 +137,21 @@ def relink_data(new_hierarchy_root, old_hierarchy_root):
                     if old_con.name not in pb_new.constraints:
                         pb_new.constraints.copy(old_con)
 
+
 def map_new_to_old_objects(
-        new_hierarchy_root: Collection,
-        old_hierarchy_root: Collection, 
-    ) -> Dict[Object, Object]:
+    new_hierarchy_root: Collection,
+    old_hierarchy_root: Collection,
+) -> Dict[Object, Object]:
     """Use the common linked ID reference of two override collection hierarchies to
     construct a name-agnostic object mapping from one to the other."""
-    assert new_hierarchy_root.override_library.reference.library == old_hierarchy_root.override_library.reference.library, "The two collections must be an override of the same linked collection."
+    assert (
+        new_hierarchy_root.override_library.reference.library
+        == old_hierarchy_root.override_library.reference.library
+    ), "The two collections must be an override of the same linked collection."
 
     new_to_old_obj_map = {}
 
-    old_link_map = map_objects_of_linked_to_override_hierarchy(
-        old_hierarchy_root)
+    old_link_map = map_objects_of_linked_to_override_hierarchy(old_hierarchy_root)
 
     for new_obj in new_hierarchy_root.all_objects:
         if not new_obj.override_library:
@@ -163,12 +160,12 @@ def map_new_to_old_objects(
         ref = old_link_map.get(new_obj.override_library.reference)
         if ref:
             new_to_old_obj_map[new_obj] = ref
-    
+
     return new_to_old_obj_map
 
 
 def recreate_override_hierarchy(context, old_hierarchy_root: Collection) -> Collection:
-    """Create a fresh overridden copy of an existing overridden collection, 
+    """Create a fresh overridden copy of an existing overridden collection,
     replacing it in existing collections with the fresh copy.
     - All collection assignments are preserved
     - Only Armature objects are marked as editable
@@ -176,10 +173,13 @@ def recreate_override_hierarchy(context, old_hierarchy_root: Collection) -> Coll
     linked_hierarchy_root = old_hierarchy_root.override_library.reference
 
     parent_colls = collection_unlink_from_parents(old_hierarchy_root)
-    assert parent_colls, "Expected the override hierarchy root to be assigned to at least one parent collection."
+    assert (
+        parent_colls
+    ), "Expected the override hierarchy root to be assigned to at least one parent collection."
 
     override_hierarchy_root = linked_hierarchy_root.override_hierarchy_create(
-            context.scene, context.view_layer)
+        context.scene, context.view_layer
+    )
 
     # By default, this gets linked to the scene's root. We don't want that.
     context.scene.collection.children.unlink(override_hierarchy_root)
@@ -191,11 +191,13 @@ def recreate_override_hierarchy(context, old_hierarchy_root: Collection) -> Coll
     for obj in override_hierarchy_root.all_objects:
         if obj.type == 'ARMATURE':
             obj.override_library.is_system_override = False
-    
+
     return override_hierarchy_root
 
 
-def get_overridden_but_not_animated_properties(hierarchy_root: Collection) -> Dict[Object, List[str]]:
+def get_overridden_but_not_animated_properties(
+    hierarchy_root: Collection,
+) -> Dict[Object, List[str]]:
     obj_to_prop_list_map = {}
     for obj in hierarchy_root.all_objects:
         props_that_need_keying = []
@@ -211,8 +213,7 @@ def get_overridden_but_not_animated_properties(hierarchy_root: Collection) -> Di
             animated_props = [fcurve.data_path for fcurve in obj.animation_data.action.fcurves]
 
         for overridden_prop in all_overridden_props:
-            if overridden_prop not in driven_props and \
-                overridden_prop not in animated_props:
+            if overridden_prop not in driven_props and overridden_prop not in animated_props:
                 props_that_need_keying.append(overridden_prop)
 
         if props_that_need_keying:
@@ -221,15 +222,12 @@ def get_overridden_but_not_animated_properties(hierarchy_root: Collection) -> Di
     return obj_to_prop_list_map
 
 
-
 def insert_missing_keys(new_hierarchy_root, old_hierarchy_root):
     old_overridden_not_animated = get_overridden_but_not_animated_properties(old_hierarchy_root)
     new_overridden_not_animated = get_overridden_but_not_animated_properties(new_hierarchy_root)
 
-    old_link_map = map_objects_of_linked_to_override_hierarchy(
-        old_hierarchy_root)
-    new_link_map = map_objects_of_linked_to_override_hierarchy(
-        new_hierarchy_root)
+    old_link_map = map_objects_of_linked_to_override_hierarchy(old_hierarchy_root)
+    new_link_map = map_objects_of_linked_to_override_hierarchy(new_hierarchy_root)
 
     for linked_obj, old_prop_list in old_overridden_not_animated.items():
         if not old_prop_list or linked_obj not in new_overridden_not_animated:
@@ -289,8 +287,9 @@ def remap_users_to_temp_empties(new_hierarchy_root, old_hierarchy_root) -> Dict[
 
     empty_map = {}
 
-    old_objs = list(old_hierarchy_root.all_objects) + \
-        get_objects_in_override_hidden(new_hierarchy_root)
+    old_objs = list(old_hierarchy_root.all_objects) + get_objects_in_override_hidden(
+        new_hierarchy_root
+    )
 
     for old_obj in old_objs:
         if not old_obj.override_library or not old_obj.override_library.reference:
@@ -301,8 +300,9 @@ def remap_users_to_temp_empties(new_hierarchy_root, old_hierarchy_root) -> Dict[
         empty.use_fake_user = True
         old_obj.user_remap(empty)
         empty_map[old_obj.override_library.reference] = empty
-    
+
     return empty_map
+
 
 def remap_users_from_temp_empties(empty_map, new_hierarchy_root):
     for new_obj in list(new_hierarchy_root.all_objects):
@@ -319,31 +319,6 @@ def remap_users_from_temp_empties(empty_map, new_hierarchy_root):
     for empty in empty_map.values():
         # This usually won't do anything, but since we gave them fake users, let's keep it here just in case.
         bpy.data.objects.remove(empty)
-
-def better_purge(context, clear_coll_fake_users=True):
-    """Call Blender's purge function, but first Python-override all library IDs' 
-    use_fake_user to False.
-    Otherwise, linked IDs essentially do not get purged properly.
-    """
-
-    for area in context.screen.areas:
-        if area.type == 'VIEW_3D':
-            break
-    else:
-        assert False, "Error: This operation requires a 3D view to be present."
-
-    if clear_coll_fake_users:
-        for coll in bpy.data.collections:
-            coll.use_fake_user = False
-
-    id_list = list(bpy.data.user_map().keys())
-    for id in id_list:
-        if id.library:
-            id.use_fake_user = False
-
-    with context.temp_override(area=area):
-        bpy.ops.outliner.orphans_purge(
-            do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
 
 def rename_override_objects():
@@ -380,7 +355,7 @@ def get_mapping_from_linked_to_overriding_ids() -> Dict[bpy.types.ID, List[bpy.t
 
 
 def reassign_objects_to_collections():
-    """This function would re-assign objects to the right collections; 
+    """This function would re-assign objects to the right collections;
     This is blocked by the PyAPI though, so this code doesn't actually work."""
     override_map = get_mapping_from_linked_to_overriding_ids()
 
@@ -397,8 +372,7 @@ def reassign_objects_to_collections():
                 if not override.name in coll.objects:
                     coll.objects.link(override)
             else:
-                print(
-                    "Multiple overriding IDs, not sure which one to assign:", linked_id)
+                print("Multiple overriding IDs, not sure which one to assign:", linked_id)
 
 
 def get_parent_collections(target_coll: bpy.types.Collection) -> Set[bpy.types.Collection]:
@@ -427,7 +401,8 @@ def clear_collection_hierarchy_fake_user(coll: bpy.types.Collection):
 
 
 def map_objects_of_linked_to_override_hierarchy(
-        root_override: bpy.types.Collection) -> Dict[bpy.types.Object, bpy.types.Object]:
+    root_override: bpy.types.Collection,
+) -> Dict[bpy.types.Object, bpy.types.Object]:
     """Map linked objects to their overrides, given a hierarchy root of that override."""
     obj_map = {}
     for obj in root_override.all_objects:
@@ -457,8 +432,7 @@ def __cleanup_override_hidden(override_root: bpy.types.Collection):
     if not override_hidden:
         return
 
-    link_map = map_objects_of_linked_to_override_hierarchy(
-        override_hidden)
+    link_map = map_objects_of_linked_to_override_hierarchy(override_hidden)
 
     print("LINK MAP:")
     for key, value in link_map.items():
@@ -485,7 +459,9 @@ def nuke_override_hidden():
         bpy.data.collections.remove(coll)
 
 
-def get_objects_in_override_hidden(linked_collection: bpy.types.Collection) -> List[bpy.types.Object]:
+def get_objects_in_override_hidden(
+    linked_collection: bpy.types.Collection,
+) -> List[bpy.types.Object]:
     override_hidden_list = [c for c in bpy.data.collections if 'OVERRIDE_HIDDEN' in c.name]
     if not override_hidden_list:
         return []
@@ -505,31 +481,19 @@ def get_objects_in_override_hidden(linked_collection: bpy.types.Collection) -> L
 
 def draw_relink_ui(self, context):
     self.layout.separator()
-    self.layout.operator(
-        OUTLINER_OT_relink_overridden_asset.bl_idname, text="Purge & Re-link")
-
-
-def draw_purge_ui(self, context):
-    layout = self.layout
-    layout.separator()
-    layout.operator(OUTLINER_OT_better_purge.bl_idname)
+    self.layout.operator(OUTLINER_OT_relink_overridden_asset.bl_idname, text="Purge & Re-link")
 
 
 registry = [
-    OUTLINER_OT_better_purge,
     OUTLINER_OT_relink_overridden_asset,
 ]
 
 
 def register():
-    bpy.types.TOPBAR_MT_file_cleanup.append(draw_purge_ui)
-
     bpy.types.VIEW3D_MT_object_liboverride.append(draw_relink_ui)
     bpy.types.OUTLINER_MT_liboverride.append(draw_relink_ui)
 
 
 def unregister():
-    bpy.types.TOPBAR_MT_file_cleanup.remove(draw_purge_ui)
-
     bpy.types.OUTLINER_MT_liboverride.append(draw_relink_ui)
     bpy.types.OUTLINER_MT_liboverride.remove(draw_relink_ui)
