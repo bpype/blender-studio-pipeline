@@ -18,71 +18,55 @@
 #
 # (c) 2021, Blender Foundation - Paul Golter
 
-from typing import Dict, Any, Tuple, Generator
+from typing import Any, Tuple, Generator, List
 from .. import constants
 import bpy
-from bpy import types
 
-ID_INFO = {
-    (types.WindowManager, 'WINDOWMANAGER', 'window_managers'),
-    (types.Scene, 'SCENE', 'scenes'),
-    (types.World, 'WORLD', 'worlds'),
-    (types.Collection, 'COLLECTION', 'collections'),
-    (types.Armature, 'ARMATURE', 'armatures'),
-    (types.Mesh, 'MESH', 'meshes'),
-    (types.Camera, 'CAMERA', 'cameras'),
-    (types.Lattice, 'LATTICE', 'lattices'),
-    (types.Light, 'LIGHT', 'lights'),
-    (types.Speaker, 'SPEAKER', 'speakers'),
-    (types.Volume, 'VOLUME', 'volumes'),
-    (types.GreasePencil, 'GREASEPENCIL', 'grease_pencils'),
-    (types.GreasePencilv3, 'GREASEPENCIL_V3', 'grease_pencils_v3'),
-    (types.Curve, 'CURVE', 'curves'),
-    (types.LightProbe, 'LIGHT_PROBE', 'lightprobes'),
-    (types.MetaBall, 'METABALL', 'metaballs'),
-    (types.Object, 'OBJECT', 'objects'),
-    (types.Action, 'ACTION', 'actions'),
-    (types.Key, 'KEY', 'shape_keys'),
-    (types.Sound, 'SOUND', 'sounds'),
-    (types.Material, 'MATERIAL', 'materials'),
-    (types.NodeTree, 'NODETREE', 'node_groups'),
-    (types.Image, 'IMAGE', 'images'),
-    (types.Mask, 'MASK', 'masks'),
-    (types.FreestyleLineStyle, 'LINESTYLE', 'linestyles'),
-    (types.Library, 'LIBRARY', 'libraries'),
-    (types.VectorFont, 'FONT', 'fonts'),
-    (types.CacheFile, 'CACHE_FILE', 'cache_files'),
-    (types.PointCloud, 'POINT_CLOUD', 'pointclouds'),
-    (types.Curves, 'HAIR_CURVES', 'hair_curves'),
-    (types.Text, 'TEXT', 'texts'),
-    # (types.Simulation, 'SIMULATION', 'simulations'),
-    (types.ParticleSettings, 'PARTICLE', 'particles'),
-    (types.Palette, 'PALETTE', 'palettes'),
-    (types.PaintCurve, 'PAINT_CURVE', 'paint_curves'),
-    (types.MovieClip, 'MOVIE_CLIP', 'movieclips'),
-    (types.WorkSpace, 'WORKSPACE', 'workspaces'),
-    (types.Screen, 'SCREEN', 'screens'),
-    (types.Brush, 'BRUSH', 'brushes'),
-    (types.Texture, 'TEXTURE', 'textures'),
-}
 
-# Map datablock Python classes to their string representation.
-ID_CLASS_TO_IDENTIFIER: Dict[type, Tuple[str, int]] = dict(
-    [(tup[0], (tup[1])) for tup in ID_INFO]
-)
+####################################
+############# ID Stuff #############
+####################################
 
-# Map datablock Python classes to the name of their bpy.data container.
-ID_CLASS_TO_STORAGE_NAME: Dict[type, str] = dict(
-    [(tup[0], (tup[2])) for tup in ID_INFO]
-)
+
+def get_id_info() -> List[Tuple[type, str, str]]:
+    """Return a list of tuples with the python class, type identifier string, and bpy.data container name
+    of each ID type present in the blend file.
+    Eg. when called in a file containing meshes and objects, it will return at least:
+    [
+        (bpy.types.Object, 'OBJECT', "objects"),
+        (bpy.types.Mesh, 'MESH', "meshes"),
+    ]
+    """
+    bpy_prop_collection = type(bpy.data.objects)
+    id_info = []
+    for prop_name in dir(bpy.data):
+        prop = getattr(bpy.data, prop_name)
+        if type(prop) == bpy_prop_collection:
+            if len(prop) == 0:
+                # We can't get full info about the ID type if there isn't at least one entry of it.
+                # But we shouldn't need it, since we don't have any entries of it!
+                continue
+            id_info.append((type(prop[0]), prop[0].id_type, prop_name))
+    return id_info
+
+
+def get_id_identifier_from_class(id_type: type):
+    """Return the string name of an ID type class.
+    eg. bpy.types.Object -> 'OBJECT'
+    """
+    id_info = get_id_info()
+    for typ, typ_str, container_str in id_info:
+        if id_type == typ:
+            return typ_str
 
 
 def get_fundamental_id_type(datablock: bpy.types.ID) -> Any:
     """Certain datablocks have very specific types.
     This function should return their fundamental type, ie. parent class."""
-    for id_type in ID_CLASS_TO_IDENTIFIER.keys():
-        if isinstance(datablock, id_type):
-            return id_type
+    id_info = get_id_info()
+    for typ, _typ_str, _container_str in id_info:
+        if isinstance(datablock, typ):
+            return typ
 
 
 def get_storage_of_id(datablock: bpy.types.ID) -> 'bpy_prop_collection':
@@ -91,7 +75,11 @@ def get_storage_of_id(datablock: bpy.types.ID) -> 'bpy_prop_collection':
     """
 
     fundamental_type = get_fundamental_id_type(datablock)
-    return getattr(bpy.data, ID_CLASS_TO_STORAGE_NAME[fundamental_type])
+
+    id_info = get_id_info()
+    for typ, _typ_str, container_str in id_info:
+        if fundamental_type == typ:
+            return getattr(bpy.data, container_str)
 
 
 def traverse_collection_tree(
