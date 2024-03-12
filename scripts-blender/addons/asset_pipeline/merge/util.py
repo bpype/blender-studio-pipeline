@@ -36,6 +36,7 @@ ID_INFO = {
     (types.Speaker, 'SPEAKER', 'speakers'),
     (types.Volume, 'VOLUME', 'volumes'),
     (types.GreasePencil, 'GREASEPENCIL', 'grease_pencils'),
+    (types.GreasePencilv3, 'GREASEPENCIL_V3', 'grease_pencils_v3'),
     (types.Curve, 'CURVE', 'curves'),
     (types.LightProbe, 'LIGHT_PROBE', 'lightprobes'),
     (types.MetaBall, 'METABALL', 'metaballs'),
