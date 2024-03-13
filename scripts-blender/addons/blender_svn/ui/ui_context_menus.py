@@ -21,24 +21,26 @@ def svn_file_list_context_menu(self: UIList, context: Context) -> None:
 
     layout = self.layout
     layout.separator()
-    active_file = context.scene.svn.get_repo(context).active_file
+    repo = context.scene.svn.get_repo(context)
+    active_file = repo.active_file
+    file_abs_path = repo.get_file_abspath(active_file)
     if active_file.name.endswith("blend"):
         op = layout.operator("wm.open_mainfile",
                         text=f"Open {active_file.name}")
-        op.filepath = active_file.absolute_path
+        op.filepath = str(file_abs_path)
         op.display_file_selector = False
         op.load_ui = True
         op = layout.operator("wm.open_mainfile",
                         text=f"Open {active_file.name} (Keep UI)")
-        op.filepath = active_file.absolute_path
+        op.filepath = str(file_abs_path)
         op.display_file_selector = False
         op.load_ui = False
 
     else:
         layout.operator("wm.path_open",
-                        text=f"Open {active_file.name}").filepath = str(Path(active_file.absolute_path))
+                        text=f"Open {active_file.name}").filepath = str(file_abs_path)
     layout.operator("wm.path_open",
-                    text=f"Open Containing Folder").filepath = Path(active_file.absolute_path).parent.as_posix()
+                    text=f"Open Containing Folder").filepath = Path(file_abs_path).parent.as_posix()
     layout.separator()
 
 

@@ -114,7 +114,7 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
             split = row.split()
             checkbox_ui = split.row()
             status_ui = split.row()
-            checkbox_ui.prop(file, "include_in_commit", text=file.name)
+            checkbox_ui.prop(file, "include_in_commit", text=file.file_name)
             text = file.status_name
             icon = file.status_icon
             if file.will_conflict:

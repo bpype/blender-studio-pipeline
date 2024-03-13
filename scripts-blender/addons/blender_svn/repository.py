@@ -23,6 +23,18 @@ class SVN_file(PropertyGroup):
         options=set()
     )
 
+    @property
+    def svn_path(self):
+        return self.name
+    
+    @svn_path.setter
+    def svn_path(self, value)
+        self.name = value
+
+    @property
+    def file_name(self):
+        return Path(self.svn_path).name
+
     svn_path: StringProperty(
         name="SVN Path",
         description="Filepath relative to the SVN root",
@@ -78,8 +90,8 @@ class SVN_file(PropertyGroup):
 
     @property
     def is_dir(self):
-        if self.exists():
-            return Path.is_dir(self.absolute_path)
+        if self.exists:
+            return Path(self.absolute_path).is_dir()
         else:
             # This file may not exist locally yet, but it could still exist on the SVN,
             # and in this case we still want to provide a guess as to whether it's a folder or not.
@@ -107,7 +119,7 @@ class SVN_file(PropertyGroup):
 
     @property
     def file_icon(self) -> str:
-        if '.' not in self.name:
+        if self.is_dir:
             return 'FILE_FOLDER'
         extension = self.name.split(".")[-1] if "." in self.name else ""
 
@@ -381,6 +393,10 @@ class SVN_repository(PropertyGroup):
         current = file.revision
         return latest > current
 
+    def get_file_abspath(self, file: SVN_file) -> Path:
+        """Return the absolute path of an SVN file if it were in this repo."""
+        return Path(self.directory) / Path(file.svn_path)
+
     ### SVN File List. ###
     external_files: CollectionProperty(type=SVN_file)
 
@@ -405,27 +421,9 @@ class SVN_repository(PropertyGroup):
         svn_dir = Path(self.directory)
         return svn_dir / svn_path
 
-    def get_file_by_svn_path(self, svn_path: str or Path) -> Optional[SVN_file]:
-        if isinstance(svn_path, Path):
-            # We must use isinstance() instead of type() because apparently
-            # the Path() constructor returns a WindowsPath object on Windows.
-            svn_path = str(svn_path.as_posix())
-
-        for file in self.external_files:
-            if file.svn_path == svn_path:
-                return file
-
     def get_file_by_absolute_path(self, abs_path: str or Path) -> Optional[SVN_file]:
-        if isinstance(abs_path, Path):
-            # We must use isinstance() instead of type() because apparently
-            # the Path() constructor returns a WindowsPath object on Windows.
-            abs_path = str(abs_path.as_posix())
-        else:
-            abs_path = str(Path(abs_path).as_posix())
-
-        for file in self.external_files:
-            if file.absolute_path == abs_path:
-                return file
+        rel_path = str(self.absolute_to_svn_path(abs_path))
+        return self.external_files.get(rel_path)
 
     def get_index_of_file(self, file_entry) -> Optional[int]:
         for i, file in enumerate(self.external_files):
@@ -450,13 +448,13 @@ class SVN_repository(PropertyGroup):
         space = context.space_data
         if space and space.type == 'FILE_BROWSER':
             space.params.directory = Path(self.active_file.absolute_path).parent.as_posix().encode()
-            space.params.filename = self.active_file.name.encode()
+            space.params.filename = self.active_file.file_name.encode()
 
             space.deselect_all()
             # Set the active file in the file browser to whatever was selected 
             # in the SVN Files panel.
             space.activate_file_by_relative_path(       # This doesn't actually work, due to what I assume is a bug.
-                relative_path=self.active_file.name)
+                relative_path=self.active_file.file_name)
             Processes.start('Activate File')            # This is my work-around.
 
         # Set the filter flag of the log entries based on whether they affect the active file or not.
@@ -506,7 +504,7 @@ class SVN_repository(PropertyGroup):
             return False
 
         svn_path = self.absolute_to_svn_path(abs_path)
-        svn_file = self.get_file_by_svn_path(svn_path)
+        svn_file = self.external_files.get(svn_path)
 
         return svn_file
 

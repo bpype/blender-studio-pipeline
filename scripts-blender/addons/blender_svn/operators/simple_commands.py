@@ -68,9 +68,8 @@ class SVN_Operator_Single_File(SVN_Operator):
         return Path.joinpath(Path(repo.directory), Path(self.file_rel_path))
 
     def get_file(self, context) -> "SVN_file":
-        return context.scene.svn.get_repo(context).get_file_by_svn_path(
-            self.file_rel_path
-        )
+        repo = context.scene.svn.get_repo(context)
+        return repo.external_files.get(self.file_rel_path)
 
     def file_exists(self, context) -> bool:
         exists = self.get_file_full_path(context).exists()
@@ -154,9 +153,8 @@ class SVN_OT_update_single(May_Modifiy_Current_Blend, Operator):
 
     def _execute(self, context: Context) -> Set[str]:
         self.will_conflict = False
-        file_entry = context.scene.svn.get_repo(context).get_file_by_svn_path(
-            self.file_rel_path
-        )
+        repo = context.scene.svn.get_repo(context)
+        file_entry = repo.external_files.get(self.file_rel_path)
         if file_entry.status not in ['normal', 'none']:
             self.will_conflict = True
 
@@ -189,9 +187,8 @@ class SVN_OT_download_file_revision(May_Modifiy_Current_Blend, Operator):
     revision: IntProperty(default=0)
 
     def invoke(self, context, event):
-        file_entry = context.scene.svn.get_repo(context).get_file_by_svn_path(
-            self.file_rel_path
-        )
+        repo = context.scene.svn.get_repo(context)
+        file_entry = repo.external_files.get(self.file_rel_path)
         if self.file_is_current_blend(context) and file_entry.status != 'normal':
             self.report(
                 {'ERROR'}, 'You must first revert or commit the changes to this file.'
@@ -200,9 +197,8 @@ class SVN_OT_download_file_revision(May_Modifiy_Current_Blend, Operator):
         return super().invoke(context, event)
 
     def _execute(self, context: Context) -> Set[str]:
-        file_entry = context.scene.svn.get_repo(context).get_file_by_svn_path(
-            self.file_rel_path
-        )
+        repo = context.scene.svn.get_repo(context)
+        file_entry = repo.external_files.get(self.file_rel_path)
         if file_entry.status == 'modified':
             # If file has local modifications, let's avoid a conflict by cancelling
             # and telling the user to resolve it in advance.

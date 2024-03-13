@@ -49,7 +49,7 @@ class SVN_OT_explain_status(Operator):
         if not self.file_rel_path:
             return {'FINISHED'}
         repo = context.scene.svn.get_repo(context)
-        file_entry = repo.get_file_by_svn_path(self.file_rel_path)
+        file_entry = repo.external_files.get(self.file_rel_path)
         file_entry_idx = repo.get_index_of_file(file_entry)
         repo.external_files_active_index = file_entry_idx
         return {'FINISHED'}
@@ -225,17 +225,13 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
 
         wc_status, repos_status, revision = status_info
 
-        file_entry = repo.get_file_by_svn_path(svn_path)
+        file_entry = repo.external_files.get(svn_path)
         entry_existed = True
         if not file_entry:
             entry_existed = False
             file_entry = repo.external_files.add()
             file_entry.svn_path = svn_path_str
-            file_entry.absolute_path = str(
-                repo.svn_to_absolute_path(svn_path).as_posix()
-            )
 
-            file_entry['name'] = svn_path.name
             if not file_entry.exists:
                 new_files_on_repo.add((file_entry.svn_path, repos_status))
 

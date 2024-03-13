@@ -25,7 +25,7 @@ class BGP_SVN_Activate_File(BackgroundProcess):
         for area in context.screen.areas:
             if area.type == 'FILE_BROWSER':
                 area.spaces.active.activate_file_by_relative_path(
-                    relative_path=repo.active_file.name)
+                    relative_path=repo.active_file.file_name)
 
         self.stop()
 
