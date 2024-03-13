@@ -161,16 +161,19 @@ class SVN_file(PropertyGroup):
         default=False
     )
 
-    file_size_KiB: FloatProperty(description="One KibiByte (KiB) is 1024 bytes")
-
-    @property
-    def file_size(self) -> str:
+    def get_file_size(self):
         num = self.file_size_KiB
         for unit in ("KiB", "MiB", "GiB", "TiB", "PiB", "EiB"):
             if num < 1024:
                 return f"{num:3.1f} {unit}"
             num /= 1024.0
         return f"{num:.1f} YiB"
+
+    def update_file_size(self, _context):
+        self.file_size = self.get_file_size()
+
+    file_size_KiB: FloatProperty(description="One KibiByte (KiB) is 1024 bytes", update=update_file_size)
+    file_size: StringProperty(description="File size for displaying in the UI")
 
 
 class SVN_log(PropertyGroup):
@@ -201,39 +204,37 @@ class SVN_log(PropertyGroup):
     changed_files: CollectionProperty(
         type=SVN_file,
         name="Changed Files",
-        description="List of file entries that were affected by this revision"
+        description="List of file entries that were affected by this revision. Note that these are NOT pointers to the actual file entries stored in repository.external_files. These are copies, merely serving to store a file path",
     )
 
     def changes_file(self, file: SVN_file) -> bool:
+        """Return whether the given file is among this log entry's changed files list."""
         for affected_file in self.changed_files:
             if affected_file.svn_path == "/"+file.svn_path:
                 return True
         return False
 
-    matches_filter: BoolProperty(
-        name="Matches Filter",
-        description="Whether the log entry matches the currently typed in search filter",
-        default=True
+    text_to_search: StringProperty(
+        name="Text to Search",
+        description="Text to be used by the search filter. This should be set by calling set_search_string() when the log entry is created, and then never touched again",
     )
 
-    def changed_file(self, svn_path: str) -> bool:
-        for f in self.changed_files:
-            if f.svn_path == "/"+svn_path:
-                return True
-        return False
-
-    @property
-    def text_to_search(self) -> str:
-        """Return a string containing all searchable information about this log entry."""
-        # TODO: For optimization's sake, this shouldn't be a @property, but instead
-        # saved as a proper variable when the log entry is created.
+    def set_search_string(self):
         rev = "r"+str(self.revision_number)
         auth = self.revision_author
         files = " ".join([f.svn_path for f in self.changed_files])
         msg = self.commit_message
         date = self.revision_date_simple
-        return " ".join([rev, auth, files, msg, date]).lower()
 
+        self.text_to_search = " ".join([rev, auth, files, msg, date]).lower()
+
+    # Cached variables; Things that update when active file or search filter changes,
+    # so that they don't have to be re-calculated on each re-draw of the log UI.
+    matches_filter: BoolProperty(
+        name="Matches Filter",
+        description="Whether the log entry matches the currently typed in search filter. This is cached, and should be re-calculated ONLY whenever the search filter changes",
+        default=True,
+    )
     affects_active_file: BoolProperty(
         name="Affects Active File",
         description="Flag set whenever the active file index updates. Used to accelerate drawing performance by moving filtering logic from the drawing code to update callbacks and flags",
@@ -570,6 +571,8 @@ class SVN_repository(PropertyGroup):
 
         # Make sure the active file isn't now being filtered out.
         # If it is, change the active file to the first visible one.
+        if self.active_file.show_in_filelist:
+            return
         for i, file in enumerate(self.external_files):
             if file.show_in_filelist:
                 self.external_files_active_index = i

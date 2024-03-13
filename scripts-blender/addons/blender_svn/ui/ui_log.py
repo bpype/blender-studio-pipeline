@@ -27,7 +27,7 @@ class SVN_UL_log(UIList):
         if item.revision_number == active_file.revision:
             num.operator('svn.tooltip_log', text="", icon='LAYER_ACTIVE',
                          emboss=False).log_rev = log_entry.revision_number
-        elif log_entry.changed_file(active_file.svn_path):
+        elif log_entry.changes_file(active_file):
             get_older = num.operator(
                 'svn.download_file_revision', text="", icon='IMPORT', emboss=False)
             get_older.revision = log_entry.revision_number

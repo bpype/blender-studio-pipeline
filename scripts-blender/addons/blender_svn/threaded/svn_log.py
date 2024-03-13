@@ -79,6 +79,7 @@ def reload_svn_log(self, context):
             log_file_entry.status = constants.SVN_STATUS_CHAR_TO_NAME[status_char]
 
         log_entry['commit_message'] = "\n".join(chunk[-r_msg_length:])
+        log_entry.set_search_string()
 
 
 def write_to_svn_log_file_and_storage(context, data_str: str) -> int:
