@@ -1,6 +1,6 @@
-import bpy
+import bpy, os
 from bpy import types
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Any
 
 
 # List of datablock type information tuples:
@@ -45,8 +45,32 @@ ID_TYPE_ENUM_ITEMS: List[Tuple[str, str, str, str, int]] = get_datablock_types_e
 # Map datablock type enum strings to their name and icon strings.
 ID_TYPE_INFO: Dict[str, Tuple[str, str]] = {tup[0] : (tup[1], tup[3]) for tup in ID_TYPE_ENUM_ITEMS}
 
+def get_datablock_icon(id) -> str:
+	id_type = get_fundamental_id_type(id)[1]
+	return ID_TYPE_INFO[id_type][1]
 
-def get_id(name, type, libpath=None):
-	container = get_id_storage_by_type_str(type)
-	id = container.get((name, libpath))
-	return id
+
+def get_fundamental_id_type(datablock: bpy.types.ID) -> Tuple[Any, str]:
+	"""Certain datablocks have very specific types.
+	This function should return their fundamental type, ie. parent class."""
+	id_info = get_id_info()
+	for typ, typ_str, _container_str in id_info:
+		if isinstance(datablock, typ):
+			return typ, typ_str
+
+def get_id(id_name: str, id_type: str, lib_path="") -> bpy.types.ID:
+	container = get_id_storage_by_type_str(id_type)
+	if lib_path and lib_path != 'Local Data':
+		return container.get((id_name, lib_path))
+	return container.get((id_name, None))
+
+### Library utilities
+def get_library_icon(lib_path: str) -> str:
+	"""Return the library or the broken library icon, as appropriate."""
+	if lib_path == 'Local Data':
+		return 'FILE_BLEND'
+	filepath = os.path.abspath(bpy.path.abspath(lib_path))
+	if not os.path.exists(filepath):
+		return 'LIBRARY_DATA_BROKEN'
+
+	return 'LIBRARY_DATA_DIRECT'

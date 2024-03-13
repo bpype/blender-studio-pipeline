@@ -6,7 +6,7 @@ from bpy_extras import id_map_utils
 
 from .relink_overridden_asset import OUTLINER_OT_relink_overridden_asset, outliner_get_active_id
 from .. import hotkeys
-from ..util import get_datablock_icon, get_library_icon, ID_CLASS_TO_STORAGE, ID_CLASS_TO_IDENTIFIER
+from ..id_types import get_datablock_icon, get_library_icon, get_id_storage_by_type_str
 
 
 ### Pie Menu UI
@@ -32,17 +32,13 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
         id = self.get_id(context)
         if id:
             # ^
-            id_type = ID_CLASS_TO_IDENTIFIER.get(type(id))
-            if id_type:
-                remap = pie.operator(
-                    'outliner.remap_users', icon='FILE_REFRESH', text="Remap Users"
-                )
-                remap.id_type = id_type
-                remap.id_name_source = id.name
-                if id.library:
-                    remap.library_path_source = id.library.filepath
-            else:
-                pie.label(text="Cannot remap unknwon ID type: " + str(type(id)))
+            remap = pie.operator(
+                'outliner.remap_users', icon='FILE_REFRESH', text="Remap Users"
+            )
+            remap.id_type = id.id_type
+            remap.id_name_source = id.name
+            if id.library:
+                remap.library_path_source = id.library.filepath
 
             # ^>
             id = OUTLINER_OT_relink_overridden_asset.get_id(context)
@@ -143,9 +139,9 @@ class RelationshipOperatorMixin:
             op_row = row.row()
             op = op_row.operator(type(self).bl_idname, text="", icon='LOOP_FORWARDS')
             op.datablock_name = user.name
-            storage = ID_CLASS_TO_STORAGE.get(type(user))
+            storage = get_id_storage_by_type_str(user.id_type)
             if not storage:
-                print("Error: Can't find storage: ", type(user))
+                print("Error: Can't find storage: ", user.name, user.id_type)
             op.datablock_storage = storage
             if user.library:
                 op.library_filepath = user.library.filepath
