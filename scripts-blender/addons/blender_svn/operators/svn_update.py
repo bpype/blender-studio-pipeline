@@ -71,10 +71,10 @@ class SVN_OT_update_all(May_Modifiy_Current_Blend, Operator):
         super().draw(context)
 
     def execute(self, context: Context) -> Set[str]:
-        self.set_predicted_file_statuses(context)
         Processes.stop('Status')
         if self.reload_file:
-            command = ["svn", "up", "--accept", "postpone"]
+            current_file = context.scene.svn.get_repo(context).current_blend_file
+            command = ["svn", "up", current_file.svn_path, "--accept", "postpone"]
             if self.revision > 0:
                 command.insert(2, f"-r{self.revision}")
             self.execute_svn_command(
@@ -84,35 +84,10 @@ class SVN_OT_update_all(May_Modifiy_Current_Blend, Operator):
             )
             bpy.ops.wm.open_mainfile(filepath=bpy.data.filepath, load_ui=False)
             Processes.start('Log')
-        else:
-            Processes.start('Update', revision=self.revision)
+
+        Processes.start('Update', revision=self.revision)
 
         return {"FINISHED"}
-
-    def set_predicted_file_statuses(self, context):
-        repo = context.scene.svn.get_repo(context)
-        if self.revision != 0:
-            # File status prediction is not supported for reverting the entire
-            # repository. It would be complicated to implement, and not really useful.
-            return
-        for f in repo.external_files:
-            status_predict_flag_bkp = f.status_prediction_type
-            f.status_prediction_type = "SVN_UP"
-            if f.repos_status == 'modified' and f.status == 'normal':
-                # Modified on remote, exists on local.
-                f.repos_status = 'none'
-            elif f.repos_status == 'added' and f.status == 'none':
-                # Added on remote, doesn't exist on local.
-                f.status = 'normal'
-            elif f.repos_status == 'deleted' and f.status == 'normal':
-                # Deleted on remote, exists on local.
-                # NOTE: File entry should just be deleted.
-                f.status = 'none'
-                f.repos_status = 'none'
-            elif f.repos_status == 'none':
-                f.status_prediction_type = status_predict_flag_bkp
-            else:
-                f.status = 'conflicted'
 
 
 registry = [

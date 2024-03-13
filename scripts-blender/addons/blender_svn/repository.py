@@ -5,7 +5,14 @@ from pathlib import Path
 
 import bpy
 from bpy.types import PropertyGroup
-from bpy.props import StringProperty, BoolProperty, CollectionProperty, IntProperty, EnumProperty
+from bpy.props import (
+    StringProperty,
+    BoolProperty,
+    CollectionProperty,
+    IntProperty,
+    EnumProperty,
+    FloatProperty,
+)
 
 from .threaded import svn_log
 from .threaded.background_process import Processes
@@ -26,20 +33,15 @@ class SVN_file(PropertyGroup):
     @property
     def svn_path(self):
         return self.name
-    
+
     @svn_path.setter
-    def svn_path(self, value)
+    def svn_path(self, value):
         self.name = value
 
     @property
     def file_name(self):
         return Path(self.svn_path).name
 
-    svn_path: StringProperty(
-        name="SVN Path",
-        description="Filepath relative to the SVN root",
-        options=set()
-    )
     absolute_path: StringProperty(
         name="Absolute Path",
         description="Absolute filepath",
@@ -121,19 +123,30 @@ class SVN_file(PropertyGroup):
     def file_icon(self) -> str:
         if self.is_dir:
             return 'FILE_FOLDER'
-        extension = self.name.split(".")[-1] if "." in self.name else ""
+        extension = Path(self.svn_path).suffix
 
-        if extension in ['abc']:
+        if extension in ['.abc']:
             return 'FILE_CACHE'
-        elif extension in ['blend', 'blend1']:
+        elif 'blend' in extension:
             return 'FILE_BLEND'
-        elif extension in ['tga', 'bmp', 'tif', 'tiff', 'tga', 'png', 'dds', 'jpg', 'exr', 'hdr']:
+        elif extension in [
+            '.tga',
+            '.bmp',
+            '.tif',
+            '.tiff',
+            '.tga',
+            '.png',
+            '.dds',
+            '.jpg',
+            '.exr',
+            '.hdr',
+        ]:
             return 'TEXTURE'
-        elif extension in ['psd', 'kra']:
+        elif extension in ['.psd', '.kra']:
             return 'IMAGE_DATA'
-        elif extension in ['mp4', 'mov']:
+        elif extension in ['.mp4', '.mov']:
             return 'SEQUENCE'
-        elif extension in ['mp3', 'ogg', 'wav']:
+        elif extension in ['.mp3', '.ogg', '.wav']:
             return 'SPEAKER'
 
         return 'QUESTION'
@@ -147,6 +160,17 @@ class SVN_file(PropertyGroup):
         description="Flag indicating whether this file should be drawn in the file list. This flag is updated for every file whenever the file search string is modified. If we did this filtering during drawing time, it is painfully slow",
         default=False
     )
+
+    file_size_KiB: FloatProperty(description="One KibiByte (KiB) is 1024 bytes")
+
+    @property
+    def file_size(self) -> str:
+        num = self.file_size_KiB
+        for unit in ("KiB", "MiB", "GiB", "TiB", "PiB", "EiB"):
+            if num < 1024:
+                return f"{num:3.1f} {unit}"
+            num /= 1024.0
+        return f"{num:.1f} YiB"
 
 
 class SVN_log(PropertyGroup):
@@ -413,7 +437,10 @@ class SVN_repository(PropertyGroup):
         if type(absolute_path) == str:
             absolute_path = Path(absolute_path)
         svn_dir = Path(self.directory)
-        return absolute_path.relative_to(svn_dir)
+        try:
+            return absolute_path.relative_to(svn_dir)
+        except ValueError:
+            return None
 
     def svn_to_absolute_path(self, svn_path: Path) -> Path:
         if type(svn_path) == str:
@@ -423,7 +450,8 @@ class SVN_repository(PropertyGroup):
 
     def get_file_by_absolute_path(self, abs_path: str or Path) -> Optional[SVN_file]:
         rel_path = str(self.absolute_to_svn_path(abs_path))
-        return self.external_files.get(rel_path)
+        if rel_path:
+            return self.external_files.get(rel_path)
 
     def get_index_of_file(self, file_entry) -> Optional[int]:
         for i, file in enumerate(self.external_files):
@@ -451,7 +479,7 @@ class SVN_repository(PropertyGroup):
             space.params.filename = self.active_file.file_name.encode()
 
             space.deselect_all()
-            # Set the active file in the file browser to whatever was selected 
+            # Set the active file in the file browser to whatever was selected
             # in the SVN Files panel.
             space.activate_file_by_relative_path(       # This doesn't actually work, due to what I assume is a bug.
                 relative_path=self.active_file.file_name)

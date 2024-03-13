@@ -6,6 +6,7 @@ import bpy
 
 def draw_outdated_file_warning(self, context):
     repo = context.scene.svn.get_repo(context)
+    current_file = None
     if not repo:
         return
     try:

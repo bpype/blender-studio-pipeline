@@ -182,7 +182,7 @@ def draw_svn_log(context, layout):
     for f in active_log.changed_files:
         row = col.row()
         split = row.split(factor=0.90)
-        split.prop(f, 'svn_path', emboss=False, text="", icon=f.file_icon)
+        split.prop(f, 'name', emboss=False, text="", icon=f.file_icon)
         row = split.row()
         row.alignment = 'RIGHT'
         row.operator('svn.explain_status', text="",

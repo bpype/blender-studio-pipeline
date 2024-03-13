@@ -51,7 +51,8 @@ class SVN_OT_explain_status(Operator):
         repo = context.scene.svn.get_repo(context)
         file_entry = repo.external_files.get(self.file_rel_path)
         file_entry_idx = repo.get_index_of_file(file_entry)
-        repo.external_files_active_index = file_entry_idx
+        if file_entry_idx:
+            repo.external_files_active_index = file_entry_idx
         return {'FINISHED'}
 
 
@@ -134,6 +135,7 @@ class BGP_SVN_Status(BackgroundProcess):
 
     def __init__(self):
         self.timestamp_last_update = 0
+        self.list_command_output = ""
         super().__init__()
 
     def acquire_output(self, context, prefs):
@@ -142,9 +144,24 @@ class BGP_SVN_Status(BackgroundProcess):
             ["svn", "status", "--show-updates", "--verbose", "--xml"],
             use_cred=True,
         )
+        # The list command includes file size info and also files of directories
+        # which have their Depth set to Empty, which is used for a partial check-out,
+        # which we also use for updating files and folders one-by-one instead of
+        # all-at-once, so we can provide more live feedback in the UI.
+        # NOTE: This one-by-one updating functionality conflicts with a potential
+        # future support for partial check-outs, so that would require storing user-intended
+        # partially checked out folders separately somewhere.
+        self.list_command_output = execute_svn_command(
+            context,
+            ["svn", "list", "--recursive", "--xml"],
+            use_cred=True,
+        )
 
     def process_output(self, context, prefs):
-        update_file_list(context, get_repo_file_statuses(self.output))
+        repo = context.scene.svn.get_repo(context)
+        update_file_list_svn_status(context, svn_status_xml_to_dict(self.output))
+        update_file_list_svn_list(context, self.list_command_output)
+        repo.refresh_ui_lists(context)
         self.timestamp_last_update = time.time()
 
     def get_ui_message(self, context):
@@ -199,7 +216,7 @@ class BGP_SVN_Authenticate(BGP_SVN_Status):
         Processes.start('Log')
 
 
-def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
+def update_file_list_svn_status(context, file_statuses: Dict[str, Tuple[str, str, int]]):
     """Update the file list based on data from get_svn_file_statuses().
     (See timer_update_svn_status)"""
     repo = context.scene.svn.get_repo(context)
@@ -208,7 +225,7 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
     new_files_on_repo = set()
     for filepath_str, status_info in file_statuses.items():
         svn_path = Path(filepath_str)
-        svn_path_str = str(svn_path.as_posix())
+        svn_path_str = str(filepath_str)
         suffix = svn_path.suffix
         if (
             (suffix.startswith(".r") and suffix[2:].isdecimal())
@@ -225,7 +242,7 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
 
         wc_status, repos_status, revision = status_info
 
-        file_entry = repo.external_files.get(svn_path)
+        file_entry = repo.external_files.get(svn_path_str)
         entry_existed = True
         if not file_entry:
             entry_existed = False
@@ -244,6 +261,7 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
         file_entry.status = wc_status
         file_entry.repos_status = repos_status
         file_entry.status_prediction_type = 'NONE'
+        file_entry.absolute_path = str(repo.svn_to_absolute_path(svn_path))
 
     if new_files_on_repo:
         # File entry status has changed between local and repo.
@@ -265,10 +283,8 @@ def update_file_list(context, file_statuses: Dict[str, Tuple[str, str, int]]):
         if file_entry.svn_path not in svn_paths:
             repo.remove_file_entry(file_entry)
 
-    repo.refresh_ui_lists(context)
 
-
-def get_repo_file_statuses(svn_status_str: str) -> Dict[str, Tuple[str, str, int]]:
+def svn_status_xml_to_dict(svn_status_str: str) -> Dict[str, Tuple[str, str, int]]:
     svn_status_xml = xmltodict.parse(svn_status_str)
     file_infos = svn_status_xml['status']['target']['entry']
     # print(json.dumps(file_infos, indent=4))
@@ -303,6 +319,28 @@ def get_repo_file_statuses(svn_status_str: str) -> Dict[str, Tuple[str, str, int
         file_statuses[filepath] = (wc_status, repos_status, commit_revision)
 
     return file_statuses
+
+
+def update_file_list_svn_list(context, svn_list_str: str) -> Dict:
+    repo = context.scene.svn.get_repo(context)
+    svn_list_xml = xmltodict.parse(svn_list_str)
+
+    file_infos = svn_list_xml['lists']['list']['entry']
+
+    for file_info in file_infos:
+        svn_path = file_info['name']
+        kind = file_info['@kind']
+        file_entry = repo.external_files.get(svn_path)
+        if not file_entry:
+            file_entry = repo.external_files.add()
+            file_entry.svn_path = svn_path
+            file_entry.absolute_path = str(repo.svn_to_absolute_path(svn_path))
+        if not file_entry.exists:
+            file_entry.status = 'none'
+            file_entry.repos_status = 'added'
+            file_entry.status_prediction_type = 'NONE'
+        if kind == 'file':
+            file_entry.file_size_KiB = float(file_info['size']) / 1024.0
 
 
 @bpy.app.handlers.persistent

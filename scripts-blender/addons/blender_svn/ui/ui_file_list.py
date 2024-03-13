@@ -43,11 +43,10 @@ class SVN_UL_file_list(UIList):
         ops_ui.enabled = file_entry.status_prediction_type == 'NONE' and not prefs.is_busy
 
         if self.show_file_paths:
-            filepath_ui.prop(file_entry, 'svn_path', text="",
-                             emboss=False, icon=file_entry.file_icon)
-        else:
             filepath_ui.prop(file_entry, 'name', text="",
                              emboss=False, icon=file_entry.file_icon)
+        else:
+            filepath_ui.label(text=file_entry.file_name, icon=file_entry.file_icon)
 
         statuses = [file_entry.status]
         # SVN operations
@@ -113,7 +112,6 @@ class SVN_UL_file_list(UIList):
                 'svn.explain_status', text="", icon=icon, emboss=False)
             explainer.status = status
             explainer.file_rel_path = file_entry.svn_path
-
 
     @classmethod
     def cls_filter_items(cls, context, data, propname):
