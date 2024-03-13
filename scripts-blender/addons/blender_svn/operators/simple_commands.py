@@ -109,6 +109,8 @@ class May_Modifiy_Current_Blend(SVN_Operator_Single_File, Warning_Operator):
         current_blend = context.scene.svn.get_repo(context).current_blend_file
         return current_blend and current_blend.svn_path == self.file_rel_path
 
+    set_outdated_flag = True
+
     reload_file: BoolProperty(
         name="Reload File (Keep UI)",
         description="Reload the file after the operation is completed. The UI layout will be preserved",
@@ -136,7 +138,7 @@ class May_Modifiy_Current_Blend(SVN_Operator_Single_File, Warning_Operator):
         super().execute(context)
         if self.reload_file:
             bpy.ops.wm.open_mainfile(filepath=bpy.data.filepath, load_ui=False)
-        elif self.file_is_current_blend(context):
+        elif self.file_is_current_blend(context) and self.set_outdated_flag:
             context.scene.svn.file_is_outdated = True
         return {'FINISHED'}
 
@@ -390,6 +392,8 @@ class SVN_OT_resolve_conflict(May_Modifiy_Current_Blend, Operator):
     bl_description = "Resolve a conflict, by discarding either local or remote changes"
     bl_options = {'INTERNAL'}
 
+    set_outdated_flag = False
+
     resolve_method: EnumProperty(
         name="Resolve Method",
         description="Method to use to resolve the conflict",
@@ -438,6 +442,10 @@ class SVN_OT_resolve_conflict(May_Modifiy_Current_Blend, Operator):
                 f"{self.resolve_method}",
             ],
         )
+        if self.file_is_current_blend(context):
+            # If user wants to keep their changes to the current file,
+            # remove the outdated file warning UI.
+            context.scene.svn.file_is_outdated = self.resolve_method != 'mine-full'
 
         return {"FINISHED"}
 
