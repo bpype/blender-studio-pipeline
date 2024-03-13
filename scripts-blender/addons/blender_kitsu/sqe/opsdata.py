@@ -189,10 +189,8 @@ def upload_preview(
     comment_obj = task.add_comment(task_status, comment=comment)
 
     # Add_preview_to_comment.
-    preview = task.add_preview_to_comment(comment_obj, filepath.as_posix())
+    task.add_preview_to_comment(comment_obj, filepath.as_posix())
 
-    # Preview.set_main_preview().
-    preview.set_main_preview()
     logger.info(f"Uploaded preview for shot: {shot.name} under: {task_type.name}")
 
 

@@ -314,7 +314,6 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
             self.thumbnail_frame_final,
         )
 
-        # Preview.set_main_preview()
         logger.info(
             f"Uploaded playblast for shot: {entity.name} under: {task_type.name}"
         )

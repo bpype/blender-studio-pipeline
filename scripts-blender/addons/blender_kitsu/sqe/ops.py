@@ -1562,7 +1562,6 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
         # Add_preview_to_comment
         task.add_preview_to_comment(comment, filepath.as_posix())
 
-        # Preview.set_main_preview()
         logger.info(f"Uploaded render for shot: {shot.name} under: {task_type.name}")
 
 

@@ -947,8 +947,10 @@ class Task(Entity):
         preview_dict = gazu.task.add_preview(
             asdict(self), asdict(comment), preview_file_path, normalize_movie=False
         )
-        gazu.task.set_main_preview(preview_dict["id"], frame_number)
-        return Preview.from_dict(preview_dict)
+
+        preview = Preview.from_dict(preview_dict)
+        preview.set_main_preview(frame_number)
+        return preview
 
     def __bool__(self) -> bool:
         return bool(self.id)
@@ -1049,6 +1051,7 @@ class Preview(BaseDataClass):
     created_at: str = ""
     updated_at: str = ""
     name: str = ""
+    duration: Optional[float] = None
     original_name: Optional[str] = None
     revision: int = 2
     position: int = 2
@@ -1069,8 +1072,20 @@ class Preview(BaseDataClass):
     uploaded_movie_name: Optional[str] = None
     type: str = ""
 
-    def set_main_preview(self):
-        gazu.task.set_main_preview(asdict(self), 0)
+    @property
+    def is_image_file(self):
+        # Kitsu doesn't seem to return 'is_movie' as True in any case
+        # This is custom logic to determine if file is image or movie
+        if self.duration == 0.0:
+            return True
+        return False
+
+    def set_main_preview(self, frame_number=0):
+        if self.is_image_file:
+            # When setting image as preview, cannot pass frame number
+            gazu.task.set_main_preview(asdict(self))
+        else:
+            gazu.task.set_main_preview(asdict(self), frame_number)
 
     def __bool__(self) -> bool:
         return bool(self.id)
