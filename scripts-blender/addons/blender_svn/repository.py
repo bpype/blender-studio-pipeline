@@ -459,7 +459,14 @@ class SVN_repository(PropertyGroup):
             if file == file_entry:
                 return i
 
-    def update_active_file(self, context):
+    def force_update_ui_caches(self, context):
+        """Update UI caches even if the active file index hasn't changed.
+        This is used when loading a file.
+        """
+        self.prev_external_files_active_index = -1
+        self.update_ui_caches(context)
+
+    def update_ui_caches(self, context):
         """When user clicks on a different file, the latest log entry of that file
         should become the active log entry.
         NOTE: Try to only trigger this on explicit user actions!
@@ -501,8 +508,8 @@ class SVN_repository(PropertyGroup):
     external_files_active_index: IntProperty(
         name="File List",
         description="Files tracked by SVN",
-        update=update_active_file,
-        options=set()
+        update=update_ui_caches,
+        options=set(),
     )
 
     @property

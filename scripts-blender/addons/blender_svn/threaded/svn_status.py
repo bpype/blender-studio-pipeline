@@ -97,6 +97,8 @@ def ensure_svn_of_current_file(_scene=None):
         # If file is in a non-existing repo, initialize that repo.
         prefs.init_repo(context, scene_svn.svn_directory)
 
+    context.scene.svn.get_repo(context).force_update_ui_caches(context)
+
 
 def set_scene_svn_info(context) -> bool:
     """Check if the current .blend file is in an SVN repository.
