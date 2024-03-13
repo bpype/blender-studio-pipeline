@@ -1527,9 +1527,6 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
         cache.sequence_active_set_by_id(context, metadata_strip.kitsu.sequence_id)
         cache.shot_active_set_by_id(context, metadata_strip.kitsu.shot_id)
 
-        # Save playblast task status id for next time.
-        context.scene.kitsu.playblast_task_status_id = self.task_status
-
         # Upload render
         self._upload_render(context, Path(bpy.path.abspath(active_strip.filepath)))
 

@@ -253,7 +253,10 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         self.thumbnail_frame = context.scene.frame_current
 
         prev_task_status_id = context.scene.kitsu.playblast_task_status_id
-        if prev_task_status_id:
+
+        # Only use prev_task_status_id if it exists in the task statuses enum list
+        valid_ids = [status[0] for status in cache.get_all_task_statuses_enum(self, context)]
+        if prev_task_status_id in valid_ids:
             self.task_status = prev_task_status_id
         else:
             # Find todo.
