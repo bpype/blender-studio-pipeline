@@ -41,8 +41,8 @@ from ..types import (
     TaskType,
 )
 from ..playblast.core import (
-    playblast_with_shading_settings,
-    playblast_user_shading_settings,
+    playblast_with_scene_settings,
+    playblast_with_viewport_settings,
     playblast_vse,
 )
 from ..context import core as context_core
@@ -55,9 +55,10 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
     bl_idname = "kitsu.playblast_create"
     bl_label = "Create Playblast"
     bl_description = (
-        "Creates an openGl render of the window in which the operator was triggered. "
+        "Creates render either from viewport in which operator was triggered"
+        "or renderes with the current scene's render settings"
         "Saves the set version to disk and uploads it to Kitsu with the specified "
-        "comment and task type. Overrides some render settings during export. "
+        "comment and task type."
         "Opens web browser or VSE after playblast if set in addon preferences"
     )
 
@@ -70,9 +71,6 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
 
     task_status: bpy.props.EnumProperty(items=cache.get_all_task_statuses_enum)  # type: ignore
 
-    use_user_shading: bpy.props.BoolProperty(
-        name="Use Current Viewport Shading", default=True
-    )
     thumbnail_frame: bpy.props.IntProperty(
         name="Thumbnail Frame",
         description="Frame to use as the thumbnail on Kitsu",
@@ -115,6 +113,8 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         addon_prefs = prefs.addon_prefs_get(context)
+        kitsu_scene_props = context.scene.kitsu
+        render_mode = kitsu_scene_props.playblast_render_mode
 
         if not self.task_status:
             self.report({"ERROR"}, "Failed to create playblast. Missing task status")
@@ -137,28 +137,23 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         entity = self._get_active_entity(context)
 
         # Save playblast task status id for next time.
-        context.scene.kitsu.playblast_task_status_id = self.task_status
+        kitsu_scene_props.playblast_task_status_id = self.task_status
 
         logger.info("-START- Creating Playblast")
 
         context.window_manager.progress_begin(0, 2)
         context.window_manager.progress_update(0)
 
+        playblast_file = kitsu_scene_props.playblast_file
+
         # Render and save playblast
         if self.is_vse(context):
-            output_path = playblast_vse(
-                self, context, context.scene.kitsu.playblast_file
-            )
+            output_path = playblast_vse(self, context, playblast_file)
         else:
-            if self.use_user_shading:
-                output_path = playblast_user_shading_settings(
-                    self, context, context.scene.kitsu.playblast_file
-                )
-            else:
-                # Get output path.
-                output_path = playblast_with_shading_settings(
-                    self, context, context.scene.kitsu.playblast_file
-                )
+            if render_mode == "VIEWPORT":
+                output_path = playblast_with_viewport_settings(self, context, playblast_file)
+            else:  # render_mode == "SCENE"
+                output_path = playblast_with_scene_settings(self, context, playblast_file)
 
         context.window_manager.progress_update(1)
 
@@ -268,14 +263,13 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
-        row = layout.row(align=True)
-        row.prop(self, "task_status", text="Status")
-        row = layout.row(align=True)
-        row.prop(self, "comment")
-        row = layout.row(align=True)
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        layout.prop(self, "task_status", text="Status")
+        layout.prop(self, "comment")
+        layout.prop(self, "thumbnail_frame")
         if not self.is_vse(context):
-            row.prop(self, "use_user_shading")
-        row.prop(self, "thumbnail_frame")
+            layout.prop(context.scene.kitsu, "playblast_render_mode", text="Render Mode")
 
     def _upload_playblast(self, context: bpy.types.Context, filepath: Path) -> None:
         entity = self._get_active_entity(context)

@@ -218,63 +218,32 @@ def override_viewport_shading(self, context):
         sps.show_specular_highlight = show_specular_highlight
 
 
-def playblast_with_shading_settings(self, context, file_path):
-    # Render and save playblast
+def ensure_render_path(file_path: str) -> Path:
+    output_path = Path(file_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    return output_path
+
+
+def playblast_with_scene_settings(self, context, file_path):
     with override_render_path(self, context, file_path):
-        with override_render_format(
-            self,
-            context,
-        ):
-            with override_metadata_stamp_settings(self, context):
-                with override_hide_viewport_gizmos(self, context):
-                    with override_viewport_shading(self, context):
-                        # Get output path.
-                        output_path = Path(file_path)
-
-                        # Ensure folder exists.
-                        Path(context.scene.kitsu.playblast_dir).mkdir(
-                            parents=True, exist_ok=True
-                        )
-
-                        # Make opengl render.
-                        bpy.ops.render.opengl(animation=True)
-                        return output_path
+        with override_render_format(self, context):
+            output_path = ensure_render_path(file_path)
+            bpy.ops.render.render(animation=True, use_viewport=False)
+            return output_path
 
 
-def playblast_user_shading_settings(self, context, file_path):
-    # Render and save playblast
+def playblast_with_viewport_settings(self, context, file_path):
     with override_render_path(self, context, file_path):
-        with override_render_format(
-            self,
-            context,
-        ):
-            with override_metadata_stamp_settings(self, context):
-                with override_hide_viewport_gizmos(self, context):
-                    # Get output path.
-                    output_path = Path(file_path)
-
-                    # Ensure folder exists.
-                    Path(context.scene.kitsu.playblast_dir).mkdir(
-                        parents=True, exist_ok=True
-                    )
-
-                    # Make opengl render.
-                    bpy.ops.render.opengl(animation=True)
-                    return output_path
+        with override_render_format(self, context):
+            output_path = ensure_render_path(file_path)
+            bpy.ops.render.opengl(animation=True)
+            return output_path
 
 
 def playblast_vse(self, context, file_path):
     with override_render_path(self, context, file_path):
-        with override_render_format(
-            self,
-            context,
-        ):
-            output_path = Path(file_path)
-
-            # Ensure folder exists.
-            Path(context.scene.kitsu.playblast_dir).mkdir(parents=True, exist_ok=True)
-
-            # Make opengl render.
+        with override_render_format(self, context):
+            output_path = ensure_render_path(file_path)
             bpy.ops.render.opengl(animation=True, sequencer=True)
             return output_path
 
