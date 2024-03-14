@@ -139,7 +139,7 @@ class RelationshipOperatorMixin:
             op_row = row.row()
             op = op_row.operator(type(self).bl_idname, text="", icon='LOOP_FORWARDS')
             op.datablock_name = user.name
-            storage = get_id_storage_by_type_str(user.id_type)
+            storage = get_id_storage_by_type_str(user.id_type)[1]
             if not storage:
                 print("Error: Can't find storage: ", user.name, user.id_type)
             op.datablock_storage = storage

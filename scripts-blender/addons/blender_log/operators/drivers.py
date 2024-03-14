@@ -1,5 +1,44 @@
 import bpy
 from bpy.props import StringProperty, IntProperty
+from bpy.types import Object
+
+from typing import List
+
+
+def report_leftover_drivers(context, objects: List[Object]):
+    blenlog = context.scene.blender_log
+
+    category = 'Leftover Driver'
+    blenlog.clear_category(category)
+
+    counter = 0
+    for obj in objects:
+        if obj.library or obj.override_library:
+            continue
+        if not obj.animation_data:
+            continue
+        for driver in obj.animation_data.drivers:
+            try:
+                obj.path_resolve(driver.data_path)
+            except ValueError:
+                # If the RNA path of the driver fails to resolve to some value,
+                # that means the driver is pointing at nothing; A deleted modifier,
+                # constraint, bone, whatever.
+                blenlog.add(
+                    description=f"Driver RNA path leads to nothing: '{driver.data_path}'.\nThis can happen when removing modifiers, constraints, bones, etc. that previously had drivers on them. Such driver can be safely deleted, else they will spam the console.",
+                    icon='DRIVER_TRANSFORM',
+                    name=obj.name,
+                    category=category,
+                    operator=BLENLOG_OT_delete_driver.bl_idname,
+                    op_kwargs={
+                        'object_name': obj.name,
+                        'driver_path': driver.data_path,
+                        'array_index': driver.array_index,
+                    },
+                )
+                counter += 1
+
+    return counter
 
 
 class BLENLOG_OT_report_leftover_drivers(bpy.types.Operator):
@@ -10,37 +49,7 @@ class BLENLOG_OT_report_leftover_drivers(bpy.types.Operator):
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        blenlog = context.scene.blender_log
-
-        category = 'Leftover Driver'
-        blenlog.clear_category(category)
-
-        counter = 0
-        for obj in bpy.data.objects:
-            if obj.library or obj.override_library:
-                continue
-            if not obj.animation_data:
-                continue
-            for driver in obj.animation_data.drivers:
-                try:
-                    obj.path_resolve(driver.data_path)
-                except ValueError:
-                    # If the RNA path of the driver fails to resolve to some value,
-                    # that means the driver is pointing at nothing; A deleted modifier,
-                    # constraint, bone, whatever.
-                    blenlog.add(
-                        description=f"Driver RNA path leads to nothing: '{driver.data_path}'.\nThis can happen when removing modifiers, constraints, bones, etc. that previously had drivers on them. Such driver can be safely deleted, else they will spam the console.",
-                        icon='DRIVER_TRANSFORM',
-                        name=obj.name,
-                        category=category,
-                        operator=BLENLOG_OT_delete_driver.bl_idname,
-                        op_kwargs={
-                            'object_name': obj.name,
-                            'driver_path': driver.data_path,
-                            'array_index': driver.array_index,
-                        },
-                    )
-                    counter += 1
+        counter = report_leftover_drivers(context, bpy.data.objects)
 
         if counter > 0:
             self.report({'WARNING'}, f"Found {counter} left-over drivers.")

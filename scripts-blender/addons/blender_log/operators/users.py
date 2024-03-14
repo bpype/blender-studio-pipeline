@@ -82,7 +82,7 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
         remap_targets = context.scene.remap_targets
         remap_targets.clear()
         source_id = get_id(self.id_name_source, self.id_type, self.library_path_source)
-        for id in get_id_storage_by_type_str(self.id_type):
+        for id in get_id_storage_by_type_str(self.id_type)[0]:
             if id == source_id:
                 continue
             if (self.library_path == 'Local Data' and not id.library) or (
@@ -126,7 +126,7 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
                     lib_entry.name = lib.filepath
                     break
         if source_id.name[-4] == ".":
-            storage = get_id_storage_by_type_str(self.id_type)
+            storage = get_id_storage_by_type_str(self.id_type)[0]
             suggestion = storage.get(source_id.name[:-4])
             if suggestion:
                 self.id_name_target = suggestion.name

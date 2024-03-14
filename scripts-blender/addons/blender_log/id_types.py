@@ -22,7 +22,8 @@ def get_id_info() -> List[Tuple[type, str, str]]:
 def get_id_storage_by_type_str(typ_name: str):
 	for typ, typ_str, container_str in get_id_info():
 		if typ_str == typ_name:
-			return getattr(bpy.data, container_str)
+			return getattr(bpy.data, container_str), container_str
+
 
 def get_datablock_types_enum_items() -> List[Tuple[str, str, str, str, int]]:
 	"""Return the items needed to define an EnumProperty representing a datablock type selector."""
@@ -59,7 +60,7 @@ def get_fundamental_id_type(datablock: bpy.types.ID) -> Tuple[Any, str]:
 			return typ, typ_str
 
 def get_id(id_name: str, id_type: str, lib_path="") -> bpy.types.ID:
-	container = get_id_storage_by_type_str(id_type)
+	container = get_id_storage_by_type_str(id_type)[0]
 	if lib_path and lib_path != 'Local Data':
 		return container.get((id_name, lib_path))
 	return container.get((id_name, None))
