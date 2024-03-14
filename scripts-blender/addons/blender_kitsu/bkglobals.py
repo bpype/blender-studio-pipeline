@@ -94,53 +94,5 @@ RES_DIR_PATH = Path(os.path.abspath(__file__)).parent.joinpath("res")
 SCENE_NAME_PLAYBLAST = "playblast_playback"
 PLAYBLAST_DEFAULT_STATUS = "Todo"
 
-###########################
-# Shot Builder Properties
-###########################
-
-# TODO add documentation and move other shot builder props here
-
-OUTPUT_COL_CREATE = {
-    "anim": True,
-    "comp": False,
-    "fx": True,
-    "layout": True,
-    "lighting": False,
-    "previz": True,
-    "rendering": False,
-    "smear_to_mesh": False,
-    "storyboard": True,
-}
-
-OUTPUT_COL_LINK_MAPPING = {
-    "anim": None,
-    "comp": ['anim', 'fx'],
-    "fx": ['anim'],
-    "layout": None,
-    "lighting": ['anim'],
-    "previz": None,
-    "rendering": None,
-    "smear_to_mesh": None,
-    "storyboard": None,
-}
-
-LOAD_EDITORIAL_REF = {
-    "anim": True,
-    "comp": False,
-    "fx": False,
-    "layout": True,
-    "lighting": False,
-    "previz": False,
-    "rendering": False,
-    "smear_to_mesh": False,
-    "storyboard": False,
-}
-
-ASSET_TYPE_TO_OVERRIDE = {
-    "CH": True,  # Character
-    "PR": True,  # Rigged Prop
-    "LI": True,  # Library/Environment Asset
-    "SE": False,  # Set
-    "LG": True,  # Lighting Rig
-    "CA": True,  # Camera Rig
-}
+BUILD_SETTINGS_FILENAME = "settings.json"
+BUILD_HOOKS_FILENAME = "hooks.py"

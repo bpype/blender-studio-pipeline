@@ -1,19 +1,10 @@
 import bpy
+import shutil
 from .. import bkglobals
 from pathlib import Path
 from typing import List, Any, Tuple, Set, cast
 from .. import prefs, cache
-from .core import (
-    set_render_engine,
-    link_camera_rig,
-    create_task_type_output_collection,
-    set_shot_scene,
-    set_resolution_and_fps,
-    set_frame_range,
-    link_task_type_output_collections,
-    remove_all_data,
-    get_shot_builder_hooks_dir,
-)
+from . import core, config
 from ..context import core as context_core
 
 from ..edit.core import edit_export_import_latest
@@ -44,63 +35,103 @@ def get_tasks_for_shot(self: Any, context: bpy.types.Context) -> List[Tuple[str,
     return [('NONE', "No Tasks Found", '')]
 
 
-class KITSU_OT_save_shot_builder_hooks(bpy.types.Operator):
-    bl_idname = "kitsu.save_shot_builder_hooks"
+class KITSU_OT_build_config_base_class(bpy.types.Operator):
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        addon_prefs = prefs.addon_prefs_get(context)
+        if not prefs.session_auth(context):
+            cls.poll_message_set("Login to a Kitsu Server")
+        if not cache.project_active_get():
+            cls.poll_message_set("Select an active project")
+            return False
+        if not addon_prefs.is_project_root_valid:
+            cls.poll_message_set(
+                "Check project root directiory is configured in 'Blender Kitsu' addon preferences."
+            )
+            return False
+        return True
+
+
+class KITSU_OT_build_config_save_hooks(KITSU_OT_build_config_base_class):
+    bl_idname = "kitsu.build_config_save_hooks"
     bl_label = "Save Shot Builder Hook File"
     bl_description = "Save hook.py file to `your_project_name/svn/pro/config/shot_builder` directory. Hooks are used to customize shot builder behaviour."
 
     def execute(self, context: bpy.types.Context):
-        addon_prefs = prefs.addon_prefs_get(context)
-        project = cache.project_active_get()
-        if addon_prefs.session.is_auth() is False:
-            self.report(
-                {'ERROR'},
-                "Must be logged into Kitsu to continue. \nCheck login status in 'Blender Kitsu' addon preferences.",
-            )
-            return {'CANCELLED'}
-
-        if project.id == "":
-            self.report(
-                {'ERROR'},
-                "Operator is not able to determine the Kitsu production's name. \nCheck project is selected in 'Blender Kitsu' addon preferences.",
-            )
-            return {'CANCELLED'}
-
-        if not addon_prefs.is_project_root_valid:
-            self.report(
-                {'ERROR'},
-                "Operator is not able to determine the project root directory. \nCheck project root directiory is configured in 'Blender Kitsu' addon preferences.",
-            )
-            return {'CANCELLED'}
-
-        config_dir = get_shot_builder_hooks_dir(context)
-        if not config_dir.exists():
-            config_dir.mkdir(parents=True)
-        hook_file_path = config_dir.joinpath("hooks.py")
-        if hook_file_path.exists():
+        hooks_target_filepath = config.filepath_get(bkglobals.BUILD_HOOKS_FILENAME)
+        if hooks_target_filepath.exists():
             self.report(
                 {'WARNING'},
-                "File already exists, cannot overwrite",
+                f"{hooks_target_filepath.name} already exists, cannot overwrite",
             )
             return {'CANCELLED'}
 
-        config_dir = Path(__file__).parent
-        example_hooks_path = config_dir.joinpath("hook_examples/hooks.py")
-        if not example_hooks_path.exists():
+        hooks_example = config.example_filepath_get(bkglobals.BUILD_HOOKS_FILENAME)
+        if not hooks_example.exists():
             self.report(
                 {'ERROR'},
-                "Cannot find example hook file",
+                f"Cannot find {hooks_target_filepath.name} example file",
             )
             return {'CANCELLED'}
 
-        with example_hooks_path.open() as source:
-            # Read contents
-            contents = source.read()
+        config.copy_json_file(hooks_example, hooks_target_filepath)
+        self.report({'INFO'}, f"Hook File saved to {str(hooks_target_filepath)}")
+        return {'FINISHED'}
 
-        # Write contents to target file
-        with hook_file_path.open('w') as target:
-            target.write(contents)
-        self.report({'INFO'}, f"Hook File saved to {hook_file_path}")
+
+class KITSU_OT_build_config_save_settings(KITSU_OT_build_config_base_class):
+    bl_idname = "kitsu.build_config_save_settings"
+    bl_label = "Save Shot Builder Settings File"
+    bl_description = "Save settings.json file to `your_project_name/svn/pro/config/shot_builder` Config are used to customize shot builder behaviour."
+
+    def execute(self, context: bpy.types.Context):
+        settings_target_filepath = config.filepath_get(bkglobals.BUILD_SETTINGS_FILENAME)
+        if settings_target_filepath.exists():
+            self.report(
+                {'WARNING'},
+                f"{settings_target_filepath.name} already exists, cannot overwrite",
+            )
+            return {'CANCELLED'}
+
+        settings_example = config.example_filepath_get(bkglobals.BUILD_SETTINGS_FILENAME)
+        if not settings_example.exists():
+            self.report(
+                {'ERROR'},
+                "Cannot find example settings file",
+            )
+            return {'CANCELLED'}
+
+        config.copy_json_file(settings_example, settings_target_filepath)
+        self.report({'INFO'}, f"Settings File saved to {str(settings_target_filepath)}")
+        return {'FINISHED'}
+
+
+class KITSU_OT_build_config_save_templates(KITSU_OT_build_config_base_class):
+    bl_idname = "kitsu.build_config_save_templates"
+    bl_label = "Create Shot Builder Template Files"
+    bl_description = (
+        "Save template files for shot builder in config directory."
+        "Templates are used to customize the workspaces for each per task type"
+        "Template names match each task type found on Kitsu Server"
+    )
+
+    def execute(self, context: bpy.types.Context):
+        source_dir = config.template_example_dir_get()
+        target_dir = config.template_dir_get()
+
+        # Ensure Target Directory Exists
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        source_files = list(source_dir.glob('*.blend')) + list(source_dir.glob('*.md'))
+        for source_file in source_files:
+            target_file = target_dir.joinpath(source_file.name)
+            if target_file.exists():
+                print(f"Cannot overwrite file {str(target_file)}")
+                continue
+            shutil.copy2(source_file, target_dir.joinpath(source_file.name))
+
+        self.report({'INFO'}, f"Saved template files to {str(target_dir)}")
         return {'FINISHED'}
 
 
@@ -197,6 +228,7 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         seq = cache.sequence_active_get()
         shot = cache.shot_active_get()
         task_type = cache.task_type_active_get()
+        config.settings_load()
 
         if seq.id == "" or shot.id == "" or task_type.id == "":
             self.report(
@@ -208,34 +240,34 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         shot_file_path_str = shot.get_filepath(context, task_type_short_name)
 
         # Open Template File
-        replace_workspace_with_template(context, task_type_short_name)
+        replace_workspace_with_template(context, task_type.name)
 
         # Set Up Scene + Naming
         shot_task_name = shot.get_task_name(task_type.get_short_name())
-        scene = set_shot_scene(context, shot_task_name)
-        remove_all_data()
-        set_resolution_and_fps(active_project, scene)
-        set_frame_range(shot, scene)
+        scene = core.set_shot_scene(context, shot_task_name)
+        core.remove_all_data()
+        core.set_resolution_and_fps(active_project, scene)
+        core.set_frame_range(shot, scene)
 
         # Set Render Settings
         if task_type_short_name == 'anim':  # TODO get anim from a constant instead
-            set_render_engine(context.scene, 'BLENDER_WORKBENCH')
+            core.set_render_engine(context.scene, 'BLENDER_WORKBENCH')
         else:
-            set_render_engine(context.scene)
+            core.set_render_engine(context.scene)
 
         # Create Output Collection & Link Camera
-        if bkglobals.OUTPUT_COL_CREATE.get(task_type_short_name):
-            output_col = create_task_type_output_collection(context.scene, shot, task_type)
+        if config.OUTPUT_COL_CREATE.get(task_type_short_name):
+            output_col = core.create_task_type_output_collection(context.scene, shot, task_type)
         if task_type_short_name == 'anim' or task_type_short_name == 'layout':
-            link_camera_rig(context.scene, output_col)
+            core.link_camera_rig(context.scene, output_col)
 
             # Load Assets
             get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
 
         # Link External Output Collections
-        link_task_type_output_collections(shot, task_type)
+        core.link_task_type_output_collections(shot, task_type)
 
-        if bkglobals.LOAD_EDITORIAL_REF.get(task_type_short_name):
+        if config.LOAD_EDITORIAL_REF.get(task_type_short_name):
             edit_export_import_latest(context, shot)
 
         # Run Hooks
@@ -262,7 +294,12 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         return {"FINISHED"}
 
 
-classes = (KITSU_OT_build_new_shot, KITSU_OT_save_shot_builder_hooks)
+classes = [
+    KITSU_OT_build_new_shot,
+    KITSU_OT_build_config_save_hooks,
+    KITSU_OT_build_config_save_settings,
+    KITSU_OT_build_config_save_templates,
+]
 
 
 def register():

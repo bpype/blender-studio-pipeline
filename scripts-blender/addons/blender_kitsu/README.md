@@ -347,6 +347,83 @@ Shot Builder can load Exports from Editorial to the .blend's VSE for reference.
 3. From dialogue box, select the desired Sequence/Shot/Task Type
 4. Hit `ok` to run the tool. The tool will create a new file in the directory `your_project/svn/pro/shots/{sequence_name}/{shot_name}/{shot_name}+{task_type_name}.blend`
 
+
+### Templates
+Template files are used to implement custom UI when building new shots. Templates are custom .blend files named after the corresponding task type on the Kitsu Server for a given project. Workspaces from the template files are loaded into newly built shot files. 
+
+1. Save a new .blend file in the directory `your_project_name/svn/pro/config/shot_builder/templates`
+2. Name the .blend file after a task type in Kitsu (e.g. Animation, Layout, Compositing), name must match exactly the [task type](https://kitsu.cg-wire.com/customization-pipeline/#task-type) name on Kitsu Server.
+3. Customize Workspaces to create custom UI for the task type, and save the file.
+
+*Template files are only used for custom UI, other data like scene settings, collections and objects will not be loaded.*
+
+
+### Settings
+Settings.json file can be created by navigating to add-on preferences and running the "Save Shot Builder Settings File" operator. This will save hook files at `your_project_name/svn/pro/config/shot_builder` directory. 
+
+Settings file controls core features of the shot builder on a task type basis. 
+
+Features
+- `OUTPUT_COL_CREATE` decide to create an output collection for a given task type. 
+- `OUTPUT_COL_LINK_MAPPING` controls which output collections are linked into which shot files. (e.g. link animation output collection into lighting file)
+- `LOAD_EDITORIAL_REF` controls if the editorial export is imported into a given shot file
+- `ASSET_TYPE_TO_OVERRIDE` collections matching these prefixes will be created with override if true
+
+```JSON
+{
+    "OUTPUT_COL_CREATE": {
+        "anim": true,
+        "comp": false,
+        "fx": true,
+        "layout": true,
+        "lighting": false,
+        "previz": true,
+        "rendering": false,
+        "smear_to_mesh": false,
+        "storyboard": true
+    },
+    "OUTPUT_COL_LINK_MAPPING": {
+        "anim": null,
+        "comp": [
+            "anim",
+            "fx"
+        ],
+        "fx": [
+            "anim"
+        ],
+        "layout": null,
+        "lighting": [
+            "anim"
+        ],
+        "previz": null,
+        "rendering": null,
+        "smear_to_mesh": null,
+        "storyboard": null
+    },
+    "LOAD_EDITORIAL_REF": {
+        "anim": true,
+        "comp": false,
+        "fx": false,
+        "layout": true,
+        "lighting": false,
+        "previz": false,
+        "rendering": false,
+        "smear_to_mesh": false,
+        "storyboard": false
+    },
+    "ASSET_TYPE_TO_OVERRIDE": {
+        "CH": true,
+        "PR": true,
+        "LI": true,
+        "SE": false,
+        "LG": true,
+        "CA": true
+    }
+}
+
+```
+
+
 ## Development
 ### Update Dependencies
 To update the dependencies of `Blender_Kitsu` please follow these steps.

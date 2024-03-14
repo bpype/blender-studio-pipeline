@@ -9,7 +9,7 @@ from ..types import (
 )
 
 from ..cache import Project
-
+from . import config
 from .. import prefs
 
 #################
@@ -18,7 +18,7 @@ from .. import prefs
 CAMERA_NAME = 'CAM-camera'
 
 
-def get_shot_builder_hooks_dir(context: bpy.types.Context) -> Path:
+def get_shot_builder_config_dir(context: bpy.types.Context) -> Path:
     """Returns directory Shot Builder Hooks are stored in
 
     Args:
@@ -193,12 +193,13 @@ def create_task_type_output_collection(
 
 def link_task_type_output_collections(shot: Shot, task_type: TaskType):
     task_type_short_name = task_type.get_short_name()
-    if bkglobals.OUTPUT_COL_LINK_MAPPING.get(task_type_short_name) == None:
+    if config.OUTPUT_COL_LINK_MAPPING.get(task_type_short_name) == None:
         return
-    for short_name in bkglobals.OUTPUT_COL_LINK_MAPPING.get(task_type_short_name):
+    for short_name in config.OUTPUT_COL_LINK_MAPPING.get(task_type_short_name):
         external_filepath = shot.get_filepath(bpy.context, short_name)
         if not Path(external_filepath).exists():
             print(f"Unable to link output collection for {Path(external_filepath).name}")
+            continue
         file_path = external_filepath.__str__()
         colection_name = shot.get_output_collection_name(short_name)
         link_data_block(file_path, colection_name, 'Collection')

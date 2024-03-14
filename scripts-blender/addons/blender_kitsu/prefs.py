@@ -412,25 +412,13 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     edit_export_frame_offset: bpy.props.IntProperty(  # type: ignore
         name="Edit Export Offset",
         description="Shift Editorial Export by this frame-range after import",
-        default=-101,  # HARD CODED FOR GOLD PROJECTS BLENDER FILM
+        default=-101,
     )
 
     shot_builder_frame_offset: bpy.props.IntProperty(  # type: ignore
         name="Start Frame Offset",
         description="All Shots built by 'Shot_builder' should begin at this frame",
         default=101,
-    )
-
-    shot_builder_armature_prefix: bpy.props.StringProperty(  # type: ignore
-        name="Armature Prefix",
-        description="Naming convention prefix that exists on published assets containing armatures. Used to create/name actions during 'Shot_Build'. Armature name example:'{prefix}{base_name}'",
-        default="RIG-",
-    )
-
-    shot_builder_action_prefix: bpy.props.StringProperty(  # type: ignore
-        name="Action Prefix",
-        description="Naming convention prefix to add to new actions. Actions will be named '{prefix}{base_name}.{shot_name}.v001' and set to fake user during 'Shot_Build'",
-        default="ANI-",
     )
 
     session: Session = Session()
@@ -495,6 +483,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         file_pattern_row = box.row(align=True)
         file_pattern_row.alert = not self.is_edit_export_pattern_valid
         file_pattern_row.prop(self, "edit_export_file_pattern", text="Export File Pattern")
+        box.row().prop(self, "edit_export_frame_offset")
 
         # Lookdev tools settings.
         self.lookdev.draw(context, col)
@@ -527,15 +516,17 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         # Shot_Builder settings.
         box = col.box()
         box.label(text="Shot Builder", icon="MOD_BUILD")
-        box.row().prop(self, "edit_export_frame_offset")
-        box.row().prop(self, "shot_builder_show_advanced")
-        if self.shot_builder_show_advanced:
-            start_frame_row = box.row()
-            start_frame_row.label(text="Start Frame Offset")
-            start_frame_row.prop(self, "shot_builder_frame_offset", text="")
-            box.row().prop(self, "shot_builder_armature_prefix")
-            box.row().prop(self, "shot_builder_action_prefix")
-        box.operator("kitsu.save_shot_builder_hooks", icon='FILE_SCRIPT')
+        box.prop(self, "shot_builder_frame_offset")
+        row = box.row(align=True)
+        # Avoids circular import error
+        from .shot_builder.ops import (
+            KITSU_OT_build_config_save_settings,
+            KITSU_OT_build_config_save_hooks,
+            KITSU_OT_build_config_save_templates,
+        )
+        box.row().operator(KITSU_OT_build_config_save_hooks.bl_idname, icon='FILE_SCRIPT')
+        box.row().operator(KITSU_OT_build_config_save_settings.bl_idname, icon="TEXT")
+        box.row().operator(KITSU_OT_build_config_save_templates.bl_idname, icon="FILE_BLEND")
 
         # Misc settings.
         box = col.box()

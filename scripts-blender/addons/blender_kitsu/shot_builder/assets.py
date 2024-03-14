@@ -3,8 +3,7 @@ from .. import prefs
 from pathlib import Path
 import json
 from ..types import Shot
-from .core import link_and_override_collection, link_data_block
-from .. import bkglobals
+from . import core, config
 
 
 def get_asset_dir() -> str:
@@ -44,16 +43,16 @@ def get_shot_assets(
             asset_dir = get_asset_dir()
             filepath = Path(asset_dir).joinpath(relative_path).__str__()
             data_type = value.get('type')
-            if bkglobals.ASSET_TYPE_TO_OVERRIDE.get(key.split('-')[0]):
+            if config.ASSET_TYPE_TO_OVERRIDE.get(key.split('-')[0]):
                 if data_type != "Collection":
                     print(f"Cannot load {key} because it is not a collection")
                     continue
-                linked_collection = link_and_override_collection(
+                linked_collection = core.link_and_override_collection(
                     collection_name=key, file_path=filepath, scene=scene
                 )
                 print(f"'{key}': Succesfully Linked & Overriden")
             else:
-                linked_collection = link_data_block(
+                linked_collection = core.link_data_block(
                     file_path=filepath, data_block_name=key, data_block_type=data_type
                 )
                 print(f"'{key}': Succesfully Linked")

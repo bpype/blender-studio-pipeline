@@ -1,28 +1,26 @@
 import bpy
 from pathlib import Path
-from .core import link_data_block
+from . import config
 
 
-# TODO add ability for custom templates
-def get_template_dir() -> Path:
-    return Path(__file__).absolute().parent.joinpath("templates")
-
-
-def get_template_files() -> list[Path]:
-    dir = get_template_dir()
+def list_dir_blend_files(dir: Path) -> list[Path]:
     return list(dir.glob('*.blend'))
 
 
-def get_template_for_task_type(task_type_short_name: str) -> Path:
-    for file in get_template_files():
-        if file.stem == task_type_short_name:
+def get_template_for_task_type(task_type_name: str) -> Path:
+    # Find Custom Template in Config Dir if avaliable
+    for file in list_dir_blend_files(config.template_dir_get()):
+        if file.stem.lower() == task_type_name.lower():
+            return file
+    # Fall back to example templates if no custom templates found
+    for file in list_dir_blend_files(config.template_example_dir_get()):
+        if file.stem.lower() == task_type_name.lower():
             return file
 
-
-def replace_workspace_with_template(context: bpy.types.Context, task_type_short_name: str):
-    if task_type_short_name is None:
+def replace_workspace_with_template(context: bpy.types.Context, task_type_name: str):
+    if task_type_name is None:
         return
-    file_path = get_template_for_task_type(task_type_short_name).resolve().absolute()
+    file_path = get_template_for_task_type(task_type_name).resolve().absolute()
     remove_prefix = "REMOVE-"
     if not file_path.exists():
         return

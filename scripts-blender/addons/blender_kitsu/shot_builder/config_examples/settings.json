@@ -1,0 +1,50 @@
+{
+    "OUTPUT_COL_CREATE": {
+        "anim": true,
+        "comp": false,
+        "fx": true,
+        "layout": true,
+        "lighting": false,
+        "previz": true,
+        "rendering": false,
+        "smear_to_mesh": false,
+        "storyboard": true
+    },
+    "OUTPUT_COL_LINK_MAPPING": {
+        "anim": null,
+        "comp": [
+            "anim",
+            "fx"
+        ],
+        "fx": [
+            "anim"
+        ],
+        "layout": null,
+        "lighting": [
+            "anim"
+        ],
+        "previz": null,
+        "rendering": null,
+        "smear_to_mesh": null,
+        "storyboard": null
+    },
+    "LOAD_EDITORIAL_REF": {
+        "anim": true,
+        "comp": false,
+        "fx": false,
+        "layout": true,
+        "lighting": false,
+        "previz": false,
+        "rendering": false,
+        "smear_to_mesh": false,
+        "storyboard": false
+    },
+    "ASSET_TYPE_TO_OVERRIDE": {
+        "CH": true,
+        "PR": true,
+        "LI": true,
+        "SE": false,
+        "LG": true,
+        "CA": true
+    }
+}

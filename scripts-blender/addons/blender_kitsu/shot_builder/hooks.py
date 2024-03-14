@@ -8,7 +8,7 @@ from collections.abc import Iterable
 import importlib
 from .. import prefs
 import logging
-from .core import get_shot_builder_hooks_dir
+from .core import get_shot_builder_config_dir
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ class Hooks:
                 hook(*args, **kwargs)
 
     def load_hooks(self, context):
-        shot_builder_config_dir = get_shot_builder_hooks_dir(context)
+        shot_builder_config_dir = get_shot_builder_config_dir(context)
         if not shot_builder_config_dir.exists():
             print("Shot Builder Hooks directory does not exist. See add-on preferences")
             return
