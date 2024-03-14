@@ -7,6 +7,7 @@ from . import (
     names,
     users,
     overrides,
+    relink_overridden_asset,
 )
 
 modules = [
@@ -18,4 +19,5 @@ modules = [
     names,
     users,
     overrides,
+    relink_overridden_asset,
 ]
