@@ -40,13 +40,14 @@ def get_id_info() -> List[Tuple[type, str, str]]:
     bpy_prop_collection = type(bpy.data.objects)
     id_info = []
     for prop_name in dir(bpy.data):
-        prop = getattr(bpy.data, prop_name)
-        if type(prop) == bpy_prop_collection:
-            if len(prop) == 0:
+        coll_prop = getattr(bpy.data, prop_name)
+        if type(coll_prop) == bpy_prop_collection:
+            if len(coll_prop) == 0:
                 # We can't get full info about the ID type if there isn't at least one entry of it.
                 # But we shouldn't need it, since we don't have any entries of it!
                 continue
-            id_info.append((type(prop[0]), prop[0].id_type, prop_name))
+
+            id_info.append((get_fundamental_id_type(coll_prop[0]), coll_prop[0].id_type, prop_name))
     return id_info
 
 
@@ -61,12 +62,15 @@ def get_id_identifier_from_class(id_type: type):
 
 
 def get_fundamental_id_type(datablock: bpy.types.ID) -> Any:
-    """Certain datablocks have very specific types.
-    This function should return their fundamental type, ie. parent class."""
-    id_info = get_id_info()
-    for typ, _typ_str, _container_str in id_info:
-        if isinstance(datablock, typ):
-            return typ
+    """Certain datablocks have very specific types, such as
+    bpy.types.GeometryNodeTree instead of bpy.types.NodeTree.
+
+    This function should return their fundamental type, ie. parent class,
+    by reaching into the python Method Resolution Order (MRO) to find its
+    python class inheritance chain and then step back 4 steps:
+    object->bpy_struct->bpy.types.ID->bpy.types.WhatWeNeed"""
+
+    return type(datablock).mro()[-4]
 
 
 def get_storage_of_id(datablock: bpy.types.ID) -> 'bpy_prop_collection':
@@ -80,6 +84,7 @@ def get_storage_of_id(datablock: bpy.types.ID) -> 'bpy_prop_collection':
     for typ, _typ_str, container_str in id_info:
         if fundamental_type == typ:
             return getattr(bpy.data, container_str)
+    assert False, "Failed to find the type of this ID: " + str(datablock) + "with fundamental type: " + str(fundamental_type)
 
 
 def traverse_collection_tree(
