@@ -53,6 +53,7 @@ def merge_get_target_name(name: str) -> str:
     """
     old = name.split(constants.MERGE_DELIMITER)[-1]
     new = merge_get_target_suffix(old)
+    assert new, "Failed to flip the LOC/EXT suffix of this name, this should never happen : " + name
     li = name.rsplit(old, 1)
     return new.join(li)
 
