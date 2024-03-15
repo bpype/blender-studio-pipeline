@@ -5,16 +5,24 @@ import requests
 import sys
 import time
 
-# Set the API key for accessing the Freesound API
-API_KEY = os.getenv('FREESOUND_API_KEY')
-if not API_KEY:
-    print("FREESOUND_API_KEY not set")
-    sys.exit()
 
 
-# Set the base URL for the Freesound API
-API_BASE_URL = 'https://freesound.org/apiv2'
+# Must set API Key as Enviroinment Variable or add to script here.
+# API Key can be generated using an existing freesound.org account
+# API Key can be created by accessing https://freesound.org/apiv2/apply
+# To learn more about the API visit https://freesound.org/docs/api/authentication.htmlo
+API_KEY = "" # Replace with "Client secret/Api key" from https://freesound.org/apiv2/apply
 
+API_BASE_URL = 'https://freesound.org/apiv2' # Set the base URL for the Freesound API
+
+
+def load_api_key():
+    # Set the API key for accessing the Freesound API
+    global API_KEY
+    env_key = os.getenv('FREESOUND_API_KEY')
+    if env_key:
+        API_KEY = env_key
+        return
 
 def get_sound_list():
     sound_list = []
@@ -63,5 +71,13 @@ def generate_credits(sound_list):
             f.write(f'License: {info["license"]}\n\n')
 
 
-sound_list = get_sound_list()
-generate_credits(sound_list)
+def main():
+    load_api_key()
+    if API_KEY == "":
+        print("FREESOUND_API_KEY not set")
+        return
+    sound_list = get_sound_list()
+    generate_credits(sound_list)
+
+
+main()
