@@ -4,57 +4,72 @@ from bpy.types import Object
 
 from typing import List
 
-
-def report_leftover_drivers(context, objects: List[Object]):
+def report_invalid_drivers(context, objects: List[Object]):
     blenlog = context.scene.blender_log
 
-    category = 'Leftover Driver'
-    blenlog.clear_category(category)
+    cat_leftover = 'Leftover Driver'
+    blenlog.clear_category(cat_leftover)
+
+    cat_invalid = 'Invalid Driver'
+    blenlog.clear_category(cat_invalid)
 
     counter = 0
+    kwargs = {
+        'icon' : 'DRIVER_TRANSFORM',
+        'operator' : BLENLOG_OT_delete_driver.bl_idname,
+        'op_kwargs' : {
+            'object_name': obj.name,
+            'driver_path': fcurve.data_path,
+            'array_index': fcurve.array_index,
+        },
+    }
     for obj in objects:
         if obj.library or obj.override_library:
             continue
         if not obj.animation_data:
             continue
-        for driver in obj.animation_data.drivers:
+        for fcurve in obj.animation_data.drivers:
             try:
-                obj.path_resolve(driver.data_path)
+                obj.path_resolve(fcurve.data_path)
             except ValueError:
                 # If the RNA path of the driver fails to resolve to some value,
                 # that means the driver is pointing at nothing; A deleted modifier,
                 # constraint, bone, whatever.
                 blenlog.add(
-                    description=f"Driver RNA path leads to nothing: '{driver.data_path}'.\nThis can happen when removing modifiers, constraints, bones, etc. that previously had drivers on them. Such driver can be safely deleted, else they will spam the console.",
-                    icon='DRIVER_TRANSFORM',
+                    description=f"Driver RNA path leads to nothing: '{fcurve.data_path}'.\nThis can happen when removing modifiers, constraints, bones, etc. that previously had drivers on them. Such driver can be safely deleted, else they will spam the console.",
                     name=obj.name,
-                    category=category,
-                    operator=BLENLOG_OT_delete_driver.bl_idname,
-                    op_kwargs={
-                        'object_name': obj.name,
-                        'driver_path': driver.data_path,
-                        'array_index': driver.array_index,
-                    },
+                    category=cat_leftover,
+                    **kwargs
+                )
+                counter += 1
+                continue
+            if not fcurve.driver.is_valid:
+                blenlog.add(
+                    description=f"Invalid Driver: '{fcurve.data_path}'.\nThis can happen when a driver var target datablock is removed, an expression is invalid, etc.",
+                    name=obj.name,
+                    category=cat_invalid,
+                    **kwargs
                 )
                 counter += 1
 
     return counter
 
+report_leftover_drivers = report_invalid_drivers
 
-class BLENLOG_OT_report_leftover_drivers(bpy.types.Operator):
+class BLENLOG_OT_report_invalid_drivers(bpy.types.Operator):
     """Report drivers that point to nothing"""
 
-    bl_idname = "blenlog.report_leftover_drivers"
+    bl_idname = "blenlog.report_invalid_drivers"
     bl_label = "Report Leftover Drivers"
     bl_options = {'INTERNAL', 'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        counter = report_leftover_drivers(context, bpy.data.objects)
+        counter = report_invalid_drivers(context, bpy.data.objects)
 
         if counter > 0:
-            self.report({'WARNING'}, f"Found {counter} left-over drivers.")
+            self.report({'WARNING'}, f"Found {counter} invalid drivers.")
         else:
-            self.report({'INFO'}, f"No left-over drivers found.")
+            self.report({'INFO'}, f"No invalid drivers found.")
 
         return {'FINISHED'}
 
@@ -99,6 +114,6 @@ class BLENLOG_OT_delete_driver(bpy.types.Operator):
 
 
 registry = [
-    BLENLOG_OT_report_leftover_drivers,
+    BLENLOG_OT_report_invalid_drivers,
     BLENLOG_OT_delete_driver,
 ]
