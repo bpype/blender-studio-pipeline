@@ -20,7 +20,7 @@ class BlenLog_Prefs(AddonPreferences):
     purge_on_save: BoolProperty(
         name="Purge On Save",
         description="Run a recursive purge on file save, rather than simply not saving unused datablocks, which is Blender's default behaviour. This ensures your file is never saved with any garbage orphan data",
-        default=True,
+        default=False,
     )
 
     def update_deletion_pie(self, context):
@@ -32,7 +32,7 @@ class BlenLog_Prefs(AddonPreferences):
     use_deletion_pie: BoolProperty(
         name="Delete Pie On X",
         description="Overwrite the X hotkey in the 3D View and the Outliner for more truthful deletion behaviours",
-        default=True,
+        default=False,
         update=update_deletion_pie
     )
 

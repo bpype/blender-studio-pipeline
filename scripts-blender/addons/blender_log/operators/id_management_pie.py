@@ -245,5 +245,5 @@ def register():
 
 
 def unregister():
-    for pykmi in addon_hotkeys:
-        pykmi.unregister()
+    for keymap, kmi in addon_hotkeys[:]:
+        keymap.keymap_items.remove(kmi)
