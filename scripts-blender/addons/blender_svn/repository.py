@@ -476,6 +476,9 @@ class SVN_repository(PropertyGroup):
             return
         self.prev_external_files_active_index = self.external_files_active_index
 
+        if not self.active_file:
+            return
+
         latest_rev = self.get_latest_revision_of_file(
             self.active_file.svn_path)
         # SVN Revisions are not 0-indexed, so we need to subtract 1.
@@ -514,6 +517,8 @@ class SVN_repository(PropertyGroup):
 
     @property
     def active_file(self) -> SVN_file:
+        if len(self.external_files) == 0:
+            return
         return self.external_files[self.external_files_active_index]
 
     def is_filebrowser_directory_in_repo(self, context) -> bool:

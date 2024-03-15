@@ -46,6 +46,7 @@ def execute_svn_command(
         command += get_credential_commands(context)
 
     command.append("--non-interactive")
+    command.append("--trust-server-cert")
 
     prefs = get_addon_prefs(context)
     if prefs.debug_mode:

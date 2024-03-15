@@ -325,7 +325,11 @@ def svn_status_xml_to_dict(svn_status_str: str) -> Dict[str, Tuple[str, str, int
 
 def update_file_list_svn_list(context, svn_list_str: str) -> Dict:
     repo = context.scene.svn.get_repo(context)
-    svn_list_xml = xmltodict.parse(svn_list_str)
+    try:
+        svn_list_xml = xmltodict.parse(svn_list_str)
+    except:
+        # This seems to fail with an "ExpatError" on Windows...?
+        return
 
     file_infos = svn_list_xml['lists']['list']['entry']
 
