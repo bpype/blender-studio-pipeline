@@ -125,6 +125,8 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
                     lib_entry = remap_target_libraries.add()
                     lib_entry.name = lib.filepath
                     break
+
+        self.library_path = "Local Data"
         if source_id.name[-4] == ".":
             storage = get_id_storage_by_type_str(self.id_type)[0]
             suggestion = storage.get(source_id.name[:-4])
@@ -132,8 +134,6 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
                 self.id_name_target = suggestion.name
                 if suggestion.library:
                     self.library_path = suggestion.library.filepath
-        else:
-            self.library_path = "Local Data"
 
         return context.window_manager.invoke_props_dialog(self, width=800)
 
