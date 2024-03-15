@@ -58,13 +58,13 @@ def addon_hotkey_register(
         op_kwargs=op_kwargs,
     )
 
-    py_kmi.register(
+    keymap, kmi = py_kmi.register(
         keymap_name=keymap_name,
         add_on_conflict=add_on_conflict,
         warn_on_conflict=warn_on_conflict,
         error_on_conflict=error_on_conflict,
     )
-    return py_kmi
+    return keymap, kmi
 
 
 class PyKeyMapItem:

@@ -3,7 +3,7 @@ from bpy.types import AddonPreferences
 from bpy.props import BoolProperty, StringProperty
 from .ui import change_ui_category
 from .util import get_addon_prefs
-
+from .operators import better_delete
 
 class BlenLog_Prefs(AddonPreferences):
     bl_idname = __package__
@@ -23,6 +23,19 @@ class BlenLog_Prefs(AddonPreferences):
         default=True,
     )
 
+    def update_deletion_pie(self, context):
+        if self.use_deletion_pie:
+            better_delete.register_hotkeys()
+        else:
+            better_delete.unregister_hotkeys()
+
+    use_deletion_pie: BoolProperty(
+        name="Delete Pie On X",
+        description="Overwrite the X hotkey in the 3D View and the Outliner for more truthful deletion behaviours",
+        default=True,
+        update=update_deletion_pie
+    )
+
     display_stack_trace: BoolProperty(
         name="Display Stack Trace",
         description="Whether to display the Python Stack Trace of a log entry. Only useful for Python developers",
@@ -34,11 +47,17 @@ class BlenLog_Prefs(AddonPreferences):
         layout.use_property_split = True
 
         layout = layout.column(align=True)
+        layout.label(text="Cosmetic:")
         layout.prop(self, 'sidebar_panel')
-        layout.prop(self, 'purge_on_save')
 
         layout.separator()
+        layout.label(text="Debug:")
         layout.prop(self, 'display_stack_trace')
+
+        layout.separator()
+        layout.label(text="Mistake Avoidance:")
+        layout.prop(self, 'purge_on_save')
+        layout.prop(self, 'use_deletion_pie')
 
 
 registry = [BlenLog_Prefs]

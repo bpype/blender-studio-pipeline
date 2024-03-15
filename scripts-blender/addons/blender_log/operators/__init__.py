@@ -1,5 +1,6 @@
 from . import (
     better_purge,
+    better_delete,
     cleanup_shotfile,
     drivers,
     id_management_pie,
@@ -11,6 +12,7 @@ from . import (
 )
 
 modules = [
+    better_delete,
     better_purge,
     cleanup_shotfile,
     drivers,
