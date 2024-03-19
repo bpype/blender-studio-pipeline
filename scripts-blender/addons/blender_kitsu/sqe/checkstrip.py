@@ -99,15 +99,14 @@ def shot_exists_by_id(
     return shot
 
 
-def seq_exists_by_name(
+def seq_exists_by_id(
     strip: bpy.types.Sequence, project: Project, clear_cache: bool = True
 ) -> Optional[Sequence]:
-    """Returns Sequence instance if strip.kitsu.sequence_name exists on server, else None"""
-
     if clear_cache:
         Cache.clear_all()
 
-    zseq = project.get_sequence_by_name(strip.kitsu.sequence_name)
+    zseq = project.get_sequence(strip.kitsu.sequence_id)
+
     if not zseq:
         logger.info(
             "Strip: %s Sequence %s does not exist on server",

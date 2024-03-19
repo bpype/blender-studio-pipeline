@@ -179,6 +179,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
         project_active = cache.project_active_get()
         succeeded = []
         failed = []
+        no_sequence_id = []
         logger.info("-START- Submitting new shots to: %s", project_active.name)
 
         # Clear cache.
@@ -219,10 +220,12 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
                 failed.append(strip)
                 continue
 
+            if strip.kitsu.sequence_id == "":
+                no_sequence_id.append(strip)
+                continue
+
             # Check if seq already to server  > create it.
-            seq = checkstrip.seq_exists_by_name(
-                strip, project_active, clear_cache=False
-            )
+            seq = checkstrip.seq_exists_by_id(strip, project_active, clear_cache=False)
             if not seq:
                 seq = push.new_sequence(strip, project_active)
 
@@ -258,7 +261,9 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
         if failed:
             report_state = "WARNING"
             report_str += f" | Failed: {len(failed)}"
-
+        if no_sequence_id:
+            report_state = "WARNING"
+            report_str += f" | Sequence metadata was not set for: {len(failed)} strips"
         self.report(
             {report_state},
             report_str,
