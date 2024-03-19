@@ -218,6 +218,15 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
             if task_type.id == self.task_type:
                 return task_type
 
+    def _frame_range_invalid(self, context, shot) -> bool:
+        if not (getattr(shot, "data") or getattr(shot, "nb_frames")):
+            return True
+
+        try:
+            shot.data.get("frame_in")
+        except AttributeError:
+            return True
+
     def cancel(self, context: bpy.types.Context):
         # Restore kitsu context if cancelled
         context.scene.kitsu.category = self._current_kitsu_context
@@ -236,11 +245,7 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
             )
             return {'CANCELLED'}
 
-        if (
-            not getattr(shot, "data")
-            or getattr(shot.data, "frame_in")
-            or getattr(shot, "nb_frames")
-        ):
+        if self._frame_range_invalid(context, shot):
             self.report({'ERROR'}, F"Shot {shot.name} is missing frame range data on Kitsu Server")
             return {'CANCELLED'}
 
