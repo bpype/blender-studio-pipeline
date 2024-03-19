@@ -14,21 +14,21 @@ def report_invalid_drivers(context, objects: List[Object]):
     blenlog.clear_category(cat_invalid)
 
     counter = 0
-    kwargs = {
-        'icon' : 'DRIVER_TRANSFORM',
-        'operator' : BLENLOG_OT_delete_driver.bl_idname,
-        'op_kwargs' : {
-            'object_name': obj.name,
-            'driver_path': fcurve.data_path,
-            'array_index': fcurve.array_index,
-        },
-    }
     for obj in objects:
         if obj.library or obj.override_library:
             continue
         if not obj.animation_data:
             continue
         for fcurve in obj.animation_data.drivers:
+            kwargs = {
+                'icon': 'DRIVER_TRANSFORM',
+                'operator': BLENLOG_OT_delete_driver.bl_idname,
+                'op_kwargs': {
+                    'object_name': obj.name,
+                    'driver_path': fcurve.data_path,
+                    'array_index': fcurve.array_index,
+                },
+            }
             try:
                 obj.path_resolve(fcurve.data_path)
             except ValueError:
