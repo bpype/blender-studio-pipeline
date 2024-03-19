@@ -236,6 +236,14 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
             )
             return {'CANCELLED'}
 
+        if (
+            not getattr(shot, "data")
+            or getattr(shot.data, "frame_in")
+            or getattr(shot, "nb_frames")
+        ):
+            self.report({'ERROR'}, F"Shot {shot.name} is missing frame range data on Kitsu Server")
+            return {'CANCELLED'}
+
         task_type_short_name = task_type.get_short_name()
         shot_file_path_str = shot.get_filepath(context, task_type_short_name)
 
