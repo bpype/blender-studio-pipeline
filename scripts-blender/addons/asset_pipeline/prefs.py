@@ -47,9 +47,24 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         update=update_logger_level,
     )
 
-    is_advanced_mode: bpy.props.BoolProperty(
+    is_advanced_mode: bpy.props.BoolProperty(  # type: ignore
         name="Advanced Mode",
         description="Show Advanced Options in Asset Pipeline Panels",
+        default=False,
+    )
+
+    preserve_action: bpy.props.BoolProperty(  # type: ignore
+        name="Preserve Local Actions",
+        description="Preserve Action Data-Blocks on Armatures in working files during Pull (this data will not be pushed to Sync Target)",
+        default=False,
+    )
+
+    preserve_indexes: bpy.props.BoolProperty(  # type: ignore
+        name="Preserve Active Indexes",
+        description=(
+            "Preserve Active Indexes (Vertex Groups, Shape Keys, UV Maps, Color Attributes, Attributes) "
+            "in working files during Pull (this data will not be pushed to Sync Target)"
+        ),
         default=False,
     )
 
@@ -58,6 +73,8 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "custom_task_layers_dir")
         self.layout.prop(self, "save_images_path")
         self.layout.prop(self, "logger_level")
+        self.layout.prop(self, "preserve_action")
+        self.layout.prop(self, "preserve_indexes")
         self.layout.prop(self, "is_advanced_mode")
 
 

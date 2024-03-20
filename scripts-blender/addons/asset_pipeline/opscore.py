@@ -13,10 +13,12 @@ from .merge.core import (
 )
 from .merge.transfer_data.transfer_ui import draw_transfer_data
 from .merge.shared_ids import get_shared_id_icon
+from .merge.preserve import Perserve
 from . import constants, config, logging
 from .hooks import Hooks
 from .merge.task_layer import draw_task_layer_selection
 from .asset_catalog import get_asset_id
+from . import prefs
 
 def sync_poll(cls, context):
     if any([img.is_dirty for img in bpy.data.images]):
@@ -136,11 +138,20 @@ def sync_execute_pull(self, context):
     bpy.ops.wm.save_as_mainfile(filepath=temp_file_path, copy=True)
     logger.debug(f"Creating Backup File at {temp_file_path}")
 
+    preserve_map = Perserve(context.scene.asset_pipeline.asset_collection)
+
     error_msg = merge_task_layer(
         context,
         local_tls=self._task_layer_keys,
         external_file=self._sync_target,
     )
+
+    addon_prefs = prefs.get_addon_prefs()
+    if addon_prefs.preserve_action:
+        preserve_map.set_action_map()
+
+    if addon_prefs.preserve_indexes:
+        preserve_map.set_active_index_map()
 
     if error_msg:
         context.scene.asset_pipeline.sync_error = True

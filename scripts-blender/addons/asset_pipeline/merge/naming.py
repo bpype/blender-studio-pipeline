@@ -80,6 +80,8 @@ def merge_remove_suffix_from_hierarchy(collection: bpy.types.Collection) -> None
     ref_map = get_id_reference_map()
     datablocks = get_all_referenced_ids(collection, ref_map)
     datablocks.add(collection)
+    for action in bpy.data.actions:
+        datablocks.add(action)
     for db in datablocks:
         if db.library:
             # Don't rename linked datablocks.
