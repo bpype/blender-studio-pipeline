@@ -54,13 +54,13 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
     )
 
     preserve_action: bpy.props.BoolProperty(  # type: ignore
-        name="Preserve Local Actions",
+        name="Preserve Actions in Workfiles",
         description="Preserve Action Data-Blocks on Armatures in working files during Pull (this data will not be pushed to Sync Target)",
         default=False,
     )
 
     preserve_indexes: bpy.props.BoolProperty(  # type: ignore
-        name="Preserve Active Indexes",
+        name="Preserve Active Indexes in Workfiles",
         description=(
             "Preserve Active Indexes (Vertex Groups, Shape Keys, UV Maps, Color Attributes, Attributes) "
             "in working files during Pull (this data will not be pushed to Sync Target)"
