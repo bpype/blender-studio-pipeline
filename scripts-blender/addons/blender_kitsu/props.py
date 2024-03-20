@@ -683,14 +683,12 @@ def _clear_window_manager_props():
     del bpy.types.WindowManager.sequence_enum
 
 
-def _calc_kitsu_frame_start(self):
+def _calc_kitsu_3d_start(self):
     """
-    Calculates strip.kitsu_frame_start, little hack because it seems like we cant access the strip from a property group
+    Calculates strip.kitsu_3d_start, little hack because it seems like we cant access the strip from a property group
     But we need acess to seqeuence properties.
     """
-    kitsu_frame_start = bkglobals.FRAME_START - self.kitsu.frame_start_offset
-
-    return int(kitsu_frame_start)
+    return int(self.frame_final_start - self.frame_start + bkglobals.FRAME_START)
 
 
 def _calc_kitsu_frame_end(self):
@@ -698,7 +696,7 @@ def _calc_kitsu_frame_end(self):
     Calculates strip.kitsu_frame_end, little hack because it seems like we cant access the strip from a property group
     But we need acess to seqeuence properties.
     """
-    frame_start = _calc_kitsu_frame_start(self)
+    frame_start = _calc_kitsu_3d_start(self)
     frame_end_final = frame_start + (self.frame_final_duration - 1)
     return int(frame_end_final)
 
@@ -767,9 +765,9 @@ def register():
     # FRAME RANGE PROPERTIES
     # because we cant acess strip properties from a sequence group we need to create this properties
     # directly on the strip, as we need strip properties to calculate
-    bpy.types.Sequence.kitsu_frame_start = bpy.props.IntProperty(
+    bpy.types.Sequence.kitsu_3d_start = bpy.props.IntProperty(
         name="3D In",
-        get=_calc_kitsu_frame_start,
+        get=_calc_kitsu_3d_start,
     )
 
     bpy.types.Sequence.kitsu_frame_end = bpy.props.IntProperty(

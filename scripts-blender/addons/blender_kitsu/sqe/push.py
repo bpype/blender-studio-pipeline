@@ -33,12 +33,11 @@ logger = LoggerFactory.getLogger()
 def shot_meta(strip: bpy.types.Sequence, shot: Shot) -> None:
     # Update shot info.
 
-    kitsu_3d_start = shot.get_3d_start()
     shot.name = strip.kitsu.shot_name
     shot.description = strip.kitsu.shot_description
     shot.data["frame_in"] = strip.frame_final_start
     shot.data["frame_out"] = strip.frame_final_end
-    shot.data["3d_start"] = kitsu_3d_start
+    shot.data["3d_start"] = strip.kitsu_3d_start
     shot.nb_frames = strip.frame_final_duration
     shot.data["fps"] = bkglobals.FPS
 

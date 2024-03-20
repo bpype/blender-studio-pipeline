@@ -1874,7 +1874,7 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
         self, context: bpy.types.Context, strip: bpy.types.Sequence, shot: Shot
     ) -> None:
         # get offset
-        offset = strip.kitsu_frame_start - int(shot.get_3d_start())
+        offset = strip.kitsu_3d_start - int(shot.get_3d_start())
 
         # Deselect everything.
         if context.selected_sequences:
