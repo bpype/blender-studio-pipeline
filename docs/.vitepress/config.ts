@@ -253,6 +253,7 @@ export default defineConfig({
               { text: 'Installation', link: '/gentoo/td/installation'},
               { text: 'Maintenance', link: '/gentoo/td/maintaince'},
               { text: 'Render Farm', link: '/gentoo/td/render_farm'},
+              { text: 'Troubleshooting', link: '/gentoo/td/troubleshooting' },
             ],
           },
 
@@ -264,7 +265,6 @@ export default defineConfig({
               { text: 'Installing Software', link: '/gentoo/user/installing-software' },
               { text: 'Running Blender', link: '/gentoo/user/running-blender' },
               { text: 'SVN', link: '/gentoo/user/svn' },
-              { text: 'Troubleshooting', link: '/gentoo/user/troubleshooting' },
 
             ]
           },
