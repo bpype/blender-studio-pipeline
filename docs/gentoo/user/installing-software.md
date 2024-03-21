@@ -4,26 +4,32 @@ outline: deep
 
 # Manage Software
 
-There are two ways to install and uninstall software.
+There are two ways to install and uninstall software, **emerge** and **Discover**. **emerge** is a CLI (Command Line Interface) tool used to install & update software packages (often the latest versions) native to Gentoo Linux. **Discover** is a GUI (Graphical User Interface) package manager, which has many packages available in the form of "[flatpacks](https://flatpak.org/)" which are slower to install and may not be the latest version of the package unlike packages found via **emerge**. **Discover** should only be used if a package isn't available via **emerge**
 
-## Emerge
+## emerge
 
-emerge is the default package manager, use emerge to install, update, and generally maintain software packages on Gentoo. emerge should always be your first option when searching for software. To learn more: https://wiki.gentoo.org/wiki/Emerge
+**emerge** is the default package manager. Use **emerge** to install, update, and generally maintain software packages on Gentoo. **emerge** should always be your first option when searching for software. For in-depth information: https://wiki.gentoo.org/wiki/Emerge
 
 ### Open Terminal and Become Root
 
 ![Open Terminal from Taskbar](/media/user-guide/workstations/gentoo_workstation_open_terminal.mp4)
 
-1.  From the Task Bar select the “KDE Logo” to open the Start Menu, and type “Terminal” in the search bar
-2.  Become root via `su`
 
+1.  From the Task Bar select the “KDE Logo” to open the Start Menu, and type “Terminal” in the search bar
+2.  Type in `su` and press Enter to become **root**.
+3.  Enter the password and press Enter
+
+The line text turn red to indicate that you are now **root**.
+You must be **root** to make changes via **emerge**.
 
 ### Search & Install software via emerge
 
-**emerge** provides commands to install packages onto your system including any dependencies. You must be **root** to make changes via **emerge**. _In this example package name is **spotify**._
+**emerge** provides commands to install packages onto your system including any dependencies.  _In this example package name is **spotify**._
 
 1.  [Open Terminal and Become Root](/gentoo/user/installing-software.md#open-terminal-and-become-root)
-2.  Find avaliable packages using the `eix` for example: `eix spotify`
+2.  Find avaliable packages using the `eix` command in the terminal. For example: `eix spotify`
+
+The search results will appear in the terminal like this:
 
 ```bash
 * gnome-extra/gnome-integration-spotify
@@ -44,8 +50,11 @@ emerge is the default package manager, use emerge to install, update, and genera
 Found 3 matches
 ```
 
-3.  Install a package via emerge: `emerge spotify`
-4.  (Optionally) install a specific package version via `emerge ={package-name}-{version}` _Example:_ `emerge =spotify-1.2.8`
+3.  Install the latest or a specific version:
+     1.   Install a package via emerge: `emerge spotify`
+     2.  (Optionally) install a specific package version via `emerge ={package-name}-{version}` _Example:_ `emerge =spotify-1.2.8`
+
+The terminal will show the install process and confirm once it's done:
 
 ```bash
 Calculating dependencies... done!
