@@ -294,6 +294,12 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
             shot_path=shot_file_path_str,
         )
 
+        # Set Kitsu Context
+        scene.kitsu.category = "SHOT"
+        scene.kitsu.sequence_active_name = seq.name
+        scene.kitsu.shot_active_name = shot.name
+        scene.kitsu.task_type_active_name = task_type.name
+
         # Save File
         if self.save_file:
             if not save_shot_builder_file(file_path=shot_file_path_str):
