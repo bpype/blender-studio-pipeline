@@ -31,10 +31,12 @@ def replace_workspace_with_template(context: bpy.types.Context, task_type_name: 
             continue
         workspace.name = remove_prefix + workspace.name
 
+    # Add EXEC_DEFAULT to all bpy,ops calls to ensure they are "blocking" calls
     file_path_str = file_path.__str__()
     with bpy.data.libraries.load(file_path_str) as (data_from, data_to):
         for workspace in data_from.workspaces:
             bpy.ops.wm.append(
+                'EXEC_DEFAULT',
                 filepath=file_path_str,
                 directory=file_path_str + "/" + 'WorkSpace',
                 filename=str(workspace),
@@ -53,5 +55,5 @@ def replace_workspace_with_template(context: bpy.types.Context, task_type_name: 
     # context.window.workspace = workspace
     for workspace in workspaces_to_remove:
         with context.temp_override(workspace=workspace):
-            bpy.ops.workspace.delete()
+            bpy.ops.workspace.delete('EXEC_DEFAULT')
     return True
