@@ -210,6 +210,9 @@ def add_action_to_armature(collection: bpy.types.Collection, shot_active: Shot):
     for obj in collection.all_objects:
         # Skip Armatures that are hidden from viewport because they aren't intended to be animated
         if obj.type == 'ARMATURE' and not obj.hide_viewport:
-            obj.animation_data_create()
+            if not obj.animation_data:
+                obj.animation_data_create()
             name = anim_opsdata.gen_action_name(obj, collection, shot_active)
+            if obj.animation_data.action and obj.animation_data.action.name == name:
+                continue
             obj.animation_data.action = bpy.data.actions.new(name=name)
