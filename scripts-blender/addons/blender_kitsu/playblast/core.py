@@ -62,7 +62,7 @@ def override_render_path(self, context, render_file_path):
 
 
 @contextlib.contextmanager
-def override_hide_viewport_gizmos(
+def override_hide_viewport_overlays(
     self,
     context,
 ):
@@ -243,6 +243,17 @@ def playblast_with_viewport_settings(self, context, file_path):
                 output_path = ensure_render_path(file_path)
                 bpy.ops.render.opengl(animation=True)
                 return output_path
+
+
+def playblast_with_viewport_preset_settings(self, context, file_path):
+    with override_render_path(self, context, file_path):
+        with override_render_format(self, context):
+            with override_metadata_stamp_settings(self, context):
+                with override_viewport_shading(self, context):
+                    with override_hide_viewport_overlays(self, context):
+                        output_path = ensure_render_path(file_path)
+                        bpy.ops.render.opengl(animation=True)
+                        return output_path
 
 
 def playblast_vse(self, context, file_path):

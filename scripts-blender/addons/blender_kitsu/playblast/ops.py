@@ -43,6 +43,7 @@ from ..types import (
 from ..playblast.core import (
     playblast_with_scene_settings,
     playblast_with_viewport_settings,
+    playblast_with_viewport_preset_settings,
     playblast_vse,
 )
 from ..context import core as context_core
@@ -152,7 +153,9 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         else:
             if render_mode == "VIEWPORT":
                 output_path = playblast_with_viewport_settings(self, context, playblast_file)
-            else:  # render_mode == "SCENE"
+            elif render_mode == "VIEWPORT_PRESET":
+                output_path = playblast_with_viewport_preset_settings(self, context, playblast_file)
+            else:  #  render_mode == "SCENE":
                 output_path = playblast_with_scene_settings(self, context, playblast_file)
 
         context.window_manager.progress_update(1)
