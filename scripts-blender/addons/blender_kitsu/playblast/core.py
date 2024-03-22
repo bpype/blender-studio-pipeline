@@ -10,9 +10,10 @@ logger = LoggerFactory.getLogger()
 
 
 @contextlib.contextmanager
-def override_render_format(self, context):
+def override_render_format(self, context, enable_sequencer: bool = False):
     """Overrides the render settings for playblast creation"""
     rd = context.scene.render
+    use_sequencer = rd.use_sequencer = enable_sequencer
     # Format render settings.
     # percentage = rd.resolution_percentage
     file_format = rd.image_settings.file_format
@@ -23,6 +24,7 @@ def override_render_format(self, context):
 
     try:
         # rd.resolution_percentage = 100
+        rd.use_sequencer = enable_sequencer
         rd.image_settings.file_format = "FFMPEG"
         rd.ffmpeg.constant_rate_factor = "HIGH"
         rd.ffmpeg.codec = "H264"
@@ -33,6 +35,7 @@ def override_render_format(self, context):
 
     finally:
         # rd.resolution_percentage = percentage
+        rd.use_sequencer = use_sequencer
         rd.image_settings.file_format = file_format
         rd.ffmpeg.codec = ffmpeg_codec
         rd.ffmpeg.constant_rate_factor = ffmpeg_constant_rate
@@ -242,7 +245,7 @@ def playblast_with_viewport_settings(self, context, file_path):
 
 def playblast_vse(self, context, file_path):
     with override_render_path(self, context, file_path):
-        with override_render_format(self, context):
+        with override_render_format(self, context, enable_sequencer=True):
             output_path = ensure_render_path(file_path)
             bpy.ops.render.opengl(animation=True, sequencer=True)
             return output_path

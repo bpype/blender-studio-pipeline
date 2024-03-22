@@ -110,7 +110,7 @@ class KITSU_OT_edit_export_publish(bpy.types.Operator):
 
         # Render Sequence to .mp4
         with override_render_path(self, context, render_path_str):
-            with override_render_format(self, context):
+            with override_render_format(self, context, enable_sequencer=True):
                 bpy.ops.render.opengl(animation=True, sequencer=True)
 
         # Create comment with video
