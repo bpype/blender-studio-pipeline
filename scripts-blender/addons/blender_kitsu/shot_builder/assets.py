@@ -50,6 +50,7 @@ def get_shot_assets(
                 linked_collection = core.link_and_override_collection(
                     collection_name=key, file_path=filepath, scene=scene
                 )
+                core.add_action_to_armature(linked_collection, shot)
                 print(f"'{key}': Succesfully Linked & Overriden")
             else:
                 linked_collection = core.link_data_block(

@@ -11,6 +11,7 @@ from ..types import (
 from ..cache import Project
 from . import config
 from .. import prefs
+from ..anim import opsdata as anim_opsdata
 
 #################
 # Constants
@@ -131,13 +132,13 @@ def link_and_override_collection(
     Returns:
         bpy.types.Collection: Overriden Collection linked to Scene Collection
     """
-    camera_col = link_data_block(file_path, collection_name, "Collection")
-    override_camera_col = camera_col.override_hierarchy_create(
+    collection = link_data_block(file_path, collection_name, "Collection")
+    override_collection = collection.override_hierarchy_create(
         scene, bpy.context.view_layer, do_fully_editable=True
     )
-    scene.collection.children.unlink(camera_col)
+    scene.collection.children.unlink(collection)
     # Make library override.
-    return override_camera_col
+    return override_collection
 
 
 def link_camera_rig(
@@ -203,3 +204,12 @@ def link_task_type_output_collections(shot: Shot, task_type: TaskType):
         file_path = external_filepath.__str__()
         colection_name = shot.get_output_collection_name(short_name)
         link_data_block(file_path, colection_name, 'Collection')
+
+
+def add_action_to_armature(collection: bpy.types.Collection, shot_active: Shot):
+    for obj in collection.all_objects:
+        # Skip Armatures that are hidden from viewport because they aren't intended to be animated
+        if obj.type == 'ARMATURE' and not obj.hide_viewport:
+            obj.animation_data_create()
+            name = anim_opsdata.gen_action_name(obj, collection, shot_active)
+            obj.animation_data.action = bpy.data.actions.new(name=name)
