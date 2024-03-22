@@ -104,6 +104,8 @@ class FolderListModel:
 
 
 class FileListModel:
+
+    filter_name: str = ""
     def __init__(self):
         self.__root_path: Optional[Path] = None
         self.__files: List[str] = []
@@ -152,7 +154,8 @@ class FileListModel:
         if path.exists() and path.is_dir():
             # Iterate through directory and return all pathes that are files, only return their name.
             return sorted(
-                [str(x.name) for x in path.iterdir() if x.is_file()], reverse=True
+                [str(x.name) for x in path.iterdir() if x.is_file() and self.filter_name in x.name],
+                reverse=True,
             )
         else:
             return []

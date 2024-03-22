@@ -52,6 +52,7 @@ def init_edit_export_file_model(
         )
         return
 
+    EDIT_EXPORT_FILE_MODEL.filter_name = Path(kitsu_props.edit_export_file).name
     EDIT_EXPORT_FILE_MODEL.reset()
     EDIT_EXPORT_FILE_MODEL.root_path = edit_export_dir
 
