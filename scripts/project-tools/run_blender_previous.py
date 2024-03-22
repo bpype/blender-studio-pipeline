@@ -15,6 +15,12 @@ cur_date_file = PATH_ROLLBACK_LOCAL / "download_date"
 
 paths = sorted(Path(PATH_PREVIOUS).iterdir())
 
+if cur_date_file.exists():
+    with open(cur_date_file, 'r') as file:
+        date = file.read().rstrip()
+        print("Current build: \033[100m%s\033[0m" % date)
+        print()
+
 print("Available builds:\n")
 
 for index, path in enumerate(paths):
@@ -31,7 +37,7 @@ for index, path in enumerate(paths):
         print("\033[1mID:\033[0m%3i (%s)" % (index, date))
 
 num_prev_versions = len(paths)
-input_error_mess = "Please select an index between 0 and " + str(num_prev_versions - 1)
+input_error_mess = "Please select an index between 0 and " + str(num_prev_versions - 1) + " or press ENTER to launch current version"
 selected_index = 0
 
 if num_prev_versions == 0:
@@ -40,6 +46,9 @@ if num_prev_versions == 0:
 
 while True:
     index_str = input("Select which Blender build number to run. (press ENTER to confirm): ")
+    if index_str == "" and cur_date_file.exists():
+        selected_index = -1
+        break
     if not index_str.isnumeric():
         print(input_error_mess)
         continue
@@ -49,5 +58,6 @@ while True:
         break
     print(input_error_mess)
 
-update_blender(paths[selected_index], PATH_ROLLBACK_LOCAL)
+if selected_index > -1:
+    update_blender(paths[selected_index], PATH_ROLLBACK_LOCAL)
 launch_blender(PATH_ROLLBACK_LOCAL)
