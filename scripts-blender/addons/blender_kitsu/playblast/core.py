@@ -230,17 +230,19 @@ def ensure_render_path(file_path: str) -> Path:
 def playblast_with_scene_settings(self, context, file_path):
     with override_render_path(self, context, file_path):
         with override_render_format(self, context):
-            output_path = ensure_render_path(file_path)
-            bpy.ops.render.render(animation=True, use_viewport=False)
-            return output_path
+            with override_metadata_stamp_settings(self, context):
+                output_path = ensure_render_path(file_path)
+                bpy.ops.render.render(animation=True, use_viewport=False)
+                return output_path
 
 
 def playblast_with_viewport_settings(self, context, file_path):
     with override_render_path(self, context, file_path):
         with override_render_format(self, context):
-            output_path = ensure_render_path(file_path)
-            bpy.ops.render.opengl(animation=True)
-            return output_path
+            with override_metadata_stamp_settings(self, context):
+                output_path = ensure_render_path(file_path)
+                bpy.ops.render.opengl(animation=True)
+                return output_path
 
 
 def playblast_vse(self, context, file_path):
