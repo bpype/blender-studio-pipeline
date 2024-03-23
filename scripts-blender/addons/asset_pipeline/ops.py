@@ -535,7 +535,7 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
             )
             return False
         if not publish.is_staged_publish(Path(bpy.data.filepath)):
-            cls.poll_message_set.report("No File is currently staged")
+            cls.poll_message_set("No File is currently staged")
             return False
         return True
 
