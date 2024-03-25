@@ -192,7 +192,7 @@ def override_viewport_shading(self, context):
         # Space data settings.
         sps.type = "SOLID"
         sps.light = "STUDIO"
-        sps.studio_light = "Default"
+        sps.studio_light = "paint.sl"
         sps.color_type = "MATERIAL"
         sps.background_type = "THEME"
 
