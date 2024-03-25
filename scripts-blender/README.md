@@ -1,6 +1,8 @@
-# Blender Add-ons
+# Blender Studio Add-ons
 
 Add-ons used by the Blender Studio pipeline. To review or report issues visit the [Blender-Studio-Pipeline](https://projects.blender.org/studio/blender-studio-pipeline/issues) issues board.
+
+Download release packages of the below add-ons from the [Releases Page](https://projects.blender.org/studio/blender-studio-pipeline/releases).
 
 | Add-on | Description | 
 |---|---|
@@ -19,7 +21,3 @@ Add-ons used by the Blender Studio pipeline. To review or report issues visit th
 |Lighting Overrider |Create, manage and apply python overrides in a flexible and reliable way.  
 |Pose Shape Keys |Manage and maintain shapekeys for rigging.  
 |Render Review |Review renders from Flamenco with the sequence editor.  
-
-Download release packages of the above add-ons from the [Add-on Release Table](https://studio.blender.org/pipeline/addons/overview) page.
-
-Download previous release of the above add-ons from the [Releases](https://projects.blender.org/studio/blender-studio-pipeline/releases) page.

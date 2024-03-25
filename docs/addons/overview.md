@@ -1,1 +1,1 @@
-<!--@include: ../../scripts/pipeline-release/overview.md-->
+<!--@include: ../../scripts-blender/README.md-->
