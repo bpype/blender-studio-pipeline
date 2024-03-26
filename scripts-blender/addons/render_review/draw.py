@@ -25,7 +25,6 @@
 import typing
 
 import bpy
-import bgl
 import gpu
 
 APPROVED_COLOR = (0.24, 1, 0.139, 0.7)
@@ -80,9 +79,8 @@ class LineDrawer:
 
         if not coords:
             return
-
-        bgl.glEnable(bgl.GL_BLEND)
-        bgl.glLineWidth(LINE_WIDTH)
+        gpu.state.blend_set("ALPHA")
+        gpu.state.line_width_set(LINE_WIDTH)
 
         vbo = gpu.types.GPUVertBuf(len=len(coords), format=self._format)
         vbo.attr_fill(id=self._pos_id, data=coords)
