@@ -2,7 +2,7 @@ Pipeline release is a script to package all addons into a single zip on the pipe
 
 ## Prerequisite
 In order to use this tool you need:
-- GIT
+- GIT & GIT LFS installed
 - Python 3.11+
 - [Requests Module](https://requests.readthedocs.io/en/latest/)
 

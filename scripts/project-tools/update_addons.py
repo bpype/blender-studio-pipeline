@@ -1,10 +1,61 @@
 #!/usr/bin/env python3
 
-import glob
 import hashlib
-import os
-import pathlib
+from pathlib import Path
+from urllib.request import urlretrieve
+import sys
 import requests
+import glob
+import os
+
+
+def update_blender_studio_addons(download_folder_path: Path):
+    if not download_folder_path.exists():
+        print(
+            f"Ensure script is run out of Project Tools directory {str(download_folder_path)} does not exist"
+        )
+        sys.exit(1)
+
+    sha_file = download_folder_path.joinpath("blender_studio_add-ons_latest.zip.sha256")
+    zip_file = download_folder_path.joinpath("blender_studio_add-ons_latest.zip")
+
+    url_sha = "https://projects.blender.org/studio/blender-studio-pipeline/releases/download/latest/blender_studio_add-ons_latest.zip.sha256"
+    url_zip = "https://projects.blender.org/studio/blender-studio-pipeline/releases/download/latest/blender_studio_add-ons_latest.zip"
+
+    # Check current sha and early return if match
+    web_sha = requests.get(url_sha).text.strip().lower()
+    if sha_file.exists() & zip_file.exists():
+        if shasum_matches(zip_file, web_sha):
+            print(f"{zip_file.name} already up to date, canceling update")
+            return
+        else:
+            # Remove current files
+            if sha_file.exists():
+                sha_file.unlink()
+            if zip_file.exists():
+                zip_file.unlink()
+
+    print(f"Downloading {zip_file.name}......", end="")
+    urlretrieve(url_zip, str(zip_file))
+    print("Complete")
+    print(f"Downloading {sha_file.name}......", end="")
+    urlretrieve(url_sha, str(sha_file))
+    print("Complete")
+
+    if not shasum_matches(zip_file, web_sha):
+        print(f"Downloaded file {zip_file.name} does not match its shasum, exiting!")
+        exit(1)
+
+    print("Blender Studio Add-Ons Successfully Updated for Current Project")
+    print(
+        "Blender Studio Add-Ons will be copied to your local directory next time you launch Blender via Projet Tools"
+    )
+
+
+def shasum_matches(file, sha_sum):
+    with open(file, "rb") as f:
+        digest = hashlib.file_digest(f, "sha256")
+        return sha_sum.startswith(digest.hexdigest())
 
 
 def download_file(url, out_folder, filename):
@@ -33,16 +84,13 @@ def download_file(url, out_folder, filename):
     return local_filename
 
 
-current_file_folder_path = pathlib.Path(__file__).parent
+current_file_folder_path = Path(__file__).parent
 download_folder_path = (current_file_folder_path / "../../shared/artifacts/addons/").resolve()
+update_blender_studio_addons(download_folder_path)
 
-# Ensure that the download directory exists
-os.makedirs(download_folder_path, exist_ok=True)
-
-print("This script currently does nothing. If you want to update the 'studio-pipeline' addons, run the 'package_local.py' script in the studio-pipline repo.")
-
-#download_file(
+# Customize this script to download add-ons from other sources
+# download_file(
 #    "https://projects.blender.org/studio/blender-studio-pipeline/archive/main.zip",
 #    download_folder_path,
 #    "blender-studio-pipeline-main.zip",
-#)
+# )
