@@ -866,7 +866,8 @@ class Task(Entity):
         task_dict = gazu.task.get_task_by_name(asset_shotdict, task_type_dict, name)
 
         if task_dict:
-            return cls.from_dict(task_dict)
+            # returning task by name doesn't return entire task data
+            return cls.from_dict(gazu.task.get_task(task_dict["id"]))
         return None
 
     @classmethod

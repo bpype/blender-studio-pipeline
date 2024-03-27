@@ -1,8 +1,8 @@
 import bpy
 from pathlib import Path
-
+from bpy.types import Context
 import contextlib
-
+from typing import Tuple
 from .. import prefs, cache
 from ..logger import LoggerFactory
 
@@ -10,7 +10,7 @@ logger = LoggerFactory.getLogger()
 
 
 @contextlib.contextmanager
-def override_render_format(self, context, enable_sequencer: bool = False):
+def override_render_format(self, context: Context, enable_sequencer: bool = False):
     """Overrides the render settings for playblast creation"""
     rd = context.scene.render
     use_sequencer = rd.use_sequencer = enable_sequencer
@@ -44,7 +44,7 @@ def override_render_format(self, context, enable_sequencer: bool = False):
 
 
 @contextlib.contextmanager
-def override_render_path(self, context, render_file_path):
+def override_render_path(self, context: Context, render_file_path: str):
     """Overrides the render settings for playblast creation"""
     rd = context.scene.render
     # Filepath.
@@ -62,10 +62,7 @@ def override_render_path(self, context, render_file_path):
 
 
 @contextlib.contextmanager
-def override_hide_viewport_overlays(
-    self,
-    context,
-):
+def override_hide_viewport_overlays(self, context: Context):
     sp = context.space_data
     show_gizmo = sp.show_gizmo
     show_overlays = sp.overlay.show_overlays
@@ -81,19 +78,11 @@ def override_hide_viewport_overlays(
 
 
 @contextlib.contextmanager
-def override_metadata_stamp_settings(
-    self,
-    context,
-):
+def override_metadata_stamp_settings(self, context: Context, username: str = "None"):
     rd = context.scene.render
 
     # Get shot name for stamp note text.
     shot = cache.shot_active_get()
-
-    # Get first last name for stamp note text.
-    session = prefs.session_get(context)
-    first_name = session.data.user["first_name"]
-    last_name = session.data.user["last_name"]
 
     # Remember current render settings in order to restore them later.
 
@@ -134,7 +123,7 @@ def override_metadata_stamp_settings(
         rd.use_stamp_marker = False
         rd.use_stamp_marker = False
         rd.use_stamp_note = True
-        rd.stamp_note_text = f"Shot: {shot.name} | Animator: {first_name} {last_name}"
+        rd.stamp_note_text = f"Shot: {shot.name} | Animator: {username}"
         rd.use_stamp = True
         rd.stamp_font_size = 24
         rd.stamp_foreground = (0.8, 0.8, 0.8, 1)
@@ -168,7 +157,7 @@ def override_metadata_stamp_settings(
 
 
 @contextlib.contextmanager
-def override_viewport_shading(self, context):
+def override_viewport_shading(self, context: Context):
     """Overrides the render settings for playblast creation"""
     rd = context.scene.render
     sps = context.space_data.shading
@@ -227,28 +216,30 @@ def ensure_render_path(file_path: str) -> Path:
     return output_path
 
 
-def playblast_with_scene_settings(self, context, file_path):
+def playblast_with_scene_settings(self, context: Context, file_path: str, username: str) -> Path:
     with override_render_path(self, context, file_path):
         with override_render_format(self, context):
-            with override_metadata_stamp_settings(self, context):
+            with override_metadata_stamp_settings(self, context, username):
                 output_path = ensure_render_path(file_path)
                 bpy.ops.render.render(animation=True, use_viewport=False)
                 return output_path
 
 
-def playblast_with_viewport_settings(self, context, file_path):
+def playblast_with_viewport_settings(self, context: Context, file_path: str, username: str) -> Path:
     with override_render_path(self, context, file_path):
         with override_render_format(self, context):
-            with override_metadata_stamp_settings(self, context):
+            with override_metadata_stamp_settings(self, context, username):
                 output_path = ensure_render_path(file_path)
                 bpy.ops.render.opengl(animation=True)
                 return output_path
 
 
-def playblast_with_viewport_preset_settings(self, context, file_path):
+def playblast_with_viewport_preset_settings(
+    self, context: Context, file_path: str, username: str
+) -> Path:
     with override_render_path(self, context, file_path):
         with override_render_format(self, context):
-            with override_metadata_stamp_settings(self, context):
+            with override_metadata_stamp_settings(self, context, username):
                 with override_viewport_shading(self, context):
                     with override_hide_viewport_overlays(self, context):
                         output_path = ensure_render_path(file_path)
@@ -256,7 +247,7 @@ def playblast_with_viewport_preset_settings(self, context, file_path):
                         return output_path
 
 
-def playblast_vse(self, context, file_path):
+def playblast_vse(self, context: Context, file_path: str) -> Path:
     with override_render_path(self, context, file_path):
         with override_render_format(self, context, enable_sequencer=True):
             output_path = ensure_render_path(file_path)
@@ -271,7 +262,7 @@ def set_frame_range_in(frame_in: int) -> dict:
     return shot
 
 
-def get_frame_range():  # TODO return type
+def get_frame_range() -> Tuple[int, int]:
     active_shot = cache.shot_active_get()
     if not active_shot:
         return
@@ -284,7 +275,7 @@ def get_frame_range():  # TODO return type
     return frame_in, frame_out
 
 
-def check_frame_range(context) -> bool:
+def check_frame_range(context: Context) -> bool:
     """
     Compare the current scene's frame range with that of the active shot on kitsu.
     If there's a mismatch, set kitsu_error.frame_range -> True. This will enable

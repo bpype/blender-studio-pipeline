@@ -79,6 +79,11 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
     )
     thumbnail_frame_final: bpy.props.IntProperty(name="Thumbnail Frame Final")
 
+    _entity = None
+    _task_status = None
+    _task = None
+    _task_type = None
+
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         if not prefs.session_auth(context):
@@ -112,6 +117,44 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
     def is_vse(self, context):
         return bool(context.space_data.type == "SEQUENCE_EDITOR")
 
+    def _get_kitsu_task(self, context: bpy.types.Context):
+        task_type_name = cache.task_type_active_get().name
+
+        # Get task status 'wip' and task type 'Animation'.
+        self._task_status = TaskStatus.by_id(self.task_status)
+        self._task_type = TaskType.by_name(task_type_name)
+
+        if not self._task_type:
+            raise RuntimeError("Failed to upload playblast. Task type missing on Kitsu Server")
+
+        # Find / get latest task
+        self._task = Task.by_name(self._entity, self._task_type)
+        if not self._task:
+            # An Entity on the server can have 0 tasks even tough task types exist.
+            # We have to create a task first before being able to upload a thumbnail.
+            try:
+                self._task = Task.new_task(
+                    self._entity, self._task_type, task_status=self._task_status
+                )
+            except TypeError:
+                raise RuntimeError(
+                    f"Failed to upload playblast. Task type {self._task_type.name} not present in {self._entity.type} {self._entity.name}"
+                )
+
+    def _get_user_name(self, context: bpy.types.Context) -> str:
+        session = prefs.session_get(context)
+        if len(self._task.persons) == 1:
+            return self._task.persons[0]["full_name"]
+        elif len(self._task.persons) >= 1:
+            person = ""
+            for index, user in enumerate(self._task.persons):
+                person += user["full_name"]
+                if index < len(self._task.persons) - 1:
+                    person += ", "
+            return person
+        else:
+            return session.data.user["full_name"]
+
     def execute(self, context: bpy.types.Context) -> Set[str]:
         addon_prefs = prefs.addon_prefs_get(context)
         kitsu_scene_props = context.scene.kitsu
@@ -135,7 +178,10 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
             return {"CANCELLED"}
 
         # entity is either a shot or a sequence
-        entity = self._get_active_entity(context)
+        self._entity = self._get_active_entity(context)
+
+        # get kitsu task info
+        self._get_kitsu_task(context)
 
         # Save playblast task status id for next time.
         kitsu_scene_props.playblast_task_status_id = self.task_status
@@ -147,16 +193,22 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
 
         playblast_file = kitsu_scene_props.playblast_file
 
+        username = self._get_user_name(context)
+
         # Render and save playblast
         if self.is_vse(context):
             output_path = playblast_vse(self, context, playblast_file)
         else:
             if render_mode == "VIEWPORT":
-                output_path = playblast_with_viewport_settings(self, context, playblast_file)
+                output_path = playblast_with_viewport_settings(
+                    self, context, playblast_file, username
+                )
             elif render_mode == "VIEWPORT_PRESET":
-                output_path = playblast_with_viewport_preset_settings(self, context, playblast_file)
+                output_path = playblast_with_viewport_preset_settings(
+                    self, context, playblast_file, username
+                )
             else:  #  render_mode == "SCENE":
-                output_path = playblast_with_scene_settings(self, context, playblast_file)
+                output_path = playblast_with_scene_settings(self, context, playblast_file, username)
 
         context.window_manager.progress_update(1)
 
@@ -166,7 +218,7 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         context.window_manager.progress_update(2)
         context.window_manager.progress_end()
 
-        self.report({"INFO"}, f"Created and uploaded playblast for {entity.name}")
+        self.report({"INFO"}, f"Created and uploaded playblast for {self._entity.name}")
         logger.info("-END- Creating Playblast")
 
         # Redraw UI
@@ -275,44 +327,22 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
             layout.prop(context.scene.kitsu, "playblast_render_mode", text="Render Mode")
 
     def _upload_playblast(self, context: bpy.types.Context, filepath: Path) -> None:
-        entity = self._get_active_entity(context)
-        task_type_name = cache.task_type_active_get().name
-
-        # Get task status 'wip' and task type 'Animation'.
-        task_status = TaskStatus.by_id(self.task_status)
-        task_type = TaskType.by_name(task_type_name)
-
-        if not task_type:
-            raise RuntimeError("Failed to upload playblast. Task type missing on Kitsu Server")
-
-        # Find / get latest task
-        task = Task.by_name(entity, task_type)
-        if not task:
-            # An Entity on the server can have 0 tasks even tough task types exist.
-            # We have to create a task first before being able to upload a thumbnail.
-            try:
-                task = Task.new_task(entity, task_type, task_status=task_status)
-            except TypeError:
-                raise RuntimeError(
-                    f"Failed to upload playblast. Task type {task_type.name} not present in {entity.type} {entity.name}"
-                )
-
         # Create a comment
-        comment_text = self._gen_comment_text(context, entity)
-        comment = task.add_comment(
-            task_status,
+        comment_text = self._gen_comment_text(context, self._entity)
+        comment = self._task.add_comment(
+            self._task_status,
             comment=comment_text,
         )
 
         # Add_preview_to_comment
-        task.add_preview_to_comment(
+        self._task.add_preview_to_comment(
             comment,
             filepath.as_posix(),
             self.thumbnail_frame_final,
         )
 
         logger.info(
-            f"Uploaded playblast for shot: {entity.name} under: {task_type.name}"
+            f"Uploaded playblast for shot: {self._entity.name} under: {self._task_type.name}"
         )
 
     def _gen_comment_text(self, context: bpy.types.Context, shot: Shot) -> str:
