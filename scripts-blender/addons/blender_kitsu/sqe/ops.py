@@ -20,6 +20,8 @@
 
 import os
 import re
+
+from bpy.types import Context
 import gazu
 import contextlib
 import colorsys
@@ -2195,23 +2197,133 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class KITSU_OT_shot_image_sequence(bpy.types.Operator):
-    bl_idname = "kitsu.shot_image_sequence"
-    bl_label = "Shot as Image Sequence"
-    bl_description = "Import image sequences for selected clips"
+def get_used_channels(self: Any, context: bpy.types.Context, edit_text: str = "") -> List[str]:
+    used_channels = []
+    for seq in context.scene.sequence_editor.sequences_all:
+        used_channels.append(seq.channel)
+
+    aval_channels = []
+    for channel in range(1, 100):
+        if channel not in used_channels:
+            aval_channels.append(channel)
+
+    return [f"{channel}" for channel in aval_channels]
+
+
+def get_shot_task_types_enum_list(self, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
+    active_project = cache.project_active_get()
+    return [
+        (t.id, t.name, "")
+        for t in TaskType.all_shot_task_types()
+        if t.id in active_project.task_types
+    ]
+
+
+class KITSU_OT_sqe_import_playblast(bpy.types.Operator):
+    bl_idname = "kitsu.sqe_import_playblast"
+    bl_label = "Import Playblast"
+    bl_description = "Import playblast for selected metadata strips"
     bl_options = {"REGISTER", "UNDO"}
 
-    def get_used_channels(self: Any, context: bpy.types.Context, edit_text: str) -> List[str]:
-        used_channels = []
-        for seq in context.scene.sequence_editor.sequences_all:
-            used_channels.append(seq.channel)
+    channel_selection: bpy.props.StringProperty(  # type: ignore
+        name="Channel",
+        description="Choose an empty target channel to place playblasts onto",
+        search=get_used_channels,
+        search_options={'SORT'},
+    )
 
-        aval_channels = []
-        for channel in range(1, 100):
-            if channel not in used_channels:
-                aval_channels.append(channel)
+    task_type: bpy.props.EnumProperty(  # type: ignore
+        name="Task Type",
+        description="Choose a task type to import playblasts for",
+        items=get_shot_task_types_enum_list,
+    )
 
-        return [f"{channel}" for channel in aval_channels]
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sqe = context.scene.sequence_editor
+        if not sqe:
+            return False
+        if not cache.project_active_get():
+            cls.poll_message_set("No Kitsu Project Found check Add-on Preferences")
+            return False
+        for strip in context.selected_sequences:
+            if strip.kitsu.shot_id == "":
+                cls.poll_message_set(f"Selected strip {strip.name} is not metadata strip'")
+                return False
+        if len(bpy.context.selected_sequences) == 0:
+            cls.poll_message_set("Please select one or more metadata strips")
+            return False
+        return True
+
+    def invoke(self, context, event):
+        channels = [int(x) for x in get_used_channels(self, context)]
+        strip = context.selected_sequences[0]
+        channel = min(channels, key=lambda x: abs(x - strip.channel))
+        self.channel_selection = f"{channel}"
+        return context.window_manager.invoke_props_dialog(self, width=500)
+
+    def draw(self, context: bpy.types.Context) -> None:
+        layout = self.layout
+        layout.prop(self, "channel_selection")
+        layout.prop(self, "task_type")
+
+    def execute(self, context: Context) -> Set[str] | Set[int]:
+        succeeded: Set[str] = set()
+        failed: Set[str] = set()
+        sequences = context.scene.sequence_editor.sequences
+        metadata_strips = [
+            strip for strip in context.selected_sequences if strip.kitsu.shot_id != ''
+        ]
+        for metadata_strip in metadata_strips:
+            # TODO add try except if ID is not valid, do same for shot as image sequence.
+            shot = Shot.by_id(metadata_strip.kitsu.shot_id)
+            task_type_short_name = TaskType.by_id(self.task_type).get_short_name()
+            filepath = shot.get_latest_playblast_file(context, task_type_short_name)
+            if filepath:
+                playblast = sequences.new_movie(
+                    name=Path(filepath).name,
+                    filepath=filepath,
+                    frame_start=int(metadata_strip.frame_start),
+                    channel=int(self.channel_selection),
+                )
+                if playblast.frame_final_end > metadata_strip.frame_final_end:
+                    playblast.frame_final_end = metadata_strip.frame_final_end
+
+                succeeded.add(metadata_strip.name)
+            else:
+                failed.add(metadata_strip.name)
+
+        if len(metadata_strips) == 1:
+            if len(failed) == 1:
+                self.report({"WARNING"}, f"Failed to import Playblast `{failed[0]}` does not exist")
+                return {"CANCELLED"}
+            if len(succeeded) == 1:
+                self.report({"INFO"}, f"Imported Playblast from `{succeeded[0]}`")
+                return {"FINISHED"}
+
+        report_str = f"Imported {len(succeeded)} Playblast"
+        report_state = "INFO"
+        if failed:
+            report_state = "WARNING"
+            report_str += f" | Failed: {len(failed)}"
+
+        self.report(
+            {report_state},
+            report_str,
+        )
+
+        self.report(
+            {report_state},
+            report_str,
+        )
+        return {'FINISHED'}
+
+
+class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
+    bl_idname = "kitsu.sqe_import_image_sequence"
+    bl_label = "Import Image Sequence"
+    bl_description = "Import Image Sequence for selected metadata strips"
+    bl_options = {"REGISTER", "UNDO"}
 
     channel_selection: bpy.props.StringProperty(
         name="Channel",
@@ -2234,6 +2346,12 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         default=True,
     )
 
+    task_type: bpy.props.EnumProperty(  # type: ignore
+        name="Task Type",
+        description="Choose a task type to import playblasts for",
+        items=get_shot_task_types_enum_list,
+    )
+
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         sqe = context.scene.sequence_editor
@@ -2242,9 +2360,9 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         if not cache.project_active_get():
             cls.poll_message_set("No Kitsu Project Found check Add-on Preferences")
             return False
-        for sqe in context.selected_sequences:
-            if sqe.type != 'MOVIE':
-                cls.poll_message_set("Selected strips must be 'MOVIE'")
+        for strip in context.selected_sequences:
+            if strip.kitsu.shot_id == "":
+                cls.poll_message_set(f"Selected strip {strip.name} is not metadata strip'")
                 return False
         if len(bpy.context.selected_sequences) == 0:
             cls.poll_message_set("Please select a 'MOVIE' strip")
@@ -2268,7 +2386,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
             scene.view_settings.view_transform = 'Filmic'
 
     def invoke(self, context, event):
-        channels = [int(x) for x in self.get_used_channels(context, "")]
+        channels = [int(x) for x in get_used_channels(self, context)]
         strip = context.selected_sequences[0]
         channel = min(channels, key=lambda x: abs(x - strip.channel))
         self.channel_selection = f"{channel}"
@@ -2276,6 +2394,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
+        layout.prop(self, "task_type")
         layout.prop(self, "channel_selection")
         layout.prop(self, "file_type")
         layout.prop(self, "set_color_space")
@@ -2288,23 +2407,13 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
             return match.group(1)
         return
 
-    def get_metadata_strip(self, context, strip):
-        name = self.get_shot_name(strip)
-        for strip in context.scene.sequence_editor.sequences_all:
-            if strip.name == name:
-                return strip
-        return
-
-    def import_strip(self, context, strip, directory, channel):
+    def import_strip(self, context, metadata_strip, directory, channel):
         # https://blender.stackexchange.com/questions/286946/how-to-add-image-sequence-in-sequencer-via-python
-        frame_start = strip.frame_final_start
-        frame_end = strip.frame_final_end
+        frame_start = metadata_strip.frame_final_start
+        frame_end = metadata_strip.frame_final_end
 
         files = []
-        metadata_strip = self.get_metadata_strip(context, strip)
-        if not metadata_strip:
-            self.report({'ERROR'}, f"No Metadata Strip found for {strip.name}")
-            return {'CANCELLED'}
+
         shot = Shot.by_id(metadata_strip.kitsu.shot_id)
         start_frame = (
             shot.data.get('3d_start') if shot.data.get('3d_start') else bkglobals.FRAME_START
@@ -2313,7 +2422,7 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
             if file.name.endswith("mp4"):
                 continue
             frame_number = int(file.name.split(".")[0])
-            duration = strip.frame_duration + start_frame
+            duration = metadata_strip.frame_duration + start_frame
             if self.file_type in file.name and frame_number < duration:
                 files.append({"name": file.name})
 
@@ -2345,24 +2454,24 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
                 fit_method='FIT',
             )
         if len_strip + 1 != len(context.scene.sequence_editor.sequences_all):
-            print(f"Failed to import image sequence for {strip.name}")
+            print(f"Failed to import image sequence for {metadata_strip.name}")
             return
 
         new_strip = context.selected_sequences[0]
 
-        new_strip.animation_offset_end = strip.animation_offset_end
-        new_strip.animation_offset_start = strip.animation_offset_start
+        new_strip.animation_offset_end = metadata_strip.animation_offset_end
+        new_strip.animation_offset_start = metadata_strip.animation_offset_start
 
-        new_strip.frame_offset_end = strip.frame_offset_end
-        new_strip.frame_offset_start = strip.frame_offset_start
-        new_strip.frame_start = strip.frame_start
+        new_strip.frame_offset_end = metadata_strip.frame_offset_end
+        new_strip.frame_offset_start = metadata_strip.frame_offset_start
+        new_strip.frame_start = metadata_strip.frame_start
         new_strip.channel = channel
-        new_strip.name = f"{self.get_shot_name(strip)}{self.file_type.lower()}"
+        new_strip.name = f"{self.get_shot_name(metadata_strip)}{self.file_type.lower()}"
         new_strip.colorspace_settings.name = new_strip.colorspace_settings.name
 
-    def get_shot_seq_directory(self, context, strip):
+    def get_shot_seq_directory(self, context, filepath):
         addon_prefs = prefs.addon_prefs_get(context)
-        path_string = os.path.realpath(bpy.path.abspath(strip.filepath))
+        path_string = os.path.realpath(bpy.path.abspath(filepath))
         path = Path(
             path_string.replace(
                 addon_prefs.shot_playblast_root_dir, addon_prefs.frames_root_dir
@@ -2372,6 +2481,8 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         # Get closest empty channel
+        succeeded = []
+        failed = []
         channel = int(self.channel_selection)
         addon_prefs = prefs.addon_prefs_get(context)
         if not (
@@ -2386,12 +2497,42 @@ class KITSU_OT_shot_image_sequence(bpy.types.Operator):
         if self.set_color_space:
             self.set_scene_colorspace(context)
 
-        for strip in [strip for strip in context.selected_sequences if strip.type == 'MOVIE']:
-            directory = self.get_shot_seq_directory(context, strip)
+        metadata_strips = [
+            strip for strip in context.selected_sequences if strip.kitsu.shot_id != ''
+        ]
+
+        for strip in metadata_strips:
+            shot = Shot().by_id(strip.kitsu.shot_id)
+            # TODO pass task type as variable
+            task_type_short_name = TaskType.by_id(self.task_type).get_short_name()
+            filepath = shot.get_latest_playblast_file(context, task_type_short_name)
+            directory = self.get_shot_seq_directory(context, filepath)
             if not directory.exists():
-                self.report({"ERROR"}, f"{directory._str} does not exist")
-                return {"CANCELLED"}
+                failed.append(str(directory))
+                continue
             self.import_strip(context, strip, directory, channel)
+            succeeded.append(str(directory))
+
+        if len(metadata_strips) == 1:
+            if len(failed) == 1:
+                self.report(
+                    {"WARNING"}, f"Failed to import Image Sequence `{failed[0]}` does not exist"
+                )
+                return {"CANCELLED"}
+            if len(succeeded) == 1:
+                self.report({"INFO"}, f"Imported Image Sequence from `{succeeded[0]}`")
+                return {"FINISHED"}
+
+        report_str = f"Imported {len(succeeded)} Image Sequences"
+        report_state = "INFO"
+        if failed:
+            report_state = "WARNING"
+            report_str += f" | Failed: {len(failed)}"
+
+        self.report(
+            {report_state},
+            report_str,
+        )
         return {"FINISHED"}
 
 
@@ -2594,7 +2735,8 @@ classes = [
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
     KITSU_OT_sqe_clear_update_indicators,
-    KITSU_OT_shot_image_sequence,
+    KITSU_OT_sqe_import_image_sequence,
+    KITSU_OT_sqe_import_playblast,
 ]
 
 

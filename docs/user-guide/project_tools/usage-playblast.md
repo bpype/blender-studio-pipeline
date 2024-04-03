@@ -16,6 +16,7 @@ For each new task type, Anim/Layout etc needs to be added manually, then it can 
 Returning to your edit .blend file, we can now load the playblast from the animation file into the edit.
 
 1. Open your edit .blend file inside the directory `/your_project_name/svn/edit`
-2. From the Sequencer Header select `Add>Movie`
-3. Navigate to the directory of the playblast for your shot's .blend file `your_project_name/shared/footage/pro/{sequence_name}/{shot_name}/{file_name}` and select the `.mp4` file
-4. Place the new shot at the same timing as the corresponding metastrip
+2. Select the Metadata Strip associated with your shot
+3. From the Sequencer Side Panel select `Import 1 Shot Playblast`
+3. Select the Task Type you would like to load the playblast from and an empty channel
+4. Your new playblast will be imported with the same timing as the corresponding metadata strip

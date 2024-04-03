@@ -27,6 +27,8 @@ import gazu
 from .logger import LoggerFactory
 from . import bkglobals
 from . import prefs
+from .models import FileListModel
+import mimetypes
 
 logger = LoggerFactory.getLogger()
 
@@ -614,23 +616,53 @@ class Shot(Entity):
     def get_output_collection_name(self, task_type_short_name: str) -> str:
         return f"{self.get_task_name(task_type_short_name)}{bkglobals.DELIMITER}output"
 
-    def get_dir(self, context) -> str:
-        project_root_dir = prefs.project_root_dir_get(context)
-        all_shots_dir = project_root_dir.joinpath('pro').joinpath('shots')
-
+    def get_shot_folder_tree(self, base_path: Path) -> str:
         # Add Episode to Path if available
         if self.episode_id:
-            base_dir = all_shots_dir.joinpath(self.episode_name)
+            base_dir = base_path.joinpath(self.episode_name)
         else:
-            base_dir = all_shots_dir
+            base_dir = base_path
 
         seq = self.get_sequence()
         shot_dir = base_dir.joinpath(seq.name).joinpath(self.name)
-        return shot_dir.__str__()
+        return shot_dir
+
+    def get_dir(self, context) -> str:
+        project_root_dir = prefs.project_root_dir_get(context)
+        all_shots_dir = project_root_dir.joinpath('pro').joinpath('shots')
+        return str(self.get_shot_folder_tree(all_shots_dir))
 
     def get_filepath(self, context, task_type_short_name: str) -> str:
         file_name = self.get_task_name(task_type_short_name) + '.blend'
         return Path(self.get_dir(context)).joinpath(file_name).__str__()
+
+    def get_playblast_dir(self, context, task_type_short_name: str) -> str:
+        addon_prefs = prefs.addon_prefs_get(context)
+        playblsat_dir = addon_prefs.shot_playblast_root_dir
+        shot_dir = self.get_shot_folder_tree(Path(playblsat_dir))
+        task_dir = shot_dir.joinpath(self.name + bkglobals.DELIMITER + task_type_short_name)
+        return task_dir.__str__()
+
+    def get_latest_playblast_file(self, context, task_type_short_name: str):
+        filemodel = FileListModel()
+        filemodel.reset()
+        playblast_dir = Path(self.get_playblast_dir(context, task_type_short_name))
+        filemodel.root_path = playblast_dir
+        if len(filemodel.items) < 1:
+            return
+
+        playblast_files = set()
+        for file in filemodel.items:
+            filepath = playblast_dir.joinpath(file)
+            if mimetypes.guess_type(filepath)[0].startswith('video'):
+                playblast_files.add(filepath)
+
+        playblast_files = sorted(playblast_files, key=lambda x: str(x), reverse=True)
+        file = playblast_files[0]
+
+        if not file.exists():
+            return
+        return str(file)
 
     def update_data(self, data: Dict[str, Any]) -> Shot:
         gazu.shot.update_shot_data(asdict(self), data=data)

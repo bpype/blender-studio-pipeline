@@ -50,7 +50,8 @@ from ..sqe.ops import (
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
     KITSU_OT_sqe_clear_update_indicators,
-    KITSU_OT_shot_image_sequence,
+    KITSU_OT_sqe_import_image_sequence,
+    KITSU_OT_sqe_import_playblast,
 )
 from pathlib import Path
 
@@ -121,6 +122,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
         if self.poll_pull(context):
             self.draw_pull(context)
+            self.draw_media(context)
 
         if self.poll_debug(context):
             self.draw_debug(context)
@@ -639,6 +641,30 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
             icon="MODIFIER_ON",
         )
 
+    def draw_media(self, context: bpy.types.Context) -> None:
+
+        sel_metadata_strips = [strip for strip in context.selected_sequences if strip.kitsu.linked]
+
+        noun = get_selshots_noun(len(sel_metadata_strips), prefix=f"{len(sel_metadata_strips)}")
+        playblast = "Playblast" if len(sel_metadata_strips) <= 1 else "Playblasts"
+
+        sequence = "Sequence" if len(sel_metadata_strips) <= 1 else "Sequences"
+
+        # Create box.
+        layout = self.layout
+        box = layout.box()
+        box.label(text="Media", icon="RENDER_ANIMATION")
+        box.operator(
+            KITSU_OT_sqe_import_playblast.bl_idname,
+            text=f"Import {noun} {playblast}",
+            icon="FILE_MOVIE",
+        )
+        box.operator(
+            KITSU_OT_sqe_import_image_sequence.bl_idname,
+            text=f"Import {noun} Image {sequence}",
+            icon="RENDER_RESULT",
+        )
+
 
 class KITSU_PT_sqe_general_tools(bpy.types.Panel):
     """
@@ -684,7 +710,6 @@ class KITSU_PT_sqe_general_tools(bpy.types.Panel):
         box = layout.box()
         box.label(text="General", icon="MODIFIER")
 
-        box.operator(KITSU_OT_shot_image_sequence.bl_idname)
         # Scan for outdated media and reset operator.
         row = box.row(align=True)
         row.operator(

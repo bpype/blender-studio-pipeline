@@ -16,4 +16,4 @@ Renders approved by the render review Add-On can be automatically imported into 
 
 1. Open your Edit .blend file
 2. Select the video strip representing the shot that has an approved render. In the Kitsu Sidebar under General Tools select, `^` to load the next playblast from that shot automatically, which is an **mp4 preview** of your final render
-3. Select the video strips representing all the shots you have approved renders for. Use `Shot as Image Sequence` to import the final image sequences for each shot as EXR or JPG and load it to a new channel in the VSE
+3. Select the metadata strips representing all the shots you have approved renders for. Use `Import Image Sequence` operator to import the final image sequences for each shot as EXR or JPG and load it to a new channel in the VSE

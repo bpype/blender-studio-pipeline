@@ -14,7 +14,7 @@ blender-kitsu is a Blender Add-on to interact with Kitsu from within Blender. It
             - [Push](#push)
             - [Pull](#pull)
             - [Multi Edit](#multi-edit)
-            - [Shot as Image Sequence](#shot-as-image-sequence)
+            - [Import Media](#import-media)
             - [General Sequence Editor Tools](#general-sequence-editor-tools)
         - [Context](#context)
             - [Animation Tools](#animation-tools)
@@ -192,13 +192,21 @@ The `Multi Edit` panel only appears when you select multiple metadata strips tha
 ![image info](/media/addons/blender_kitsu/sqe_multi_edit.jpg)
 
 It is meant to be way to quickly setup lots of shots if they don't exist on Kitsu yet. You specify the sequence all shots should belong to and adjust the `Shot Counter Start` value. In the preview property you can see how all shots will be named when you execute the `Multi Edit Strip` operator. <br/>
+##### Import Media
+A collection of operators to Import media based on the Shot associated with the selected metadata strip(s). <br/>
 
-##### Shot as Image Sequence
-The `Shot as Image Sequence` Operator will replace a playblast from your Playblast Root directory with an image sequence located in the Frames Root directory. The Shots Directory and the Frames Directory should have matching folder structures. Typically the format is `/{sequence_name}/{shot_name}/{shot_name}-{shot_task}/`
+![Media Panel](/media/addons/blender_kitsu/media_panel.jpg)
+##### Import Playblast
+With a metadata strip selected `Import Playblast` Operator will find an image sequence of a given task type located in the Frames Root directory.
+![Import Playblast](/media/addons/blender_kitsu/import_playblast.jpg)
 
-![Shot as Image Sequence](/media/addons/blender_kitsu/Shot_as_Image_Sequence.jpg)
+Use this operator to import image sequences that have been approved via the [Render Review Add-On](/addons/render_review) Image Sequences can be loaded as either `EXR` or `JPG` sequences.
 
-Use this operator to replace playblasts with image sequences that have been approved via the [Render Review Add-On](/addons/render_review) Image Sequences can be loaded as either `EXR` or `JPG` sequences.
+##### Import Image Sequence
+With a metadata strip selected `Import Image Sequence` Operator will find an image sequence of a given task type located in the Frames Root directory.
+![Import Image Sequence](/media/addons/blender_kitsu/shot_image_sequence.jpg)
+
+Use this operator to import image sequences that have been approved via the [Render Review Add-On](/addons/render_review) Image Sequences can be loaded as either `EXR` or `JPG` sequences.
 
 ###### Advanced Settings
 If you check the `Advanced` checkbox next to the counter value, you have access to advance settings to customize the operator even more.
