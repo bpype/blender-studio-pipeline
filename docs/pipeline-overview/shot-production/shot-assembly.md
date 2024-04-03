@@ -8,17 +8,17 @@ Before Shot Assembly can begin two requirements need to be met. Firstly, shots t
 ::: info Building a Project
 Learn how to build a complete project including shots in a step-by-step format, see the [Project Usage Guide](/user-guide/project_tools/project-usage.md).
 :::
-## Preparing Metastrips from a Previz Sequence
+## Preparing Metadata Strips from a Previz Sequence
 
-To begin Shot Assembly it is required to describe the name/length of each shot inside a “Video Sequence Editor” .blend file. Once a Previz Sequence has been assembled into the VSE, ['Metastrips’](https://studio.blender.org/pipeline/addons/blender_kitsu#metastrips) can be created for each shot. A metastrip is an empty video strip that is linked into the project management software Kitsu. Metastrips are used to push updates to the frame ranges of each shot to Kitsu, which are later used in the Shot Assembly process. 
+To begin Shot Assembly it is required to describe the name/length of each shot inside a “Video Sequence Editor” .blend file. Once a Previz Sequence has been assembled into the VSE, ['Metadata Strips’](https://studio.blender.org/pipeline/addons/blender_kitsu#metadata-strips) can be created for each shot. A Metadata Strip is an empty video strip that is linked into the project management software Kitsu. Metadata Strips are used to push updates to the frame ranges of each shot to Kitsu, which are later used in the Shot Assembly process. 
 
-Metastrips are created from the Previz Strips, they are either linked to an existing Kitsu Shot, or a new Shot/Sequence can be pushed from the VSE to the Kitsu Server. The shot’s in, out and duration will be determined by the strip’s length. Multiple metastrips can be made out of a single previz strip if required, adjust the shot’s timing by simply trimming the metastrip in the timeline. These metastrips are then pushed to Kitsu Server to update the shot info on the server side. Below is a Previz Sequence with it’s metastrips.
+Metadata Strips are created from the Previz Strips, they are either linked to an existing Kitsu Shot, or a new Shot/Sequence can be pushed from the VSE to the Kitsu Server. The shot’s in, out and duration will be determined by the strip’s length. Multiple Metadata Strips can be made out of a single previz strip if required, adjust the shot’s timing by simply trimming the Metadata Strip in the timeline. These Metadata Strips are then pushed to Kitsu Server to update the shot info on the server side. Below is a Previz Sequence with it’s Metadata Strips.
 
 
-![Metastrips](/media/pipeline-overview/shot-production/Pets_Previz__Meta_Strips.png)
+![Metadata Strips](/media/pipeline-overview/shot-production/pets_metadata_strips.png)
 
 ::: info Preparing an Edit
-For more information about metastrips and the processes involved in managing the edit of your film see the [Prepare Edit Guide](/user-guide/project_tools/usage-sync-edit.md).
+For more information about Metadata Strips and the processes involved in managing the edit of your film see the [Prepare Edit Guide](/user-guide/project_tools/usage-sync-edit.md).
 :::
 
 <!--@include: ../../user-guide/project_tools/usage-build-shot-core.md-->
@@ -32,7 +32,7 @@ For more information about metastrips and the processes involved in managing the
 
 ## Maintaining Existing Shots
 
-After shots have been created in some cases the shot’s length or position may be adjusted by the editor. These changes will be tracked in Kitsu using the metastrips described above. If a metastrip for a given shot has been changed, those changes will be pushed into Kitsu. In this case when users open a shot file they will be warned within the Playblast Tools section of their Kitsu add-on to pull the new frame range into their .blend file. 
+After shots have been created in some cases the shot’s length or position may be adjusted by the editor. These changes will be tracked in Kitsu using the Metadata Strips described above. If a Metadata Strip for a given shot has been changed, those changes will be pushed into Kitsu. In this case when users open a shot file they will be warned within the Playblast Tools section of their Kitsu add-on to pull the new frame range into their .blend file. 
 
 
 ![Frame Range Outdated](/media/pipeline-overview/shot-production/frame_range_out_of_date.png)

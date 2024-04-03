@@ -50,39 +50,39 @@ def addon_prefs() -> bpy.types.AddonPreferences:
     return prefs.addon_prefs_get(bpy.context)
 
 
-def create_meta_strip(
+def create_metadata_strip(
     context: bpy.types.Context, strip: bpy.types.Sequence
 ) -> bpy.types.MovieSequence:
     # Get frame range information from current strip.
     strip_range = range(strip.frame_final_start, strip.frame_final_end)
     channel = strip.channel + 1
 
-    # Create new meta strip.
-    meta_strip = context.scene.sequence_editor.sequences.new_movie(
-        f"{strip.name}_metastrip",
+    # Create new metadata strip.
+    metadata_strip = context.scene.sequence_editor.sequences.new_movie(
+        f"{strip.name}_metadata-strip",
         "",
         strip.channel + 1,
         strip.frame_final_start,
     )
 
     # Set blend alpha.
-    meta_strip.blend_alpha = 0
+    metadata_strip.blend_alpha = 0
 
     # Set frame in and out.
-    meta_strip.frame_final_start = strip.frame_final_start
-    meta_strip.frame_final_end = strip.frame_final_end
-    # Meta_strip.channel = strip.channel + 1.
+    metadata_strip.frame_final_start = strip.frame_final_start
+    metadata_strip.frame_final_end = strip.frame_final_end
+    # Metadata_strip.channel = strip.channel + 1.
 
     # Init start frame offset.
-    opsdata.init_start_frame_offset(meta_strip)
+    opsdata.init_start_frame_offset(metadata_strip)
 
     logger.info(
-        "%s created metastrip: %s",
+        "%s created Metadata Strip: %s",
         strip.name,
-        meta_strip.name,
+        metadata_strip.name,
     )
 
-    return meta_strip
+    return metadata_strip
 
 
 def link_strip_by_name(

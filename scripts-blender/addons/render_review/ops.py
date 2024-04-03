@@ -47,7 +47,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
     in to the sequence editor of the specified shot.
     Review sequence does it for each shot in that sequence.
     If user enabled use_blender_kitsu in the addon preferences,
-    this operator will create a linked metastrip for the loaded shot on the top most channel.
+    this operator will create a linked metadata strip for the loaded shot on the top most channel.
     """
 
     bl_idname = "rr.sqe_create_review_session"
@@ -144,7 +144,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
             if not imported_strips:
                 continue
 
-            # Query the strip that is the longest for metastrip and prev_frame_end.
+            # Query the strip that is the longest for metadata strip and prev_frame_end.
             imported_strips.sort(key=lambda s: s.frame_final_duration)
             strip_longest = imported_strips[-1]
             prev_frame_end = strip_longest.frame_final_end
@@ -158,13 +158,11 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
                 if kitsu.is_auth_and_project():
                     sequence_name = shot_version_folders[0].parent.parent.parent.name
 
-                    # Create metastrip.
-                    metastrip = kitsu.create_meta_strip(context, strip_longest)
+                    # Create metadata strip.
+                    metadata_strip = kitsu.create_metadata_strip(context, strip_longest)
 
-                    # Link metastrip.
-                    kitsu.link_strip_by_name(
-                        context, metastrip, shot_name, sequence_name
-                    )
+                    # Link metadata strip.
+                    kitsu.link_strip_by_name(context, metadata_strip, shot_name, sequence_name)
 
                 else:
                     logger.error(

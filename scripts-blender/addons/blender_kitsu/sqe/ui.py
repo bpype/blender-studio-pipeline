@@ -210,7 +210,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
                 row = box.row(align=True)
                 row.operator(
                     KITSU_OT_sqe_create_metadata_strip.bl_idname,
-                    text=f"Create Metadata Strip {noun}",
+                    text=f"Create Metadata Strip from {noun}",
                 )
 
             # Unlink.

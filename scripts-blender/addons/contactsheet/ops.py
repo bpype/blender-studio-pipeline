@@ -109,26 +109,26 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
         )
         color_strip.color = (0, 0, 0)
 
-        # Create required number of metastrips to workaround the limit of 32 channels.
-        nr_of_metastrips = math.ceil(len(sequences) / 32)
-        metastrips: List[bpy.types.MetaSequence] = []
-        for i in range(nr_of_metastrips):
+        # Create required number of Metadata Strips to workaround the limit of 32 channels.
+        nr_of_metadata_strips = math.ceil(len(sequences) / 32)
+        metadata_strips: List[bpy.types.Sequence] = []
+        for i in range(nr_of_metadata_strips):
             channel = i + 2
-            meta_strip = context.scene.sequence_editor.sequences.new_meta(
+            metadata_strip = context.scene.sequence_editor.sequences.new_meta(
                 f"contactsheet_meta_{channel-1}", channel, start_frame
             )
-            metastrips.append(meta_strip)
-            logger.debug("Created metastrip: %s", meta_strip.name)
+            metadata_strips.append(metadata_strip)
+            logger.debug("Created Metadata Strip: %s", metadata_strip.name)
 
-        # Move sequences in to metastrips, place them on top of each other
+        # Move sequences in to Metadata Strips, place them on top of each other
         # make them start at the same frame.
         for idx, seq in enumerate(sequences):
-            # Move to metastrip.
+            # Move to Metadata Strip.
             channel = idx + 1
             meta_index = math.floor(idx / 32)
-            seq.move_to_meta(metastrips[meta_index])
+            seq.move_to_meta(metadata_strips[meta_index])
 
-            # Set seq properties inside metastrip.
+            # Set seq properties inside Metadata Strip.
             seq.channel = channel - ((meta_index) * 32)
             seq.frame_start = start_frame
             seq.blend_type = "ALPHA_OVER"
@@ -141,8 +141,8 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
             if strip.frame_final_end < max_end:
                 strip.frame_final_end = max_end
 
-        # Clip the metastrip frame end at max end and set alpha over.
-        for strip in metastrips:
+        # Clip the Metadata Strip frame end at max end and set alpha over.
+        for strip in metadata_strips:
             strip.frame_start = start_frame
             strip.frame_final_end = max_end
             strip.blend_type = "ALPHA_OVER"
