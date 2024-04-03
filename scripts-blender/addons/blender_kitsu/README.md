@@ -223,7 +223,7 @@ In the general tab you can find some tools that don't directly relate to Kitsu b
 
 ![image info](/media/addons/blender_kitsu/sqe_outdated_scan.jpg)
 
-`Scan for outdated media` will scan the selected / all sequence strips for their source media file. It searches for a later version in the same directory as the source media. If the current media file is outdated it will highlight that strip with a red line in the sequence editor:
+`Scan for outdated media` will scan the selected / all sequence strips for their source media file. It searches for a later version in either the Playblast directory or the "Media Update Search Paths" directories (set in the add-on preferences). If the current media file is outdated it will highlight that strip with a red line in the sequence editor:
 
 ![image info](/media/addons/blender_kitsu/sqe_outdated_overlay.jpg)
 

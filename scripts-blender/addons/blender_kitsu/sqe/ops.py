@@ -2077,7 +2077,10 @@ class KITSU_OT_sqe_add_sequence_color(bpy.types.Operator):
 class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
     bl_idname = "kitsu.sqe_scan_for_media_updates"
     bl_label = "Scan for media updates"
-    bl_description = "Scans sequence editor for movie strips and highlights them if there is a more recent version of their source media"
+    bl_description = (
+        "Scans sequence editor for movie strips and highlights them if there is a more recent version of their source media. "
+        "Source Media is located either in the Playblast Directory or the 'Media Update Search Paths' directories"
+    )
     bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
@@ -2119,8 +2122,10 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
 
             # Check if filepath is in include path.
             included = False
-            for item in addon_prefs.media_update_search_paths:
-                filepath = Path(os.path.abspath(bpy.path.abspath(item.filepath)))
+            paths = [item.filepath for item in addon_prefs.media_update_search_paths]
+            paths.append(addon_prefs.shot_playblast_root_dir)
+            for path in paths:
+                filepath = Path(os.path.abspath(bpy.path.abspath(path)))
                 if media_path_old.as_posix().startswith(filepath.as_posix()):
                     included = True
                     break
