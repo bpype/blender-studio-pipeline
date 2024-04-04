@@ -81,8 +81,10 @@ def index_assets():
     # Reset Index File
     with open(json_file_path, 'w') as json_file:
         json.dump({}, json_file, indent=4)
-    print(project_blender)
-    os.chdir("../bbatch")
+    bbatch_dir = Path(__file__).resolve().parents[1].joinpath("bbatch")
+    if not bbatch_dir.exists():
+        cancel_program("Could not locate bbatch directory")
+    os.chdir(bbatch_dir)
     cmd_list = (
         'python',
         '-m',
