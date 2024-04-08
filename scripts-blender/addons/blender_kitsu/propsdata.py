@@ -77,12 +77,17 @@ def _gen_shot_preview(self: Any) -> str:
     shot_counter_start = self.shot_counter_start
     shot_pattern = addon_prefs.shot_pattern
     examples: List[str] = []
-    sequence = self.sequence_enum
+    sequence = self.selected_sequence_name
+    episode = cache.episode_active_get()
     var_project = (
         self.var_project_custom if self.var_use_custom_project else self.var_project_active
     )
     var_sequence = self.var_sequence_custom if self.var_use_custom_seq else sequence
-    var_lookup_table = {"Sequence": var_sequence, "Project": var_project}
+    var_lookup_table = {
+        "Sequence": var_sequence,
+        "Project": var_project,
+        "Episode": episode.name,
+    }
 
     for count in range(3):
         counter_number = shot_counter_start + (shot_counter_increment * count)

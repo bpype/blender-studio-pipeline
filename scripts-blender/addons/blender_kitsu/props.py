@@ -27,6 +27,7 @@ from bpy.app.handlers import persistent
 from . import propsdata, bkglobals
 from .logger import LoggerFactory
 from . import cache
+from .types import Sequence
 
 logger = LoggerFactory.getLogger()
 
@@ -49,21 +50,98 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
     They hold metadata that will be used to compose a data structure that can
     be pushed to backend.
     """
-
     def _get_shot_description(self):
         return self.shot_description
 
-    def _get_sequence_name(self):
-        return self.sequence_name
+    def _get_sequence_entity(self):
+        try:
+            return Sequence.by_id(self.sequence_id)
+        except AttributeError:
+            return None
 
     # Shot.
     shot_id: bpy.props.StringProperty(name="Shot ID")  # type: ignore
     shot_name: bpy.props.StringProperty(name="Shot", default="")  # type: ignore
+
+    ###########
+    # Shot
+    ###########
+    shot_id: bpy.props.StringProperty(  # type: ignore
+        name="Shot ID",
+        description="ID that refers to the strip's shot on server",
+        default="",
+    )
+
+    def get_shot_via_name(self):
+        return get_safely_string_prop(self, "shot_name")
+
+    def set_shot_via_name(self, input):
+        seq = self._get_sequence_entity()
+        if seq is None:
+            return
+        set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_shots_enum_for_seq(self, bpy.context, seq),
+            name_prop='shot_name',
+            id_prop='shot_id',
+        )
+        return
+
+    def get_shot_search_list(self, context, edit_text):
+        seq = self._get_sequence_entity()
+        if seq is None:
+            return []
+        return get_enum_item_names(cache.get_shots_enum_for_seq(self, bpy.context, seq))
+
+    shot_name: bpy.props.StringProperty(  # type: ignore
+        name="Shot",
+        description="Name that refers to the strip's shot on server",
+        default="",
+        get=get_shot_via_name,
+        set=set_shot_via_name,
+        options=set(),
+        search=get_shot_search_list,
+        search_options={'SORT'},
+    )
+
     shot_description: bpy.props.StringProperty(name="Description", default="", options={"HIDDEN"})  # type: ignore
 
-    # Sequence.
-    sequence_name: bpy.props.StringProperty(name="Sequence", default="")  # type: ignore
-    sequence_id: bpy.props.StringProperty(name="Seq ID", default="")  # type: ignore
+    ###########
+    # Sequence
+    ###########
+    sequence_id: bpy.props.StringProperty(  # type: ignore
+        name="Seq ID",
+        description="ID that refers to the active sequence on server",
+        default="",
+    )
+
+    def get_sequences_via_name(self):
+        return get_safely_string_prop(self, "sequence_name")
+
+    def set_sequences_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_sequences_enum_list(self, bpy.context),
+            name_prop='sequence_name',
+            id_prop='sequence_id',
+        )
+        return
+
+    def get_sequence_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+
+    sequence_name: bpy.props.StringProperty(  # type: ignore
+        name="Sequence",
+        description="Sequence",
+        default="",
+        get=get_sequences_via_name,
+        set=set_sequences_via_name,
+        options=set(),
+        search=get_sequence_search_list,
+        search_options={'SORT'},
+    )
 
     # Project.
     project_name: bpy.props.StringProperty(name="Project", default="")  # type: ignore
@@ -89,7 +167,6 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
 
     # Display props.
     shot_description_display: bpy.props.StringProperty(name="Description", get=_get_shot_description)  # type: ignore
-    sequence_name_display: bpy.props.StringProperty(name="Sequence", get=_get_sequence_name)  # type: ignore
 
     def to_dict(self):
         return {
@@ -266,6 +343,8 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
 
         if key:
             cache.episode_active_set_by_id(bpy.context, key)
+        else:
+            cache.episode_active_reset_entity()
         return
 
     def get_episode_search_list(self, context, edit_text):
@@ -670,10 +749,44 @@ def _add_window_manager_props():
         get=propsdata._get_project_active,
     )
 
-    bpy.types.WindowManager.sequence_enum = bpy.props.EnumProperty(
-        name="Sequences",
-        items=propsdata._get_sequences,
+    ###########
+    # Sequence
+    ###########
+    bpy.types.WindowManager.selected_sequence_id = bpy.props.StringProperty(  # type: ignore
+        name="Active Sequence ID",
+        description="ID that refers to the active sequence on server",
+        default="",
+    )
+
+    def get_sequences_via_name(self):
+        return get_safely_string_prop(self, "selected_sequence_name")
+
+    def set_sequences_via_name(self, input):
+        key = set_kitsu_entity_id_via_enum_name(
+            self=self,
+            input_name=input,
+            items=cache.get_sequences_enum_list(self, bpy.context),
+            name_prop='selected_sequence_name',
+            id_prop='selected_sequence_id',
+        )
+        if key:
+            cache.sequence_active_set_by_id(bpy.context, key)
+        else:
+            cache.sequence_active_reset_entity()
+        return
+
+    def get_sequence_search_list(self, context, edit_text):
+        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+
+    bpy.types.WindowManager.selected_sequence_name = bpy.props.StringProperty(
+        name="Sequence",
         description="Name of Sequence the generated Shots will be assinged to",
+        default="",  # type: ignore
+        get=get_sequences_via_name,
+        set=set_sequences_via_name,
+        options=set(),
+        search=get_sequence_search_list,
+        search_options={'SORT'},
     )
 
     # Advanced delete props.
@@ -693,7 +806,8 @@ def _clear_window_manager_props():
     del bpy.types.WindowManager.shot_counter_start
     del bpy.types.WindowManager.shot_preview
     del bpy.types.WindowManager.var_project_active
-    del bpy.types.WindowManager.sequence_enum
+    del bpy.types.WindowManager.selected_sequence_id
+    del bpy.types.WindowManager.selected_sequence_name
 
 
 def _calc_kitsu_3d_start(self):

@@ -316,10 +316,26 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         description="Show advanced settings that should already have good defaults",
     )
 
+    def set_shot_pattern(self, input):
+        self['shot_pattern'] = input
+        return
+
+    def get_shot_pattern(
+        self,
+    ) -> str:
+        active_project = cache.project_active_get()
+        if get_safely_string_prop(self, 'shot_pattern') == "":
+            if active_project.production_type == bkglobals.KITSU_TV_PROJECT:
+                return "<Episode>_<Sequence>_<Counter>"
+            return "<Sequence>_<Counter>"
+        return get_safely_string_prop(self, 'shot_pattern')
+
     shot_pattern: bpy.props.StringProperty(  # type: ignore
         name="Shot Pattern",
-        description="Pattern to define how Bulk Init will name the shots. Supported wildcards: <Project>, <Sequence>, <Counter>",
-        default="<Sequence>_<Counter>_A",
+        description="Pattern to define how Bulk Init will name the shots. Supported wildcards: <Project>, <Episode>, <Sequence>, <Counter>",
+        default="<Sequence>_<Counter>",
+        get=get_shot_pattern,
+        set=set_shot_pattern,
     )
 
     shot_counter_digits: bpy.props.IntProperty(  # type: ignore

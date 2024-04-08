@@ -13,7 +13,7 @@ blender-kitsu is a Blender Add-on to interact with Kitsu from within Blender. It
             - [Metadata](#metadata)
             - [Push](#push)
             - [Pull](#pull)
-            - [Multi Edit](#multi-edit)
+            - [Multi Edit Metadata](#multi-edit-metadata)
             - [Import Media](#import-media)
             - [General Sequence Editor Tools](#general-sequence-editor-tools)
         - [Context](#context)
@@ -185,13 +185,25 @@ As a result a bigger edit with nice sequence_colors can look pretty cool:
 ![image info](/media/addons/blender_kitsu/sqe_sequence_colors.jpg)
 
 
-##### Multi Edit
+##### Multi Edit Metadata
 
-The `Multi Edit` panel only appears when you select multiple metadata strips that are all `initialized` but not `linked` yet. <br/>
+The `Multi Edit Metadata` panel only appears when you select multiple metadata strips that are all `initialized` but not `linked` yet. <br/>
 
 ![image info](/media/addons/blender_kitsu/sqe_multi_edit.jpg)
 
 It is meant to be way to quickly setup lots of shots if they don't exist on Kitsu yet. You specify the sequence all shots should belong to and adjust the `Shot Counter Start` value. In the preview property you can see how all shots will be named when you execute the `Multi Edit Strip` operator. <br/>
+
+
+###### Advanced Settings
+If you enable the `Advanced` mode (via the screwdriver/wrench icon) next to the counter value, you have access to advance settings to customize the operator even more.
+
+![image info](/media/addons/blender_kitsu/sqe_multi_edit_advanced.jpg)
+
+You can adjust the number of counter digits, the increment size and also the `Pattern` it will use to generate the shot name. <br/>
+>**Pattern**: supports 3 wildcards. `<Sequence>`, `<Counter>`, `<Project>`, `Episode` that can be used multiple times in any order. <br/>
+**Custom Sequence Variable**: specify a custom string that should be used in the `<Sequence>` wildcard instead of the sequence name. <br/>
+**Custom Project Variable**: specify a custom string that should be used in the `<Project>` wildcard instead of the project name. <br/>
+
 ##### Import Media
 A collection of operators to Import media based on the Shot associated with the selected metadata strip(s). <br/>
 
@@ -207,16 +219,6 @@ With a metadata strip selected `Import Image Sequence` Operator will find an ima
 ![Import Image Sequence](/media/addons/blender_kitsu/shot_image_sequence.jpg)
 
 Use this operator to import image sequences that have been approved via the [Render Review Add-On](/addons/render_review) Image Sequences can be loaded as either `EXR` or `JPG` sequences.
-
-###### Advanced Settings
-If you check the `Advanced` checkbox next to the counter value, you have access to advance settings to customize the operator even more.
-
-![image info](/media/addons/blender_kitsu/sqe_multi_edit_advanced.jpg)
-
-You can adjust the number of counter digits, the increment size and also the `Pattern` it will use to generate the shot name. <br/>
->**Pattern**: supports 3 wildcards. `<Sequence>`, `<Counter>`, `<Project>` that can be used multiple times in any order. <br/>
-**Custom Sequence Variable**: specify a custom string that should be used in the `<Sequence>` wildcard instead of the sequence name. <br/>
-**Custom Project Variable**: specify a custom string that should be used in the `<Project>` wildcard instead of the project name. <br/>
 
 ##### General Sequence Editor Tools
 In the general tab you can find some tools that don't directly relate to Kitsu but are useful for editing.

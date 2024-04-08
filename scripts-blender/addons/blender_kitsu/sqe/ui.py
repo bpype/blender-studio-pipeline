@@ -20,7 +20,7 @@
 
 import bpy
 
-from .. import cache, prefs, ui
+from .. import cache, prefs, ui, bkglobals
 from ..sqe import checkstrip
 from ..context import core as context_core
 from ..logger import LoggerFactory
@@ -105,6 +105,11 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         return bool(prefs.session_auth(context) or (sqe and sqe.sequences_all))
 
     def draw(self, context: bpy.types.Context) -> None:
+        active_project = cache.project_active_get()
+        if active_project.production_type == bkglobals.KITSU_TV_PROJECT:
+            if not cache.episode_active_get():
+                self.layout.label(text="Please Set Active Episode", icon="ERROR")
+                return
         if self.poll_error(context):
             self.draw_error(context)
 
@@ -300,17 +305,13 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
         if not strip.kitsu.sequence_id:
             sub_row = split.row(align=True)
-            sub_row.prop(strip.kitsu, "sequence_name_display", text="")
-            sub_row.operator(KITSU_OT_sqe_link_sequence.bl_idname, text="", icon="DOWNARROW_HLT")
+            sub_row.prop(strip.kitsu, "sequence_name", text="")
             sub_row.operator(KITSU_OT_sqe_push_new_sequence.bl_idname, text="", icon="ADD")
 
         else:
             # Lots of splitting because color prop is too big by default
-            sub_split = split.split(factor=0.6, align=True)
-            sub_split.prop(strip.kitsu, "sequence_name_display", text="")
-
-            sub_split = sub_split.split(factor=0.3, align=True)
-            sub_split.operator(KITSU_OT_sqe_link_sequence.bl_idname, text="", icon="DOWNARROW_HLT")
+            sub_split = split.split(factor=0.8, align=True)
+            sub_split.prop(strip.kitsu, "sequence_name", text="")  # TODO Use new dropdown here too
 
             sub_sub_split = sub_split.split(factor=0.4, align=True)
             sub_sub_split.operator(KITSU_OT_sqe_push_new_sequence.bl_idname, text="", icon="ADD")
@@ -354,6 +355,8 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
     @classmethod
     def poll_multi_edit(cls, context: bpy.types.Context) -> bool:
+        if not prefs.session_auth(context):
+            return False
         sel_shots = context.selected_sequences
         nr_of_shots = len(sel_shots)
         unvalid = [s for s in sel_shots if s.kitsu.linked or not s.kitsu.initialized]
@@ -366,26 +369,25 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         """
 
         addon_prefs = prefs.addon_prefs_get(context)
+
         nr_of_shots = len(context.selected_sequences)
         noun = get_selshots_noun(nr_of_shots)
 
         # Create box.
         layout = self.layout
         box = layout.box()
-        box.label(text="Multi Edit", icon="PROPERTIES")
+        box.label(text="Multi Edit Metadata", icon="PROPERTIES")
 
         # Sequence
-        # TODO: use link sequence operator instead or sequence_enum ?
         col = box.column()
         sub_row = col.row(align=True)
-        # Sub_row.prop(context.window_manager, "sequence_name_display").
-        sub_row.prop(context.window_manager, "sequence_enum", text="Sequence")
+        sub_row.prop(context.window_manager, "selected_sequence_name", text="Sequence")
         sub_row.operator(KITSU_OT_sqe_push_new_sequence.bl_idname, text="", icon="ADD")
 
         # Counter.
         row = box.row()
         row.prop(context.window_manager, "shot_counter_start", text="Shot Counter Start")
-        row.prop(context.window_manager, "show_advanced", text="")
+        row.prop(context.window_manager, "show_advanced", text="", icon="TOOL_SETTINGS")
 
         if context.window_manager.show_advanced:
             # Counter.
@@ -422,8 +424,8 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         row = box.row(align=True)
         row.operator(
             KITSU_OT_sqe_multi_edit_strip.bl_idname,
-            text=f"Edit {noun}",
-            icon="TRIA_RIGHT",
+            text=f"Set Metadata for {noun}",
+            icon="ALIGN_LEFT",
         )
 
     @classmethod
@@ -445,7 +447,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
                 strips_to_tb.append(s)
                 strips_to_meta.append(s)
 
-            elif s.kitsu.initialized:
+            elif s.kitsu.initialized and s.kitsu.shot_id != "":
                 strips_to_submit.append(s)
 
         return bool(strips_to_meta or strips_to_tb or strips_to_submit)

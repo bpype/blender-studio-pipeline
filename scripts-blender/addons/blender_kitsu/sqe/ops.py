@@ -528,8 +528,6 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
     bl_description = "Links selected sequence strip to shot on server. Pulls all metadata of shot from server"
     bl_options = {"REGISTER", "UNDO"}
 
-    sequence_enum: bpy.props.EnumProperty(items=cache.get_sequences_enum_list, name="Sequence")  # type: ignore
-    shots_enum: bpy.props.EnumProperty(items=opsdata.get_shots_enum_for_link_shot_op, name="Shot")  # type: ignore
     use_url: bpy.props.BoolProperty(
         name="Use URL",
         description="Use URL of shot on server to initiate strip. Paste complete URL",
@@ -539,6 +537,8 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
         description="Complete URL of shot on server that will be used to initiate strip",
         default="",
     )
+
+    _strip = None
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -555,9 +555,8 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
         )
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        strip = context.scene.sequence_editor.active_strip
 
-        shot_id = self.shots_enum
+        shot_id = self._strip.kitsu.shot_id
 
         # By url.
         if self.use_url:
@@ -567,8 +566,8 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
 
         # By shot enum.
         else:
-            shot_id = self.shots_enum
-            if not shot_id:
+            shot_id = self._strip.kitsu.shot_id
+            if shot_id == "":
                 self.report({"WARNING"}, "Invalid selection. Please choose a shot")
                 return {"CANCELLED"}
 
@@ -585,10 +584,10 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Pull shot meta.
-        pull.shot_meta(strip, shot)
+        pull.shot_meta(self._strip, shot)
 
         # Rename strip.
-        strip.name = shot.name
+        self._strip.name = shot.name
 
         # Pull sequence color.
         seq = Sequence.by_id(shot.parent_id)
@@ -596,7 +595,7 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
 
         # Log.
         t = "Linked strip: %s to shot: %s with ID: %s" % (
-            strip.name,
+            self._strip.name,
             shot.name,
             shot.id,
         )
@@ -609,6 +608,7 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
         if context.window_manager.clipboard:
             self.url = context.window_manager.clipboard
+        self._strip = context.scene.sequence_editor.active_strip
 
         return context.window_manager.invoke_props_dialog(  # type: ignore
             self, width=400
@@ -624,9 +624,9 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
             row.prop(self, "url", text="")
         else:
             row = layout.row()
-            row.prop(self, "sequence_enum")
+            row.prop(self._strip.kitsu, "sequence_name")
             row = layout.row()
-            row.prop(self, "shots_enum")
+            row.prop(self._strip.kitsu, "shot_name")
             row = layout.row()
 
 
@@ -647,10 +647,12 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
         # and they all have the same sequence name.
         sel_shots = context.selected_sequences
         if not sel_shots:
+            cls.poll_message_set("No sequences are selected")
             return False
         nr_of_shots = len(sel_shots)
 
         if nr_of_shots < 1:
+            cls.poll_message_set("Please more than one sequence")
             return False
 
         seq_name = sel_shots[0].kitsu.sequence_name
@@ -660,8 +662,14 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
                 or not s.kitsu.initialized
                 or not checkstrip.is_valid_type(s)
             ):
+                cls.poll_message_set(
+                    "Please select unlinked, initialized strips, of either MOVIE or COLOR type"
+                )
                 return False
             if s.kitsu.sequence_name != seq_name:
+                cls.poll_message_set(
+                    "Strips have conflicting sequence names. Please select strips with the same sequence name, or no sequence"
+                )
                 return False
         return True
 
@@ -672,7 +680,7 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
         shot_counter_start = context.window_manager.shot_counter_start
         shot_pattern = addon_prefs.shot_pattern
         strip = context.scene.sequence_editor.active_strip
-        sequence = context.window_manager.sequence_enum
+        sequence = context.window_manager.selected_sequence_name
         var_project = (
             addon_prefs.var_project_custom
             if context.window_manager.var_use_custom_project
@@ -692,12 +700,14 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
         selected_sequences = sorted(
             selected_sequences, key=lambda x: x.frame_final_start
         )
+        episode = cache.episode_active_get()
 
         for idx, strip in enumerate(selected_sequences):
             # Gen data for resolver.
             counter_number = shot_counter_start + (shot_counter_increment * idx)
             counter = str(counter_number).rjust(shot_counter_digits, "0")
             var_lookup_table = {
+                "Episode": episode.name,
                 "Sequence": var_sequence,
                 "Project": var_project,
                 "Counter": counter,
@@ -708,7 +718,9 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
 
             # Set metadata.
             strip.kitsu.sequence_name = sequence
+            strip.kitsu.sequence_id = context.window_manager.selected_sequence_id
             strip.kitsu.shot_name = shot
+            strip.name = shot
 
             succeeded.append(strip)
             logger.info(
