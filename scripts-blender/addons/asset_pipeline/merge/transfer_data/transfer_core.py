@@ -182,7 +182,7 @@ def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
                     source_obj=source_obj,
                 )
         logger.debug(
-            f"Copying Transfer Data for {transfer_data_item.name} from {source_obj.name} to {target_obj.name}."
+            f"Copying Ownership Data for {transfer_data_item.name} from {source_obj.name} to {target_obj.name}."
         )
         copy_transfer_data_ownership(
             transfer_data_item=transfer_data_item,
