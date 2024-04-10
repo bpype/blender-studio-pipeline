@@ -51,13 +51,13 @@ class AssetTransferDataTemp(bpy.types.PropertyGroup):
     """Class used when finding new ownership data so it can be drawn
     with the same method as the existing ownership data from ASSET_TRANSFER_DATA"""
 
-    owner: bpy.props.StringProperty(name="OwneAr", default="NONE")
+    owner: bpy.props.StringProperty(name="Owner", default="NONE")
     type: bpy.props.EnumProperty(
         name="Transferable Data Type",
         items=constants.TRANSFER_DATA_TYPES_ENUM_ITEMS,
     )
     surrender: bpy.props.BoolProperty(name="Surrender Ownership", default=False)
-    obj: bpy.props.PointerProperty(type=bpy.types.Object)
+    obj_name: bpy.props.StringProperty(name="Object Name")
 
 
 class TaskLayerSettings(bpy.types.PropertyGroup):
@@ -113,13 +113,13 @@ class AssetPipeline(bpy.types.PropertyGroup):
 
     temp_transfer_data: bpy.props.CollectionProperty(type=AssetTransferDataTemp)
 
-    def add_temp_transfer_data(self, name, owner, type, obj, surrender):
+    def add_temp_transfer_data(self, name, owner, type, obj_name, surrender):
         new_transfer_data = self.temp_transfer_data
         transfer_data_item = new_transfer_data.add()
         transfer_data_item.name = name
         transfer_data_item.owner = owner
         transfer_data_item.type = type
-        transfer_data_item.obj = obj
+        transfer_data_item.obj_name = obj_name
         transfer_data_item.surrender = surrender
 
     ## NEW FILE

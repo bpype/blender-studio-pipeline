@@ -98,7 +98,8 @@ def ownership_set(temp_transfer_data: bpy.types.CollectionProperty) -> None:
         data and the object that contains this data.
     """
     for transfer_data_item in temp_transfer_data:
-        transfer_data = transfer_data_item.obj.transfer_data_ownership
+        obj = bpy.data.objects.get(transfer_data_item.obj_name)
+        transfer_data = obj.transfer_data_ownership
         transfer_data_add_entry(
             transfer_data,
             transfer_data_item.name,

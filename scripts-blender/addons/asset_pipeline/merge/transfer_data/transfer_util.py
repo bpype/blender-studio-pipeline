@@ -122,6 +122,6 @@ def transfer_data_item_init(
                 name=item.name,
                 owner=task_layer_owner,
                 type=td_type_key,
-                obj=obj,
+                obj_name=obj.name,
                 surrender=auto_surrender,
             )

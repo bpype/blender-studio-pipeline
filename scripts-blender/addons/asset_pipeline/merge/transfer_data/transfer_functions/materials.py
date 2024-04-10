@@ -63,7 +63,7 @@ def init_materials(scene, obj):
             name=name,
             owner=task_layer_owner,
             type=td_type_key,
-            obj=obj,
+            obj_name=obj.name,
             surrender=auto_surrender,
         )
 

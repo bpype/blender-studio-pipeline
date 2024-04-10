@@ -78,7 +78,10 @@ def sync_draw(self, context):
         row = layout.row()
         row.prop(self, "expand", text="", icon="COLLAPSEMENU", toggle=False)
         row.label(text="Show New Transferable Data")
-    objs = [transfer_data_item.obj for transfer_data_item in self._temp_transfer_data]
+    objs = [
+        bpy.data.objects.get(transfer_data_item.obj_name)
+        for transfer_data_item in self._temp_transfer_data
+    ]
 
     if not self.expand:
         return
@@ -87,7 +90,7 @@ def sync_draw(self, context):
         obj_ownership = [
             transfer_data_item
             for transfer_data_item in self._temp_transfer_data
-            if transfer_data_item.obj == obj
+            if bpy.data.objects.get(transfer_data_item.obj_name) == obj
         ]
         box = layout.box()
         box.label(text=obj.name, icon="OBJECT_DATA")

@@ -45,7 +45,7 @@ def init_constraints(scene, obj):
                 name=const.name,
                 owner=task_layer_owner,
                 type=td_type_key,
-                obj=obj,
+                obj_name=obj.name,
                 surrender=auto_surrender,
             )
 

@@ -5,7 +5,6 @@ from ...naming import merge_get_basename
 from .... import constants, logging
 
 
-
 def parent_clean(obj):
     logger = logging.get_logger()
     matches = check_transfer_data_entry(
@@ -48,7 +47,7 @@ def init_parent(scene, obj):
             name=name,
             owner=task_layer_owner,
             type=td_type_key,
-            obj=obj,
+            obj_name=obj.name,
             surrender=auto_surrender,
         )
 
