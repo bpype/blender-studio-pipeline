@@ -65,8 +65,16 @@ def extract_dmg(dmg_file: Path, internal_pah, dst_path: Path):
     # Parse the mount_output to retrieve the mounted volume name
     import plistlib
 
+    mount_point = None
     plist_data = plistlib.loads(mount_output.encode('utf-8'))
-    mount_point = plist_data['system-entities'][0]['mount-point']
+    for entry in plist_data['system-entities']:
+        if entry['content-hint'] == 'Apple_HFS':
+            mount_point = entry['mount-point']
+            break
+
+    if mount_point == None:
+        logger.fatal("Could not find the dmg mount point after mounting %s" % dmg_file.name)
+        sys.exit(1)
 
     # Ensure destination directory exists
     dst_path = dst_path / internal_pah
