@@ -79,13 +79,19 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         seq = self._get_sequence_entity()
         if seq is None:
             return
-        set_kitsu_entity_id_via_enum_name(
+
+        # Attempt to set with matching Kitsu Entry
+        kitsu_set = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
             items=cache.get_shots_enum_for_seq(self, bpy.context, seq),
             name_prop='shot_name',
             id_prop='shot_id',
         )
+
+        # Set manually so users can submit new shots
+        if not kitsu_set:
+            self['shot_name'] = input
         return
 
     def get_shot_search_list(self, context, edit_text):
@@ -102,7 +108,7 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         set=set_shot_via_name,
         options=set(),
         search=get_shot_search_list,
-        search_options={'SORT'},
+        search_options={'SORT', 'SUGGESTION'},
     )
 
     shot_description: bpy.props.StringProperty(name="Description", default="", options={"HIDDEN"})  # type: ignore
