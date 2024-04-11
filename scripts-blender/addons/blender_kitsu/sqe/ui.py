@@ -447,7 +447,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
                 strips_to_tb.append(s)
                 strips_to_meta.append(s)
 
-            elif s.kitsu.initialized and s.kitsu.shot_id != "":
+            elif s.kitsu.initialized and s.kitsu.shot_name != "":
                 strips_to_submit.append(s)
 
         return bool(strips_to_meta or strips_to_tb or strips_to_submit)
