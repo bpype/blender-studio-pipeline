@@ -327,7 +327,7 @@ class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
     sequence_name: bpy.props.StringProperty(
         name="Name", default="", description="Name of new sequence"
     )
-    confirm: bpy.props.BoolProperty(name="confirm")
+    confirm: bpy.props.BoolProperty(name="confirm", default=True)
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -371,11 +371,20 @@ class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
             {"INFO"},
             f"Submitted new sequence: {sequence.name}",
         )
+
+        # Avoids circular import
+        from .ui import KITSU_PT_sqe_shot_tools as seq_tools
+
+        # set newly created sequence as target for multi edit or active strip
+        if seq_tools.poll_multi_edit(context):
+            context.window_manager.selected_sequence_name = sequence.name
+        else:
+            context.active_sequence_strip.kitsu.sequence_name = sequence.name
+
         logger.info("Submitted new sequence: %s", sequence.name)
         return {"FINISHED"}
 
     def invoke(self, context, event):
-        self.confirm = False
         return context.window_manager.invoke_props_dialog(self, width=300)
 
     def draw(self, context):
