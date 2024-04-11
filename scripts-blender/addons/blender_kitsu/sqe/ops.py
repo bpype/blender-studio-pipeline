@@ -1986,7 +1986,6 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
         logger.info("-START- Creating Metadata Strips")
 
         selected_sequences = context.selected_sequences
-
         # Check if metadata strip file actually exists.
         for strip in selected_sequences:
             # Get frame range information from current strip.
@@ -2047,6 +2046,11 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
             {report_state},
             report_str,
         )
+
+        # Deselect source strips after creating Metadata strips
+        for strip in selected_sequences:
+            if strip not in created:
+                strip.select = False
 
         # Log.
         logger.info("-END- Creating Metadata Strips")
