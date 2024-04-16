@@ -2,10 +2,17 @@
 ## Install Python
 The Blender Studio Pipeline requires `Python 3.11` or greater to be installed on your system.
 
-## Windows & Mac
-1. Navigate to https://www.python.org/downloads/windows/ to download & install the latest version of Python
+## Windows
+1. Navigate to https://www.python.org/downloads/windows/ to download & install the latest version of Python 3.11+
 2. On the first page of the installer, ensure the option labelled “Add Python to PATH” is enabled
 3. After installation, open a command prompt/terminal window, enter `python --version`, if installation was successful the python version you installed should be printed in your command prompt/terminal window.
+
+## Mac
+1. Navigate to https://www.python.org/downloads/mac/ to download & install the latest version of Python 3.11+
+2. Run the install wizard to install python
+3. In the `Applications/Python 3.11` directory double-click `Update Shell Profile.command`
+4. In the `Applications/Python 3.11` directory double-click `Install Certificates.command`
+5. After installation, open a command prompt/terminal window, enter `python --version`, if installation was successful the python version you installed should be printed in your command prompt/terminal window.
 
 ## Linux
 Python is pre-installed on many distributions. Here is how to explicitly install python on some common distributions. 
