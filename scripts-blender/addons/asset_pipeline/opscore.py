@@ -1,4 +1,5 @@
 import bpy
+import time
 from pathlib import Path
 from .merge.publish import (
     find_sync_target,
@@ -19,6 +20,7 @@ from .hooks import Hooks
 from .merge.task_layer import draw_task_layer_selection
 from .asset_catalog import get_asset_id
 from . import prefs
+
 
 def sync_poll(cls, context):
     if any([img.is_dirty for img in bpy.data.images]):
@@ -134,6 +136,8 @@ def update_temp_file_paths(self, context, temp_file_path):
 
 
 def sync_execute_pull(self, context):
+    start_time = time.time()
+    profiler = logging.get_profiler()
     logger = logging.get_logger()
     logger.info("Pulling Asset")
     temp_file_path = create_temp_file_backup(self, context)
@@ -160,9 +164,12 @@ def sync_execute_pull(self, context):
         context.scene.asset_pipeline.sync_error = True
         self.report({'ERROR'}, error_msg)
         return {'CANCELLED'}
+    profiler.add(time.time() - start_time, "TOTAL")
 
 
 def sync_execute_push(self, context):
+    start_time = time.time()
+    profiler = logging.get_profiler()
     logger = logging.get_logger()
     logger.info("Pushing Asset")
     _catalog_id = None
@@ -203,3 +210,4 @@ def sync_execute_push(self, context):
 
     bpy.ops.wm.save_as_mainfile(filepath=file_path)
     bpy.ops.wm.open_mainfile(filepath=self._current_file.__str__())
+    profiler.add(time.time() - start_time, "TOTAL")

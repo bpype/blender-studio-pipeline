@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Set
 import os
 
-from . import constants, config, opscore
+from . import constants, config, opscore, logging
 from .asset_catalog import get_asset_catalog_items, get_asset_id
 from .config import verify_task_layer_json_data
 from .hooks import Hooks, get_production_hook_dir, get_asset_hook_dir
@@ -309,6 +309,8 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
         opscore.sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
+        profiler = logging.get_profiler()
+        profiler.reset()
         asset_col = context.scene.asset_pipeline.asset_collection
         if self.save:
             save_images()
@@ -324,6 +326,7 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
 
         hooks_instance.execute_hooks(merge_mode="pull", merge_status='post', asset_col=asset_col)
         self.report({'INFO'}, "Asset Pull Complete")
+        profiler.log_all()
         return {'FINISHED'}
 
 
@@ -370,12 +373,15 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
         opscore.sync_draw(self, context)
 
     def execute(self, context: bpy.types.Context):
+        profiler = logging.get_profiler()
+        profiler.reset()
         asset_col = context.scene.asset_pipeline.asset_collection
         hooks_instance = Hooks()
         hooks_instance.load_hooks(context)
         save_images()
         bpy.ops.wm.save_mainfile()
 
+        # Seperate if statement so hook can execute before updating ownership/prep sync
         if self.pull:
             hooks_instance.execute_hooks(merge_mode="pull", merge_status='pre', asset_col=asset_col)
         # Find current task Layer
@@ -387,6 +393,8 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
             hooks_instance.execute_hooks(
                 merge_mode="pull", merge_status='post', asset_col=asset_col
             )
+
+        profiler.set_push()
         hooks_instance.execute_hooks(merge_mode="push", merge_status='pre', asset_col=asset_col)
         bpy.ops.wm.save_mainfile(filepath=self._current_file.__str__())
 
@@ -395,6 +403,7 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
             self.report({'INFO'}, "Asset Sync Complete")
         else:
             self.report({'INFO'}, "Asset Force Push Complete")
+        profiler.log_all()
         return {'FINISHED'}
 
 

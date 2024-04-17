@@ -169,26 +169,12 @@ class AssetTransferMapping:
 
         return coll_map
 
-    def _transfer_data_get_map_content(self, obj, target_obj, transfer_data_item):
-        temp_transfer_data = bpy.context.scene.asset_pipeline.temp_transfer_data
-        temp_transfer_data_item_index = len(temp_transfer_data)
-        temp_transfer_data_item = transfer_data_add_entry(
-            transfer_data=temp_transfer_data,
-            name=transfer_data_item.name,
-            td_type_key=transfer_data_item.type,
-            task_layer_name=transfer_data_item.owner,
-            surrender=transfer_data_item.surrender,
-        )
-
-        map_item = {
-            'transfer_data_item_index': temp_transfer_data_item_index,
-            'source_obj': obj,
-            'target_obj': target_obj,
+    def _get_transfer_data_dict(self, transfer_data_item):
+        return {
+            'name': transfer_data_item.name,
+            "owner": transfer_data_item.owner,
+            "surrender": transfer_data_item.surrender,
         }
-        # Names of each map item need to be unique
-        # below name avoids name conflicts between different types
-        name = transfer_data_item.name + '_' + transfer_data_item.type + obj.name
-        return name, map_item
 
     def _transfer_data_pair_not_local(self, td_1, td_2):
         # Returns true if neither owners are local to current file
@@ -243,11 +229,21 @@ class AssetTransferMapping:
         """Adds item to Transfer Data Map"""
         if self._transfer_data_is_surrendered(transfer_data_item):
             return
+        td_type_key = transfer_data_item.type
+        transfer_data_dict = self._get_transfer_data_dict(transfer_data_item)
 
-        name, map_item = self._transfer_data_get_map_content(
-            source_obj, target_obj, transfer_data_item
-        )
-        self.transfer_data_map[name] = map_item
+        if not source_obj in self.transfer_data_map:
+            self.transfer_data_map[source_obj] = {
+                "target_obj": target_obj,
+                "td_types": {td_type_key: [transfer_data_dict]},
+            }
+            return
+
+        if not td_type_key in self.transfer_data_map[source_obj]["td_types"]:
+            self.transfer_data_map[source_obj]["td_types"][td_type_key] = [transfer_data_dict]
+            return
+        else:
+            self.transfer_data_map[source_obj]["td_types"][td_type_key].append(transfer_data_dict)
 
     def _transfer_data_map_item(self, source_obj, target_obj, transfer_data_item):
         """Verifies if Transfer Data Item is valid/can be mapped"""
@@ -268,12 +264,11 @@ class AssetTransferMapping:
 
     def _gen_transfer_data_map(self):
         # Generate Mapping for Transfer Data Items
-        temp_transfer_data = bpy.context.scene.asset_pipeline.temp_transfer_data
-        temp_transfer_data.clear()
         for objs in self.object_map.items():
-            source_obj, target_obj = objs
+            _, target_obj = objs
             for obj in objs:
                 # Must execute for both objs in map (so we map external and local TD)
+                # Must include maps even if obj==target_obj to preserve exisiting local TD entry
                 for transfer_data_item in obj.transfer_data_ownership:
                     if self._transfer_data_check_conflict(obj, transfer_data_item):
                         continue
@@ -284,26 +279,27 @@ class AssetTransferMapping:
         # Generate a Map of Indexes that need to be set post merge
         # Stores active_uv & active_color_attribute
         index_map = {}
-        for _, item in self.transfer_data_map.items():
-            temp_transfer_data = bpy.context.scene.asset_pipeline.temp_transfer_data
-            temp_transfer_data_item = temp_transfer_data[item.get('transfer_data_item_index')]
-            source_obj = item.get('source_obj')
-            target_obj = item.get('target_obj')
 
-            if temp_transfer_data_item.type != constants.MATERIAL_SLOT_KEY:
-                continue
-            if source_obj.type != 'MESH':
-                continue
+        for source_obj in self.transfer_data_map:
+            target_obj = self.transfer_data_map[source_obj]["target_obj"]
+            td_types = self.transfer_data_map[source_obj]["td_types"]
+            for td_type_key, _ in td_types.items():
+                if td_type_key != constants.MATERIAL_SLOT_KEY:
+                    continue
+                if source_obj.type != 'MESH':
+                    continue
 
-            active_uv_name = (
-                source_obj.data.uv_layers.active.name if source_obj.data.uv_layers.active else ''
-            )
-            active_color_attribute_name = source_obj.data.color_attributes.active_color_name
-            index_map[source_obj] = {
-                'active_uv_name': active_uv_name,
-                'active_color_attribute_name': active_color_attribute_name,
-                'target_obj': target_obj,
-            }
+                active_uv_name = (
+                    source_obj.data.uv_layers.active.name
+                    if source_obj.data.uv_layers.active
+                    else ''
+                )
+                active_color_attribute_name = source_obj.data.color_attributes.active_color_name
+                index_map[source_obj] = {
+                    'active_uv_name': active_uv_name,
+                    'active_color_attribute_name': active_color_attribute_name,
+                    'target_obj': target_obj,
+                }
 
         return index_map
 

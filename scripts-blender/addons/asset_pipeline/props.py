@@ -57,7 +57,18 @@ class AssetTransferDataTemp(bpy.types.PropertyGroup):
         items=constants.TRANSFER_DATA_TYPES_ENUM_ITEMS,
     )
     surrender: bpy.props.BoolProperty(name="Surrender Ownership", default=False)
-    obj_name: bpy.props.StringProperty(name="Object Name")
+    obj_name: bpy.props.StringProperty(name="Object Name", default="")
+
+    def check_transfer_data_entry(self) -> set:
+        """
+        Verifies if Transferable Data entry exists
+        """
+        existing_items = [
+            transfer_data_item.name
+            for transfer_data_item in self.target_obj.transfer_data_ownership
+            if transfer_data_item.type == self.type
+        ]
+        return set([self.name]).intersection(set(existing_items))
 
 
 class TaskLayerSettings(bpy.types.PropertyGroup):
@@ -113,12 +124,12 @@ class AssetPipeline(bpy.types.PropertyGroup):
 
     temp_transfer_data: bpy.props.CollectionProperty(type=AssetTransferDataTemp)
 
-    def add_temp_transfer_data(self, name, owner, type, obj_name, surrender):
+    def add_temp_transfer_data(self, name, owner, type_key, obj_name, surrender):
         new_transfer_data = self.temp_transfer_data
         transfer_data_item = new_transfer_data.add()
         transfer_data_item.name = name
         transfer_data_item.owner = owner
-        transfer_data_item.type = type
+        transfer_data_item.type = type_key
         transfer_data_item.obj_name = obj_name
         transfer_data_item.surrender = surrender
 
@@ -200,6 +211,7 @@ class AssetPipeline(bpy.types.PropertyGroup):
         search_options={'SORT'},
         description="Select Asset Library Catalog for the current Asset, this value will be updated each time you Push to an 'Active' Publish",
     )  # type: ignore
+
 
 @bpy.app.handlers.persistent
 def set_asset_collection_name_post_file_load(_):

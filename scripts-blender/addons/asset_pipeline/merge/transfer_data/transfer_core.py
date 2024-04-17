@@ -1,5 +1,5 @@
 import bpy
-
+import time
 from .transfer_functions import (
     attributes,
     constraints,
@@ -9,15 +9,20 @@ from .transfer_functions import (
     vertex_groups,
     materials,
 )
-
+from typing import List
 from ... import constants, logging
-
 from .transfer_util import (
     transfer_data_add_entry,
     check_transfer_data_entry,
+    link_objs_to_collection,
+    isolate_collection,
 )
 
-def copy_transfer_data_ownership(transfer_data_item, target_obj: bpy.types.Object) -> None:
+
+# TODO use logging module here
+def copy_transfer_data_ownership(
+    td_type_key: str, target_obj: bpy.types.Object, transfer_data_dict: dict
+) -> None:
     """Copy Transferable Data item to object if non entry exists
 
     Args:
@@ -27,16 +32,16 @@ def copy_transfer_data_ownership(transfer_data_item, target_obj: bpy.types.Objec
     transfer_data = target_obj.transfer_data_ownership
     matches = check_transfer_data_entry(
         transfer_data,
-        transfer_data_item.name,
-        transfer_data_item.type,
+        transfer_data_dict["name"],
+        td_type_key,
     )
     if len(matches) == 0:
         transfer_data_add_entry(
             transfer_data,
-            transfer_data_item.name,
-            transfer_data_item.type,
-            transfer_data_item.owner,
-            transfer_data_item.surrender,
+            transfer_data_dict["name"],
+            td_type_key,
+            transfer_data_dict["owner"],
+            transfer_data_dict["surrender"],
         )
 
 
@@ -96,6 +101,93 @@ def init_transfer_data(
     attributes.init_attributes(scene, obj)
 
 
+def apply_transfer_data_items(
+    context,
+    source_obj: bpy.types.Object,
+    target_obj: bpy.types.Object,
+    td_type_key: str,
+    transfer_data_dicts: List[dict],
+):
+    logger = logging.get_logger()
+    # Get source/target from first item in list, because all items in list are same object/type
+    if target_obj is None:
+        logger.warning(f"Failed to Transfer {td_type_key.title()} from {source_obj.name}")
+        return
+
+    for transfer_data_dict in transfer_data_dicts:
+        copy_transfer_data_ownership(td_type_key, target_obj, transfer_data_dict)
+
+    # if TD Source is Target, restore the ownership data but don't transfer anything
+    if source_obj == target_obj:
+        return
+
+    if td_type_key == constants.VERTEX_GROUP_KEY:
+        # Transfer All Vertex Groups in one go
+        logger.debug(f"Transferring All Vertex Groups from {source_obj.name} to {target_obj.name}.")
+        vertex_groups.transfer_vertex_groups(
+            vertex_group_names=[item["name"] for item in transfer_data_dicts],
+            target_obj=target_obj,
+            source_obj=source_obj,
+        )
+    if td_type_key == constants.MODIFIER_KEY:
+        for transfer_data_dict in transfer_data_dicts:
+            logger.debug(
+                f"Transferring Modifier {transfer_data_dict['name']} from {source_obj.name} to {target_obj.name}."
+            )
+            modifers.transfer_modifier(
+                modifier_name=transfer_data_dict["name"],
+                target_obj=target_obj,
+                source_obj=source_obj,
+            )
+    if td_type_key == constants.CONSTRAINT_KEY:
+        for transfer_data_dict in transfer_data_dicts:
+            logger.debug(
+                f"Transferring Constraint {transfer_data_dict['name']} from {source_obj.name} to {target_obj.name}."
+            )
+            constraints.transfer_constraint(
+                constraint_name=transfer_data_dict["name"],
+                target_obj=target_obj,
+                source_obj=source_obj,
+            )
+    if td_type_key == constants.MATERIAL_SLOT_KEY:
+        logger.debug(f"Transferring Materials from {source_obj.name} to {target_obj.name}.")
+        for transfer_data_dict in transfer_data_dicts:
+            materials.transfer_materials(
+                target_obj=target_obj,
+                source_obj=source_obj,
+            )
+    if td_type_key == constants.SHAPE_KEY_KEY:
+        for transfer_data_dict in transfer_data_dicts:
+            logger.debug(
+                f"Transferring Shape Key {transfer_data_dict['name']} from {source_obj.name} to {target_obj.name}."
+            )
+            shape_keys.transfer_shape_key(
+                context=context,
+                target_obj=target_obj,
+                source_obj=source_obj,
+                shape_key_name=transfer_data_dict["name"],
+            )
+    if td_type_key == constants.ATTRIBUTE_KEY:
+        for transfer_data_dict in transfer_data_dicts:
+            logger.debug(
+                f"Transferring Attribute {transfer_data_dict['name']} from {source_obj.name} to {target_obj.name}."
+            )
+            attributes.transfer_attribute(
+                target_obj=target_obj,
+                source_obj=source_obj,
+                attribute_name=transfer_data_dict["name"],
+            )
+    if td_type_key == constants.PARENT_KEY:
+        for transfer_data_dict in transfer_data_dicts:
+            logger.debug(		
+                    f"Transferring Parent Relationship from {source_obj.name} to {target_obj.name}."		
+                )
+            parent.transfer_parent(
+                target_obj=target_obj,
+                source_obj=source_obj,
+            )
+
+
 def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
     """Apply all Transferable Data from Transferable Data map onto objects.
     Copies any Transferable Data owned by local layer onto objects owned by external layers.
@@ -107,84 +199,19 @@ def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
         context (bpy.types.Context): context of .blend file
         transfer_data_map: Map generated by class AssetTransferMapping
     """
-    logger = logging.get_logger()
-    for name in transfer_data_map:
-        temp_transfer_data = context.scene.asset_pipeline.temp_transfer_data
-        transfer_data = transfer_data_map[name]
-        transfer_data_item = temp_transfer_data[transfer_data.get('transfer_data_item_index')]
-        target_obj = transfer_data.get('target_obj')
-        source_obj = transfer_data.get('source_obj')
-        if target_obj is None:
-            logger.warning(f"Failed to Transfer Data for {transfer_data_item.id_data.name}")
-            continue
-        if transfer_data_item is None:
-            continue
-        if source_obj != target_obj:
-            if transfer_data_item.type == constants.VERTEX_GROUP_KEY:
-                logger.debug(
-                    f"Transferring Vertex Group {transfer_data_item.name} from {source_obj.name} to {target_obj.name}."
-                )
-                vertex_groups.transfer_vertex_group(
-                    context=context,
-                    vertex_group_name=transfer_data_item.name,
-                    target_obj=target_obj,
-                    source_obj=source_obj,
-                )
-            if transfer_data_item.type == constants.MODIFIER_KEY:
-                logger.debug(
-                    f"Transferring Modifier{transfer_data_item.name} from {source_obj.name} to {target_obj.name}."
-                )
-                modifers.transfer_modifier(
-                    modifier_name=transfer_data_item.name,
-                    target_obj=target_obj,
-                    source_obj=source_obj,
-                )
-            if transfer_data_item.type == constants.CONSTRAINT_KEY:
-                logger.debug(
-                    f"Transferring Constraint {transfer_data_item.name} from {source_obj.name} to {target_obj.name}."
-                )
-                constraints.transfer_constraint(
-                    constraint_name=transfer_data_item.name,
-                    target_obj=target_obj,
-                    source_obj=source_obj,
-                )
-            if transfer_data_item.type == constants.MATERIAL_SLOT_KEY:
-                logger.debug(f"Transferring Materiald from {source_obj.name} to {target_obj.name}.")
-                materials.transfer_materials(
-                    target_obj=target_obj,
-                    source_obj=source_obj,
-                )
-            if transfer_data_item.type == constants.SHAPE_KEY_KEY:
-                logger.debug(
-                    f"Transferring Shape Key {transfer_data_item.name} from {source_obj.name} to {target_obj.name}."
-                )
-                shape_keys.transfer_shape_key(
-                    context=context,
-                    target_obj=target_obj,
-                    source_obj=source_obj,
-                    shape_key_name=transfer_data_item.name,
-                )
-            if transfer_data_item.type == constants.ATTRIBUTE_KEY:
-                logger.debug(
-                    f"Transferring Attribute {transfer_data_item.name} from {source_obj.name} to {target_obj.name}."
-                )
-                attributes.transfer_attribute(
-                    target_obj=target_obj,
-                    source_obj=source_obj,
-                    attribute_name=transfer_data_item.name,
-                )
-            if transfer_data_item.type == constants.PARENT_KEY:
-                logger.debug(
-                    f"Transferring Parent Relationship from {source_obj.name} to {target_obj.name}."
-                )
-                parent.transfer_parent(
-                    target_obj=target_obj,
-                    source_obj=source_obj,
-                )
-        logger.debug(
-            f"Copying Ownership Data for {transfer_data_item.name} from {source_obj.name} to {target_obj.name}."
-        )
-        copy_transfer_data_ownership(
-            transfer_data_item=transfer_data_item,
-            target_obj=target_obj,
-        )
+    # Create/isolate tmp collection to reduce depsgraph update time
+    profiler = logging.get_profiler()
+    td_col = bpy.data.collections.new("ISO_COL_TEMP")
+    with isolate_collection(td_col):
+        # Loop over objects in Transfer data map
+        for source_obj in transfer_data_map:
+            target_obj = transfer_data_map[source_obj]["target_obj"]
+            td_types = transfer_data_map[source_obj]["td_types"]
+            with link_objs_to_collection(set([target_obj, source_obj]), td_col):
+                for td_type_key, td_dicts in td_types.items():
+                    start_time = time.time()
+                    apply_transfer_data_items(
+                        context, source_obj, target_obj, td_type_key, td_dicts
+                    )
+                    profiler.add(time.time() - start_time, td_type_key)
+    bpy.data.collections.remove(td_col)

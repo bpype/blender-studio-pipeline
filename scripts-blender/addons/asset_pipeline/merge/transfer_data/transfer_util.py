@@ -1,7 +1,7 @@
 import bpy
 from ..naming import merge_get_basename
 from ..task_layer import get_transfer_data_owner
-
+import contextlib
 
 def check_transfer_data_entry(
     transfer_data: bpy.types.CollectionProperty, key: str, td_type_key: str
@@ -30,6 +30,8 @@ def transfer_data_add_entry(
     td_type_key: str,
     task_layer_name: str,
     surrender: bool,
+    target_obj: bpy.types.Object = None,
+    obj: bpy.types.Object = None,
 ):
     """Add entry to Transferable Data ownership
 
@@ -44,6 +46,10 @@ def transfer_data_add_entry(
     transfer_data_item.owner = task_layer_name
     transfer_data_item.type = td_type_key
     transfer_data_item.surrender = surrender
+    if target_obj:
+        transfer_data_item.target_obj = target_obj
+    if obj:
+        transfer_data_item.obj = obj
     return transfer_data_item
 
 
@@ -125,3 +131,36 @@ def transfer_data_item_init(
                 obj_name=obj.name,
                 surrender=auto_surrender,
             )
+
+
+@contextlib.contextmanager
+def isolate_collection(iso_col: bpy.types.Collection):
+    col_exclude = {}
+    view_layer_col = bpy.context.view_layer.layer_collection
+    view_layer_col.collection.children.link(iso_col)
+    for col in view_layer_col.children:
+        col_exclude[col.name] = col.exclude
+
+    try:
+        # Exclude all collections that are not iso collection
+        for col in view_layer_col.children:
+            col.exclude = col.name != iso_col.name
+        yield
+
+    finally:
+        for col in view_layer_col.children:
+            col.exclude = col_exclude[col.name]
+        view_layer_col.collection.children.unlink(iso_col)
+
+
+@contextlib.contextmanager
+def link_objs_to_collection(objs: set, col: bpy.types.Collection):
+    ...
+    try:
+        for obj in objs:
+            col.objects.link(obj)
+        yield
+
+    finally:
+        for obj in objs:
+            col.objects.unlink(obj)

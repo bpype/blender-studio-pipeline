@@ -21,6 +21,7 @@ from .transfer_data.transfer_functions.transfer_function_util.active_indexes imp
 from pathlib import Path
 from typing import Dict
 from .. import constants, logging
+import time
 
 
 def ownership_transfer_data_cleanup(
@@ -175,6 +176,11 @@ def merge_task_layer(
         local_tls: (list[str]): list of task layers that are local to the current file
         external_file (Path): external file to pull data into the current file from
     """
+
+    logger = logging.get_logger()
+    profiles = logging.get_profiler()
+
+    start_time = time.time()
     local_col = context.scene.asset_pipeline.asset_collection
     if not local_col:
         return "Unable to find Asset Collection"
@@ -185,6 +191,8 @@ def merge_task_layer(
 
     appended_col = import_data_from_lib(external_file, "collections", col_base_name)
     merge_add_suffix_to_hierarchy(appended_col, external_suffix)
+    imported_time = time.time()
+    profiles.add((imported_time - start_time), "IMPORT")
 
     local_col = bpy.data.collections[f"{col_base_name}.{local_suffix}"]
     external_col = bpy.data.collections[f"{col_base_name}.{external_suffix}"]
@@ -204,6 +212,8 @@ def merge_task_layer(
             type_name = get_id_type_name(type(conflict_obj))
             error_msg += f"Ownership conflict found for {type_name}: '{conflict_obj.name}'\n"
         return error_msg
+    mapped_time = time.time()
+    profiles.add((mapped_time - imported_time), "MAPPING")
 
     # Remove all Transferable Data from target objects
     for source_obj in map.object_map:
@@ -211,11 +221,15 @@ def merge_task_layer(
         target_obj.transfer_data_ownership.clear()
 
     apply_transfer_data(context, map.transfer_data_map)
+    apply_td_time = time.time()
+    profiles.add((apply_td_time - mapped_time), "TRANSFER_DATA")
 
     for source_obj in map.object_map:
         target_obj = map.object_map[source_obj]
         remap_user(source_obj, target_obj)
         transfer_data_clean(target_obj)
+    obj_remap_time = time.time()
+    profiles.add((obj_remap_time - apply_td_time), "OBJECTS")
 
     # Restore Active UV Layer and Active Color Attributes
     for _, index_map_item in map.index_map.items():
@@ -224,6 +238,8 @@ def merge_task_layer(
         transfer_active_color_attribute_index(
             target_obj, index_map_item.get('active_color_attribute_name')
         )
+    index_time = time.time()
+    profiles.add((index_time - obj_remap_time), "INDEXES")
 
     for col in map.collection_map:
         remap_user(col, map.collection_map[col])
@@ -233,13 +249,17 @@ def merge_task_layer(
 
     for col in map.external_col_to_remove:
         local_col.children.unlink(col)
+    col_remap_time = time.time()
+    profiles.add((col_remap_time - index_time), "COLLECTIONS")
 
     for id in map.shared_id_map:
         remap_user(id, map.shared_id_map[id])
+    shared_id_remap_time = time.time()
+    profiles.add((shared_id_remap_time - col_remap_time), "SHARED_IDS")
 
     bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=False, do_recursive=True)
     merge_remove_suffix_from_hierarchy(local_col)
-
+    profiles.add((time.time() - start_time), "MERGE")
 
 def import_data_from_lib(
     libpath: Path,

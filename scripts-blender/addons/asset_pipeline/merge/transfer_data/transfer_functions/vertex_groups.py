@@ -35,33 +35,27 @@ def init_vertex_groups(scene, obj):
     )
 
 
-def transfer_vertex_group(
-    context,
-    vertex_group_name: str,
+def transfer_vertex_groups(
+    vertex_group_names: List[str],
     target_obj: bpy.types.Object,
     source_obj: bpy.types.Object,
 ):
     logger = logging.get_logger()
-    if target_obj == source_obj:
-        return
-
-    if not source_obj.vertex_groups.get(vertex_group_name):
-        logger.error(f"Vertex Group {vertex_group_name} not found in {source_obj.name}")
-        return
+    for vertex_group_name in vertex_group_names:
+        if not source_obj.vertex_groups.get(vertex_group_name):
+            logger.error(f"Vertex Group {vertex_group_name} not found in {source_obj.name}")
+            return
 
     # If topology matches transfer directly, otherwise use vertex proximity
     if is_obdata_identical(source_obj, target_obj):
-        transfer_single_vgroup_by_topology(
-            source_obj, target_obj, vertex_group_name
-        )
+        for vertex_group_name in vertex_group_names:
+            transfer_single_vgroup_by_topology(source_obj, target_obj, vertex_group_name)
     else:
-        precalc_and_transfer_single_group(
-            source_obj, target_obj, vertex_group_name, expand=2
-        )
+        precalc_and_transfer_multiple_groups(source_obj, target_obj, vertex_group_names, expand=2)
+
 
 def transfer_single_vgroup_by_topology(source_obj, target_obj, vgroup_name):
-    """ Function to quickly transfer single vertex group between mesh objects in case of matching topology.
-    """
+    """Function to quickly transfer single vertex group between mesh objects in case of matching topology."""
 
     # Remove group from the target obj if it already exists. TODO: de-duplicate
     tgt_vg = target_obj.vertex_groups.get(vgroup_name)
@@ -74,6 +68,33 @@ def transfer_single_vgroup_by_topology(source_obj, target_obj, vgroup_name):
     for v in source_obj.data.vertices:
         if vgroup_src.index in [g.group for g in v.groups]:
             vgroup_tgt.add([v.index], vgroup_src.weight(v.index), 'REPLACE')
+
+
+def precalc_and_transfer_multiple_groups(source_obj, target_obj, vgroup_names, expand=2):
+    """Convenience function to transfer a single group. For transferring multiple groups,
+    this is very inefficient and shouldn't be used.
+
+    Instead, you should:
+    - build_kd_tree ONCE per source mesh.
+    - build_vert_influence_map and transfer_vertex_groups ONCE per object pair.
+    """
+
+    # Remove group from the target obj if it already exists. TODO: de-duplicate
+    vgroups = [source_obj.vertex_groups[name] for name in vgroup_names]
+    for vgroup_name in vgroup_names:
+        target_vgroup = target_obj.vertex_groups.get(vgroup_name)
+        if target_vgroup:
+            target_obj.vertex_groups.remove(target_vgroup)
+
+    kd_tree = build_kdtree(source_obj.data)
+    vert_influence_map = build_vert_influence_map(source_obj, target_obj, kd_tree, expand)
+    transfer_multiple_vertex_groups(
+        source_obj,
+        target_obj,
+        vert_influence_map,
+        vgroups,
+    )
+
 
 def precalc_and_transfer_single_group(source_obj, target_obj, vgroup_name, expand=2):
     """Convenience function to transfer a single group. For transferring multiple groups,
@@ -90,10 +111,9 @@ def precalc_and_transfer_single_group(source_obj, target_obj, vgroup_name, expan
         target_obj.vertex_groups.remove(tgt_vg)
 
     kd_tree = build_kdtree(source_obj.data)
-    vert_influence_map = build_vert_influence_map(
-        source_obj, target_obj, kd_tree, expand
-    )
-    transfer_vertex_groups(
+    vert_influence_map = build_vert_influence_map(source_obj, target_obj, kd_tree, expand)
+
+    transfer_multiple_vertex_groups(
         source_obj,
         target_obj,
         vert_influence_map,
@@ -110,9 +130,7 @@ def build_kdtree(mesh):
 
 
 def build_vert_influence_map(obj_from, obj_to, kd_tree, expand=2):
-    verts_of_edge = {
-        i: (e.vertices[0], e.vertices[1]) for i, e in enumerate(obj_from.data.edges)
-    }
+    verts_of_edge = {i: (e.vertices[0], e.vertices[1]) for i, e in enumerate(obj_from.data.edges)}
 
     edges_of_vert: Dict[int, List[int]] = {}
     for edge_idx, edge in enumerate(obj_from.data.edges):
@@ -166,29 +184,24 @@ def get_source_vert_influences(
     parts_sum = sum(parts)
 
     influences = [
-        (idx, 1 if dist == 0 else part / parts_sum)
-        for part, dist in zip(parts, distances)
+        (idx, 1 if dist == 0 else part / parts_sum) for part, dist in zip(parts, distances)
     ]
 
     return influences
 
 
-def get_nearest_vert(
-    coords: Vector, kd_tree: kdtree.KDTree
-) -> Tuple[Vector, int, float]:
+def get_nearest_vert(coords: Vector, kd_tree: kdtree.KDTree) -> Tuple[Vector, int, float]:
     """Return coordinate, index, and distance of nearest vert to coords in kd_tree."""
     return kd_tree.find(coords)
 
 
-def other_vert_of_edge(
-    edge: int, vert: int, verts_of_edge: Dict[int, Tuple[int, int]]
-) -> int:
+def other_vert_of_edge(edge: int, vert: int, verts_of_edge: Dict[int, Tuple[int, int]]) -> int:
     verts = verts_of_edge[edge]
     assert vert in verts, f"Vert {vert} not part of edge {edge}."
     return verts[0] if vert == verts[1] else verts[1]
 
 
-def transfer_vertex_groups(obj_from, obj_to, vert_influence_map, src_vgroups):
+def transfer_multiple_vertex_groups(obj_from, obj_to, vert_influence_map, src_vgroups):
     """Transfer src_vgroups in obj_from to obj_to using a pre-calculated vert_influence_map."""
 
     for src_vg in src_vgroups:
