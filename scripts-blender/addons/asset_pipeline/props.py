@@ -124,12 +124,12 @@ class AssetPipeline(bpy.types.PropertyGroup):
 
     temp_transfer_data: bpy.props.CollectionProperty(type=AssetTransferDataTemp)
 
-    def add_temp_transfer_data(self, name, owner, type_key, obj_name, surrender):
+    def add_temp_transfer_data(self, name, owner, type, obj_name, surrender):
         new_transfer_data = self.temp_transfer_data
         transfer_data_item = new_transfer_data.add()
         transfer_data_item.name = name
         transfer_data_item.owner = owner
-        transfer_data_item.type = type_key
+        transfer_data_item.type = type
         transfer_data_item.obj_name = obj_name
         transfer_data_item.surrender = surrender
 
