@@ -17,12 +17,10 @@
 from pathlib import Path
 import argparse
 import os
-import platform
 import subprocess
 import sys
-import json
-from typing import List
 import time
+import re
 
 
 def cancel_program(message: str) -> None:
@@ -48,7 +46,7 @@ parser.add_argument(
 parser.add_argument(
     "-f",
     "--filter",
-    help="Only crawl files if their name contains the filter string.",
+    help="Only crawl files with the matching regex.",
     type=str,
     required=False,
 )
@@ -59,24 +57,28 @@ def get_bbatch_script_path() -> str:
     return str(dir.joinpath("resync_blend_file.py"))
 
 
-def get_files_to_crawl(project_path: str, name_filter=None):  # -> returns list of paths
+def get_files_to_crawl(project_path: Path, name_filter=None):  # -> returns list of paths
 
     blend_files = [
-        f for f in Path(project_path).glob("**/*") if f.is_file() and f.suffix == ".blend"
+        f for f in project_path.glob("**/*") if f.is_file() and f.suffix == ".blend"
     ]
+
+    regex = None
+    if name_filter:
+        regex = re.compile(name_filter)
 
     epoch_time = int(time.time())
     resync_blend_files = []
     for blend_file in blend_files:
+        # Skip files if they don't match
+        if regex and not re.match(regex, blend_file.name):
+            continue
+
         elapse_time = epoch_time - os.path.getctime(blend_file)
         # if file hasn't been saved in more than 24 hours, resync
         if not elapse_time > 86400:
             print("Skipping recently saved file:", str(blend_file))
             continue
-        # Skip files if they don't match
-        if name_filter:
-            if not name_filter in blend_file.name:
-                continue
         resync_blend_files.append(blend_file)
     return resync_blend_files
 
