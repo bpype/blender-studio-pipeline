@@ -735,6 +735,24 @@ class Asset(Entity):
         asset_dict = gazu.asset.get_asset(asset_id)
         return cls.from_dict(asset_dict)
 
+    def set_asset_path(self, filepath: str, collection_name: str) -> None:
+        data = {}
+        filepath_key = bkglobals.KITSU_FILEPATH_KEY
+        collection_key = bkglobals.KITSU_COLLECTION_KEY
+        data[filepath_key] = filepath
+        data[collection_key] = collection_name
+        updated_asset = gazu.asset.update_asset_data(asdict(self), data)
+        self.data = updated_asset["data"]
+
+        if not gazu.project.get_metadata_descriptor_by_field_name(self.project_id, filepath_key):
+            gazu.project.add_metadata_descriptor(
+                self.project_id, filepath_key, "Asset", data_type='string'
+            )
+        if not gazu.project.get_metadata_descriptor_by_field_name(self.project_id, collection_key):
+            gazu.project.add_metadata_descriptor(
+                self.project_id, collection_key, "Asset", data_type='string'
+            )
+
     def get_all_task_types(self) -> List[TaskType]:
         return [TaskType.from_dict(t) for t in gazu.task.all_task_types_for_asset(asdict(self))]
 

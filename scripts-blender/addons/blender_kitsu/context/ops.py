@@ -26,6 +26,7 @@ import bpy
 from .. import bkglobals, cache, util, prefs
 from ..logger import LoggerFactory
 from ..types import TaskType, AssetType
+from ..context import core as context_core
 
 logger = LoggerFactory.getLogger()
 
@@ -240,11 +241,107 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         return mapping[key]
 
 
+class KITSU_OT_con_set_asset(bpy.types.Operator):
+    bl_idname = "kitsu.con_set_asset"
+    bl_label = "Set Kitsu Asset"
+    bl_description = (
+        "Mark the current file & target collection as an Asset on Kitsu Server "
+        "Assets marked with this method will be automatically loaded by the "
+        "Shot Builder, if the Asset is casted to the buider's target shot"
+    )
+
+    _published_file_path: Path = None
+
+    use_asset_pipeline_publish: bpy.props.BoolProperty(  # type: ignore
+        name="Use Asset Pipeline Publish",
+        description=(
+            "Find the Publish of this file in the 'Publish' folder and use it's filepath for Kitsu Asset`"
+            "Selected   Collection must be named exactly the same between current file and Publish"
+        ),
+        default=False,
+    )
+
+    @classmethod
+    def poll(cls, context):
+        kitsu_props = context.scene.kitsu
+        if bpy.data.filepath == "":
+            cls.poll_message_set("Blend file must be saved")
+            return False
+        if not bpy.data.filepath.startswith(str(prefs.project_root_dir_get(context))):
+            cls.poll_message_set("Blend file must be saved in project structure")
+            return False
+        if not context_core.is_asset_context():
+            cls.poll_message_set("Kitsu Context panel must be set to 'Asset'")
+            return False
+        if kitsu_props.asset_type_active_name == "":
+            cls.poll_message_set("Asset Type must be set")
+            return False
+        if kitsu_props.asset_active_name == "":
+            cls.poll_message_set("Asset must be set")
+            return False
+        if not kitsu_props.asset_col:
+            cls.poll_message_set("Asset Collection must be set")
+            return False
+        return True
+
+    def is_asset_pipeline_enabled(self, context) -> bool:
+        for addon in context.preferences.addons:
+            if addon.module == "asset_pipeline":
+                return True
+        return False
+
+    def is_asset_pipeline_folder(self, context) -> bool:
+        current_folder = Path(bpy.data.filepath).parent
+        return current_folder.joinpath("task_layers.json").exists()
+
+    def get_asset_pipeline_publish(self, context) -> Path:
+        from asset_pipeline.merge.publish import find_latest_publish
+
+        return find_latest_publish(Path(bpy.data.filepath))
+
+    def invoke(self, context, event):
+        if self.is_asset_pipeline_enabled(context) and self.is_asset_pipeline_folder(context):
+            self._published_file_path = self.get_asset_pipeline_publish(context)
+            if self._published_file_path.exists():
+                self.use_asset_pipeline_publish = True
+                wm = context.window_manager
+                return wm.invoke_props_dialog(self)
+        return self.execute(context)
+
+    def draw(self, context):
+        layout = self.layout
+        relative_path = self._published_file_path.relative_to(Path(bpy.data.filepath).parent)
+        box = layout.box()
+        box.enabled = self.use_asset_pipeline_publish
+        box.label(text=f"//{str(relative_path)}")
+        layout.prop(self, "use_asset_pipeline_publish")
+
+    def execute(self, context):
+        project_root = prefs.project_root_dir_get(context)
+        if self.use_asset_pipeline_publish:
+            relative_path = self._published_file_path.relative_to(project_root)
+        else:
+            relative_path = Path(bpy.data.filepath).relative_to(project_root)
+        blender_asset = context.scene.kitsu.asset_col
+        kitsu_asset = cache.asset_active_get()
+        if not kitsu_asset:
+            self.report({"ERROR"}, "Failed to find active Kitsu Asset")
+            return {"CANCELLED"}
+
+        kitsu_asset.set_asset_path(str(relative_path), blender_asset.name)
+        self.report(
+            {"INFO"},
+            f"Kitsu Asset '{kitsu_asset.name}' set to Collection '{blender_asset.name}' at path '{relative_path}'",
+        )
+        return {"FINISHED"}
+
+
 # ---------REGISTER ----------.
 
 classes = [
     KITSU_OT_con_productions_load,
     KITSU_OT_con_detect_context,
+    KITSU_OT_con_set_asset,
 ]
 
 

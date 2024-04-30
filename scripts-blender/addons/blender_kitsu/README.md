@@ -296,31 +296,21 @@ The Shot Builder requires shot data including Name, Frame Rate, and Duration to 
 
 #### Asset Setup
 ##### Kitsu Server
-The Shot Builder requires all Asset to be stored on the Kitsu Server with a [Metadata Column](https://kitsu.cg-wire.com/production_advanced/#create-custom-metadata-columns) with the exact name `slug` exactly matching the name of the asset's collection.
-
 Assets needs to be associated with each shot in your production. Please follow the [Kitsu Breakdown](https://kitsu.cg-wire.com/getting-started-production/) guide to Cast your assets to shots.
 
-##### Asset Index
-To match Assets File to the casting breakdown on the Kitsu server, we need to create an Asset Index. This is a json file that contains the mapping of the asset's name to the asset's filepath. Any collection Marked as an Asset in Blender in the directory `your_project/svn/pro/assets` will be added to this index. 
+##### Assets
+To match Assets File to the casting breakdown on the Kitsu server, we need to tag the Asset with a filepath and collection. This can be done via the Blender Kitsu Add-On. This data will be used to match a Kitsu Asset with a Collection within a .blend file, that will be linked into all shots that have that Asset "casted in it". 
 
-##### Example `asset_index.json`
-```json
-{
-    "CH-rain": {
-        "type": "Collection",
-        "filepath": "your_project/svn/pro/assets/chars/rain/rain.blend"
-    },
-    "CH-snow": {
-        "type": "Collection",
-        "filepath": "your_project/svn/pro/assets/chars/snow/snow.blend"
-    }
-}
-```
+1. Open the file for a given Asset.
+2. Under the Kitsu>Context Panel, check the following settings.
+    - **Type** is set to Asset. 
+    - **Asset Type** is set to the correct Asset Type (Collection, Prop, etc) 
+    - **Asset** Field is set to the matching entry on the Kitsu server for the current file.
+3. Under the Kitsu>Context>Set Asset sub-panel...
+    - **Collecton**  is set to the Asset's parent collection.
+    - Run the **Set Kitsu Asset** operator to send the current filepath and selected collection to the Kitsu Server. 
 
-To create/update the Asset Index:
-1. Enter Asset Index directory `cd blender-studio-pipeline/scripts/index_assets` 
-2. Run using `./run_index_assets.py your_poduction` replace `your_production` with the path to your project's root directory
-3. This will create an index file at `your_production/svn/pro/assets/asset_index.py`
+You should now see the filepath and collection under the Asset's Metadata on the Kitsu Server.
 
 #### Hooks Setup
 Shot Builder uses hooks to extend the functionality of the shot builder. To create a hook file

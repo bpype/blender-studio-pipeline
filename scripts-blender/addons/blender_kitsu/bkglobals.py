@@ -87,7 +87,13 @@ MULTI_ASSETS = [
 
 ASSET_COLL_PREFIXES = ["CH-", "PR-", "SE-", "FX-"]
 
+
+# Kitsu Constants
 KITSU_TV_PROJECT = 'tvshow'
+
+# Kitsu Metadata Keys
+KITSU_FILEPATH_KEY = "filepath"
+KITSU_COLLECTION_KEY = "collection"
 
 RES_DIR_PATH = Path(os.path.abspath(__file__)).parent.joinpath("res")
 

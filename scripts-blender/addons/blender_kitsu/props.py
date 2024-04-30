@@ -279,6 +279,8 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
     NOTE: It would be nice to have searchable enums instead of doing all this work manually.
     """
 
+    asset_col: bpy.props.PointerProperty(type=bpy.types.Collection, name="Collection")
+
     ###########
     # Sequence
     ###########

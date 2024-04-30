@@ -1,5 +1,5 @@
 import bpy
-from .. import prefs
+from .. import prefs, bkglobals
 from pathlib import Path
 import json
 from ..types import Shot
@@ -33,28 +33,32 @@ def get_shot_assets(
     asset_index = get_assset_index()
     if asset_index is None:
         return
-    assets = shot.get_all_assets()
-    asset_slugs = [asset.data.get("slug") for asset in assets if asset.data.get("slug") is not None]
-    if asset_slugs == []:
-        print("No asset slugs found on Kitsu Server. Assets will not be loaded")
-    for key, value in asset_index.items():
-        if key in asset_slugs:
-            relative_path = value.get('filepath')
-            asset_dir = get_asset_dir()
-            filepath = Path(asset_dir).joinpath(relative_path).__str__()
-            data_type = value.get('type')
-            if config.ASSET_TYPE_TO_OVERRIDE.get(key.split('-')[0]):
-                if data_type != "Collection":
-                    print(f"Cannot load {key} because it is not a collection")
-                    continue
-                linked_collection = core.link_and_override_collection(
-                    collection_name=key, file_path=filepath, scene=scene
-                )
-                core.add_action_to_armature(linked_collection, shot)
-                print(f"'{key}': Succesfully Linked & Overriden")
-            else:
-                linked_collection = core.link_data_block(
-                    file_path=filepath, data_block_name=key, data_block_type=data_type
-                )
-                print(f"'{key}': Succesfully Linked")
-            output_collection.children.link(linked_collection)
+    kitsu_assets = shot.get_all_assets()
+
+    for kitsu_asset in kitsu_assets:
+        asset_path = kitsu_asset.data.get(bkglobals.KITSU_FILEPATH_KEY)
+        collection_name = kitsu_asset.data.get(bkglobals.KITSU_COLLECTION_KEY)
+        if not asset_path or not collection_name:
+            print(
+                f"Asset '{kitsu_asset.name}' is missing filepath or collection metadata. Skipping"
+            )
+            continue
+
+        filepath = prefs.project_root_dir_get(bpy.context).joinpath(asset_path).absolute()
+        if not filepath.exists():
+            print(f"Asset '{kitsu_asset.name}' filepath '{str(filepath)}' does not exist. Skipping")
+
+        if config.ASSET_TYPE_TO_OVERRIDE.get(collection_name.split('-')[0]):
+            linked_collection = core.link_and_override_collection(
+                collection_name=collection_name, file_path=str(filepath), scene=scene
+            )
+            core.add_action_to_armature(linked_collection, shot)
+            print(f"'{collection_name}': Succesfully Linked & Overriden")
+        else:
+            linked_collection = core.link_data_block(
+                file_path=str(filepath),
+                data_block_name=collection_name,
+                data_block_type="Collection",
+            )
+            print(f"'{collection_name}': Succesfully Linked")
+        output_collection.children.link(linked_collection)

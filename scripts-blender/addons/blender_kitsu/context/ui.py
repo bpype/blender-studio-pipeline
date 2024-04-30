@@ -22,9 +22,7 @@ import bpy
 
 from ..context import core as context_core
 from .. import cache, prefs, ui, bkglobals
-from ..context.ops import (
-    KITSU_OT_con_detect_context,
-)
+from ..context.ops import KITSU_OT_con_detect_context, KITSU_OT_con_set_asset
 
 
 class KITSU_PT_vi3d_context(bpy.types.Panel):
@@ -113,6 +111,34 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         context_core.draw_task_type_selector(context, col)
 
 
+class KITSU_PT_set_asset(bpy.types.Panel):
+    """
+    Panel in 3dview that enables browsing through backend data structure.
+    Thought of as a menu to setup a context by selecting active production
+    active sequence, shot etc.
+    """
+
+    bl_category = "Kitsu"
+    bl_label = "Set Asset"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+    bl_order = 25
+    bl_parent_id = "KITSU_PT_vi3d_context"
+
+    @classmethod
+    def poll(cls, context):
+        return context_core.is_asset_context()
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        col = layout.column()
+        col.prop(context.scene.kitsu, "asset_col")
+        col.operator(KITSU_OT_con_set_asset.bl_idname)
+
+
 class KITSU_PT_comp_context(KITSU_PT_vi3d_context):
     bl_space_type = "NODE_EDITOR"
 
@@ -124,7 +150,12 @@ class KITSU_PT_editorial_context(KITSU_PT_vi3d_context):
 # ---------REGISTER ----------.
 
 # Classes that inherit from another need to be registered first for some reason.
-classes = [KITSU_PT_comp_context, KITSU_PT_editorial_context, KITSU_PT_vi3d_context]
+classes = [
+    KITSU_PT_comp_context,
+    KITSU_PT_editorial_context,
+    KITSU_PT_vi3d_context,
+    KITSU_PT_set_asset,
+]
 
 
 def register():
