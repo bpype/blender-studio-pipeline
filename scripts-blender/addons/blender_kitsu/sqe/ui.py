@@ -46,6 +46,7 @@ from ..sqe.ops import (
     KITSU_OT_sqe_pull_edit,
     KITSU_OT_sqe_init_strip_start_frame,
     KITSU_OT_sqe_create_metadata_strip,
+    KITSU_OT_sqe_fix_metadata_strips,
     KITSU_OT_sqe_add_sequence_color,
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
@@ -118,6 +119,9 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
         if self.poll_metadata(context):
             self.draw_metadata(context)
+
+        if self.poll_offline_metadata(context):
+            self.draw_offline_metadata(context)
 
         if self.poll_multi_edit(context):
             self.draw_multi_edit(context)
@@ -352,6 +356,31 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         row = split.row(align=False)
         row.prop(strip.kitsu, "frame_start_offset", text="In")
         """
+
+    def poll_offline_metadata(cls, context: bpy.types.Context) -> bool:
+        offline_metadata_strips = [
+            strip
+            for strip in context.scene.sequence_editor.sequences
+            if strip.kitsu.shot_id != '' and not Path(strip.filepath).is_file()
+        ]
+
+        return len(offline_metadata_strips) > 0
+
+    def draw_offline_metadata(self, context: bpy.types.Context) -> None:
+        # Create box.
+        layout = self.layout
+        box = layout.box()
+        box.label(text="Fix Metadata Strips", icon="ERROR")
+        offline_metadata_strips = [
+            strip
+            for strip in context.selected_sequences
+            if strip.kitsu.shot_id != '' and not Path(strip.filepath).is_file()
+        ]
+        if len(offline_metadata_strips) == 0:
+            text = "Fix All Missing Media"
+        else:
+            text = f"Fix {len(offline_metadata_strips)} Missing Media"
+        box.operator(KITSU_OT_sqe_fix_metadata_strips.bl_idname, text=text)
 
     @classmethod
     def poll_multi_edit(cls, context: bpy.types.Context) -> bool:

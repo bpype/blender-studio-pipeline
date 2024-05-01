@@ -57,10 +57,11 @@ def create_metadata_strip(
     strip_range = range(strip.frame_final_start, strip.frame_final_end)
     channel = strip.channel + 1
 
+    addon_prefs = prefs.addon_prefs_get(context)
     # Create new metadata strip.
     metadata_strip = context.scene.sequence_editor.sequences.new_movie(
         f"{strip.name}_metadata-strip",
-        "",
+        addon_prefs.metadatastrip_file,
         strip.channel + 1,
         strip.frame_final_start,
     )

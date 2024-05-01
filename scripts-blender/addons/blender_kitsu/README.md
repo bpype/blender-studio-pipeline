@@ -151,6 +151,11 @@ If you linked in a sequence that has no `["data"]["color"]` attribute on Kitsu y
 
 All this information and more can be `pushed` to kitsu which bring us to the next panel. <br/>
 
+##### Missing Metadata Strip Media
+If your scene contains any metadata strips that have "missing media" a **Fix Metadata Strips** box will appear in your Kitsu Panel. Simply select the metadata strips that have missing media, or none to fix all strips, and run the `Fix Missing Media` operator. <br/>
+
+![image info](/media/addons/blender_kitsu/sqe_fix_metadata_media.jpg)
+
 ##### Push
 
 In the `Push` panel you will find all the operators that push data to Kitsu. <br/>

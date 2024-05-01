@@ -121,6 +121,20 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     how some of the operators work.
     """
 
+    def get_metadatastrip_file(self) -> str:
+        res_dir = bkglobals.RES_DIR_PATH
+        return res_dir.joinpath("metastrip.mp4").as_posix()
+    
+    metadatastrip_file: bpy.props.StringProperty(  # type: ignore
+        name="Metadata Strip File",
+        description=(
+            "Filepath to black .mp4 file that will be used as metastrip for shots in the sequence editor"
+        ),
+        default="",
+        subtype="FILE_PATH",
+        get=get_metadatastrip_file,
+    )
+    
     def get_datadir(self) -> Path:
         """Returns a Path where persistent application data can be stored.
 

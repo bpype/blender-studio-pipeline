@@ -1807,7 +1807,7 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
                     # Create new strip.
                     strip = context.scene.sequence_editor.sequences.new_movie(
                         shot.name,
-                        "",
+                        addon_prefs.metadatastrip_file,
                         channel,
                         frame_start,
                     )
@@ -2012,7 +2012,7 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
             # on the first try, EDIT: seems to work maybe per python overlaps of sequences possible?
             metadata_strip = context.scene.sequence_editor.sequences.new_movie(
                 f"{strip.name}{bkglobals.DELIMITER}metadata{bkglobals.SPACE_REPLACER}strip",
-                "",
+                addon_prefs.metadatastrip_file,
                 strip.channel + 1,
                 strip.frame_final_start,
             )
@@ -2056,6 +2056,32 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
         logger.info("-END- Creating Metadata Strips")
         util.ui_redraw()
 
+        return {"FINISHED"}
+
+
+class KITSU_OT_sqe_fix_metadata_strips(bpy.types.Operator):
+
+    bl_idname = "kitsu.sqe_fix_metadata_strip"
+    bl_label = "Fix Metadata Strip Missing Media"
+    bl_description = "Fixes missing media error in metadata strips. "
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        addon_prefs = prefs.addon_prefs_get(context)
+
+        if len(context.selected_sequences) == 0:
+            all_strips = context.scene.sequence_editor.sequences
+        else:
+            all_strips = context.selected_sequences
+
+        offline_metadata_strips = [
+            strip
+            for strip in all_strips
+            if strip.kitsu.shot_id != '' and not Path(strip.filepath).is_file()
+        ]
+
+        for strip in offline_metadata_strips:
+            strip.filepath = addon_prefs.metadatastrip_file
         return {"FINISHED"}
 
 
@@ -2761,6 +2787,7 @@ classes = [
     KITSU_OT_sqe_pull_edit,
     KITSU_OT_sqe_init_strip_start_frame,
     KITSU_OT_sqe_create_metadata_strip,
+    KITSU_OT_sqe_fix_metadata_strips,
     KITSU_OT_sqe_add_sequence_color,
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
