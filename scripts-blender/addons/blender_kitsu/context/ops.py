@@ -94,8 +94,10 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
             active_project.production_type == bkglobals.KITSU_TV_PROJECT
             and filepath.parents[3].name == bkglobals.SHOT_DIR_NAME
         ):
+            episode = active_project.get_episode_by_name(filepath.parents[2].name)
             category = filepath.parents[3].name
         else:
+            episode = None
             category = filepath.parents[2].name
 
         item_group = filepath.parents[1].name
@@ -109,8 +111,11 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 # Set category.
                 kitsu_props.category = "SHOT"
 
+                if episode:
+                    kitsu_props.episode_active_name = episode.name
+
                 # Detect ad load sequence.
-                sequence = active_project.get_sequence_by_name(item_group)
+                sequence = active_project.get_sequence_by_name(item_group, episode)
                 if not sequence:
                     self.report({"ERROR"}, f"Failed to find sequence: '{item_group}' on server")
                     return {"CANCELLED"}
@@ -146,8 +151,11 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 # Set category.
                 kitsu_props.category = "SEQ"
 
+                if episode:
+                    kitsu_props.episode_active_name = episode.name
+
                 # Detect and load seqeunce.
-                sequence = active_project.get_sequence_by_name(item_group)
+                sequence = active_project.get_sequence_by_name(item_group, episode)
                 if not sequence:
                     self.report({"ERROR"}, f"Failed to find sequence: '{item_group}' on server")
                     return {"CANCELLED"}

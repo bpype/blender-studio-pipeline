@@ -296,6 +296,9 @@ class Project(Entity):
 
     # EPISODES
     # ---------------
+    def get_episode_by_name(self, ep_name: str) -> Optional[Episode]:
+        return Episode.by_name(self, ep_name)
+
     def get_episode(self, ep_id: str) -> Episode:
         return Episode.by_id(ep_id)
 
@@ -472,10 +475,16 @@ class Sequence(Entity):
         cls,
         project: Project,
         seq_name: str,
-        episode: Union[str, Dict[str, Any], None] = None,
+        episode: Episode = None,
     ) -> Optional[Sequence]:
-        # Can return None if seq does not exist.
+        # Check episode exists and is a valid episode
+        if episode and episode.id != "":
+            episode = asdict(episode)
+        else:
+            episode = None  # Set episode to None if it's invalid
+
         seq_dict = gazu.shot.get_sequence_by_name(asdict(project), seq_name, episode=episode)
+        # Can return None if seq does not exist.
         if seq_dict:
             return cls.from_dict(seq_dict)
         return None

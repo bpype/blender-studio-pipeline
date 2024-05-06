@@ -346,7 +346,7 @@ class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
         project_active = cache.project_active_get()
         episode_active = cache.episode_active_get()
 
-        sequence = project_active.get_sequence_by_name(self.sequence_name)
+        sequence = project_active.get_sequence_by_name(self.sequence_name, episode_active)
 
         if sequence:
             self.report(
