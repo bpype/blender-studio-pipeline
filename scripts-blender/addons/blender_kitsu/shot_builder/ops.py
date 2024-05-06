@@ -233,7 +233,7 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
         # Get Properties
-        global active_project
+        active_project = cache.project_active_get()
         seq = cache.sequence_active_get()
         shot = cache.shot_active_get()
         task_type = cache.task_type_active_get()
