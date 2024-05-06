@@ -50,6 +50,7 @@ Transferable Data Types:
  - Vertex Groups
  - Modifiers
  - Constraints
+ - Custom Properties
  - Materials (including slots, index and the material IDs)
  - ShapeKeys 
  - Attributes
@@ -139,6 +140,10 @@ Add your own custom Task Layers to the asset pipeline addon. To create a custom 
         },
         "CONSTRAINT": {
             "default_owner": "Rigging",
+            "auto_surrender": false
+        },
+        "CUSTOM_PROP": {
+            "default_owner": "Modeling",
             "auto_surrender": false
         },
         "MATERIAL": {

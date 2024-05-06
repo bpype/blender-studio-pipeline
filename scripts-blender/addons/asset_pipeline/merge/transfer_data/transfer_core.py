@@ -3,6 +3,7 @@ import time
 from .transfer_functions import (
     attributes,
     constraints,
+    custom_props,
     modifers,
     parent,
     shape_keys,
@@ -49,6 +50,7 @@ def transfer_data_clean(obj):
     vertex_groups.vertex_groups_clean(obj)
     modifers.modifiers_clean(obj)
     constraints.constraints_clean(obj)
+    custom_props.custom_prop_clean(obj)
     shape_keys.shape_keys_clean(obj)
     attributes.attribute_clean(obj)
     parent.parent_clean(obj)
@@ -67,6 +69,7 @@ def transfer_data_is_missing(transfer_data_item) -> bool:
         vertex_groups.vertex_group_is_missing(transfer_data_item)
         or modifers.modifier_is_missing(transfer_data_item)
         or constraints.constraint_is_missing(transfer_data_item)
+        or custom_props.custom_prop_is_missing(transfer_data_item)
         or shape_keys.shape_key_is_missing(transfer_data_item)
         or attributes.attribute_is_missing(transfer_data_item)
     )
@@ -88,6 +91,7 @@ def init_transfer_data(
         return
 
     constraints.init_constraints(scene, obj)
+    custom_props.init_custom_prop(scene, obj)
     parent.init_parent(scene, obj)
     modifers.init_modifiers(scene, obj)
 
@@ -146,6 +150,16 @@ def apply_transfer_data_items(
             )
             constraints.transfer_constraint(
                 constraint_name=transfer_data_dict["name"],
+                target_obj=target_obj,
+                source_obj=source_obj,
+            )
+    if td_type_key == constants.CUSTOM_PROP_KEY:
+        for transfer_data_dict in transfer_data_dicts:
+            logger.debug(
+                f"Transferring Custom Property {transfer_data_dict['name']} from {source_obj.name} to {target_obj.name}."
+            )
+            custom_props.transfer_custom_prop(
+                prop_name=transfer_data_dict["name"],
                 target_obj=target_obj,
                 source_obj=source_obj,
             )

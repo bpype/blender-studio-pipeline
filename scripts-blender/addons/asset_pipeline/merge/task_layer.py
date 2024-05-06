@@ -11,10 +11,18 @@ def get_default_task_layer_owner(td_type: str, name="") -> [str, bool]:
                 config.ATTRIBUTE_DEFAULTS[name]['default_owner'],
                 config.ATTRIBUTE_DEFAULTS[name]['auto_surrender'],
             )
-    return (
-        config.TRANSFER_DATA_DEFAULTS[td_type]['default_owner'],
-        config.TRANSFER_DATA_DEFAULTS[td_type]['auto_surrender'],
-    )
+
+    try:
+        return (
+            config.TRANSFER_DATA_DEFAULTS[td_type]['default_owner'],
+            config.TRANSFER_DATA_DEFAULTS[td_type]['auto_surrender'],
+        )
+    except KeyError:
+        from .. import logging
+
+        logger = logging.get_logger()
+        logger.fatal(f"Task Layer File missing key {td_type}")
+        # TODO stop execution of operator at this point if this fails
 
 
 def get_transfer_data_owner(

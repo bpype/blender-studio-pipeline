@@ -181,6 +181,7 @@ class AssetPipeline(bpy.types.PropertyGroup):
     group_vertex_ui_bool: bpy.props.BoolProperty(name="Show/Hide Vertex Groups", default=False)
     modifier_ui_bool: bpy.props.BoolProperty(name="Show/Hide Modifiers", default=False)
     constraint_ui_bool: bpy.props.BoolProperty(name="Show/Hide Constraints", default=False)
+    custom_prop_ui_bool: bpy.props.BoolProperty(name="Show/Hide Custom Properties", default=False)
     material_ui_bool: bpy.props.BoolProperty(name="Show/Hide Materials", default=False)
     shapekey_ui_bool: bpy.props.BoolProperty(name="Show/Hide Shape Keys", default=False)
     attribute_ui_bool: bpy.props.BoolProperty(name="Show/Hide Attributes", default=False)

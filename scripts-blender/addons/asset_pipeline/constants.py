@@ -42,6 +42,7 @@ MATERIAL_SLOT_KEY = "MATERIAL"
 SHAPE_KEY_KEY = "SHAPE_KEY"
 ATTRIBUTE_KEY = "ATTRIBUTE"
 PARENT_KEY = "PARENT"
+CUSTOM_PROP_KEY = "CUSTOM_PROP"
 
 # Information about supported transferable data.
 # UI Bools are defined in props.py file
@@ -55,6 +56,7 @@ TRANSFER_DATA_TYPES = {
     SHAPE_KEY_KEY: ("Shape Keys", 'SHAPEKEY_DATA', 'shapekey_ui_bool'),
     ATTRIBUTE_KEY: ("Attributes", 'EVENT_A', 'attribute_ui_bool'),
     PARENT_KEY: ("Parent", 'FILE_PARENT', 'file_parent_ui_bool'),
+    CUSTOM_PROP_KEY: ("Custom Properties", 'PROPERTIES', 'custom_prop_ui_bool'),
 }
 
 # Convert it to the format that EnumProperty.items wants:

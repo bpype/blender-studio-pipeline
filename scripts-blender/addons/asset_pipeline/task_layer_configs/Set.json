@@ -17,6 +17,10 @@
             "default_owner": "Modeling",
             "auto_surrender": false
         },
+        "CUSTOM_PROP": {
+            "default_owner": "Modeling",
+            "auto_surrender": false
+        },
         "MATERIAL": {
             "default_owner": "Shading",
             "auto_surrender": true

@@ -62,11 +62,10 @@ def draw_transfer_data(
 ) -> None:
     """Draw UI List of Transferable Data"""
     vertex_groups = []
-    # vertex_colors = []
     material_slots = []
     modifiers = []
     constraints = []
-    # uv_layers = []
+    custom_props = []
     shape_keys = []
     attributes = []
     parent = []
@@ -74,16 +73,14 @@ def draw_transfer_data(
     for transfer_data_item in transfer_data:
         if transfer_data_item.type == constants.VERTEX_GROUP_KEY:
             vertex_groups.append(transfer_data_item)
-        # if transfer_data_item.type == constants.VERTEX_COLOR_KEY:
-        #     vertex_colors.append(transfer_data_item)
         if transfer_data_item.type == constants.MATERIAL_SLOT_KEY:
             material_slots.append(transfer_data_item)
         if transfer_data_item.type == constants.MODIFIER_KEY:
             modifiers.append(transfer_data_item)
         if transfer_data_item.type == constants.CONSTRAINT_KEY:
             constraints.append(transfer_data_item)
-        # if transfer_data_item.type == constants.UV_LAYERS_KEY:
-        #     uv_layers.append(transfer_data_item)
+        if transfer_data_item.type == constants.CUSTOM_PROP_KEY:
+            custom_props.append(transfer_data_item)
         if transfer_data_item.type == constants.SHAPE_KEY_KEY:
             shape_keys.append(transfer_data_item)
         if transfer_data_item.type == constants.ATTRIBUTE_KEY:
@@ -92,11 +89,10 @@ def draw_transfer_data(
             parent.append(transfer_data_item)
 
     draw_transfer_data_type(layout, vertex_groups)
-    # draw_transfer_data_type(layout, vertex_colors)
     draw_transfer_data_type(layout, modifiers)
     draw_transfer_data_type(layout, material_slots)
     draw_transfer_data_type(layout, constraints)
-    # draw_transfer_data_type(layout, uv_layers)
+    draw_transfer_data_type(layout, custom_props)
     draw_transfer_data_type(layout, shape_keys)
     draw_transfer_data_type(layout, attributes)
     draw_transfer_data_type(layout, parent)
