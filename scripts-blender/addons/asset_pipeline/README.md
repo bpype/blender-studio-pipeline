@@ -23,6 +23,7 @@ Checkout the [Asset Pipeline Demo](https://projects.blender.org/studio/blender-s
         - [Staged](#staged)
         - [Sandbox](#sandbox)
     - [Creating Custom Task Layers](#creating-custom-task-layers)
+    - [Default Ownership & Auto Surrender](#default-ownership--surrender)
     - [Hooks](#hooks)
     - [Gotchas](#gotchas)
         - [Multi-User Object Data](#multi-user-object-data)
@@ -178,6 +179,13 @@ Add your own custom Task Layers to the asset pipeline addon. To create a custom 
 }
 
 ```
+
+## Default Ownership & Auto Surrender
+The `default owner` value describes the preferred owner of a given data type. The default owner is used only if the current work file contains that task layer, otherwise a local task layer owner is used. 
+
+The `auto_surrender` value if set to True will automatically surrender the data type when it is initialized when the `default_owner` is not found. This is useful to ensure a task layer  needs to own all instances of a given data type (e.g. Shading Task Layer wants to own all Materials so all other task layers will automatically surrender their Materials). 
+
+If the `default_owner` is not local to the current file and the `auto_surrender` value is set to False, the data type will be owned by the local task layer owner, and will not be surrendered.
 
 ## Hooks
 Hooks are used to add custom functionality to the asset pipeline. Hooks are optional. The hooks are defined in a python file. There are two types of Hooks, Production Level and Asset Level. Production Hooks are used globally on all assets. Asset Hooks are used only on a specific asset. 
