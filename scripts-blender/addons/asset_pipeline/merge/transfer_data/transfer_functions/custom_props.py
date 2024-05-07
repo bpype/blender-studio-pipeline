@@ -73,7 +73,7 @@ def get_valid_props(obj):
     props = []
     for key in obj.keys():
         # Skip if prop is defined by an add-on (registered at obj level)
-        if getattr(bpy.types.Object, key, None):
+        if key not in ['asset_id_owner', 'asset_id_surrender', 'trasnfer_data_ownership']:
             continue
         props.append(key)
     return props
