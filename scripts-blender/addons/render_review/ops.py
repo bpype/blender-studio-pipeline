@@ -401,6 +401,8 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
             row.prop(addon_prefs, 'use_video')
             if addon_prefs.use_video:
                 row.prop(addon_prefs, 'use_video_latest_only')
+        
+        layout.prop(addon_prefs, 'shot_name_filter')
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         scripts_path = bpy.utils.script_paths(use_user=False)[0]
