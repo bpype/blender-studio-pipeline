@@ -34,8 +34,8 @@ def custom_prop_clean(obj):
             constants.CUSTOM_PROP_KEY,
         )
         if len(matches) == 0:
-            cleaned_item_names.add(item.name)
-            remove_custom_prop(obj, item.name)
+            cleaned_item_names.add(item)
+            remove_custom_prop(obj, item)
             data_list.remove(item)
 
     return cleaned_item_names
