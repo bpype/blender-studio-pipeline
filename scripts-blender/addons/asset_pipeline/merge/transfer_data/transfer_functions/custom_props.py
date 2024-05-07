@@ -10,10 +10,18 @@ def transfer_custom_prop(prop_name, target_obj, source_obj):
     if target_obj.get(prop_name):
         remove_custom_prop(target_obj, prop_name)
 
-    prop = source_obj.id_properties_ui(prop_name)
-    target_obj[prop_name] = source_obj[prop_name]
-    new_prop = target_obj.id_properties_ui(prop_name)
-    new_prop.update_from(prop)
+    if hasattr(source_obj[prop_name], "to_dict"):
+        # Copy add-on data & previously registered add-on data
+        target_obj[prop_name] = source_obj[prop_name].to_dict()
+    elif type(source_obj[prop_name]) == list:
+        # Copy list data
+        target_obj[prop_name] = source_obj[prop_name].copy()
+    else:
+        # Copy custom properties created via UI
+        prop = source_obj.id_properties_ui(prop_name)
+        target_obj[prop_name] = source_obj[prop_name]
+        new_prop = target_obj.id_properties_ui(prop_name)
+        new_prop.update_from(prop)
 
 
 def custom_prop_clean(obj):
