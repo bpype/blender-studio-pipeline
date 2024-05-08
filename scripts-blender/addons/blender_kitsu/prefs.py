@@ -124,7 +124,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     def get_metadatastrip_file(self) -> str:
         res_dir = bkglobals.RES_DIR_PATH
         return res_dir.joinpath("metastrip.mp4").as_posix()
-    
+
     metadatastrip_file: bpy.props.StringProperty(  # type: ignore
         name="Metadata Strip File",
         description=(
@@ -134,7 +134,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         subtype="FILE_PATH",
         get=get_metadatastrip_file,
     )
-    
+
     def get_datadir(self) -> Path:
         """Returns a Path where persistent application data can be stored.
 
@@ -377,6 +377,16 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         default=False,
     )
 
+    pb_manual_burn_in: bpy.props.BoolProperty(  # type: ignore
+        name="Manual Playblast Burn-Ins",
+        description=(
+            "Blender Kitsu will override all Shot/Sequence playblasts with it's own metadata burn in. "
+            "This includes frame, lens, Shot name & Animator name at font size of 24. "
+            "To use a file's metadata burn in settings during playblast enable this option"
+        ),
+        default=False,
+    )
+
     media_update_search_paths: bpy.props.CollectionProperty(type=KITSU_media_update_search_paths)
 
     production_path: bpy.props.StringProperty(  # type: ignore
@@ -505,6 +515,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         box.row().prop(self, "frames_root_dir")
         box.row().prop(self, "pb_open_webbrowser")
         box.row().prop(self, "pb_open_vse")
+        box.row().prop(self, "pb_manual_burn_in")
 
         # Editorial Settings
         box = col.box()

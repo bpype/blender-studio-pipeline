@@ -79,6 +79,13 @@ def override_hide_viewport_overlays(self, context: Context):
 
 @contextlib.contextmanager
 def override_metadata_stamp_settings(self, context: Context, username: str = "None"):
+    addon_prefs = prefs.addon_prefs_get(context)
+    if addon_prefs.pb_manual_burn_in:
+        try:
+            yield
+        finally:
+            return
+
     rd = context.scene.render
 
     # Get shot name for stamp note text.
