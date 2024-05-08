@@ -219,6 +219,7 @@ export default defineConfig({
               {text: 'Add-Ons Setup', link: '/td-guide/addon_setup'},
             ],
           },
+          {text: 'Flamenco', link: '/td-guide/flamenco_setup'},
           
           
         ]

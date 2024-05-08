@@ -33,18 +33,3 @@ TODO Replace Image
     - Shot Previews: `data/your_project_name/shared/editorial/footage/pro/`
 
 ![Render Review Preferences](/media/td-guide/render_review_pref.jpg)
-<!--
-TODO Replace Image
--->
-
-## Flamenco Setup
-1. Create Flamenco shared storage directory
-```bash
-mkdir ~/data/flamenco_storage # Linux/Mac
-```
-```bash
-mkdir %HOMEPATH%\data\flamenco_storage # Windows
-```
-1. Follow the instructions at https://flamenco.blender.org/usage/quickstart/ to setup Flamenco
-2. During Flamenco Manager Setup use `data/flamenco_storage` as the shared storage directory 
-3. During Flamenco Manager Setup use `data/your_project_name/local/blender/{os}/blender` as the Blender Executable Path
