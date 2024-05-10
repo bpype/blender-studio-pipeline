@@ -18,7 +18,6 @@
 #
 # (c) 2021, Blender Foundation - Paul Golter
 
-import math
 from typing import List, Dict, Tuple, Union, Any, Optional, Set
 
 import bpy
@@ -35,31 +34,31 @@ Float2 = Tuple[float, float]
 Float3 = Tuple[float, float, float]
 Float4 = Tuple[float, float, float, float]
 
-# Glsl.
-gpu_vertex_shader = """
-uniform mat4 ModelViewProjectionMatrix;
+# Shader code for "class GPDrawerCustomShader"
+shader_info = gpu.types.GPUShaderCreateInfo()
+shader_info.push_constant('MAT4', "viewProjectionMatrix")
+shader_info.push_constant('VEC4', "lineColor")
+shader_info.vertex_in(0, 'VEC2', "pos")
+shader_info.fragment_out(0, 'VEC4', "fragColor")
 
-layout (location = 0) in vec2 pos;
-layout (location = 1) in vec4 color;
-
-out vec4 lineColor; // output to the fragment shader
-
+shader_info.vertex_source("""
 void main()
 {
-    gl_Position = ModelViewProjectionMatrix * vec4(pos.x, pos.y, 0.0, 1.0);
-    lineColor = color;
+    gl_Position = viewProjectionMatrix * vec4(pos.x, pos.y, 0.0, 1.0);
 }
 """
+)
 
-gpu_fragment_shader = """
-out vec4 fragColor;
-in vec4 lineColor;
-
+shader_info.fragment_source("""
 void main()
 {
     fragColor = lineColor;
 }
 """
+)
+
+gp_custom_shader = gpu.shader.create_from_info(shader_info)
+del shader_info
 
 
 def get_gpframe_coords(
@@ -124,20 +123,6 @@ def lin2srgb(lin: float) -> float:
 
 
 class GPDrawerCustomShader:
-    def __init__(self):
-        self._format = gpu.types.GPUVertFormat()
-
-        # To find out what attributes are available look here:
-        # ./source/blender/gpu/GPU_shader.h
-        self._pos_id = self._format.attr_add(
-            id="pos", comp_type="F32", len=2, fetch_mode="FLOAT"
-        )
-        self._color_id = self._format.attr_add(
-            id="color", comp_type="F32", len=4, fetch_mode="FLOAT"
-        )
-
-        self.shader = gpu.types.GPUShader(gpu_vertex_shader, gpu_fragment_shader)
-
     def draw(self, gpframe: bpy.types.GPencilFrame, line_widht: int, color: Float4):
 
         coords = get_gpframe_coords(gpframe)
@@ -148,15 +133,12 @@ class GPDrawerCustomShader:
         gpu.state.blend_set('ALPHA')
         gpu.state.line_width_set(line_widht)
 
-        colors = [color for c in coords]
+        matrix = bpy.context.region_data.perspective_matrix
+        gp_custom_shader.uniform_float("viewProjectionMatrix", matrix)
+        gp_custom_shader.uniform_float("lineColor", color)
 
-        vbo = gpu.types.GPUVertBuf(len=len(coords), format=self._format)
-        vbo.attr_fill(id=self._pos_id, data=coords)
-        vbo.attr_fill(id=self._color_id, data=colors)
-
-        batch = gpu.types.GPUBatch(type="LINES", buf=vbo)
-        batch.program_set(self.shader)
-        batch.draw()
+        batch = batch_for_shader(gp_custom_shader, 'LINES', {"pos": coords})
+        batch.draw(gp_custom_shader)
 
 
 class GPDrawerBuiltInShader:
