@@ -110,6 +110,10 @@ class KITSU_PT_vi3d_context(bpy.types.Panel):
         # Task Type selector
         context_core.draw_task_type_selector(context, col)
 
+        if context.scene.kitsu_error.frame_range:
+            box = ui.draw_error_box(layout)
+            ui.draw_error_frame_range_outdated(box)
+
 
 class KITSU_PT_set_asset(bpy.types.Panel):
     """

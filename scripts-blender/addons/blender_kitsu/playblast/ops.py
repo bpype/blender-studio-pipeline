@@ -21,7 +21,7 @@
 import webbrowser
 from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple, Any
-
+import time
 import bpy
 from bpy.app.handlers import persistent
 
@@ -561,12 +561,40 @@ def draw_frame_range_warning(self, context):
     layout.operator("kitsu.pull_frame_range", icon='TRIA_DOWN')
 
 
+def draw_kitsu_context_warning(self, context):
+    layout = self.layout
+    layout.alert = True
+    layout.label(
+        text="Frame Range couldn't be found because current Shot wasn't found, please select an active Shot from Kitsu Context Menu"
+    )
+
+
 @persistent
 def load_post_handler_check_frame_range(dummy: Any) -> None:
     # Only show if kitsu context is detected
-    active_shot = cache.shot_active_get()
-    if not active_shot:
+    cat = bpy.context.scene.kitsu.category
+    project_root_dir = prefs.project_root_dir_get(bpy.context)
+    shots_dir = project_root_dir.joinpath("pro/shots/")
+
+    # Unsaved File
+    if not bpy.data.is_saved:
         return
+
+    # File Outside of Shots Directory
+    if not shots_dir in Path(bpy.data.filepath).parents:
+        return
+
+    try:
+        bpy.ops.kitsu.con_detect_context()
+    except RuntimeError:
+        if cat == "SHOT":
+            bpy.context.window_manager.popup_menu(
+                draw_kitsu_context_warning,
+                title="Warning: Kitsu Context Error.",
+                icon='ERROR',
+            )
+        return
+
     if not core.check_frame_range(bpy.context):
         bpy.context.window_manager.popup_menu(
             draw_frame_range_warning,

@@ -56,19 +56,13 @@ class KITSU_PT_vi3d_playblast(bpy.types.Panel):
     def poll_error(cls, context: bpy.types.Context) -> bool:
         addon_prefs = prefs.addon_prefs_get(context)
 
-        return bool(
-            context.scene.kitsu_error.frame_range
-            or not addon_prefs.is_playblast_root_valid
-            or not context.scene.camera
-        )
+        return bool(not addon_prefs.is_playblast_root_valid or not context.scene.camera)
 
     def draw_error(self, context: bpy.types.Context) -> None:
         addon_prefs = prefs.addon_prefs_get(context)
         layout = self.layout
 
         box = ui.draw_error_box(layout)
-        if context.scene.kitsu_error.frame_range:
-            ui.draw_error_frame_range_outdated(box)
         if not addon_prefs.is_playblast_root_valid:
             ui.draw_error_invalid_playblast_root_dir(box)
         if not context.scene.camera:
