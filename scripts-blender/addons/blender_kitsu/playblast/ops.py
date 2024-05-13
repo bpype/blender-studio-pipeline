@@ -300,9 +300,15 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
     def invoke(self, context, event):
         # Initialize comment and playblast task status variable.
         self.comment = ""
-        self.thumbnail_frame = context.scene.frame_current
 
         prev_task_status_id = context.scene.kitsu.playblast_task_status_id
+
+        if context.scene.frame_current not in range(
+            context.scene.frame_start, context.scene.frame_end
+        ):
+            context.scene.frame_current = context.scene.frame_start
+
+        self.thumbnail_frame = context.scene.frame_current
 
         # Only use prev_task_status_id if it exists in the task statuses enum list
         valid_ids = [status[0] for status in cache.get_all_task_statuses_enum(self, context)]
