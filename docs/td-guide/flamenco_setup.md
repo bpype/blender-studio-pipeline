@@ -7,7 +7,7 @@ Follow the [Flamenco Quickstart](https://flamenco.blender.org/usage/quickstart/)
 ### Shared Storage 
 On **Step 2**, you must determine a shared storage path. This path must be accessible by all **workers** in the farm. This path should be outside of your project's directory and must be an absolute path (the same on each machine). 
 
-To learn more about how files are stored on the farm, see the [Shaman Storage System](https://flamenco.blender.org/usage/shared-storage/shaman/#how-does-it-work) documentation.
+To learn more about how files are stored on the farm, see the [Shaman Storage System](https://flamenco.blender.org/usage/shared-storage/shaman/) documentation.
 
 ### Blender Path
 On **Step 3**, your Blender Path MUST be the same on all **workers**. 
@@ -15,7 +15,7 @@ On **Step 3**, your Blender Path MUST be the same on all **workers**.
 ::: warning  Warning!
 If you followed the [TD Setup Guide](blender_setup) exactly and your project/blender executable is relative to the home folder, you must follow the below instruction.
 :::
-If you are storing your Blender executable at a relative path, consider creating a symlink to an absolute directory on each workstation, or storing a copy of Blender at an absolute directory (the same on each machine).  
+If you are storing your Blender executable at a path that is different on each computer (e.g. relative to each user's home folder), consider either creating a symlink or storing a copy of Blender in a directory that is the same on each workstation.  
 
 ### Distributing Flamenco Add-On
 On **Step 6** you will be provided with the Flamenco Add-On. You will need to distribute this Add-On to all machines in each project using the farm.
