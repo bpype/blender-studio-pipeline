@@ -174,6 +174,10 @@ class MV_PT_review_settings(bpy.types.Panel):
             context.preferences.view,
             "show_playback_fps",
         )
+        layout.row().prop(
+            context.preferences.view,
+            "ui_scale",
+        )
 
 
 def MV_TOPBAR_settings(self: Any, context: bpy.types.Context) -> None:
