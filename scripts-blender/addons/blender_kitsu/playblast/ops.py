@@ -369,6 +369,8 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         if context_core.is_sequence_context():
             # Get sequence
             return cache.sequence_active_get()
+        elif context_core.is_asset_context():
+            return cache.asset_active_get()
         else:
             # Get shot.
             return cache.shot_active_get()
