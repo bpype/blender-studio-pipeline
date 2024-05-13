@@ -135,35 +135,23 @@ cd %HOMEPATH%\your_project_name\svn\tools
 python rollback_blender_local.py
 ```
 
-## Install/Update Add-Ons
-Blender Add-ons can be packaged directly from the [Blender Studio Pipeline](https://projects.blender.org/studio/blender-studio-pipeline) repository. Personal Add-Ons can be installed [normally](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#installing-add-ons).
-
-1. Enter Directory
+## Update Blender Studio Add-Ons
+All Add-Ons in the Blender Studio Pipeline repository can be quickly downloaded using the `update_addons.py` script.
 
 ```bash
-cd ~/data/blender-studio-pipeline/scripts/pipeline-release # Linux/Mac
+# Linux/Mac
+cd ~/data/your_project_name/svn/tools
+./update_addons.py
 ```
 ```bash
-cd %HOMEPATH%\data\blender-studio-pipeline\scripts\pipeline-release # Windows
+# Windows
+cd %HOMEPATH%\data\your_project_name\svn\tools
+python update_addons.py
 ```
 
-2. Update Git 
-```bash
-# Windows & Linux/Mac
-git checkout main # Checkout main branch
-git reset --hard # Remove any changes stored in your branch
-git pull --rebase origin # Pull to update to latest commit
-```
-
-3. Run Package Local Script
-```bash
-./package_local.py ~/data/your_project_name/shared/artifacts/addons # Linux/Mac
-```
-```bash
-python package_local.py %HOMEPATH%\data\your_project_name\shared\artifacts\addons # Windows
-```
+*To learn more see [Add-On Setup page](/td-guide/addon_setup.md)* 
 
 
-::: info Blender Studio Users
+::: info Gentoo Users
 Flamenco is installed and updated by the package manager of your Gentoo workstation. To learn more see [Update Local Add-Ons](/gentoo/td/maintaince#update-local-add-ons) in the Gentoo section.
 :::

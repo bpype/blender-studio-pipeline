@@ -217,6 +217,7 @@ export default defineConfig({
             items: [
               {text: 'Blender Setup', link: '/td-guide/blender_setup'},
               {text: 'Add-Ons Setup', link: '/td-guide/addon_setup'},
+              {text: 'Add-Ons Preferences', link: '/td-guide/addon_preferences'},
             ],
           },
           {text: 'Flamenco', link: '/td-guide/flamenco_setup'},
