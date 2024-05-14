@@ -75,8 +75,8 @@ def get_files_to_crawl(project_path: Path, name_filter=None):  # -> returns list
             continue
 
         elapse_time = epoch_time - os.path.getctime(blend_file)
-        # if file hasn't been saved in more than 24 hours, resync
-        if not elapse_time > 86400:
+        # if file hasn't been saved in more than 20 hours, resync
+        if not elapse_time > 72000:
             print("Skipping recently saved file:", str(blend_file))
             continue
         resync_blend_files.append(blend_file)
