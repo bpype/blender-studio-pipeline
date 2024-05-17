@@ -154,6 +154,12 @@ class GNSK_add_shape(bpy.types.Operator):
         layout.prop(self, 'shape_name')
 
     def execute(self, context):
+        try:
+            get_resource_blend_path(context)
+        except FileNotFoundError:
+            self.report({'ERROR'}, "Node tree file not found. Check your Add-On preferences.")
+            return {'CANCELLED'}
+
         for obj in context.selected_objects:
             if obj.type != 'MESH':
                 obj.select_set(False)

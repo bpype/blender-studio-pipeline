@@ -1,4 +1,5 @@
 import bpy
+import os
 from bpy.types import AddonPreferences
 from bpy.props import BoolProperty, StringProperty, EnumProperty
 
@@ -24,7 +25,11 @@ class GNSK_Preferences(AddonPreferences):
     )
     blend_path: StringProperty(
         name="Nodegroup File",
-        description="Path to the file containing the GeoNode ShapeKey nodes",
+        description=(
+            "Path to the file containing the GeoNode ShapeKey nodes, "
+            "default file is packaged within this add-on. "
+            "Path is automatically set while loading a .blend file"
+        ),
         subtype='FILE_PATH',
     )
 
@@ -49,7 +54,7 @@ def autofill_node_blend_path(context, _dummy):
         context = bpy.context
     addon_prefs = context.preferences.addons[__package__].preferences
     current_path = addon_prefs.blend_path
-    if not current_path:
+    if current_path == '':
         filedir = os.path.dirname(os.path.realpath(__file__))
         addon_prefs.blend_path = os.sep.join(filedir.split(os.sep) + ['geonodes.blend'])
 
