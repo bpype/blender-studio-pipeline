@@ -102,7 +102,7 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
 
     shot_name: bpy.props.StringProperty(  # type: ignore
         name="Shot",
-        description="Name that refers to the strip's shot on server",
+        description="Name that refers to the strip's shot on server, Reminder: press ENTER to save shot name after entering",
         default="",
         get=get_shot_via_name,
         set=set_shot_via_name,
