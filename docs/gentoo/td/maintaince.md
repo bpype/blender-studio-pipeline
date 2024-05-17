@@ -34,6 +34,8 @@ The command `emerge --oneshot {package-name}` compiles package, but does not add
 
 Add-Ons are locally stored in the following directories; `/usr/share/flamenco` and `/usr/share/blender_studio_tools`. These are updated by running the following commands. These directories are automatically updated daily by the Gentoo package manager.
 
+Note that the Flamenco package installs and updates the addon, manager, and worker per default.
+
 ```bash
 emerge -1 blender-studio-tools
 emerge -1 flamenco
@@ -43,7 +45,7 @@ emerge -1 flamenco
 
 
 ### How to update to specific version?
-In some cases, users may want to specify what version of an add-on to deploy into the `/shared/software/addons` folder. Users can accomplish this using `eclass` variables found in the [Gentoo Devmanual](https://devmanual.gentoo.org/eclass-reference/git-r3.eclass/index.html#:~:text=more%20creative%20ways.-,EGIT_BRANCH,-The%20branch%20name).  
+In some cases, users may want to specify what version of an add-on to deploy. Users can accomplish this using `eclass` variables found in the [Gentoo Devmanual](https://devmanual.gentoo.org/eclass-reference/git-r3.eclass/index.html#:~:text=more%20creative%20ways.-,EGIT_BRANCH,-The%20branch%20name).
 - Run `EGIT_COMMIT=<hash> emerge {package-name}` to update to a specific commit 
 - Run `EGIT_BRANCH=<branch> emerge {package-name}` to update to a specific branch 
 - Run `EGIT_COMMIT=<hash> EGIT_BRANCH=<branch> emerge {package-name}` to update to a specific commit with in a specific branch 
