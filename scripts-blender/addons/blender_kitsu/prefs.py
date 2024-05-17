@@ -414,7 +414,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     edit_export_dir: bpy.props.StringProperty(  # type: ignore
         name="Edit Export Directory",
         options={"HIDDEN", "SKIP_SAVE"},
-        description="Directory path to editorial's export folder containing storyboard/animatic renders. Path should be similar to '~/shared-{proj_name}/editorial/export/'",
+        description="Directory path to editorial's export folder containing storyboard/animatic renders. Path should be similar to '{project}/shared/editorial/export/'",
         subtype="DIR_PATH",
         get=get_edit_export_dir,
         set=set_edit_export_dir,
