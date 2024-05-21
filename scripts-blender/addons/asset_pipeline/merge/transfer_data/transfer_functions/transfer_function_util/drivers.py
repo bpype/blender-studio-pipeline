@@ -1,6 +1,4 @@
 import bpy
-from rigify.utils.misc import copy_attributes
-
 
 def copy_driver(
     from_fcurve: bpy.types.FCurve, target: bpy.types.ID, data_path=None, index=None
@@ -17,35 +15,16 @@ def copy_driver(
     Returns:
         bpy.types.FCurve: Fcurve containing copy of driver on target ID
     """
-    if not data_path:
-        data_path = from_fcurve.data_path
+    
+    if not target.animation_data:
+        target.animation_data_create()
+    
+    new_fc = target.animation_data.drivers.from_existing(src_driver = from_fcurve)
 
-    new_fc = None
+    if data_path:
+        new_fc.data_path = data_path
     if index:
-        new_fc = target.driver_add(data_path, index)
-    else:
-        new_fc = target.driver_add(data_path)
-
-    copy_attributes(from_fcurve, new_fc)
-    copy_attributes(from_fcurve.driver, new_fc.driver)
-
-    # Remove default modifiers, variables, etc.
-    for m in new_fc.modifiers:
-        new_fc.modifiers.remove(m)
-    for v in new_fc.driver.variables:
-        new_fc.driver.variables.remove(v)
-
-    # Copy modifiers
-    for m1 in from_fcurve.modifiers:
-        m2 = new_fc.modifiers.new(type=m1.type)
-        copy_attributes(m1, m2)
-
-    # Copy variables
-    for v1 in from_fcurve.driver.variables:
-        v2 = new_fc.driver.variables.new()
-        copy_attributes(v1, v2)
-        for i in range(len(v1.targets)):
-            copy_attributes(v1.targets[i], v2.targets[i])
+        new_fc.array_index = index
 
     return new_fc
 
