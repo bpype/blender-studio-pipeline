@@ -33,12 +33,25 @@ def custom_prop_clean(obj):
             item,
             constants.CUSTOM_PROP_KEY,
         )
-        if len(matches) == 0:
+        if len(matches) == 0 or item in constants.INVALID_CUSTOM_PROP_KEYS:
             cleaned_item_names.add(item)
             remove_custom_prop(obj, item)
             data_list.remove(item)
 
     return cleaned_item_names
+
+
+def remove_invalid_props(obj):
+    removed_item_indexes = set()
+
+    for index, item in enumerate(obj.transfer_data_ownership):
+        if item.name in constants.INVALID_CUSTOM_PROP_KEYS:
+            removed_item_indexes.add(index)
+
+    for index in sorted(removed_item_indexes, reverse=True):
+        obj.transfer_data_ownership.remove(index)
+
+    return
 
 
 def custom_prop_is_missing(transfer_data_item):
@@ -53,6 +66,8 @@ def init_custom_prop(scene, obj):
     asset_pipe = scene.asset_pipeline
     transfer_data = obj.transfer_data_ownership
     td_type_key = constants.CUSTOM_PROP_KEY
+
+    remove_invalid_props(obj)
 
     for prop_name in get_valid_props(obj):
         matches = check_transfer_data_entry(transfer_data, prop_name, td_type_key)
@@ -73,9 +88,8 @@ def get_valid_props(obj):
     props = []
     for key in obj.keys():
         # Skip if prop is defined by an add-on (registered at obj level)
-        if key not in ['asset_id_owner', 'asset_id_surrender', 'trasnfer_data_ownership']:
-            continue
-        props.append(key)
+        if key not in constants.INVALID_CUSTOM_PROP_KEYS:
+            props.append(key)
     return props
 
 

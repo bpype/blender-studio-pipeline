@@ -75,6 +75,7 @@ PARENT_TRANSFER_DATA_ITEM_NAME = "Parent Relationship"
 
 MATERIAL_ATTRIBUTE_NAME = "material_index"
 
+INVALID_CUSTOM_PROP_KEYS = ['asset_id_owner', 'asset_id_surrender', 'trasnfer_data_ownership']
 
 ###################
 # SHARED IDs
