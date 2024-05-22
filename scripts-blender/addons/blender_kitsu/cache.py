@@ -237,6 +237,9 @@ def asset_type_active_get() -> AssetType:
 def asset_type_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None:
     global _asset_type_active
 
+    if _asset_type_active != AssetType.by_id(entity_id):
+        asset_active_reset(context)
+
     _asset_type_active = AssetType.by_id(entity_id)
     context.scene.kitsu.asset_type_active_id = entity_id
     logger.debug("Set active asset type to %s", _asset_type_active.name)
