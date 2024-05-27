@@ -24,6 +24,11 @@ parser.add_argument(
     type=str,
     default='no_alt_binary',
 )
+parser.add_argument(
+    '--only-update',
+    help="Only update the local install of Blender/Addons, don't launch Blender.",
+    action='store_true'
+)
 
 # The project base path (where shared, local and svn are located)
 PATH_BASE = Path(__file__).resolve().parent.parent.parent
@@ -329,5 +334,7 @@ if __name__ == '__main__':
     update_presets()
     logger.info('Updating Blender')
     update_blender()
+    if args.only_update:
+        sys.exit(0)
     logger.info('Launching Blender')
     launch_blender()
