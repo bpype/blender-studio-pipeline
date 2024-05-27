@@ -7,7 +7,7 @@ This is the folder that should be shared over the network. (By using Syncthing, 
     ```bash
     # Linux/Mac    
     cd ~/data/blender-studio-pipeline/scripts/project-tools
-    init_project_folder_structure.py ~/data/your_project_name/shared --json_file folder_structure_shared.json
+    ./init_project_folder_structure.py ~/data/your_project_name/shared --json_file folder_structure_shared.json
     ```
     ```bash
     # Windows
