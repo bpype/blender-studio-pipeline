@@ -303,6 +303,24 @@ def update_addons():
         logger.info("Skipping addon updates.")
         return
     addons_list = [entry.name for entry in addon_artifacts_folder.iterdir() if entry.suffix == ".zip"]
+    local_artifact_dir = PATH_LOCAL / 'artifacts' / 'addons'
+    # Remove addons that doesn't exist in the artifact directory anymore.
+    if local_artifact_dir.exists():
+        local_addon_list = [entry.stem for entry in local_artifact_dir.iterdir() if entry.suffix == ".files"]
+        addons_to_remove = set(local_addon_list) - set(addons_list)
+        for addon in addons_to_remove:
+            addon_files = local_artifact_dir / (addon + ".files")
+            addon_checksum = local_artifact_dir / (addon + ".sha256")
+            with open(addon_files) as file:
+                lines = [line.rstrip() for line in file]
+            for file in lines:
+                old_file = PATH_LOCAL / 'scripts' / 'addons' / file
+                if old_file.exists():
+                    shutil.rmtree(old_file)
+            addon_files.unlink()
+            if addon_checksum.exists():
+                addon_checksum.unlink()
+
     for zip_name in addons_list:
         update_addon(zip_name)
 
