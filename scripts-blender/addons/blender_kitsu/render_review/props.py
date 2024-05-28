@@ -23,9 +23,10 @@ from pathlib import Path
 
 import bpy
 
-from render_review.log import LoggerFactory
 
-logger = LoggerFactory.getLogger(name=__name__)
+from ..logger import LoggerFactory
+
+logger = LoggerFactory.getLogger()
 
 
 class RR_isolate_collection_prop(bpy.types.PropertyGroup):

@@ -18,16 +18,27 @@
 #
 # (c) 2021, Blender Foundation - Paul Golter
 
-import logging
+import re
+from typing import Union, Dict, List, Any
+import bpy
+from . import vars
 
 
-class LoggerFactory:
-
+def redraw_ui() -> None:
     """
-    Utility class to streamline logger creation
+    Forces blender to redraw the UI.
     """
+    for screen in bpy.data.screens:
+        for area in screen.areas:
+            area.tag_redraw()
 
-    @staticmethod
-    def getLogger(name=__name__):
-        logger = logging.getLogger(name)
-        return logger
+
+def get_version(str_value: str, format: type = str) -> Union[str, int, None]:
+    match = re.search(vars.VERSION_PATTERN, str_value)
+    if match:
+        version = match.group()
+        if format == str:
+            return version
+        if format == int:
+            return int(version.replace("v", ""))
+    return None

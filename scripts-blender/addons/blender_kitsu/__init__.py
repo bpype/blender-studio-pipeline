@@ -24,6 +24,7 @@ dependencies.preload_modules()
 
 from . import (
     shot_builder,
+    render_review,
     lookdev,
     bkglobals,
     types,
@@ -100,6 +101,7 @@ def register():
     playblast.register()
     anim.register()
     shot_builder.register()
+    render_review.register()
     edit.register()
 
     LoggerLevelManager.configure_levels()
@@ -119,6 +121,7 @@ def unregister():
     lookdev.unregister()
     playblast.unregister()
     shot_builder.unregister()
+    render_review.unregister()
     edit.unregister()
     LoggerLevelManager.restore_levels()
 

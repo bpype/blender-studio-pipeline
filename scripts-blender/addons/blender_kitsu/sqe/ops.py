@@ -592,15 +592,8 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
             self.report({"WARNING"}, "ID not found on server: %s" % shot_id)
             return {"CANCELLED"}
 
-        # Pull shot meta.
-        pull.shot_meta(self._strip, shot)
-
-        # Rename strip.
-        self._strip.name = shot.name
-
-        # Pull sequence color.
         seq = Sequence.by_id(shot.parent_id)
-        opsdata.append_sequence_color(context, seq)
+        opsdata.link_metadata_strip(context, shot, seq, self._strip)
 
         # Log.
         t = "Linked strip: %s to shot: %s with ID: %s" % (
@@ -1517,6 +1510,7 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
     def poll(cls, context: bpy.types.Context) -> bool:
         active_strip = context.scene.sequence_editor.active_strip
         if not hasattr(active_strip, 'filepath'):
+            cls.poll_message_set("Selected Strip is not a Video")
             return False
 
         return bool(prefs.session_auth(context))
@@ -1805,13 +1799,10 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
                 # TODO Refactor as this reuses code from KITSU_OT_sqe_create_metadata_strip
                 if not strip:
                     # Create new strip.
-                    strip = context.scene.sequence_editor.sequences.new_movie(
-                        shot.name,
-                        addon_prefs.metadatastrip_file,
-                        channel,
-                        frame_start,
+
+                    strip = opsdata.create_metadata_strip(
+                        context.scene, shot.name, channel, frame_start, frame_end
                     )
-                    strip.frame_final_end = frame_end
 
                     # Apply slip to match offset.
                     self._apply_strip_slip_from_shot(context, strip, shot)
@@ -2010,24 +2001,16 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
             # Create new metadata strip.
             # TODO: frame range of metadata strip is 1000 which is problematic because it needs to fit
             # on the first try, EDIT: seems to work maybe per python overlaps of sequences possible?
-            metadata_strip = context.scene.sequence_editor.sequences.new_movie(
+
+            metadata_strip = opsdata.create_metadata_strip(
+                context.scene,
                 f"{strip.name}{bkglobals.DELIMITER}metadata{bkglobals.SPACE_REPLACER}strip",
-                addon_prefs.metadatastrip_file,
                 strip.channel + 1,
                 strip.frame_final_start,
+                strip.frame_final_end,
             )
+
             created.append(metadata_strip)
-
-            # Set blend alpha.
-            metadata_strip.blend_alpha = 0
-
-            # Set frame in and out.
-            metadata_strip.frame_final_start = strip.frame_final_start
-            metadata_strip.frame_final_end = strip.frame_final_end
-            metadata_strip.channel = strip.channel + 1
-
-            # Init start frame offst.
-            opsdata.init_start_frame_offset(metadata_strip)
 
             logger.info(
                 "%s created metadata strip: %s",

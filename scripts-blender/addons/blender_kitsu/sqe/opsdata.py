@@ -21,9 +21,9 @@
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union, Optional
-
+from . import pull
 import bpy
-from .. import bkglobals
+from .. import bkglobals, prefs
 from ..logger import LoggerFactory
 from ..types import Sequence, Task, TaskStatus, Shot, TaskType
 
@@ -243,3 +243,39 @@ def push_sequence_color(context: bpy.types.Context, sequence: Sequence) -> None:
     else:
         sequence.update_data({"color": list(item.color)})
         logger.info("%s pushed sequence color", sequence.name)
+
+
+def create_metadata_strip(
+    scene: bpy.types.Scene, name: str, channel, frame_start: int, frame_end: int
+) -> bpy.types.MovieSequence:
+
+    addon_prefs = prefs.addon_prefs_get(bpy.context)
+    strip = scene.sequence_editor.sequences.new_movie(
+        name,
+        addon_prefs.metadatastrip_file,
+        channel,
+        frame_start,
+    )
+
+    strip.frame_final_end = frame_end
+
+    # Set blend alpha.
+    strip.blend_alpha = 0
+
+    init_start_frame_offset(strip)
+
+    return strip
+
+
+def link_metadata_strip(
+    context, shot: Shot, seq: Sequence, strip: bpy.types.MovieSequence
+) -> bpy.types.MovieSequence:
+    # Pull shot meta.
+    pull.shot_meta(strip, shot)
+
+    # Rename strip.
+    strip.name = shot.name
+
+    # Pull sequence color.
+    append_sequence_color(context, seq)
+    return strip

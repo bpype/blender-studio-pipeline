@@ -18,27 +18,43 @@
 #
 # (c) 2021, Blender Foundation - Paul Golter
 
-import re
-from typing import Union, Dict, List, Any
 import bpy
-from render_review import vars
+
+from . import (
+    util,
+    props,
+    opsdata,
+    checksqe,
+    ops,
+    ui,
+    draw,
+)
 
 
-def redraw_ui() -> None:
-    """
-    Forces blender to redraw the UI.
-    """
-    for screen in bpy.data.screens:
-        for area in screen.areas:
-            area.tag_redraw()
+_need_reload = "ops" in locals()
 
 
-def get_version(str_value: str, format: type = str) -> Union[str, int, None]:
-    match = re.search(vars.VERSION_PATTERN, str_value)
-    if match:
-        version = match.group()
-        if format == str:
-            return version
-        if format == int:
-            return int(version.replace("v", ""))
-    return None
+if _need_reload:
+    import importlib
+
+    util = importlib.reload(util)
+    props = importlib.reload(props)
+    opsdata = importlib.reload(opsdata)
+    checksqe = importlib.reload(checksqe)
+    ops = importlib.reload(ops)
+    ui = importlib.reload(ui)
+    draw = importlib.reload(draw)
+
+
+def register():
+    props.register()
+    ops.register()
+    ui.register()
+    draw.register()
+
+
+def unregister():
+    draw.unregister()
+    ui.unregister()
+    ops.unregister()
+    props.unregister()

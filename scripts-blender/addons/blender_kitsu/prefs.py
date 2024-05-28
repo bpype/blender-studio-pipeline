@@ -465,6 +465,61 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
 
     tasks: bpy.props.CollectionProperty(type=KITSU_task)
 
+    ####################
+    # Render Review
+    ####################
+
+    def set_farm_dir(self, input):
+        self['farm_output_dir'] = input
+        return
+
+    def get_farm_dir(
+        self,
+    ) -> str:
+        if get_safely_string_prop(self, 'farm_output_dir') == "" and self.project_root_path:
+            dir = self.project_root_path.joinpath("render/")
+            if dir.exists():
+                return dir.as_posix()
+        return get_safely_string_prop(self, 'farm_output_dir')
+
+    farm_output_dir: bpy.props.StringProperty(  # type: ignore
+        name="Farm Output Directory",
+        description="Directory used as 'Render Output Root' when submitting job to Flamenco. Usually points to: {project}/render/",
+        default="",
+        subtype="DIR_PATH",
+        get=get_farm_dir,
+        set=set_farm_dir,
+    )
+
+    shot_name_filter: bpy.props.StringProperty(  # type: ignore
+        name="Shot Name Filter",
+        description="Shot name must include this string, otherwise it will be ignored",
+        default="",
+    )
+    use_video: bpy.props.BoolProperty(
+        name="Use Video",
+        description="Load video versions of renders rather than image sequences for faster playback",
+    )
+    use_video_latest_only: bpy.props.BoolProperty(
+        default=True,
+        name="Latest Only",
+        description="Only load video files for the latest versions by default, to avoid running out of memory and crashing",
+    )
+
+    skip_incomplete_renders: bpy.props.BoolProperty(  # type: ignore
+        default=True,
+        name="Skip Incomplete Renders",
+        description="Skip renders that are shorter than the longest render for a give shot, (i.e. missing frames)",
+    )
+
+    versions_max_count: bpy.props.IntProperty(
+        name="Max Versions",
+        description="Desired number of versions to load for each shot",
+        min=1,
+        max=128,
+        default=32,
+    )
+
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         layout.use_property_split = True
@@ -526,6 +581,25 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         file_pattern_row.prop(self, "edit_export_file_pattern", text="Export File Pattern")
         box.row().prop(self, "edit_export_frame_offset")
 
+        # Render Review
+        self.draw_render_review(col)
+
+        # Shot_Builder settings.
+        box = col.box()
+        box.label(text="Shot Builder", icon="MOD_BUILD")
+        box.prop(self, "shot_builder_frame_offset")
+        row = box.row(align=True)
+        # Avoids circular import error
+        from .shot_builder.ops import (
+            KITSU_OT_build_config_save_settings,
+            KITSU_OT_build_config_save_hooks,
+            KITSU_OT_build_config_save_templates,
+        )
+
+        box.row().operator(KITSU_OT_build_config_save_hooks.bl_idname, icon='FILE_SCRIPT')
+        box.row().operator(KITSU_OT_build_config_save_settings.bl_idname, icon="TEXT")
+        box.row().operator(KITSU_OT_build_config_save_templates.bl_idname, icon="FILE_BLEND")
+
         # Lookdev tools settings.
         self.lookdev.draw(context, col)
 
@@ -554,21 +628,6 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             emboss=False,
         )
 
-        # Shot_Builder settings.
-        box = col.box()
-        box.label(text="Shot Builder", icon="MOD_BUILD")
-        box.prop(self, "shot_builder_frame_offset")
-        row = box.row(align=True)
-        # Avoids circular import error
-        from .shot_builder.ops import (
-            KITSU_OT_build_config_save_settings,
-            KITSU_OT_build_config_save_hooks,
-            KITSU_OT_build_config_save_templates,
-        )
-        box.row().operator(KITSU_OT_build_config_save_hooks.bl_idname, icon='FILE_SCRIPT')
-        box.row().operator(KITSU_OT_build_config_save_settings.bl_idname, icon="TEXT")
-        box.row().operator(KITSU_OT_build_config_save_templates.bl_idname, icon="FILE_BLEND")
-
         # Misc settings.
         box = col.box()
         box.label(text="Miscellaneous", icon="MODIFIER")
@@ -581,6 +640,27 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             box.row().prop(self, "shot_pattern")
             box.row().prop(self, "shot_counter_digits")
             box.row().prop(self, "shot_counter_increment")
+
+    def draw_render_review(self, layout: bpy.types.UILayout) -> None:
+        box = layout.box()
+        box.label(text="Render Review", icon="FILEBROWSER")
+
+        # Farm outpur dir.
+        box.row().prop(self, "farm_output_dir")
+
+        if not self.farm_output_dir:
+            row = box.row()
+            row.label(text="Please specify the Farm Output Directory", icon="ERROR")
+
+        if not bpy.data.filepath and self.farm_output_dir.startswith("//"):
+            row = box.row()
+            row.label(
+                text="In order to use a relative path the current file needs to be saved.",
+                icon="ERROR",
+            )
+
+        box.row().prop(self, "shot_name_filter")
+        box.row().prop(self, "versions_max_count", slider=True)
 
     @property
     def shot_playblast_root_path(self) -> Optional[Path]:
@@ -642,6 +722,24 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             return False
 
         if not bpy.data.filepath and self.config_dir.startswith("//"):
+            return False
+
+        return True
+
+    @property
+    def farm_output_path(self) -> Optional[Path]:
+        if not self.is_farm_output_valid:
+            return None
+        return Path(os.path.abspath(bpy.path.abspath(self.farm_output_dir)))
+
+    @property
+    def is_farm_output_valid(self) -> bool:
+
+        # Check if file is saved.
+        if not self.farm_output_dir:
+            return False
+
+        if not bpy.data.filepath and self.farm_output_dir.startswith("//"):
             return False
 
         return True

@@ -20,4 +20,3 @@ Download release packages of the below add-ons from the [Releases Page](https://
 |Lattice Magic |Lattice-based utilities.  
 |Lighting Overrider |Create, manage and apply python overrides in a flexible and reliable way.  
 |Pose Shape Keys |Manage and maintain shapekeys for rigging.  
-|Render Review |Review renders from Flamenco with the sequence editor.  

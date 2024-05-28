@@ -24,7 +24,7 @@ from typing import Set, Union, Optional, List, Dict, Any
 
 import bpy
 
-from render_review.ops import (
+from .ops import (
     RR_OT_sqe_create_review_session,
     RR_OT_setup_review_workspace,
     RR_OT_sqe_inspect_exr_sequence,
@@ -34,7 +34,8 @@ from render_review.ops import (
     RR_OT_open_path,
     RR_OT_sqe_push_to_edit,
 )
-from render_review import opsdata, prefs, kitsu
+from . import opsdata
+from .. import prefs
 
 
 class RR_PT_render_review(bpy.types.Panel):
@@ -80,15 +81,14 @@ class RR_PT_render_review(bpy.types.Panel):
             row.prop(addon_prefs, 'use_video_latest_only')
 
         # Warning if kitsu on but not logged in.
-        if addon_prefs.enable_blender_kitsu and prefs.is_blender_kitsu_enabled():
-            if not kitsu.is_auth():
-                row = box.split(align=True, factor=0.7)
-                row.label(text="Kitsu enabled but not logged in", icon="ERROR")
-                row.operator("kitsu.session_start", text="Login")
+        if not prefs.session_auth(context):
+            row = box.split(align=True, factor=0.7)
+            row.label(text="Kitsu enabled but not logged in", icon="ERROR")
+            row.operator("kitsu.session_start", text="Login")
 
-            elif not kitsu.is_active_project():
-                row = box.row(align=True)
-                row.label(text="Kitsu enabled but no active project", icon="ERROR")
+        elif not opsdata.is_active_project():
+            row = box.row(align=True)
+            row.label(text="Kitsu enabled but no active project", icon="ERROR")
 
         sqe = context.scene.sequence_editor
         if not sqe:
@@ -98,9 +98,7 @@ class RR_PT_render_review(bpy.types.Panel):
             # Create box.
             layout = self.layout
             box = layout.box()
-            box.label(
-                text=f"Render: {active_strip.rr.shot_name}", icon="RESTRICT_RENDER_OFF"
-            )
+            box.label(text=f"Render: {active_strip.rr.shot_name}", icon="RESTRICT_RENDER_OFF")
             box.separator()
 
             # Render dir name label and open file op.
@@ -112,9 +110,7 @@ class RR_PT_render_review(bpy.types.Panel):
             ).filepath = bpy.path.abspath(directory.as_posix())
 
             # Nr of frames.
-            box.row(align=True).label(
-                text=f"Frames: {active_strip.rr.frames_found_text}"
-            )
+            box.row(align=True).label(text=f"Frames: {active_strip.rr.frames_found_text}")
 
             # Inspect exr.
             text = "Inspect EXR"
@@ -134,28 +130,22 @@ class RR_PT_render_review(bpy.types.Panel):
             if active_strip.rr.is_pushed_to_edit:
                 text = "Approve Render"
             row.operator(RR_OT_sqe_approve_render.bl_idname, icon="CHECKMARK", text=text)
-            row.operator(
-                RR_OT_sqe_update_sequence_statuses.bl_idname, text="", icon="FILE_REFRESH"
-            )
+            row.operator(RR_OT_sqe_update_sequence_statuses.bl_idname, text="", icon="FILE_REFRESH")
 
             # Push to edit.
-            if not addon_prefs.shot_previews_path:
+            if not addon_prefs.shot_playblast_root_dir:
                 shot_previews_dir = ""  # ops handle invalid path
             else:
-                shot_previews_dir = Path(
-                    opsdata.get_shot_previews_path(active_strip)
-                ).as_posix()
+                shot_previews_dir = Path(opsdata.get_shot_previews_path(active_strip)).as_posix()
 
             row = box.row(align=True)
             row.operator(RR_OT_sqe_push_to_edit.bl_idname, icon="EXPORT")
-            row.operator(
-                RR_OT_open_path.bl_idname, icon="FILEBROWSER", text=""
-            ).filepath = shot_previews_dir
+            row.operator(RR_OT_open_path.bl_idname, icon="FILEBROWSER", text="").filepath = (
+                shot_previews_dir
+            )
 
-
-            if prefs.is_blender_kitsu_enabled():
-                # Push strip to Kitsu.
-                box.row().operator('kitsu.sqe_push_shot', icon='URL')
+            # Push strip to Kitsu.
+            box.row().operator('kitsu.sqe_push_shot', icon='URL')
 
 
 def RR_topbar_file_new_draw_handler(self: Any, context: bpy.types.Context) -> None:

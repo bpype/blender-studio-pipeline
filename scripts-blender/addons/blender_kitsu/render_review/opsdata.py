@@ -25,11 +25,15 @@ from typing import Set, Union, Optional, List, Dict, Any, Tuple
 
 import bpy
 
-from render_review import vars, prefs, checksqe, prefs
-from render_review.log import LoggerFactory
-from render_review.exception import NoImageSequenceAvailableException
+from . import vars, checksqe, util
+from .. import prefs, cache
+from ..sqe import opsdata as sqe_opsdata
+from .exception import NoImageSequenceAvailableException
 
-logger = LoggerFactory.getLogger(name=__name__)
+from ..logger import LoggerFactory
+
+logger = LoggerFactory.getLogger()
+
 
 copytree_list: List[Path] = []
 copytree_num_of_items: int = 0
@@ -78,11 +82,9 @@ def get_valid_cs_sequences(
     if sequence_list:
         sequences = sequence_list
     else:
-        sequences = (
-            context.selected_sequences or context.scene.sequence_editor.sequences_all
-        )
+        sequences = context.selected_sequences or context.scene.sequence_editor.sequences_all
 
-    if prefs.is_blender_kitsu_enabled():
+    if cache.project_active_get():
 
         valid_sequences = [
             s
@@ -90,21 +92,16 @@ def get_valid_cs_sequences(
             if s.type in ["MOVIE", "IMAGE"] and not s.mute and not s.kitsu.initialized
         ]
     else:
-        valid_sequences = [
-            s for s in sequences if s.type in ["MOVIE", "IMAGE"] and not s.mute
-        ]
+        valid_sequences = [s for s in sequences if s.type in ["MOVIE", "IMAGE"] and not s.mute]
 
     return valid_sequences
 
 
-def get_shot_frames_dir(strip: bpy.types.Sequence) -> Path:
+def get_frames_root_dir(strip: bpy.types.Sequence) -> Path:
     # sf = shot_frames | fo = farm_output.
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     fo_dir = get_strip_folder(strip)
-    sf_dir = (
-        addon_prefs.shot_frames_dir
-        / fo_dir.parent.relative_to(fo_dir.parents[3])
-    )
+    sf_dir = addon_prefs.frames_root_dir / fo_dir.parent.relative_to(fo_dir.parents[3])
 
     return sf_dir
 
@@ -120,9 +117,8 @@ def get_shot_previews_path(strip: bpy.types.Sequence) -> Path:
     # Fo > farm_output.
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     fo_dir = get_strip_folder(strip)
-    shot_previews_dir = (
-        addon_prefs.shot_previews_path
-        / fo_dir.parent.relative_to(fo_dir.parents[3])
+    shot_previews_dir = addon_prefs.shot_playblast_root_dir / fo_dir.parent.relative_to(
+        fo_dir.parents[3]
     )
 
     return shot_previews_dir
@@ -157,9 +153,7 @@ def get_best_preview_sequence(dir: Path) -> List[Path]:
         dir, output=dict, search_suffixes=[".jpg", ".png"]
     )
     if not files:
-        raise NoImageSequenceAvailableException(
-            f"No preview files found in: {dir.as_posix()}"
-        )
+        raise NoImageSequenceAvailableException(f"No preview files found in: {dir.as_posix()}")
 
     # Select the right images sequence.
     if len(files) == 1:
@@ -179,13 +173,14 @@ def get_best_preview_sequence(dir: Path) -> List[Path]:
 
 
 def get_shot_frames_backup_path(strip: bpy.types.Sequence) -> Path:
-    fs_dir = get_shot_frames_dir(strip)
+    fs_dir = get_frames_root_dir(strip)
     return fs_dir.parent / f"_backup.{fs_dir.name}"
 
 
 def get_shot_frames_metadata_path(strip: bpy.types.Sequence) -> Path:
-    fs_dir = get_shot_frames_dir(strip)
+    fs_dir = get_frames_root_dir(strip)
     return fs_dir.parent / "metadata.json"
+
 
 def get_shot_previews_metadata_path(strip: bpy.types.Sequence) -> Path:
     fs_dir = get_shot_previews_path(strip)
@@ -208,14 +203,11 @@ def update_sequence_statuses(
 ) -> List[bpy.types.Sequence]:
     return update_is_approved(context), update_is_pushed_to_edit(context)
 
+
 def update_is_approved(
     context: bpy.types.Context,
 ) -> List[bpy.types.Sequence]:
-    sequences = [
-        s
-        for s in context.scene.sequence_editor.sequences_all
-        if s.rr.is_render
-    ]
+    sequences = [s for s in context.scene.sequence_editor.sequences_all if s.rr.is_render]
 
     approved_strips = []
 
@@ -223,9 +215,7 @@ def update_is_approved(
         metadata_path = get_shot_frames_metadata_path(s)
         if not metadata_path.exists():
             continue
-        json_obj = load_json(
-            metadata_path
-        )  # TODO: prevent opening same json multi times
+        json_obj = load_json(metadata_path)  # TODO: prevent opening same json multi times
 
         if Path(json_obj["source_current"]) == get_strip_folder(s):
             s.rr.is_approved = True
@@ -240,11 +230,7 @@ def update_is_approved(
 def update_is_pushed_to_edit(
     context: bpy.types.Context,
 ) -> List[bpy.types.Sequence]:
-    sequences = [
-        s
-        for s in context.scene.sequence_editor.sequences_all
-        if s.rr.is_render
-    ]
+    sequences = [s for s in context.scene.sequence_editor.sequences_all if s.rr.is_render]
 
     pushed_strips = []
 
@@ -253,9 +239,7 @@ def update_is_pushed_to_edit(
         if not metadata_path.exists():
             continue
 
-        json_obj = load_json(
-            metadata_path
-        )
+        json_obj = load_json(metadata_path)
 
         valid_paths = {Path(value).parent for _key, value in json_obj.items()}
 
@@ -319,12 +303,8 @@ def gather_files_by_suffix(
         )
 
 
-def gen_frames_found_text(
-    dir: Path, search_suffixes: List[str] = [".jpg", ".png", ".exr"]
-) -> str:
-    files_dict = gather_files_by_suffix(
-        dir, output=dict, search_suffixes=search_suffixes
-    )
+def gen_frames_found_text(dir: Path, search_suffixes: List[str] = [".jpg", ".png", ".exr"]) -> str:
+    files_dict = gather_files_by_suffix(dir, output=dict, search_suffixes=search_suffixes)
 
     frames_found_text = ""  # frames found text will be used in ui
     for suffix, file_list in files_dict.items():
@@ -387,7 +367,7 @@ def fit_frame_range_to_strips(
     strips.sort(key=get_sort_tuple)
 
     context.scene.frame_start = strips[0].frame_final_start
-    context.scene.frame_end = strips[-1].frame_final_end -1
+    context.scene.frame_end = strips[-1].frame_final_end - 1
 
     return (context.scene.frame_start, context.scene.frame_end)
 
@@ -413,7 +393,39 @@ def get_top_level_valid_strips_continious(
 
     return sequences
 
+
 def setup_color_management(context: bpy.types.Context) -> None:
     if context.scene.view_settings.view_transform != 'Standard':
         context.scene.view_settings.view_transform = 'Standard'
         logger.info("Set view transform to: Standard")
+
+
+def is_active_project() -> bool:
+    return bool(cache.project_active_get())
+
+
+def link_strip_by_name(
+    context: bpy.types.Context,
+    strip: bpy.types.Sequence,
+    shot_name: str,
+    sequence_name: str,
+) -> None:
+    # Get seq and shot.
+    active_project = cache.project_active_get()
+    seq = active_project.get_sequence_by_name(sequence_name)
+    shot = active_project.get_shot_by_name(seq, shot_name)
+
+    if not shot:
+        logger.error("Unable to find shot %s on kitsu", shot_name)
+        return
+
+    sqe_opsdata.link_metadata_strip(context, shot, seq, strip)
+
+    # Log.
+    t = "Linked strip: %s to shot: %s with ID: %s" % (
+        strip.name,
+        shot.name,
+        shot.id,
+    )
+    logger.info(t)
+    util.redraw_ui()
