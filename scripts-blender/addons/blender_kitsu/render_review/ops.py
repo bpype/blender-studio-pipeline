@@ -833,7 +833,7 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
             cls.poll_message_set("Selected sequence strip is not an imported render")
             return False
 
-        if not active_strip.rr.is_pushed_to_edit:
+        if active_strip.rr.is_pushed_to_edit:
             cls.poll_message_set("Selected sequence strip is already pushed to edit")
             return False
         return True
