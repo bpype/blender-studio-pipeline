@@ -309,6 +309,7 @@ def update_addons():
         local_addon_list = [entry.stem for entry in local_artifact_dir.iterdir() if entry.suffix == ".files"]
         addons_to_remove = set(local_addon_list) - set(addons_list)
         for addon in addons_to_remove:
+            logger.info("Removing addon: " + addon)
             addon_files = local_artifact_dir / (addon + ".files")
             addon_checksum = local_artifact_dir / (addon + ".sha256")
             with open(addon_files) as file:
