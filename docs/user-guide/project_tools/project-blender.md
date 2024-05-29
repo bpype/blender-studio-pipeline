@@ -50,7 +50,7 @@ Mac:
 Windows:
 `blender-windows.arm64.zip` or `blender-windows.amd64.zip`
 
-Note that the file names doesn't have to match exactly with the examples above as long as they are picked up by the following file globbing schema:
+Note that the file names doesn't have to match exactly with the examples above as long as their corresponding shasum file is picked up by the following file globbing schema:
 
 `"blender*" + operating_system + "." + architecture + "*.sha256"`
 
