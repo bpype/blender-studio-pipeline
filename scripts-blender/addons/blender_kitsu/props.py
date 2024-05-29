@@ -59,9 +59,11 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         except AttributeError:
             return None
 
-    # Shot.
-    shot_id: bpy.props.StringProperty(name="Shot ID")  # type: ignore
-    shot_name: bpy.props.StringProperty(name="Shot", default="")  # type: ignore
+    manual_shot_name: bpy.props.StringProperty(
+        name="Shot",
+        description="Enter a new Shot name to submit to Kitsu Server",
+        default="",
+    )  # type: ignore
 
     ###########
     # Shot

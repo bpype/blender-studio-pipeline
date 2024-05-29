@@ -168,7 +168,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
                 prefs.session_auth(context)
                 and cache.project_active_get()
                 and strip.kitsu.sequence_name
-                and strip.kitsu.shot_name
+                and strip.kitsu.manual_shot_name
             )
 
         return bool(prefs.session_auth(context) and cache.project_active_get())
@@ -239,6 +239,8 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
                 failed.append(strip)
                 continue
 
+            strip.kitsu.shot_name = strip.kitsu.manual_shot_name
+
             # Push update to sequence.
             opsdata.push_sequence_color(context, seq)
 
@@ -293,7 +295,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
             for s in selected_sequences
             if s.kitsu.initialized
             and not s.kitsu.linked
-            and s.kitsu.shot_name
+            and s.kitsu.manual_shot_name
             and s.kitsu.sequence_name
         ]
 

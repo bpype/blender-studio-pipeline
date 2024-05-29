@@ -63,7 +63,7 @@ def is_linked(strip: bpy.types.Sequence, log: bool = True) -> bool:
 def has_meta(strip: bpy.types.Sequence) -> bool:
     """Returns True if strip.kitsu.shot_name and strip.kitsu.sequence_name is Truethy else False"""
     seq = strip.kitsu.sequence_name
-    shot = strip.kitsu.shot_name
+    shot = strip.kitsu.manual_shot_name
 
     if not bool(seq and shot):
         logger.info("Strip: %s. Missing metadata", strip.name)
@@ -135,12 +135,12 @@ def shot_exists_by_name(
     if clear_cache:
         Cache.clear_all()
 
-    shot = project.get_shot_by_name(sequence, strip.kitsu.shot_name)
+    shot = project.get_shot_by_name(sequence, strip.kitsu.manual_shot_name)
     if not shot:
         logger.info(
             "Strip: %s Shot %s does not exist on server",
             strip.name,
-            strip.kitsu.shot_name,
+            strip.kitsu.manual_shot_name,
         )
         return None
 
