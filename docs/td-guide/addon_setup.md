@@ -1,4 +1,3 @@
-
 # Setup Blender Add-Ons
 
 ::: info Update Add-Ons
@@ -18,6 +17,19 @@ download_file(
    "CloudRig.zip",
 )
 ```
+
+## Manually installing Add-Ons
+To manually install Add-Ons without using any scripts, simply drop the .zip file and the shasum256 file of the addon into the projects `shared/artifacts/addons` folder.
+If the zip doesn't already have a shasum file, you can generate it yourself with the `shasum256` program.
+For example, on Linux you can generate it like this:
+```bash
+shasum256 my_test_addon.zip > my_test_addon.zip.sha256
+```
+
+## Removing Add-Ons
+To remove Add-Ons you are not using anymore, you remove both the Add-On zip file and shasum file from the projects `shared/artifacts/addons` folder.
+Next time you run the `run_blender.py` script, it will remove the addon locally.
+
 ## Package Blender Studio Add-Ons from Source
 Blender Add-ons can be packaged directly from the [Blender Studio Pipeline](https://projects.blender.org/studio/blender-studio-pipeline) repository. Personal Add-Ons can be installed [normally](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#installing-add-ons).
 
