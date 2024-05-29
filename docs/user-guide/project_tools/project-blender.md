@@ -11,7 +11,7 @@ So if there are any World HDRIs and Matcaps that you'd like to use, these will b
 ## Blender Setup
 The next step is to deploy the required software onto each of the studio's workstations.
 
-1. Download the latest Blender
+### Using our scripts to download the latest Blender LTS or daily build version
 ```bash
 # Linux/Mac
 cd ~/data/your_project_name/svn/tools
@@ -28,6 +28,34 @@ This will download the latest blender to `data/your_project_name/local/blender`
 ::: info Choosing Branch to Install
 You can specify a [daily build](https://builder.blender.org/download/daily/) branch to fetch by editing the `BLENDER_BRANCH` variable in the script file.
 :::
+
+### Manually deploying Blender versions of your choosing
+You can download and put any Blender release into the `your_project_name/shared/artifacts/blender` folder with their corresponding shasum file.
+NOTE: If you do this, it is strongly adviced to not run the `update_blender.py` script as it will overwrite your files.
+
+There are a few things to keep in mind though:
+1. It has to be the `.zip` release for Windows, `.tar.gz` for Linux, and `.dmg` for Mac.
+2. Each file has to have a shasum file. You can generate this yourself easily on Linux with:
+
+`shasum256 file.tar.gz > file.tar.gz.sha256`
+
+3. The file names for the Blender archives has to have the following naming scheme:
+
+Linux:
+`blender-linux.x86_64.tar.xz`
+
+Mac:
+`blender-darwin.arm64.dmg` or `blender-darwin.x86_64.dmg`
+
+Windows:
+`blender-windows.arm64.zip` or `blender-windows.amd64.zip`
+
+Note that the file names doesn't have to match exactly with the examples above as long as they are picked up by the following file globbing schema:
+
+`"blender*" + operating_system + "." + architecture + "*.sha256"`
+
+4. There can be no ambiguity on which archive the `run_blender.py` script should use. So for example you can not have `blender-windows.arm64.zip` and `blender2-windows.arm64.zip` in the `your_project_name/shared/artifacts/blender` folder at the same time.
+
 ## Create Shortcut
 
 Once your project has been setup using the "Project Tools" scripts Blender should be available inside your application's native application launcher. The run Blender script will take the correct blender version for your operating system from `your_project_name/shared/artifacts/blender` and extract it to the local directory. Along with any add-ons in the `your_project_name/shared/artifacts/addons` folder. Your Blender preferences are stored on a per project basis in `{directory-path}`
