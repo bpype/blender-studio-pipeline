@@ -205,7 +205,7 @@ export default defineConfig({
           {text: 'Introduction', link: '/td-guide/project-tools-setup'},
           {text: 'Repository', link: '/td-guide/repository'},
           {text: 'Python', link: '/td-guide/python'},
-          
+
           {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
           {
             text: 'Shared',
@@ -223,9 +223,9 @@ export default defineConfig({
               {text: 'Populating SVN', link: '/td-guide/populating_svn'},
             ],
           },
-          
-          
-          
+
+
+
           {text: 'Kitsu', link: '/td-guide/kitsu_server'},
           {
             text: 'Blender',
@@ -237,8 +237,8 @@ export default defineConfig({
             ],
           },
           {text: 'Flamenco', link: '/td-guide/flamenco_setup'},
-          
-          
+
+
         ]
       },
       {
