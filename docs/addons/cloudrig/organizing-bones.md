@@ -1,3 +1,5 @@
+# Organizing Bones
+
 In Blender, bones can be organized using [Bone Collections](https://docs.blender.org/manual/en/latest/animation/armatures/bones/bone_collections.html), or [Bone Selection Sets](https://docs.blender.org/manual/en/dev/addons/animation/bone_selection_sets.html), if you use that addon.
 
 ## Bone Collections  

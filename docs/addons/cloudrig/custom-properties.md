@@ -1,3 +1,10 @@
+
+::: warning Legacy Documentation
+This is a legacy document and set of features. They are under construction as of 30/May/2024 to be replaced with a better system that will implement a customizable UI with nestable properties.
+:::
+
+# Custom Properties
+
 CloudRig provides a way to display [custom properties](https://docs.blender.org/manual/en/latest/files/data_blocks.html#files-data-blocks-custom-properties) of your character with a nice UI.  
 
 The Cloud Basic Human metarig provides an in-depth example. Generate the rig and find the Character panel under **Sidebar(N panel)->CloudRig**:  
@@ -8,7 +15,7 @@ The Cloud Basic Human metarig provides an in-depth example. Generate the rig and
 
 To understand where these properties are coming from, unhide the last bone collection on the metarig and find the "_Properties_Character_Human_" bone. The UI script will expect to find the character's custom properties on a bone whose name starts with exactly **"Properties_Character_"**. There should only be one such bone. The properties of this bone are always shown in the UI.  
 
-Note that the reason this bone gets created on the generated rig in the first place is because it has a [Bone Copy](CloudRig-Types#bone-copy) component assigned to it.
+Note that the reason this bone gets created on the generated rig in the first place is because it has a [Bone Copy](cloudrig-types#bone-copy) component assigned to it.
 
 Now, let's take a look at its custom properties:  
 

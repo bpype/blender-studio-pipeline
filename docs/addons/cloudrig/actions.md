@@ -1,3 +1,5 @@
+# Actions
+
 <details>
 <summary> This page goes over the workflow of rigging a character's face with CloudRig and Action Constraints. To understand how this works, first you must be familiar with the <a href="https://docs.blender.org/manual/en/latest/animation/constraints/relationship/action.html#action-constraint">Action constraint</a>. </summary>
 
@@ -14,7 +16,7 @@ Action Slots! You can find this when selecting a CloudRig metarig and then going
 You can add a slot, select an Action, and input all the information about when this action will activate. This is very similar to setting up an individual Action constraint.
 
 These are the steps one might take to set up a blinking and eye opening action:
-- On the metarig, create bones named "Blink.L" and "Blink.R" and assign the [Bone Copy](CloudRig-Types#bone-copy) component type. Assign colors, widgets, etc as you wish.
+- On the metarig, create bones named "Blink.L" and "Blink.R" and assign the [Bone Copy](cloudrig-types#bone-copy) component type. Assign colors, widgets, etc as you wish.
 - Generate the rig.
 - On the generated rig, pose and keyframe your blink pose on frame 20.
 - Then, select all the bones you keyed, reset their transforms, and insert a key on frame 10.

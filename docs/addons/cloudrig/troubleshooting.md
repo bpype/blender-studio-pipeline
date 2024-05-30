@@ -1,5 +1,5 @@
-# Generation Log
-CloudRig implements a Generation Log, which is a list of potential issues detected during the rig generation process. Each time you re-generate the rig, this list is re-populated. Ideally, you want to keep this list completely empty.
+# Troubleshooting
+CloudRig implements a Generation Log, which shows a list of potential issues detected during the rig generation process. Each time you re-generate the rig, this list is re-populated. Ideally, you want to keep this list completely empty.
 
 <img src="/media/addons/cloudrig/generation_log.png" width=600>  
 

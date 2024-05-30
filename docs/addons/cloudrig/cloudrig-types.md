@@ -1,5 +1,6 @@
+# Component Types
 
-# Overview
+## Overview
 
 <img src="/media/addons/cloudrig/component_hierarchy.png">    
  
@@ -12,7 +13,7 @@ These are CloudRig's component types. Most component types are built on top of o
         - [Chain: FK](#chain-fk)
             - [Chain: Physics](#chain-physics)
             - [Feather](#feather)
-            - [Spine: IK/FK](#spine-ikfk)
+            - [Spine: IK/FK](#spine-ik-fk)
             - [Spine: Squashy](#spine-squashy)
             - [Shoulder](#shoulder)
             - [Chain: IK](#chain-ik)
@@ -27,19 +28,19 @@ These are CloudRig's component types. Most component types are built on top of o
         - [Chain Intersection](#chain-intersection)
     - [Bone Tweak](#bone-tweak)
 
-# Assigning Components
+## Assigning Components
 You can assign a component to a bone in the metarig. For chain components, the connected children will be part of the same component, as long as they aren't assigned a component of their own. You can assign components to bones in two places in the UI: 
 - Properties -> Armature -> CloudRig -> Rig Components (Hit the + button to assign a component to the active bone.)
 - Properties -> Bone -> CloudRig Component -> Component Type (Only appears when 'CloudRig' is enabled on the armature.)
 
 <img src="/media/addons/cloudrig/assigning_components.png" width=800>  
 
-# Component Samples
+## Component Samples
 Each component type comes with a sample so you can get something up and running quickly and start playing around with it.  
 You can add these in the 3D View via Add (Shift+A)->Armature->CloudRig Samples:  
+
 <img src="/media/addons/cloudrig/add_sample.png" width=500>  
 
-# Component Types
 ## Shared Parameters
 All CloudRig component types share some basic functionality, like letting you choose a parent for the component's root, and even specify a parent switching set-up for it.
 
@@ -51,7 +52,7 @@ All CloudRig component types share some basic functionality, like letting you ch
 
 - #### Advanced Mode
     This is technically a user preference, but it relates to component parameters. Some component parameters are rarely necessary or only if you want to really fine tune stuff. So, these options are hidden until this option is enabled, to ease the new user experience.  
-- #### [Constraint Relinking](Constraint-Relinking)
+- #### [Constraint Relinking](constraint-relinking)
     On any component, you can add constraints to the metarig bones. On generation, these constraints will be moved to the generated bones that make the most sense for a given component type. This is just to allow you to add some constraints when needed, without using Bone Tweak components.  
     For example, you can add Copy Rotation constraints to the metarig bones of an FK Chain component. That constraint can target the generated rig's bones, even though it's a different armature object. During generation, that constraint will be moved to the corresponding FK control.
 
@@ -153,7 +154,7 @@ Extends the functionality of the Toon Chain. In addition to stretch controls, th
 <img src="/media/addons/cloudrig/test_animation.gif" width=500>  
 
 - #### Test Animation
-    This panel will only show when the ["Generate Action" Generator Parameter](Generator-Parameters) is enabled.
+    This panel will only show when the ["Generate Action" Generator Parameter](generator-parameters) is enabled.
     When this option is enabled, this component will add keyframes into the generated action which can be used to test character deformations.
 - #### Rotation Range
     The negative and positive rotation amount in degrees to use for the aforementioned test animation.
@@ -172,7 +173,7 @@ Extends the functionality of the FK Chain component with a physics setup that ut
 <img src="/media/addons/cloudrig/physics_chain.gif" width=500>  
 
 - #### Cloth Object
-    The cloth object that the FK chain will be constrained to with Damped Track constraints. The object should have vertex groups named "PSX-<FK control name>". You can leave this unspecified at first and a simple object will be generated for you, which you can later modify.
+    The cloth object that the FK chain will be constrained to with Damped Track constraints. The object should have vertex groups named "PSX-FK control_name". You can leave this unspecified at first and a simple object will be generated for you, which you can later modify.
 - #### Force Re-Generate
     If you intend to modify the cloth mesh, make sure to disable this option since otherwise re-generating the rig will also re-generate the cloth mesh. Enabling this is useful however when you are still iterating on the shape of the bone chain, in which case you want to re-generate the mesh every time.
 - #### Pin Falloff
@@ -205,11 +206,26 @@ Builds on the FK Chain component with additional option for creating an IK-like 
 </details>
 
 
+## Spine: Squashy
+Also builds on the FK Chain component, but instead of an ability to have the spine be lead by the hip movements, this set-up allows the torso to be squashed, and the animator can control the amount of volume preservation. Useful for more cartoony stuff.
+
+<details>
+<summary> Parameters </summary>
+
+- #### Duplicate Controls
+    Make duplicates of the main spine controls.
+- #### World-Align Controls
+    Align the torso and hips controls fully with the world.
+
+</details>
+
+
 ## Shoulder
 A very simple extension of the FK Chain component, essentially just changes the bone shape.
 
 <details>
 <summary> Parameters </summary>
+
 - #### Up Axis
     Rotate the bone shape to align with this axis of the bone.
 </details>
@@ -380,7 +396,7 @@ This rig creates an aim control for a single bone. Can be useful for cameras, ey
 ## Bone Copy
 This component type lets you copy a connected chain of bones over to the generated rig. Often used just to copy a single bone. Useful for face controls or any other arbitrary control you want to add.
 
-Constraints will be [relinked](Constraint-Relinking) to the copied bone.
+Constraints will be [relinked](constraint-relinking) to the copied bone.
 
 <details>
 <summary> Parameters </summary>
@@ -426,7 +442,7 @@ This component type lets you tweak aspects of a single bone that is expected to 
 <img src="/media/addons/cloudrig/cloud_tweak_parameters.png" width=500>  
 
 - #### Additive Constraints
-    If true, the constraints on this bone will be added on top of the target bone's already existing constraints, and then [relinked](Constraint-Relinking). Otherwise, the original constraints will be overwritten.
+    If true, the constraints on this bone will be added on top of the target bone's already existing constraints, and then [relinked](constraint-relinking). Otherwise, the original constraints will be overwritten.
 - #### Tweak Parameters
     The bone's properties are split into these categories:
     - Transforms

@@ -1,5 +1,0 @@
-- Extruding (E) or duplicating (Shift+D) bones increments existing numbers in the bone name: Bone1 -> Bone2 rather than Bone1.001.
-- A Bone Selection Pie menu (Alt+D) to select bones related to the active one (children, parent, constraint targets, etc).
-- A Bone Collections pop-up menu (Shift+M) so you can access bone collections without leaving the 3D View.
-- A Bone Specials pie menu (X) that lets you delete bones while in pose mode, and gives easy access to mirror and symmetry functionalities.
-- A Bone Parenting pie menu (P) that lets you quickly (un-)parent bones, even in pose mode.

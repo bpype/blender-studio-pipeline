@@ -112,6 +112,22 @@ export default defineConfig({
 
         collapsed: true,
         items: [
+          {
+            text: 'CloudRig',
+            collapsed: true,
+            items: [
+              {text: 'Introduction', link: '/addons/cloudrig/introduction'},
+              {text: 'Component Types', link: '/addons/cloudrig/cloudrig-types'},
+              {text: 'Generator Parameters', link: '/addons/cloudrig/generator-parameters'},
+              {text: 'Custom Properties', link: '/addons/cloudrig/custom-properties'},
+              {text: 'Organizing Bones', link: '/addons/cloudrig/organizing-bones'},
+              {text: 'Actions', link: '/addons/cloudrig/actions'},
+              {text: 'Troubleshooting', link: '/addons/cloudrig/troubleshooting'},
+              {text: 'Constraint Relinking', link: '/addons/cloudrig/constraint-relinking'},
+              {text: 'Workflow Boosters', link: '/addons/cloudrig/workflow-enhancements'},
+              {text: 'Contribute', link: '/addons/cloudrig/code'},
+            ],
+          },
           { text: 'Anim Cupboard', link: '/addons/anim_cupboard'},
           { text: 'Asset Pipeline', link: '/addons/asset_pipeline'},
           { text: 'Blender Kitsu', link: '/addons/blender_kitsu'},
