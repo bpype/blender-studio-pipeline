@@ -141,12 +141,12 @@ def get_invalid_objects(
     return invalid_obj
 
 
-def remap_user(source_datablock: bpy.data, target_datablock: bpy.data) -> None:
+def remap_user(source_datablock: bpy.types.ID, target_datablock: bpy.types.ID) -> None:
     """Remap datablock and append name to datablock that has been remapped
 
     Args:
-        source_datablock (bpy.data): datablock that will be replaced by the target
-        target_datablock (bpy.data): datablock that will replace the source
+        source_datablock (bpy.types.ID): datablock that will be replaced by the target
+        target_datablock (bpy.types.ID): datablock that will replace the source
     """
     logger = logging.get_logger()
     logger.debug(
@@ -224,8 +224,7 @@ def merge_task_layer(
     apply_td_time = time.time()
     profiles.add((apply_td_time - mapped_time), "TRANSFER_DATA")
 
-    for source_obj in map.object_map:
-        target_obj = map.object_map[source_obj]
+    for source_obj, target_obj in map.object_map.items():
         remap_user(source_obj, target_obj)
         transfer_data_clean(target_obj)
     obj_remap_time = time.time()
@@ -241,8 +240,8 @@ def merge_task_layer(
     index_time = time.time()
     profiles.add((index_time - obj_remap_time), "INDEXES")
 
-    for col in map.collection_map:
-        remap_user(col, map.collection_map[col])
+    for source_col, target_col in map.collection_map.items():
+        remap_user(source_col, target_col)
 
     for col in map.external_col_to_add:
         local_col.children.link(col)
@@ -252,8 +251,8 @@ def merge_task_layer(
     col_remap_time = time.time()
     profiles.add((col_remap_time - index_time), "COLLECTIONS")
 
-    for id in map.shared_id_map:
-        remap_user(id, map.shared_id_map[id])
+    for source_id, target_id in map.shared_id_map.items():
+        remap_user(source_id, target_id)
     shared_id_remap_time = time.time()
     profiles.add((shared_id_remap_time - col_remap_time), "SHARED_IDS")
 
@@ -266,7 +265,7 @@ def import_data_from_lib(
     data_category: str,
     data_name: str,
     link: bool = False,
-) -> bpy.data:
+) -> bpy.types.ID:
     """Appends/Links data from an external file into the current file.
 
     Args:
@@ -276,7 +275,7 @@ def import_data_from_lib(
         link (bool, optional): Set to link library otherwise append. Defaults to False.
 
     Returns:
-        bpy.data: returns whichever data_category/type that was linked/appended
+        bpy.types.ID: returns datablock that was linked/appended
     """
 
     noun = "Appended"
