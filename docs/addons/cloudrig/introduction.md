@@ -8,21 +8,21 @@ This page aims to give you an overview of CloudRig's features, with links for fu
 You can right click on most CloudRig UI elements and click on Online Manual to open the relevant page in a browser.
 
 ## General workflow
-The rig generation workflow with CloudRig revolves around inputting parameters on a simple **Metarig**, which is then used to generate the **Control Rig**, which is what you will actually use to control your character. The Control Rig can be re-generated based on new Metarig parameters or proportions as many times as needed, until you get exactly what you want.  
+The rig generation workflow with CloudRig revolves around inputting parameters on a simple **Metarig**, which is then used to generate the **Control Rig**, which is what you will actually use to control your character. The Control Rig can be re-generated based on new Metarig parameters or proportions as many times as needed, until you get exactly what you want.
 - Create a skeleton outlining the proportions of your character. This is your Metarig.
 - Assign a Rig Component to specific bones that define the features that you want in your rig, such as a spine, arms, and legs.
 - Customize the components using their parameters to change the available features and have the level of complexity you need.
 - Generate the rig.
 
-The simplicity of this workflow allows for fast iteration. If you want to add or remove a feature from the rig, there's no need for copy-pasting and renaming of hundreds of bones, or worse, manually making changes to dozens of bones, constraints and drivers just to make a slight change to how the rig behaves. You just tick or untick a checkbox and hit Regenerate.  
+The simplicity of this workflow allows for fast iteration. If you want to add or remove a feature from the rig, there's no need for copy-pasting and renaming of hundreds of bones, or worse, manually making changes to dozens of bones, constraints and drivers just to make a slight change to how the rig behaves. You just tick or untick a checkbox and hit Regenerate.
 
 So how is it done?
 
 ## Getting Started
-Spawn the Cloud Basic Human preset metarig via **Add->Armature->CloudRig Metarigs->Cloud Human**.  
+Spawn the Cloud Basic Human preset metarig via **Add->Armature->CloudRig Metarigs->Cloud Human**.
 Now try selecting the "UpperArm.L" bone in pose mode. Then go to **Properties->Bone->CloudRig Component**.
 
-<img src="/media/addons/cloudrig/cloudrig_component.png" width=400>  
+<img src="/media/addons/cloudrig/cloudrig_component.png" width=400>
 
 As you can see here, this bone is assigned the "Limb: Generic" Component Type, and you can see all of its parameters in this panel. This Component Type and these parameters determine the behaviour of the control rig that will be generated when you press the Generate CloudRig button.
 
@@ -41,12 +41,12 @@ If you want to rig faces with CloudRig, you will probably want to use a combnina
 
 ## Generation Log
 There are many ways to make mistakes while using CloudRig, also while rigging in general. CloudRig will NEVER automatically fix your mistakes, but it will try to detect them and give you suggestions or even one-button solutions to fix them.
-After generating your rig, you will find a list of potential issues here, in the Generation Log panel. Some of these issues will have a tailor-fitted button to fix the issue. This is all handled by the [Troubleshooting](Troubleshooting) module.
+After generating your rig, you will find a list of potential issues here, in the Generation Log panel. Some of these issues will have a tailor-fitted button to fix the issue. This is all handled by the [Troubleshooting](troubleshooting) module.
 
 
 ## Rig UI
-Once generated, select your generated rig, and press the N key to bring up the Sidebar. You should see a CloudRig tab, which contains the rig UI. This is where the animators will be able to find rig settings and a collection selector.  
-<img src="/media/addons/cloudrig/rig_ui.png" width=400>  
+Once generated, select your generated rig, and press the N key to bring up the Sidebar. You should see a CloudRig tab, which contains the rig UI. This is where the animators will be able to find rig settings and a collection selector.
+<img src="/media/addons/cloudrig/rig_ui.png" width=400>
 
 ## Organizing Bones
 If you don't like the collections that CloudRig assigns the generated bones to by default, you can customize them in the [Bone Organization](cloudrig-types#bone-sets) parameters, which are only visible when [Advanced Mode](cloudrig-types#advaned-mode) is enabled.

@@ -2,8 +2,8 @@
 
 ## Overview
 
-<img src="/media/addons/cloudrig/component_hierarchy.png">    
- 
+<img src="/media/addons/cloudrig/component_hierarchy.png">
+
 These are CloudRig's component types. Most component types are built on top of others, meaning they inherit each other's functionalities. The image above and the table of contents below shows this inheritance hierarchy.
 
 - [Shared Parameters](#shared-parameters)
@@ -29,17 +29,17 @@ These are CloudRig's component types. Most component types are built on top of o
     - [Bone Tweak](#bone-tweak)
 
 ## Assigning Components
-You can assign a component to a bone in the metarig. For chain components, the connected children will be part of the same component, as long as they aren't assigned a component of their own. You can assign components to bones in two places in the UI: 
+You can assign a component to a bone in the metarig. For chain components, the connected children will be part of the same component, as long as they aren't assigned a component of their own. You can assign components to bones in two places in the UI:
 - Properties -> Armature -> CloudRig -> Rig Components (Hit the + button to assign a component to the active bone.)
 - Properties -> Bone -> CloudRig Component -> Component Type (Only appears when 'CloudRig' is enabled on the armature.)
 
-<img src="/media/addons/cloudrig/assigning_components.png" width=800>  
+<img src="/media/addons/cloudrig/assigning_components.png" width=800>
 
 ## Component Samples
-Each component type comes with a sample so you can get something up and running quickly and start playing around with it.  
-You can add these in the 3D View via Add (Shift+A)->Armature->CloudRig Samples:  
+Each component type comes with a sample so you can get something up and running quickly and start playing around with it.
+You can add these in the 3D View via Add (Shift+A)->Armature->CloudRig Samples:
 
-<img src="/media/addons/cloudrig/add_sample.png" width=500>  
+<img src="/media/addons/cloudrig/add_sample.png" width=500>
 
 ## Shared Parameters
 All CloudRig component types share some basic functionality, like letting you choose a parent for the component's root, and even specify a parent switching set-up for it.
@@ -51,28 +51,28 @@ All CloudRig component types share some basic functionality, like letting you ch
 <img src="/media/addons/cloudrig/shared_parameters.png" width=600>
 
 - #### Advanced Mode
-    This is technically a user preference, but it relates to component parameters. Some component parameters are rarely necessary or only if you want to really fine tune stuff. So, these options are hidden until this option is enabled, to ease the new user experience.  
+    This is technically a user preference, but it relates to component parameters. Some component parameters are rarely necessary or only if you want to really fine tune stuff. So, these options are hidden until this option is enabled, to ease the new user experience.
 - #### [Constraint Relinking](constraint-relinking)
-    On any component, you can add constraints to the metarig bones. On generation, these constraints will be moved to the generated bones that make the most sense for a given component type. This is just to allow you to add some constraints when needed, without using Bone Tweak components.  
+    On any component, you can add constraints to the metarig bones. On generation, these constraints will be moved to the generated bones that make the most sense for a given component type. This is just to allow you to add some constraints when needed, without using Bone Tweak components.
     For example, you can add Copy Rotation constraints to the metarig bones of an FK Chain component. That constraint can target the generated rig's bones, even though it's a different armature object. During generation, that constraint will be moved to the corresponding FK control.
 
 - #### Root Parent
-    If specified, parent the root of this component to the chosen bone. You're choosing from the generated rig's bones here.  
+    If specified, parent the root of this component to the chosen bone. You're choosing from the generated rig's bones here.
     If the chosen bone is a bendy bone, additional options appear:
         - Use an Armature constraint instead of normal parenting: This constraint takes bendy bone curvature into account, but it also means the parenting transforms will affect the bone's local matrix. If you want to use the bone's local transformations to drive something, you essentially won't be able to.
         - Create parent helper bone: This fixes the local matrix issue by creating a parent helper bone for the aforementioned Armature constraint.
 - #### Parent Switching
-    This option lets you create a parent switcher by entering the UI names of each parent on the left side, and the corresponding parent bone on the right side. The bone names are chosen from the generated rig.  
-    The chosen bones will be the available parents for this component's root bone, and a selector will be added to the rig UI.  
-    Different component types may implement parent switching differently. The specific behaviour is explained underneath the checkbox when it is enabled.  
+    This option lets you create a parent switcher by entering the UI names of each parent on the left side, and the corresponding parent bone on the right side. The bone names are chosen from the generated rig.
+    The chosen bones will be the available parents for this component's root bone, and a selector will be added to the rig UI.
+    Different component types may implement parent switching differently. The specific behaviour is explained underneath the checkbox when it is enabled.
 - #### Custom Property Storage
-    This setting will appear for components that need to create custom properties. Custom Properties are used for things like IK/FK switching.  
-    - "Default": A bone named "Properties" will be created to store custom properties.  
+    This setting will appear for components that need to create custom properties. Custom Properties are used for things like IK/FK switching.
+    - "Default": A bone named "Properties" will be created to store custom properties.
     - "Custom": If you want to store the custom properties on an arbitrary bone, this option lets you select one. The selected bone has to be higher in the metarig hierarchy than this component, else you'll get a warning.
     - "Generated": Component types implement their own behaviours for creating a custom property storage bone in a place that makes most sense for that component type. For example, the Biped Leg component will put the properties bone behind the foot control.
 
 - #### Bone Sets
-    Components organize their bones using parameters called Bone Sets. These live under the Bone Organization sub-panel, which is only visible when Advanced Mode is enabled. Bone Sets are further explained on the [Organizing Bones](Organizing-Bones#organizing-bones) page.
+    Components organize their bones using parameters called Bone Sets. These live under the Bone Organization sub-panel, which is only visible when Advanced Mode is enabled. Bone Sets are further explained on the [Organizing Bones](organizing-bones#organizing-bones) page.
 
 </details>
 
@@ -85,8 +85,8 @@ Scaling the stretch controls uniformally gives the connected bendy bones more vo
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/cloud_chain_toon.gif" width=500>  
-<img src="/media/addons/cloudrig/cloud_chain_veejay.gif" width=500> 
+<img src="/media/addons/cloudrig/cloud_chain_toon.gif" width=500>
+<img src="/media/addons/cloudrig/cloud_chain_veejay.gif" width=500>
 
 - #### Stretch Segments
     Number of sub-controls for each bone in the meta chain.
@@ -151,7 +151,7 @@ Extends the functionality of the Toon Chain. In addition to stretch controls, th
     Display the FK controls in the center of the bone rather than at the head of the bone. Only affects display, no functional difference. Purely up to preference.
 
 
-<img src="/media/addons/cloudrig/test_animation.gif" width=500>  
+<img src="/media/addons/cloudrig/test_animation.gif" width=500>
 
 - #### Test Animation
     This panel will only show when the ["Generate Action" Generator Parameter](generator-parameters) is enabled.
@@ -170,7 +170,7 @@ Extends the functionality of the FK Chain component with a physics setup that ut
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/physics_chain.gif" width=500>  
+<img src="/media/addons/cloudrig/physics_chain.gif" width=500>
 
 - #### Cloth Object
     The cloth object that the FK chain will be constrained to with Damped Track constraints. The object should have vertex groups named "PSX-FK control_name". You can leave this unspecified at first and a simple object will be generated for you, which you can later modify.
@@ -186,7 +186,7 @@ Extends the functionality of the FK Chain component with a physics setup that ut
 
 
 ## Feather
-Some small tweaks to the FK Chain component to work a bit better for an individual feather of a bird. Requires a single bone.  
+Some small tweaks to the FK Chain component to work a bit better for an individual feather of a bird. Requires a single bone.
 
 This component type comes with no additional parameters.
 
@@ -292,7 +292,7 @@ Extends the functionality of the Generic Limb component with footroll. This requ
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/cloud_leg.gif" width=500>  
+<img src="/media/addons/cloudrig/cloud_leg.gif" width=500>
 
 - #### Foot Roll
     Whether to create a foot roll setup.
@@ -308,7 +308,7 @@ Create hook controls for an existing Curve object. Multiple splines within a sin
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/curve.gif" width=500>  
+<img src="/media/addons/cloudrig/curve.gif" width=500>
 
 - #### Curve
     The target curve object to be hooked up to bone controls. Must be chosen!
@@ -324,7 +324,7 @@ Create hook controls for an existing Curve object. Multiple splines within a sin
     Set up the handle controls in a way where they can be rotated. Note that they will still allow translation, but if you translate them, rotating them afterwards will be unpredictable.
 - #### Separate Radius Control
     Instead of using the hook control's size to control the curve point's radius, create a separate child control to do so.
-    
+
 </details>
 
 
@@ -334,7 +334,7 @@ Extends the functionality of the Curve With Hooks component, where instead of ad
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/spline_ik.gif" width=500>  
+<img src="/media/addons/cloudrig/spline_ik.gif" width=500>
 
 - #### Curve Handle Length
     A multiplier on curve handle length. 1.0 means the curve handle is long enough to reach the neighbour curve point.
@@ -349,7 +349,7 @@ Extends the functionality of the Curve With Hooks component, where instead of ad
     When enabled, control bones will be created at the locations of the meta chain's bones. When disabled, control bones will be distributed an equal distance from each other along the chain.
 - #### Number of Hooks
     When the above setting is disabled, this specifies how many controls should be placed along the chain.
-    
+
 </details>
 
 
@@ -359,13 +359,13 @@ Creates a lattice with a root and a hook control. The hook control deforms the i
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/lattice.gif" width=500>  
+<img src="/media/addons/cloudrig/lattice.gif" width=500>
 
 - #### Lattice
     The lattice object that will be generated. If empty, one will be created.
 - #### Regenerate
     Whether the lattice should be re-generated from scratch or not. Disable this if you want to customize the lattice, otherwise any changes beside the object's name, will be lost when you re-generate the rig.
-    
+
 </details>
 
 
@@ -375,7 +375,7 @@ This rig creates an aim control for a single bone. Can be useful for cameras, ey
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/aim.gif" width=500>  
+<img src="/media/addons/cloudrig/aim.gif" width=500>
 
 - #### Aim Group
     Aim rigs belonging to the same Aim Group will have a shared master control generated for them.
@@ -401,7 +401,7 @@ Constraints will be [relinked](constraint-relinking) to the copied bone.
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/cloud_bone_parameters.png" width=500>  
+<img src="/media/addons/cloudrig/cloud_bone_parameters.png" width=500>
 
 - #### Create Custom Pivot
     Create a parent control whose local translation is not propagated to the main control, but its rotation and scale are.
@@ -434,12 +434,12 @@ This component has no additional parameters.
 </details>
 
 ## Bone Tweak
-This component type lets you tweak aspects of a single bone that is expected to exist in the generated rig. 
+This component type lets you tweak aspects of a single bone that is expected to exist in the generated rig.
 
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/cloud_tweak_parameters.png" width=500>  
+<img src="/media/addons/cloudrig/cloud_tweak_parameters.png" width=500>
 
 - #### Additive Constraints
     If true, the constraints on this bone will be added on top of the target bone's already existing constraints, and then [relinked](constraint-relinking). Otherwise, the original constraints will be overwritten.

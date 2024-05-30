@@ -103,7 +103,7 @@ Like metarigs, most widgets are appended from a Widgets.blend file. This is used
 Bone Gizmos is an experimental/abandoned addon of mine, and this module allows components to interface with this addon.
 
 - #### animation.py
-Functions used by [cloud_fk_chain](Cloudrig-Types#cloud_fk_chain) and the [Generate Test Animation](generator-parameters) feature.
+Functions used by [cloud_fk_chain](cloudrig-types#cloud_fk_chain) and the [Generate Test Animation](generator-parameters) feature.
 
 - #### bone_set.py
 CloudRig's bone organization system that takes care of creating sets of parameters to customize the collection and color assignment of bones. All BoneInfo instances created during generation should be created with my_bone_set.new(), to ensure that every bone can be organized by the rigger.
@@ -132,7 +132,7 @@ Houses CloudUIMixin which is inherited by all component types and provides utili
 
 
 <details>
-<summary> rig_components </summary>  
+<summary> rig_components </summary>
 
 All the [component types](cloudrig-types) in the feature set.
 Also has cloud_template which is the base I use when starting a new component type.
@@ -144,7 +144,7 @@ Entry points are of course `__init__()` and `create_bone_infos()`.
 
 
 <details>
-<summary> ui </summary>  
+<summary> ui </summary>
 
 - **actions_ui**: UI for the Action system.
 - **cloudrig_dropdown_menu**: The "CloudRig" editor header menu in armature pose/edit mode.
@@ -170,12 +170,12 @@ Entry points are of course `__init__()` and `create_bone_infos()`.
 <details>
 <summary> Repo root </summary>
 
-- **__init__.py**  
+- **__init__.py**
 Where the add-on registers itself into Blender's RNA system. I implement a pattern where each sub-folder's __init__.py should import its contents and put them in a "modules" list. The listed modules will be traversed recursively here, and any registerable classes they might store in a "registry" list will be registered, and their register() and unregister() functions will be called as appropriate.
-- **manual.py**  
+- **manual.py**
 Makes sure right clicking on CloudRig properties and then clicking on Open Manual goes to the relevant page on this wiki.
-- **versioning.py**  
-Metarig versioning. 
+- **versioning.py**
+Metarig versioning.
 
 All metarigs store a version number, and this module adds an app handler that runs whenever a new blend file is loaded, to check for metarigs whose version is lower than the current one. If it finds any, it will automatically do its best to upgrade the metarig's [component types and parameters](cloudrig-types) to the latest correct names and values.
 
