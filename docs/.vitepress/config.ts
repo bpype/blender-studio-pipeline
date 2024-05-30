@@ -112,6 +112,12 @@ export default defineConfig({
 
         collapsed: true,
         items: [
+          { text: 'Anim Cupboard', link: '/addons/anim_cupboard'},
+          { text: 'Asset Pipeline', link: '/addons/asset_pipeline'},
+          { text: 'Blender Kitsu', link: '/addons/blender_kitsu'},
+          { text: 'Blender SVN', link: '/addons/blender_svn'},
+          { text: 'Blender Gizmos', link: '/addons/bone_gizmos'},
+          { text: 'Cache Manager', link: '/addons/cache_manager'},
           {
             text: 'CloudRig',
             collapsed: true,
@@ -128,12 +134,6 @@ export default defineConfig({
               {text: 'Contribute', link: '/addons/cloudrig/code'},
             ],
           },
-          { text: 'Anim Cupboard', link: '/addons/anim_cupboard'},
-          { text: 'Asset Pipeline', link: '/addons/asset_pipeline'},
-          { text: 'Blender Kitsu', link: '/addons/blender_kitsu'},
-          { text: 'Blender SVN', link: '/addons/blender_svn'},
-          { text: 'Blender Gizmos', link: '/addons/bone_gizmos'},
-          { text: 'Cache Manager', link: '/addons/cache_manager'},
           { text: 'Contact Sheet', link: '/addons/contactsheet'},
           { text: 'Easy Weights', link: '/addons/easy_weights'},
           { text: 'Geonode Shapekeys', link: '/addons/geonode_shapekeys'},
