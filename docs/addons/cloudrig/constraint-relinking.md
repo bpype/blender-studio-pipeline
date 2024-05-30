@@ -1,6 +1,6 @@
 # Constraint Relinking
 
-When working with CloudRig, you generally don't have to define individual constraints yourself - after all, the whole point of [rig components](cloudrig-types) is to generate the bones and constraints for you.  
+When working with CloudRig, you generally don't have to define individual constraints yourself - after all, the whole point of [rig components](cloudrig-types) is to generate the bones and constraints for you.
 
 But unique characters have unique needs, where you may want to **add additional constraints** on specific bones that were generated.
 So, if you want to tweak a generated rig by adding a constraint, you have a few options:
