@@ -26,35 +26,36 @@ import typing
 
 import bpy
 import gpu
+from gpu_extras.batch import batch_for_shader
 
 APPROVED_COLOR = (0.24, 1, 0.139, 0.7)
 PUSHED_TO_EDIT_COLOR = (0.8, .8, 0.1, 0.5)
 
-# Glsl.
-gpu_vertex_shader = """
-uniform mat4 ModelViewProjectionMatrix;
+# Shader code for "class LineDrawer"
+shader_info = gpu.types.GPUShaderCreateInfo()
+shader_info.push_constant('MAT4', "viewProjectionMatrix")
+shader_info.push_constant('VEC4', "lineColor")
+shader_info.vertex_in(0, 'VEC2', "pos")
+shader_info.fragment_out(0, 'VEC4', "fragColor")
 
-layout (location = 0) in vec2 pos;
-layout (location = 1) in vec4 color;
-
-out vec4 lineColor; // output to the fragment shader
-
+shader_info.vertex_source("""
 void main()
 {
-    gl_Position = ModelViewProjectionMatrix * vec4(pos.x, pos.y, 0.0, 1.0);
-    lineColor = color;
+    gl_Position = viewProjectionMatrix * vec4(pos.x, pos.y, 0.0, 1.0);
 }
 """
+)
 
-gpu_fragment_shader = """
-out vec4 fragColor;
-in vec4 lineColor;
-
+shader_info.fragment_source("""
 void main()
 {
     fragColor = lineColor;
 }
 """
+)
+
+line_drawer_shader = gpu.shader.create_from_info(shader_info)
+del shader_info
 
 Float2 = typing.Tuple[float, float]
 Float3 = typing.Tuple[float, float, float]
@@ -63,17 +64,6 @@ LINE_WIDTH = 6
 
 
 class LineDrawer:
-    def __init__(self):
-        self._format = gpu.types.GPUVertFormat()
-        self._pos_id = self._format.attr_add(
-            id="pos", comp_type="F32", len=2, fetch_mode="FLOAT"
-        )
-        self._color_id = self._format.attr_add(
-            id="color", comp_type="F32", len=4, fetch_mode="FLOAT"
-        )
-
-        self.shader = gpu.types.GPUShader(gpu_vertex_shader, gpu_fragment_shader)
-
     def draw(self, coords: typing.List[Float2], colors: typing.List[Float4]):
         global LINE_WIDTH
 
@@ -82,14 +72,12 @@ class LineDrawer:
         gpu.state.blend_set("ALPHA")
         gpu.state.line_width_set(LINE_WIDTH)
 
-        vbo = gpu.types.GPUVertBuf(len=len(coords), format=self._format)
-        vbo.attr_fill(id=self._pos_id, data=coords)
-        vbo.attr_fill(id=self._color_id, data=colors)
+        matrix = bpy.context.region_data.perspective_matrix
+        line_drawer_shader.uniform_float("viewProjectionMatrix", matrix)
+        line_drawer_shader.uniform_float("lineColor", colors[0])  # Assuming same color for all lines for simplicity
 
-        batch = gpu.types.GPUBatch(type="LINES", buf=vbo)
-        batch.program_set(self.shader)
-        batch.draw()
-
+        batch = batch_for_shader(line_drawer_shader, 'LINES', {"pos": coords})
+        batch.draw(line_drawer_shader)
 
 def get_strip_rectf(strip) -> Float4:
     # Get x and y in terms of the grid's frames and channels.
