@@ -35,12 +35,8 @@ indices = ((0, 1, 2), (2, 3, 0))
 # If running in the background, no handles are registered, as drawing extra UI
 # elements does not make sense.
 # See register() and unregister().
-if bpy.app.version_string.split('.')[0] == '3':
-    color_key = "2D_UNIFORM_COLOR"
-else:
-    color_key = "UNIFORM_COLOR"
 if not bpy.app.background:
-    ucolor_2d_shader = gpu.shader.from_builtin(color_key)
+    ucolor_2d_shader = gpu.shader.from_builtin("UNIFORM_COLOR")
     ucolor_2d_rect_batch = batch_for_shader(
         ucolor_2d_shader, "TRIS", {"pos": rect_coords}, indices=indices
     )

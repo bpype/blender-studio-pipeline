@@ -31,31 +31,7 @@ from gpu_extras.batch import batch_for_shader
 APPROVED_COLOR = (0.24, 1, 0.139, 0.7)
 PUSHED_TO_EDIT_COLOR = (0.8, .8, 0.1, 0.5)
 
-# Shader code for "class LineDrawer"
-shader_info = gpu.types.GPUShaderCreateInfo()
-shader_info.push_constant('MAT4', "viewProjectionMatrix")
-shader_info.push_constant('VEC4', "lineColor")
-shader_info.vertex_in(0, 'VEC2', "pos")
-shader_info.fragment_out(0, 'VEC4', "fragColor")
-
-shader_info.vertex_source("""
-void main()
-{
-    gl_Position = viewProjectionMatrix * vec4(pos.x, pos.y, 0.0, 1.0);
-}
-"""
-)
-
-shader_info.fragment_source("""
-void main()
-{
-    fragColor = lineColor;
-}
-"""
-)
-
-line_drawer_shader = gpu.shader.create_from_info(shader_info)
-del shader_info
+line_shader = gpu.shader.from_builtin('FLAT_COLOR')
 
 Float2 = typing.Tuple[float, float]
 Float3 = typing.Tuple[float, float, float]
@@ -72,12 +48,11 @@ class LineDrawer:
         gpu.state.blend_set("ALPHA")
         gpu.state.line_width_set(LINE_WIDTH)
 
-        matrix = bpy.context.region_data.perspective_matrix
-        line_drawer_shader.uniform_float("viewProjectionMatrix", matrix)
-        line_drawer_shader.uniform_float("lineColor", colors[0])  # Assuming same color for all lines for simplicity
-
-        batch = batch_for_shader(line_drawer_shader, 'LINES', {"pos": coords})
-        batch.draw(line_drawer_shader)
+        batch = batch_for_shader(
+            line_shader, 'LINES',
+            {"pos": coords, "color": colors}
+        )
+        batch.draw(line_shader)
 
 def get_strip_rectf(strip) -> Float4:
     # Get x and y in terms of the grid's frames and channels.

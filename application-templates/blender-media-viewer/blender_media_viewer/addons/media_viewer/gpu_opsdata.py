@@ -34,32 +34,7 @@ Float2 = Tuple[float, float]
 Float3 = Tuple[float, float, float]
 Float4 = Tuple[float, float, float, float]
 
-# Shader code for "class GPDrawerCustomShader"
-shader_info = gpu.types.GPUShaderCreateInfo()
-shader_info.push_constant('MAT4', "viewProjectionMatrix")
-shader_info.push_constant('VEC4', "lineColor")
-shader_info.vertex_in(0, 'VEC2', "pos")
-shader_info.fragment_out(0, 'VEC4', "fragColor")
-
-shader_info.vertex_source("""
-void main()
-{
-    gl_Position = viewProjectionMatrix * vec4(pos.x, pos.y, 0.0, 1.0);
-}
-"""
-)
-
-shader_info.fragment_source("""
-void main()
-{
-    fragColor = lineColor;
-}
-"""
-)
-
-gp_custom_shader = gpu.shader.create_from_info(shader_info)
-del shader_info
-
+line_shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 
 def get_gpframe_coords(
     gpframe: bpy.types.GPencilFrame, do_3_dimensions=False
@@ -132,20 +107,17 @@ class GPDrawerCustomShader:
 
         gpu.state.blend_set('ALPHA')
         gpu.state.line_width_set(line_widht)
-
-        matrix = bpy.context.region_data.perspective_matrix
-        gp_custom_shader.uniform_float("viewProjectionMatrix", matrix)
-        gp_custom_shader.uniform_float("lineColor", color)
-
-        batch = batch_for_shader(gp_custom_shader, 'LINES', {"pos": coords})
-        batch.draw(gp_custom_shader)
+        line_shader.uniform_float("color", color)
+        batch = batch_for_shader(
+            line_shader, 'LINES',
+            {"pos": coords}
+        )
+        batch.draw(line_shader)
 
 
 class GPDrawerBuiltInShader:
     def __init__(self):
-        # 2D_UNIFORM_COLOR is not implemented, documentation is deprecated
-        # use 3D_UNIFORM_COLOR instead.
-        self.shader = gpu.shader.from_builtin("3D_UNIFORM_COLOR")
+        self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
 
     def draw(self, gpframe: bpy.types.GPencilLayer, line_width: int, color: Float4):
 
