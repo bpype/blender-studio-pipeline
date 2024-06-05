@@ -506,10 +506,10 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         description="Only load video files for the latest versions by default, to avoid running out of memory and crashing",
     )
 
-    skip_incomplete_renders: bpy.props.BoolProperty(  # type: ignore
+    match_latest_length: bpy.props.BoolProperty(  # type: ignore
         default=True,
-        name="Skip Incomplete Renders",
-        description="Skip renders that are shorter than the longest render for a give shot, (i.e. missing frames)",
+        name="Match Latest Length",
+        description="Only include renders that are matching the last rendered length for a given shot, (i.e. missing frames)",
     )
 
     versions_max_count: bpy.props.IntProperty(

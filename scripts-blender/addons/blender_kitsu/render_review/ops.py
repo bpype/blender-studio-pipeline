@@ -139,17 +139,23 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
                 continue
 
             # Query the strip that is the longest for metadata strip and prev_frame_end.
-            imported_strips.sort(key=lambda s: s.frame_final_duration)
-            strip_longest = imported_strips[-1]
-            prev_frame_end = strip_longest.frame_final_end
+            imported_strips.sort(key = lambda s : s.channel)
+            if addon_prefs.match_latest_length:
+                strip_ref = imported_strips[-1]
+            else:
+                strip_ref = sorted(imported_strips, key = lambda s: s.frame_final_duration)[-1]
+            prev_frame_end = strip_ref.frame_final_end
 
-            if addon_prefs.skip_incomplete_renders:
+            if addon_prefs.match_latest_length:
                 channel_offset = 0
-                for strip in sorted(imported_strips, key = lambda s : s.channel):
+                for strip in imported_strips:
                     strip.channel -= channel_offset
-                    if strip.frame_final_duration < strip_longest.frame_final_duration:
+                    if strip.frame_final_duration != strip_ref.frame_final_duration:
                         context.scene.sequence_editor.sequences.remove(strip)
                         channel_offset += 1
+                    else:
+                        # ensure reference strip still exists
+                        strip_ref = strip
 
             # Perform kitsu operations if enabled.
             if prefs.session_auth(context) and imported_strips:
@@ -159,15 +165,15 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
                     # Create metadata strip.
                     metadata_strip = seq_opsdata.create_metadata_strip(
                         context.scene,
-                        f"{strip_longest.name}_metadata-strip",
-                        strip_longest.channel + 1,
-                        strip_longest.frame_final_start,
-                        strip_longest.frame_final_end,
+                        f"{strip_ref.name}_metadata-strip",
+                        strip_ref.channel + 1,
+                        strip_ref.frame_final_start,
+                        strip_ref.frame_final_end,
                     )
 
                     logger.info(
                         "%s created Metadata Strip: %s",
-                        strip_longest.name,
+                        strip_ref.name,
                         metadata_strip.name,
                     )
 
@@ -399,7 +405,7 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
 
         layout.prop(self, 'sequence')
         if self.sequence != 'None':
-            layout.row().prop(addon_prefs, 'skip_incomplete_renders')
+            layout.row().prop(addon_prefs, 'match_latest_length')
             row = layout.row()
             row.prop(addon_prefs, 'use_video')
             if addon_prefs.use_video:
