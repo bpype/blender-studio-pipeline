@@ -142,6 +142,8 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
             imported_strips.sort(key = lambda s : s.channel)
             if addon_prefs.match_latest_length:
                 strip_ref = imported_strips[-1]
+                if strip_ref.frame_final_duration <= 1 and len(imported_strips) >= 2:
+                    strip_ref = imported_strips[-2]
             else:
                 strip_ref = sorted(imported_strips, key = lambda s: s.frame_final_duration)[-1]
             prev_frame_end = strip_ref.frame_final_end
