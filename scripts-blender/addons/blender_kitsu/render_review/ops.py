@@ -144,9 +144,12 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
             prev_frame_end = strip_longest.frame_final_end
 
             if addon_prefs.skip_incomplete_renders:
-                for strip in imported_strips:
+                channel_offset = 0
+                for strip in sorted(imported_strips, key = lambda s : s.channel):
+                    strip.channel -= channel_offset
                     if strip.frame_final_duration < strip_longest.frame_final_duration:
                         context.scene.sequence_editor.sequences.remove(strip)
+                        channel_offset += 1
 
             # Perform kitsu operations if enabled.
             if prefs.session_auth(context) and imported_strips:
