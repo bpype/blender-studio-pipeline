@@ -1,0 +1,33 @@
+name: Bug Report
+about: File a bug report
+labels:
+  - "Type/Report"
+  - "Status/Needs Triage"
+  - "Priority/Normal"
+body:
+  - type: markdown
+    attributes:
+      value: |
+          Thank you for wanting to submit a report and help me improve CloudRig.  
+
+          ### Please provide a .blend file with bug reports.  
+          If your issue is about a metarig that fails to generate, please use the "Report Bug" button in the interface:  
+          Select your metarig and go to Properties->Object Data->CloudRig->Generation Log, and click on "Report Bug".
+
+          ### Please make sure you use the CloudRig version that corresponds to your Blender version.
+  - type: textarea
+    id: body
+    attributes:
+      label: "Description"
+      hide_label: true
+      value: |
+               **System Information**
+               Operating system:
+
+               Blender Version: 
+               CloudRig Version: 
+
+               **Short description of error**
+
+               **Exact steps for others to reproduce the error**
+               Based on the default human metarig or a simplified attached .blend file.
