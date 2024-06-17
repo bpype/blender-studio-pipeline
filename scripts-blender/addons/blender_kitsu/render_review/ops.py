@@ -90,27 +90,26 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         else:
             logger.info("%s found %i preview frames", directory.name, len(image_sequence))
 
-        finally:
-            # Get frame start.
-            frame_start = frame_start or int(image_sequence[0].stem)
+        # Get frame start.
+        frame_start = frame_start or int(image_sequence[0].stem)
 
-            # Create new image strip.
-            strip = context.scene.sequence_editor.sequences.new_image(
-                name=directory.name,
-                filepath=image_sequence[0].as_posix(),
-                channel=idx + 1,
-                frame_start=frame_start,
-                fit_method='ORIGINAL',
-            )
+        # Create new image strip.
+        strip = context.scene.sequence_editor.sequences.new_image(
+            name=directory.name,
+            filepath=image_sequence[0].as_posix(),
+            channel=idx + 1,
+            frame_start=frame_start,
+            fit_method='ORIGINAL',
+        )
 
-            # Extend strip elements with all the available frames.
-            for f in image_sequence[1:]:
-                strip.elements.append(f.name)
+        # Extend strip elements with all the available frames.
+        for f in image_sequence[1:]:
+            strip.elements.append(f.name)
 
-            # Set strip properties.
-            strip.mute = True if image_sequence[0].suffix == ".exr" else False
+        # Set strip properties.
+        strip.mute = True if image_sequence[0].suffix == ".exr" else False
 
-            return strip
+        return strip
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         # Clear existing strips and markers
@@ -296,7 +295,8 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
                 shot_name=shot_name,
                 use_video=use_video,
             )
-            imported_strips.append(shot_strip)
+            if shot_strip:
+                imported_strips.append(shot_strip)
         return imported_strips
 
     def import_shot_as_strip(
@@ -334,6 +334,8 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         else:
             strip = self.load_strip_from_img_seq(context, shot_folder, channel_idx, frame_start)
 
+        if not strip:
+            return
         shot_datetime = datetime.fromtimestamp(shot_folder.stat().st_mtime)
         time_str = shot_datetime.strftime("%B %d, %I:%M")
         strip.name = f"{shot_folder.parent.name} ({time_str})"
