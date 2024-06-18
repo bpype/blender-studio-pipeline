@@ -48,9 +48,10 @@ After generating your rig, you will find a list of potential issues here, in the
 Once generated, select your generated rig, and press the N key to bring up the Sidebar. You should see a CloudRig tab, which contains the rig UI. This is where the animators will be able to find rig settings and a collection selector.
 <img src="/media/addons/cloudrig/rig_ui.png" width=400>
 
-## Organizing Bones
-If you don't like the collections that CloudRig assigns the generated bones to by default, you can customize them in the [Bone Organization](cloudrig-types#bone-sets) parameters, which are only visible when [Advanced Mode](cloudrig-types#advaned-mode) is enabled.
+CloudRig provides a way to add arbitrary custom properties to this UI as well, in case you want to allow animators to customize a character's outfits, materials, etc, with a nice and clean UI. Check out the [Properties UI](properties-ui) page to see how that works.
 
-## Custom Properties
-CloudRig provides a way to present arbitrary custom properties to the rig's user. This can be useful for allowing animators to customize a character's outfits, materials, etc, with a nice and clean UI. Check out the [Custom Properties](custom-properties) page to see how that works.
+
+## Organizing Bones
+If you don't like the collections that CloudRig assigns the generated bones to by default, you can customize them in the [Bone Organization](organizing-bones#organizing-bones-1) parameters, which are only visible when [Advanced Mode](cloudrig-types#advaned-mode) is enabled.
+
 
