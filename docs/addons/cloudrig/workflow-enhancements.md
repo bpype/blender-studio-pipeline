@@ -25,8 +25,8 @@ A pie menu bound to the **X** key for deletion and symmetry.
 <img src="/media/addons/cloudrig/pie_bone_specials.png">
 - **Toggle Armature X-Mirror**: Whether armature editing operations affect both sides.
 - **Toggle Pose X-Mirror**: Whether transforming bones affects both sides.
-- **Delete**: Deletes the selected bones. Works in Pose Mode. The button indicates When Armature X-Mirror is on, to avoid accidental deletions.
-- **Symmetrize**: Blender's Symmetrize operator with two changes: It's made available in Pose Mode, and it also symmetrizes Actions when there are Action Constraints present.
+- **Delete**: Deletes the selected bones. Even in Pose Mode. The button indicates when Armature X-Mirror is on, to avoid accidental deletions.
+- **Symmetrize**: Blender's Symmetrize operator with some changes: It's made available in Pose Mode, it also symmetrizes Actions when there are Action Constraints present, and it also tries to symmetrize drivers.
 
 ## Bone Parenting Pie (P)
 A pie menu bound to the **P** key lets you quickly parent and un-parent bones without having to enter Edit Mode.
