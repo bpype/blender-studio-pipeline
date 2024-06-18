@@ -1,12 +1,6 @@
 import bpy
-from rigify.operators.generic_ui_list import draw_ui_list
+from bl_ui.generic_ui_list import draw_ui_list
 from .operators import geomod_get_identifier
-
-# Not sure if we can store any data on an overridden object and expect it to
-# stick around after file reload.
-# I think as long as it's a Python property, yes?
-# So, the shape key name would be such a thing, and changing it would change the
-# name of the corresponding modifier, and object?
 
 
 class GNSK_UL_main(bpy.types.UIList):
@@ -21,8 +15,7 @@ class GNSK_UL_main(bpy.types.UIList):
 
         row = split.row()
         if gnsk.storage_object:
-            row.prop(gnsk.storage_object, 'name', text="",
-                     emboss=False, icon='OBJECT_DATA')
+            row.prop(gnsk.storage_object, 'name', text="", emboss=False, icon='OBJECT_DATA')
         modifier = gnsk.modifier
         if not modifier:
             # TODO: Draw an error, the modifier was renamed or removed.
@@ -33,27 +26,30 @@ class GNSK_UL_main(bpy.types.UIList):
         row = row.row(align=True)
         row.alignment = 'RIGHT'
         ops = []
-        ops.append(row.operator(
-            'object.geonode_shapekey_switch_focus',
-            text="",
-            icon='SCULPTMODE_HLT')
+        ops.append(
+            row.operator('object.geonode_shapekey_switch_focus', text="", icon='SCULPTMODE_HLT')
         )
 
         other_target_objs = gnsk.other_affected_objects
         if len(other_target_objs) > 0:
-            ops.append(row.operator(
-                'object.geonode_shapekey_select_objects',
-                text="",
-                icon='RESTRICT_SELECT_OFF')
+            ops.append(
+                row.operator(
+                    'object.geonode_shapekey_select_objects', text="", icon='RESTRICT_SELECT_OFF'
+                )
             )
         for other_ob in other_target_objs:
             if other_ob in context.selected_objects:
                 addon_prefs = context.preferences.addons[__package__].preferences
-                if addon_prefs.pablico_mode and len(gnsk.storage_object.geonode_shapekey_targets) > 1:
-                    ops.append(row.operator(
-                        'object.geonode_shapekey_influence_slider',
-                        text="",
-                        icon='ARROW_LEFTRIGHT')
+                if (
+                    addon_prefs.pablico_mode
+                    and len(gnsk.storage_object.geonode_shapekey_targets) > 1
+                ):
+                    ops.append(
+                        row.operator(
+                            'object.geonode_shapekey_influence_slider',
+                            text="",
+                            icon='ARROW_LEFTRIGHT',
+                        )
                     )
                     break
 
@@ -63,6 +59,7 @@ class GNSK_UL_main(bpy.types.UIList):
 
 class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
     """Panel to draw the GeoNode ShapeKey UI"""
+
     bl_label = "GeoNode Shape Keys"
     bl_idname = "GNSK_PT_GeoNodeShapeKeys"
     bl_space_type = 'PROPERTIES'
@@ -80,12 +77,22 @@ class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
 
         ob = context.object
         if ob.geonode_shapekey_targets:
-            layout.operator('object.geonode_shapekey_switch_focus',
-                            text="Switch To Render Objects", icon='FILE_REFRESH')
+            layout.operator(
+                'object.geonode_shapekey_switch_focus',
+                text="Switch To Render Objects",
+                icon='FILE_REFRESH',
+            )
             return
 
         list_ops = draw_ui_list(
-            layout, context, class_name='GNSK_UL_main', list_context_path='object.geonode_shapekeys', active_index_context_path='object.geonode_shapekey_index', insertion_operators=False, move_operators=False
+            layout,
+            context,
+            class_name='GNSK_UL_main',
+            unique_id='GNSK List',
+            list_path='object.geonode_shapekeys',
+            active_index_path='object.geonode_shapekey_index',
+            insertion_operators=False,
+            move_operators=False,
         )
 
         list_ops.operator('object.add_geonode_shape_key', text="", icon='ADD')
@@ -95,14 +102,25 @@ class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
         row.operator('object.remove_geonode_shape_key', text="", icon='REMOVE')
 
 
+def draw_gnsk_uvmap_op(self, context):
+    layout = self.layout
+    layout.operator('object.geonode_shapekey_ensure_uvmap')
+
+
 registry = [
     GNSK_UL_main,
 ]
+
 
 def register():
     if hasattr(bpy.types.DATA_PT_shape_keys, 'replacement'):
         GNSK_PT_GeoNodeShapeKeys.bl_parent_id = bpy.types.DATA_PT_shape_keys.replacement
     bpy.utils.register_class(GNSK_PT_GeoNodeShapeKeys)
 
+    bpy.types.MESH_MT_shape_key_context_menu.append(draw_gnsk_uvmap_op)
+
+
 def unregister():
     bpy.utils.unregister_class(GNSK_PT_GeoNodeShapeKeys)
+
+    bpy.types.MESH_MT_shape_key_context_menu.remove(draw_gnsk_uvmap_op)
