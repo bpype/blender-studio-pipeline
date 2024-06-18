@@ -13,9 +13,7 @@ No add-on should vitally rely on this one! Implement fallbacks for error reporti
 This add-on also aims to be an inspiration for this kind of functionality being built into Blender itself; For example, to report dependency cycles, modifier errors, driver errors, without spamming the terminal window. The Info Editor seems like the perfect place for this sort of functionality.
 
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
 # Example use cases:
 

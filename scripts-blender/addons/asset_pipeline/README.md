@@ -31,10 +31,7 @@ Checkout the [Asset Pipeline Demo](https://projects.blender.org/studio/blender-s
 <!-- /TOC -->
 
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install` 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
-
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
 ## Key Concepts
 **Task Layers** Task Layers are defined in a JSON file that describes the number of layers used to manage the asset. Typically each task layer is given its own file, artists can optionally house multiple task layers inside the same file if required. Each task layer is used to describe a step in the asset making process (e.g."Modeling", "Rigging", "Shading"). The number and content of a task layer is fully customizable by the artist.

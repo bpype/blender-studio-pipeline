@@ -30,9 +30,8 @@ blender-kitsu is a Blender Add-on to interact with Kitsu from within Blender. It
 
 
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Add-ons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
+
 ## How to get started
 After installing you need to setup the add-on preferences to fit your environment.
 In order to be able to log in to Kitsu you need a server that runs the Kitsu production management suite.

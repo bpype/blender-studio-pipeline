@@ -4,17 +4,15 @@ System to create, manage and apply python overrides in a flexible and reliable w
 
 ## Table of Contents
 - [Installation](#installation)
-- [Features](#features)
-
+- [Purpose](#purpose)
+- [Settings](#settings)
+- [Structure](#structure)
+- [Example](#example)
 
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
-
-
- ## Purpose
+## Purpose
 
 The purpose of this addon is to manage, store and apply several python overrides that have to be imposed on linked data for rendering. The idea is not to formalize things like render settings that can be changed manually, but only settings that need to be reiterated after file load because they override library data.
 

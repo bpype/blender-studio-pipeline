@@ -15,9 +15,7 @@ Easy Weights is an addon focused on quality of life improvements for weight pain
 - [Previous Features](#previous-features)
 
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
 ## How to Use
 Read the paragraphs below to find out how to boost your weight painting workflow and comfort.

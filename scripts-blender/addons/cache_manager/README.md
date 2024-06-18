@@ -9,10 +9,9 @@ cache-Manager is a Blender Add-on to streamline the alembic cache workflow of as
 
 ## Disclaimer
 This addon is not used in the production of the Blender-Studio anymore and is not maintained actively.
+
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
 ## How to get started
 After installing the addon you need to setup the addon preferences.

@@ -4,10 +4,9 @@ blender-svn is a Blender add-on to interact with the Subversion version control 
 [Blender-SVN Demo Video](https://studio.blender.org/films/charge/gallery/?asset=5999)
 
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
-4. Make sure you have an SVN client installed, such that typing `svn` in the command line gives a result.
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
+
+Make sure you have an SVN client installed, such that typing `svn` in the command line gives a result. Just Google "how to install SVN on Windows".
 
 ## Features
 - Open a .blend file that is in an SVN repository, and enter credentials.

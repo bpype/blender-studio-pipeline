@@ -6,10 +6,9 @@ Blender Add-on to create a contactsheet from sequence editor strips.
 
 - [Installation](#installation)
 - [Features](#features)
+
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
 ## Features
 After the addon is enabled you will find a `Contactsheet` tab in the Sequence Editor Toolbar.

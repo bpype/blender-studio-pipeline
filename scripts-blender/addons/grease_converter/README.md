@@ -6,11 +6,8 @@ grease-converter is a Blender Add-on that can convert annotations to grease penc
 - [Installation](#installation)
 - [How to get Started](#how-to-get-started)
 
-
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
 ## How to get started
 After the add-on is installed you have 2 new operators available.

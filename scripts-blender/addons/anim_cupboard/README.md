@@ -10,9 +10,7 @@ Miscellaneous operators and tools requested by Blender Studio Animators.
     - [Easy Constraints](#easy-constraints)
 
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
 ## Features
 ### Select Similar Curves

@@ -8,9 +8,7 @@
     - [Animator UX](#animator-ux)
 
 ## Installation
-1. Download [latest release](../addons/overview) 
-2. Launch Blender, navigate to `Edit > Preferences` select `Addons` and then `Install`, 
-3. Navigate to the downloaded add-on and select `Install Add-on` 
+Find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
 
 ## What are Bone Gizmos?
 This add-on is a prototype for a potential future Mesh Gizmos feature in Blender. See [this](https://projects.blender.org/blender/blender/issues/92218) task for more details.
