@@ -110,7 +110,7 @@ The pencil icon next to a property lets you edit the property's CloudRig UI sett
 
 <img src="/media/addons/cloudrig/props_ui_edit_value_names.png" width=800>
 
-As you can see, this looks identical to [adding a UI Element](step-2-adding-or-editing-a-ui-element).
+As you can see, this looks identical to [adding a UI Element](#step-2-adding-or-editing-a-ui-element).
 In this case, I just wanted to edit the Value Names of the property. Now it will show the specified words for each value:
 - 0: "Barefoot"
 - 1: "Default Shoes"
