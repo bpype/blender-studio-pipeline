@@ -49,6 +49,7 @@ def _copytree_init_progress_update(source_dir: Path):
     global copytree_num_of_items
     file_list = [f for f in source_dir.glob("**/*") if f.is_file()]
     copytree_num_of_items = len(file_list)
+    logger.warn("Preparing to copy %i files", copytree_num_of_items)
 
 
 def _copy2_tree_progress(src, dst):
@@ -62,7 +63,8 @@ def _copy2_tree_progress(src, dst):
 
     copytree_list.append(Path(src))
     progress = round((len(copytree_list) * 100) / copytree_num_of_items)
-    logger.info("Copying %s (%i%%)", src, progress)
+    delete_prev_line = "\033[1A\x1b[2K"
+    logger.warn(delete_prev_line + "Copying %s (%i%%)", src, progress)
     shutil.copy2(src, dst)
 
 
