@@ -63,7 +63,7 @@ def _copy2_tree_progress(src, dst):
     global copytree_list
     global copytree_prev_printed_len
 
-    term_col_len = shutil.get_terminal_size()[0]
+    term_col_len = shutil.get_terminal_size(fallback=(0, 0))[0]
     if term_col_len != 0:
         delete_lines = math.ceil(copytree_prev_printed_len / term_col_len)
     else:
