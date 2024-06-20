@@ -19,6 +19,7 @@
 # (c) 2021, Blender Foundation - Paul Golter
 
 import json
+import math
 import shutil
 from pathlib import Path
 from typing import Set, Union, Optional, List, Dict, Any, Tuple
@@ -37,6 +38,7 @@ logger = LoggerFactory.getLogger()
 
 copytree_list: List[Path] = []
 copytree_num_of_items: int = 0
+copytree_prev_printed_len: int = 0
 
 
 def copytree_verbose(src: Union[str, Path], dest: Union[str, Path], **kwargs):
@@ -49,7 +51,6 @@ def _copytree_init_progress_update(source_dir: Path):
     global copytree_num_of_items
     file_list = [f for f in source_dir.glob("**/*") if f.is_file()]
     copytree_num_of_items = len(file_list)
-    logger.warn("Preparing to copy %i files", copytree_num_of_items)
 
 
 def _copy2_tree_progress(src, dst):
@@ -60,19 +61,32 @@ def _copy2_tree_progress(src, dst):
     """
     global copytree_num_of_items
     global copytree_list
+    global copytree_prev_printed_len
+
+    term_col_len = shutil.get_terminal_size()[0]
+    if term_col_len != 0:
+        delete_lines = math.ceil(copytree_prev_printed_len / term_col_len)
+    else:
+        delete_lines = 0
 
     copytree_list.append(Path(src))
     progress = round((len(copytree_list) * 100) / copytree_num_of_items)
     delete_prev_line = "\033[1A\x1b[2K"
-    logger.warn(delete_prev_line + "Copying %s (%i%%)", src, progress)
+    message = "Copying %s (%i%%)" % (src, progress)
+    logger.warn(delete_lines * delete_prev_line + message)
     shutil.copy2(src, dst)
+
+    copytree_prev_printed_len = len(message)
 
 
 def _copytree_clear_progress_update():
     global copytree_num_of_items
+    global copytree_list
+    global copytree_prev_printed_len
 
     copytree_num_of_items = 0
     copytree_list.clear()
+    copytree_prev_printed_len = 0
 
 
 def get_valid_cs_sequences(
