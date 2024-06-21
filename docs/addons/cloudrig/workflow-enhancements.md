@@ -7,6 +7,7 @@ CloudRig ships with various small quality of life features. These usually have a
 -  Extruding (**E**) or duplicating (**Shift+D**) bones increments existing numbers in the bone name:
 - `Bone1` becomes `Bone2` rather than `Bone1.001`.
 - Works with symmetry. If `Bone2` already exists, it will just jump to `Bone3`, and so on.
+- Shift+D duplicates bone and constraint drivers.
 
 <video src="/media/addons/cloudrig/better_duplicate_extrude.mp4" controls></video>
 
@@ -25,7 +26,7 @@ A pie menu bound to the **X** key for deletion and symmetry.
 <img src="/media/addons/cloudrig/pie_bone_specials.png">
 - **Toggle Armature X-Mirror**: Whether armature editing operations affect both sides.
 - **Toggle Pose X-Mirror**: Whether transforming bones affects both sides.
-- **Delete**: Deletes the selected bones. Even in Pose Mode. The button indicates when Armature X-Mirror is on, to avoid accidental deletions.
+- **Delete**: Deletes the selected bones. Even in Pose Mode. Also deletes drivers of the deleted bones. The button indicates when Armature X-Mirror is on, to avoid accidental deletions.
 - **Symmetrize**: Blender's Symmetrize operator with some changes: It's made available in Pose Mode, it also symmetrizes Actions when there are Action Constraints present, and it also tries to symmetrize drivers.
 
 ## Bone Parenting Pie (P)
