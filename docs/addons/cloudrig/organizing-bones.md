@@ -13,12 +13,17 @@ You can also summon this collection list menu using Shift+M on a CloudRig armatu
 If you want to customize which generated bones get placed in which bone collections, you can do this using Bone Sets.
 Let's say we have a strand of hair rigged with the FK Chain component type, and we want the hair FK bones to go on a Hair collection that we created, not the "FK Controls" collection that it uses by default.
 
-Organizing bones is considered an advanced feature, so enable Advanced Mode.
+Organizing bones is considered an advanced feature, so enable **Advanced Mode**.
 At the bottom of the parameters, you'll find the Bone Organization sub-panel:
 
 <img src="/media/addons/cloudrig/bone_sets.png" width=500>
 
-And as you can see, all we have to do is assign our Hair collection as one of the collections that the FK Controls of this component should be assigned to. You can assign them to as many collections as you wish.
+And as you can see, all we have to do is assign our Hair collection as one of the collections that the FK Controls of this component should be assigned to. You can assign them to as many collections as you wish. 
+
+#### Bone Colors
+You can also choose a color preset to assign. This preset will be converted to a custom color, meaning your personal color presets will propagate to whoever uses your rig. This ensures the rig looks the same way, no matter who's using it.
+Additionally, you can change Blender's default color presets to CloudRig's recommended ones in the preferences, using this button:  
+<img src="/media/addons/cloudrig/bone_color_preset.png" width=800>
 
 ## Custom Collections
 If you want to create collections even more granularly, you can simply create them on the generated rig, and assign whatever bones you want. You just need to let CloudRig know that you want to preserve these collections when re-generating the rig. And to do that, you first need to enable the collection authoring UI:
