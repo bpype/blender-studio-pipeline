@@ -125,3 +125,77 @@ You can see a preview of this near the top of the pop-up panel, but you will onl
 ## Drivers
 
 Of course at the end of the day, these properties don't do anything on their own. They need to be hooked up to things using Drivers. You can do this by right-clicking on properties and using the "Copy as New Driver", "Paste Driver", and "Edit Driver" options. You can learn more from the [Drivers](https://docs.blender.org/manual/en/latest/animation/drivers/usage.html) page of the Blender Manual.
+
+## Example Use Case: Bone Collections
+
+Besides an outfit system, you can also use this system to make a grid UI of Bone Collections, like so:  
+<img src="/media/addons/cloudrig/props_ui_bone_collections.png" width=600>
+
+Which is done like this:
+
+<img src="/media/addons/cloudrig/props_ui_bone_collections_edit.png" width=600>
+
+## Example Use Case: Custom Operator
+
+You can implement your own Python operator in a text datablock, then display it next to a property.
+CloudRig's generation process uses this to add the IK/FK snapping&baking operators, among others.
+
+This example implements an preset system for hair colors:
+
+```python
+import bpy
+from bpy.props import StringProperty, EnumProperty
+
+presets = {
+    'Blonde' : [0.696779, 0.565850, 0.183357],
+    'Dark' : [0.065083, 0.015941, 0.004878],
+    'Green' : [0.007476, 0.196397, 0.007357]
+}
+
+class MyPresetOperator(bpy.types.Operator):
+    """Set some properties according to a hard-coded preset"""
+    bl_idname = "object.my_preset_operator"
+    bl_label = "Apply Preset"
+
+    prop_bone: StringProperty()
+    prop_name: StringProperty()
+    preset_color: EnumProperty(
+    name="Preset",
+    items=[
+        ('Blonde', 'Blonde', 'Blonde'),
+        ('Dark', 'Dark', 'Dark'),
+        ('Green', 'Green', 'Green'),
+    ])
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None
+
+    def invoke(self, context, _event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def draw(self, context):
+        self.layout.prop(self, 'preset_color')
+
+    def execute(self, context):
+        prop_bone = context.active_object.pose.bones[self.prop_bone]
+        prop_bone[self.prop_name] = presets[self.preset_color]
+        return {'FINISHED'}
+
+def register():
+    bpy.utils.register_class(MyPresetOperator)
+
+def unregister():
+    bpy.utils.unregister_class(MyPresetOperator)
+
+if __name__ == "__main__":
+    register()
+```
+
+Then add a color custom property to the UI, and configure this operator next to it, like so:
+
+<img src="/media/addons/cloudrig/props_ui_operator_example.png" width=600>
+
+And the resulting UI looks like this:
+
+<img src="/media/addons/cloudrig/props_ui_operator_result.png" width=600>
