@@ -3,11 +3,16 @@ CloudRig ships with various small quality of life features. These usually have a
 
 <img src="/media/addons/cloudrig/hotkeys_ui.png">
 
+## MetaRig Swapping / Generation
+- **Shift+T** lets you swap between a metarig and its generated rig, while syncing bone collections, visiblity, and selection.
+- **Shift+T** on a mesh object will put you in pose mode on its deforming armature, if any.
+- **Ctrl+Shift+R** regenerates the active metarig/rig. If there is only one metarig in the scene, it doesn't even need to be active.
+
 ## Better Duplicate & Extrude
 -  Extruding (**E**) or duplicating (**Shift+D**) bones increments existing numbers in the bone name:
 - `Bone1` becomes `Bone2` rather than `Bone1.001`.
 - Works with symmetry. If `Bone2` already exists, it will just jump to `Bone3`, and so on.
-- Shift+D duplicates bone and constraint drivers.
+- **Shift+D** duplicates bone and constraint drivers.
 
 <video src="/media/addons/cloudrig/better_duplicate_extrude.mp4" controls></video>
 

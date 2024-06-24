@@ -128,7 +128,7 @@ Of course at the end of the day, these properties don't do anything on their own
 
 ## Example Use Case: Bone Collections
 
-Besides an outfit system, you can also use this system to make a grid UI of Bone Collections, like so:  
+Besides outfit swapping, you can also use this system to make a grid UI of Bone Collections, like so:  
 <img src="/media/addons/cloudrig/props_ui_bone_collections.png" width=600>
 
 Which is done like this:
@@ -140,7 +140,7 @@ Which is done like this:
 You can implement your own Python operator in a text datablock, then display it next to a property.
 CloudRig's generation process uses this to add the IK/FK snapping&baking operators, among others.
 
-This example implements an preset system for hair colors:
+This example implements an preset button for hair colors:
 
 ```python
 import bpy
