@@ -135,7 +135,7 @@ export default defineConfig({
             ],
           },
           { text: 'Contact Sheet', link: '/addons/contactsheet'},
-          { text: 'Easy Weights', link: '/addons/easy_weights'},
+          { text: 'Easy Weight', link: '/addons/easy_weight'},
           { text: 'Geonode Shapekeys', link: '/addons/geonode_shapekeys'},
           { text: 'Grease Converter', link: '/addons/grease_converter'},
           { text: 'Lattice Magic', link: '/addons/lattice_magic'},

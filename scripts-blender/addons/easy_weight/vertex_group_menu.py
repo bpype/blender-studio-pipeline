@@ -1,36 +1,28 @@
 import bpy
 from bpy.types import Menu
 
-from .vertex_group_operators import (
-    EASYWEIGHTS_OT_delete_empty_deform_groups,
-    EASYWEIGHTS_OT_focus_deform_bones,
-    EASYWEIGHTS_OT_delete_unselected_deform_groups,
-    EASYWEIGHTS_OT_delete_unused_vertex_groups,
-)
-
 
 class MESH_MT_vertex_group_batch_delete(Menu):
     bl_label = "Batch Delete"
 
     def draw(self, context):
         layout = self.layout
+        layout.operator("object.vertex_group_remove", text="All Groups", icon='TRASH').all = True
         layout.operator(
-            "object.vertex_group_remove",
-            text="All Groups",
-            icon='TRASH'
-        ).all = True
-        layout.operator(
-            "object.vertex_group_remove",
-            text="All Unlocked Groups",
-            icon='UNLOCKED'
+            "object.vertex_group_remove", text="All Unlocked Groups", icon='UNLOCKED'
         ).all_unlocked = True
         layout.separator()
-        layout.operator(EASYWEIGHTS_OT_delete_empty_deform_groups.bl_idname,
-                        text="Empty Deform Groups", icon='GROUP_BONE')
-        layout.operator(EASYWEIGHTS_OT_delete_unused_vertex_groups.bl_idname,
-                        text="Unused Non-Deform Groups", icon='BRUSH_DATA')
-        layout.operator(EASYWEIGHTS_OT_delete_unselected_deform_groups.bl_idname,
-                        text="Unselected Deform Groups", icon='RESTRICT_SELECT_ON')
+        layout.operator(
+            'object.delete_empty_deform_vgroups', text="Empty Deform Groups", icon='GROUP_BONE'
+        )
+        layout.operator(
+            'object.delete_unused_vgroups', text="Unused Non-Deform Groups", icon='BRUSH_DATA'
+        )
+        layout.operator(
+            'object.delete_unselected_deform_vgroups',
+            text="Unselected Deform Groups",
+            icon='RESTRICT_SELECT_ON',
+        )
 
 
 class MESH_MT_vertex_group_symmetry(Menu):
@@ -41,37 +33,29 @@ class MESH_MT_vertex_group_symmetry(Menu):
         layout.operator(
             "object.vertex_group_mirror",
             text="Mirror Active Group (Proximity)",
-            icon='AUTOMERGE_OFF'
+            icon='AUTOMERGE_OFF',
         ).use_topology = False
         layout.operator(
-            "object.vertex_group_mirror",
-            text="Mirror Active Group (Topology)",
-            icon='AUTOMERGE_ON'
+            "object.vertex_group_mirror", text="Mirror Active Group (Topology)", icon='AUTOMERGE_ON'
         ).use_topology = True
 
         layout.separator()
 
         layout.operator(
-            "object.symmetrize_vertex_weights",
-            text="Symmetrize Active Group",
-            icon='MOD_MIRROR'
+            "object.symmetrize_vertex_weights", text="Symmetrize Active Group", icon='MOD_MIRROR'
         ).groups = 'ACTIVE'
         layout.operator(
             "object.symmetrize_vertex_weights",
             text="Symmetrize Selected Bones' Groups",
-            icon='MOD_MIRROR'
+            icon='MOD_MIRROR',
         ).groups = 'BONES'
         op = layout.operator(
-            "object.symmetrize_vertex_weights",
-            text="Symmetrize All Left->Right",
-            icon='MOD_MIRROR'
+            "object.symmetrize_vertex_weights", text="Symmetrize All Left->Right", icon='MOD_MIRROR'
         )
         op.groups = 'ALL'
         op.direction = 'LEFT_TO_RIGHT'
         op = layout.operator(
-            "object.symmetrize_vertex_weights",
-            text="Symmetrize All Right->Left",
-            icon='MOD_MIRROR'
+            "object.symmetrize_vertex_weights", text="Symmetrize All Right->Left", icon='MOD_MIRROR'
         )
         op.groups = 'ALL'
         op.direction = 'RIGHT_TO_LEFT'
@@ -100,15 +84,19 @@ class MESH_MT_vertex_group_copy(Menu):
     def draw(self, context):
         layout = self.layout
 
-        # TODO: This isn't grayed out when there's no active group.
-        # TODO: Maybe for things that use the active group, we should put the name of the group in the button text? Makes it harder to search tho perhaps. Not even sure if menu search supports dynamic menu text?
-        layout.operator("object.vertex_group_copy",
-                        icon='DUPLICATE', text="Duplicate Group")
+        obj = context.object
+        if obj and obj.vertex_groups and obj.vertex_groups.active:
+            layout.operator(
+                "object.vertex_group_copy",
+                icon='DUPLICATE',
+                text=f'Duplicate "{obj.vertex_groups.active.name}"',
+            )
         layout.separator()
-        layout.operator("object.vertex_group_copy_to_linked",
-                        text="Synchronize Groups on All Instances", icon='LINKED')
-        layout.operator("object.vertex_group_copy_to_selected",
-                        text="Synchronize Groups on Selected", icon='RESTRICT_SELECT_OFF')
+        layout.operator(
+            "object.vertex_group_copy_to_selected",
+            text="Synchronize Groups on Selected",
+            icon='RESTRICT_SELECT_OFF',
+        )
 
 
 class MESH_MT_vertex_group_lock(Menu):
@@ -117,14 +105,13 @@ class MESH_MT_vertex_group_lock(Menu):
     def draw(self, context):
         layout = self.layout
 
-        props = layout.operator(
-            "object.vertex_group_lock", icon='LOCKED', text="Lock All")
+        props = layout.operator("object.vertex_group_lock", icon='LOCKED', text="Lock All")
         props.action, props.mask = 'LOCK', 'ALL'
-        props = layout.operator(
-            "object.vertex_group_lock", icon='UNLOCKED', text="Unlock All")
+        props = layout.operator("object.vertex_group_lock", icon='UNLOCKED', text="Unlock All")
         props.action, props.mask = 'UNLOCK', 'ALL'
         props = layout.operator(
-            "object.vertex_group_lock", icon='UV_SYNC_SELECT', text="Invert All Locks")
+            "object.vertex_group_lock", icon='UV_SYNC_SELECT', text="Invert All Locks"
+        )
         props.action, props.mask = 'INVERT', 'ALL'
 
 
@@ -140,9 +127,7 @@ class MESH_MT_vertex_group_weight(Menu):
             text="Remove Selected Verts from All Groups",
         ).use_all_groups = True
         layout.operator(
-            "object.vertex_group_clean",
-            icon='BRUSH_DATA',
-            text="Clean 0 Weights from All Groups"
+            "object.vertex_group_clean", icon='BRUSH_DATA', text="Clean 0 Weights from All Groups"
         ).group_select_mode = 'ALL'
 
         layout.separator()
@@ -150,20 +135,16 @@ class MESH_MT_vertex_group_weight(Menu):
         layout.operator(
             "object.vertex_group_remove_from",
             icon='TRASH',
-            text="Remove All Verts from Selected Group"
+            text="Remove All Verts from Selected Group",
         ).use_all_verts = True
 
         layout.separator()
 
         layout.operator(
-            'paint.weight_from_bones',
-            text="Assign Automatic from Bones",
-            icon='BONE_DATA'
+            'paint.weight_from_bones', text="Assign Automatic from Bones", icon='BONE_DATA'
         ).type = 'AUTOMATIC'
         op = layout.operator(
-            'object.vertex_group_normalize_all',
-            text="Normalize Deform",
-            icon='IPO_SINE'
+            'object.vertex_group_normalize_all', text="Normalize Deform", icon='IPO_SINE'
         )
         op.group_select_mode = 'BONE_DEFORM'
         op.lock_active = False
@@ -171,12 +152,7 @@ class MESH_MT_vertex_group_weight(Menu):
 
 def draw_misc(self, context):
     layout = self.layout
-    layout.operator(EASYWEIGHTS_OT_focus_deform_bones.bl_idname, icon='ZOOM_IN')
-
-    # TODO: Add an operator called "Smart Cleanup" that creates missing mirror groups,
-    # Cleans 0 weights,
-    # Deletes unused deforming groups,
-    # and deletes unused non-deforming groups.
+    layout.operator('object.focus_deform_vgroups', icon='ZOOM_IN')
 
 
 def draw_vertex_group_menu(self, context):
@@ -195,23 +171,27 @@ registry = [
     MESH_MT_vertex_group_sort,
     MESH_MT_vertex_group_copy,
     MESH_MT_vertex_group_lock,
-    MESH_MT_vertex_group_weight
+    MESH_MT_vertex_group_weight,
 ]
 
 
 def register():
-    bpy.types.MESH_MT_vertex_group_context_menu.old_draw = bpy.types.MESH_MT_vertex_group_context_menu.draw
+    bpy.types.MESH_MT_vertex_group_context_menu.old_draw = (
+        bpy.types.MESH_MT_vertex_group_context_menu.draw
+    )
     bpy.types.MESH_MT_vertex_group_context_menu.remove(
-        bpy.types.MESH_MT_vertex_group_context_menu.draw)
+        bpy.types.MESH_MT_vertex_group_context_menu.draw
+    )
 
     bpy.types.MESH_MT_vertex_group_context_menu.append(draw_vertex_group_menu)
     bpy.types.MESH_MT_vertex_group_context_menu.append(draw_misc)
 
 
 def unregister():
-    bpy.types.MESH_MT_vertex_group_context_menu.draw = bpy.types.MESH_MT_vertex_group_context_menu.old_draw
+    bpy.types.MESH_MT_vertex_group_context_menu.draw = (
+        bpy.types.MESH_MT_vertex_group_context_menu.old_draw
+    )
     del bpy.types.MESH_MT_vertex_group_context_menu.old_draw
 
     bpy.types.MESH_MT_vertex_group_context_menu.remove(draw_vertex_group_menu)
     bpy.types.MESH_MT_vertex_group_context_menu.remove(draw_misc)
-

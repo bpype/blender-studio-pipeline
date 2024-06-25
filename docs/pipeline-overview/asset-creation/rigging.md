@@ -22,7 +22,7 @@ The facial rigging is usually done with Rigify's [Action set-up system](https://
 ## Weight Painting
 Weight painting character meshes to the generated rig has so far happened simply manually, as there hasn't been a need to mass-produce characters with high quality deformation. Still, the **Easy Weight** add-on helps to make this manual weight painting workflow efficient with some custom UI, and less error-prone with a rogue weight checking system. There is also a short tutorial series about my weight painting workflow, which also includes a section about this add-on specifically.
 
-* [Download Easy Weights](https://studio.blender.org/pipeline/addons/easy_weights)  
+* [Download Easy Weights](https://studio.blender.org/pipeline/addons/easy_weight)  
 * [Weight Painting Course](https://studio.blender.org/training/weight-painting/)
 
 ## Corrective Shape Keys

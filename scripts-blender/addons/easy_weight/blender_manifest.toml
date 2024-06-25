@@ -1,0 +1,20 @@
+schema_version = "1.0.0"
+
+id = "easyweight"
+version = "1.0.0"
+name = "EasyWeight"
+tagline = "Weight Painting Workflow Boosters"
+maintainer = "Demeter Dzadik <demeter@blender.org>"
+type = "add-on"
+website = "https://studio.blender.org/pipeline/addons/easy_weight"
+tags = ["Rigging"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2019-2024 Demeter Dzadik & Blender Studio",
+]
+[permissions]
