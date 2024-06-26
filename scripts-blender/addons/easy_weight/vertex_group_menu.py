@@ -84,7 +84,7 @@ class MESH_MT_vertex_group_copy(Menu):
     def draw(self, context):
         layout = self.layout
 
-        obj = context.object
+        obj = context.active_object
         if obj and obj.vertex_groups and obj.vertex_groups.active:
             layout.operator(
                 "object.vertex_group_copy",

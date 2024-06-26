@@ -7,8 +7,20 @@ from bpy.utils import flip_name
 
 from mathutils.kdtree import KDTree
 
+def poll_deformed_mesh_with_vgroups(operator, context, must_deform=True):
+    obj = context.active_object
+    if not obj or obj.type != 'MESH':
+        operator.poll_message_set("No active mesh object.")
+        return False
+    if must_deform and ('ARMATURE' not in [m.type for m in obj.modifiers]):
+        operator.poll_message_set("This mesh is not deformed by an Armature modifier.")
+        return False
+    if not obj.vertex_groups:
+        operator.poll_message_set("This mesh has no vertex groups yet.")
+        return False
+    return True
 
-class EASYWEIGHTS_OT_delete_empty_deform_groups(Operator):
+class EASYWEIGHT_OT_delete_empty_deform_groups(Operator):
     """Delete vertex groups which are associated to deforming bones but don't have any weights"""
 
     bl_idname = "object.delete_empty_deform_vgroups"
@@ -17,8 +29,7 @@ class EASYWEIGHTS_OT_delete_empty_deform_groups(Operator):
 
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
-        return obj and obj.type == 'MESH' and 'ARMATURE' in [m.type for m in obj.modifiers]
+        return poll_deformed_mesh_with_vgroups(cls, context)
 
     def execute(self, context):
         empty_groups = get_empty_deforming_vgroups(context.active_object)
@@ -34,7 +45,7 @@ class EASYWEIGHTS_OT_delete_empty_deform_groups(Operator):
         return {'FINISHED'}
 
 
-class EASYWEIGHTS_OT_delete_unselected_deform_groups(Operator):
+class EASYWEIGHT_OT_delete_unselected_deform_groups(Operator):
     """Delete deforming vertex groups that do not correspond to any selected pose bone"""
 
     bl_idname = "object.delete_unselected_deform_vgroups"
@@ -43,7 +54,7 @@ class EASYWEIGHTS_OT_delete_unselected_deform_groups(Operator):
 
     @classmethod
     def poll(cls, context):
-        return is_weight_paint_mode(context, with_rig=True, with_groups=True)
+        return poll_weight_paint_mode(cls, context, with_rig=True, with_groups=True)
 
     def execute(self, context):
         deforming_groups = get_deforming_vgroups(context.active_object)
@@ -62,7 +73,7 @@ class EASYWEIGHTS_OT_delete_unselected_deform_groups(Operator):
         return {'FINISHED'}
 
 
-class EASYWEIGHTS_OT_focus_deform_bones(Operator):
+class EASYWEIGHT_OT_focus_deform_bones(Operator):
     """While in Weight Paint Mode, reveal the layers of, unhide, and select the bones of all deforming vertex groups"""
 
     bl_idname = "object.focus_deform_vgroups"
@@ -71,7 +82,7 @@ class EASYWEIGHTS_OT_focus_deform_bones(Operator):
 
     @classmethod
     def poll(cls, context):
-        return is_weight_paint_mode(context, with_rig=True, with_groups=True)
+        return poll_weight_paint_mode(cls, context, with_rig=True, with_groups=True)
 
     def execute(self, context):
         deform_groups = get_deforming_vgroups(context.active_object)
@@ -91,7 +102,7 @@ class EASYWEIGHTS_OT_focus_deform_bones(Operator):
         return {'FINISHED'}
 
 
-class EASYWEIGHTS_OT_delete_unused_vertex_groups(Operator):
+class EASYWEIGHT_OT_delete_unused_vertex_groups(Operator):
     """Delete vertex groups which are not used by any modifiers, deforming bones, shape keys or constraints"""
 
     bl_idname = "object.delete_unused_vgroups"
@@ -100,12 +111,7 @@ class EASYWEIGHTS_OT_delete_unused_vertex_groups(Operator):
 
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
-        ob_is_mesh = obj and obj.type == 'MESH'
-        if not ob_is_mesh:
-            return False
-        ob_has_groups = len(obj.vertex_groups) > 0
-        return ob_has_groups
+        return poll_deformed_mesh_with_vgroups(cls, context, must_deform=False)
 
     def execute(self, context):
         deleted_names = delete_unused_vgroups(context.active_object)
@@ -114,7 +120,7 @@ class EASYWEIGHTS_OT_delete_unused_vertex_groups(Operator):
         return {'FINISHED'}
 
 
-class EASYWEIGHTS_OT_symmetrize_groups(Operator):
+class EASYWEIGHT_OT_symmetrize_groups(Operator):
     """Symmetrize weights of vertex groups on a near-perfectly symmetrical mesh (Will have poor results on assymetrical meshes)"""
 
     bl_idname = "object.symmetrize_vertex_weights"
@@ -142,10 +148,7 @@ class EASYWEIGHTS_OT_symmetrize_groups(Operator):
 
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
-        if not (obj and obj.type == 'MESH'):
-            return False
-        return obj.vertex_groups
+        return poll_deformed_mesh_with_vgroups(cls, context, must_deform=False)
 
     def execute(self, context):
         obj = context.active_object
@@ -182,21 +185,24 @@ class EASYWEIGHTS_OT_symmetrize_groups(Operator):
         return {'FINISHED'}
 
 
-def is_weight_paint_mode(context, with_rig=False, with_groups=False):
+def poll_weight_paint_mode(operator, context, with_rig=False, with_groups=False):
     """Function used for operator poll functions, ie. to determine whether
     operators should be available or not."""
 
     obj = context.active_object
     if context.mode != 'PAINT_WEIGHT':
+        operator.poll_message_set("Must be in Weight Paint mode.")
         return False
     if with_rig:
-        if context.pose_object == None or context.pose_object != get_deforming_armature(obj):
+        if not 'ARMATURE' in (m.type for m in obj.modifiers):
+            operator.poll_message_set("This mesh is not deformed by an Armature modifier.")
             return False
-        ob_has_arm_mod = 'ARMATURE' in (m.type for m in obj.modifiers)
-        if not ob_has_arm_mod:
+        if not context.pose_object or context.pose_object != get_deforming_armature(obj):
+            operator.poll_message_set("Couldn't find deforming armature, or it is not in pose mode.")
             return False
 
     if with_groups and not obj.vertex_groups:
+        operator.poll_message_set("This mesh object has no vertex groups yet.")
         return False
 
     return True
@@ -238,9 +244,9 @@ def delete_vgroups(mesh_ob, vgroups: List[VertexGroup]):
 
 def get_deforming_armature(mesh_ob) -> Object:
     """Return first Armature modifier's target object."""
-    for m in mesh_ob.modifiers:
-        if m.type == 'ARMATURE':
-            return m.object
+    for mod in mesh_ob.modifiers:
+        if mod.type == 'ARMATURE':
+            return mod.object
 
 
 def get_deforming_vgroups(mesh_ob: Object, arm_ob: Object = None) -> List[VertexGroup]:
@@ -534,22 +540,22 @@ def get_vgroups_used_by_geonodes(mesh_ob: Object, modifier: Modifier) -> List[Ve
 def geomod_get_input_identifiers(modifier: Modifier) -> set[str]:
     if hasattr(modifier.node_group, 'interface'):
         # 4.0
-        return (
+        return {
             socket.identifier
             for socket in modifier.node_group.interface.items_tree
             if socket.item_type == 'SOCKET'
             and socket.in_out == 'INPUT'
             and socket.socket_type != 'NodeSocketGeometry'
-        )
+        }
     else:
         # 3.6
-        return (input.identifier for input in modifier.node_group.inputs[1:])
+        return {input.identifier for input in modifier.node_group.inputs[1:]}
 
 
 registry = [
-    EASYWEIGHTS_OT_delete_empty_deform_groups,
-    EASYWEIGHTS_OT_focus_deform_bones,
-    EASYWEIGHTS_OT_delete_unselected_deform_groups,
-    EASYWEIGHTS_OT_delete_unused_vertex_groups,
-    EASYWEIGHTS_OT_symmetrize_groups,
+    EASYWEIGHT_OT_delete_empty_deform_groups,
+    EASYWEIGHT_OT_focus_deform_bones,
+    EASYWEIGHT_OT_delete_unselected_deform_groups,
+    EASYWEIGHT_OT_delete_unused_vertex_groups,
+    EASYWEIGHT_OT_symmetrize_groups,
 ]

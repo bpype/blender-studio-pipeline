@@ -23,7 +23,7 @@ class WeightCleaner:
         prefs = get_addon_prefs(context)
         if context.mode != 'PAINT_WEIGHT':
             return
-        if not context or not hasattr(context, 'object') or not context.object:
+        if not context or not hasattr(context, 'active_object') or not context.active_object:
             return
         if not prefs.auto_clean_weights:
             return
@@ -39,7 +39,7 @@ class WeightCleaner:
         context = bpy.context
         if context.mode != 'PAINT_WEIGHT':
             return
-        if not context or not hasattr(context, 'object') or not context.object:
+        if not context or not hasattr(context, 'active_object') or not context.active_object:
             return
         if cls.cleaning_in_progress:
             return
