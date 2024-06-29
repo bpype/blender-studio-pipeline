@@ -4,13 +4,12 @@ import bpy
 import sys
 import itertools
 
-from bpy.props import IntProperty, CollectionProperty, PointerProperty, StringProperty, BoolProperty
-from bpy.types import (PropertyGroup, Panel, UIList, Operator,
-                       Mesh, VertexGroup, MeshVertex, Object)
+from bpy.props import IntProperty, CollectionProperty, StringProperty, BoolProperty
+from bpy.types import PropertyGroup, Panel, UIList, Operator, Mesh, VertexGroup, MeshVertex, Object
 import bmesh
 from bpy.utils import flip_name
 
-from .vertex_group_operators import get_deforming_armature, get_deforming_vgroups
+from .vertex_group_operators import get_deforming_armature, get_deforming_vgroups, poll_deformed_mesh_with_vgroups
 
 """
 This module implements a workflow for hunting down and cleaning up rogue weights in the most efficient way possible.
@@ -32,25 +31,26 @@ class WeightIsland(PropertyGroup):
 
 class IslandGroup(PropertyGroup):
     name: StringProperty(
-        name="Name",
-        description="Name of the vertex group this set of island is associated with"
+        name="Name", description="Name of the vertex group this set of island is associated with"
     )
     islands: CollectionProperty(type=WeightIsland)
     num_expected_islands: IntProperty(
         name="Expected Islands",
         default=1,
         min=1,
-        description="Number of weight islands that have been marked as the expected amount by the user. If the real amount differs from this value, a warning appears"
+        description="Number of weight islands that have been marked as the expected amount by the user. If the real amount differs from this value, a warning appears",
     )
     index: IntProperty()
 
 
-def update_vgroup_islands(mesh, vgroup, vert_index_map, island_groups, island_group=None) -> IslandGroup:
+def update_vgroup_islands(
+    mesh, vgroup, vert_index_map, island_groups, island_group=None
+) -> IslandGroup:
     islands = get_islands_of_vgroup(mesh, vgroup, vert_index_map)
 
     if not island_group:
         island_group = island_groups.add()
-        island_group.index = len(island_groups)-1
+        island_group.index = len(island_groups) - 1
         island_group.name = vgroup.name
     else:
         island_group.islands.clear()
@@ -71,8 +71,7 @@ def build_vert_index_map(mesh) -> dict:
     bpy.ops.mesh.select_mode(type='VERT')
     bpy.ops.mesh.reveal()
     bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.object.vertex_group_clean(
-        group_select_mode='ALL', limit=0, keep_single=False)
+    bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0, keep_single=False)
 
     bm = bmesh.from_edit_mesh(mesh)
     v_dict = {}
@@ -87,24 +86,27 @@ def build_vert_index_map(mesh) -> dict:
     return v_dict
 
 
-def find_weight_island_vertices(mesh: Mesh, vert_idx: int, group_index: int, vert_idx_map: dict, island=[]) -> List[int]:
+def find_weight_island_vertices(
+    mesh: Mesh, vert_idx: int, group_index: int, vert_idx_map: dict, island=[]
+) -> List[int]:
     """Recursively find all vertices that are connected to a vertex by edges, and are also in the same vertex group."""
 
     island.append(vert_idx)
     # For each edge connected to the vert
     for connected_vert_idx in vert_idx_map[vert_idx]:
-        if connected_vert_idx in island:					# Avoid infinite recursion!
+        if connected_vert_idx in island:  # Avoid infinite recursion!
             continue
         # For each group this other vertex belongs to
         for g in mesh.vertices[connected_vert_idx].groups:
-            if g.group == group_index and g.weight:		# If this vert is in the group
+            if g.group == group_index and g.weight:  # If this vert is in the group
                 find_weight_island_vertices(
-                    mesh, connected_vert_idx, group_index, vert_idx_map, island)  # Continue recursion
+                    mesh, connected_vert_idx, group_index, vert_idx_map, island
+                )  # Continue recursion
     return island
 
 
 def find_any_vertex_in_group(mesh: Mesh, vgroup: VertexGroup, excluded_indicies=[]) -> MeshVertex:
-    """Return the index of the first vertex we find which is part of the 
+    """Return the index of the first vertex we find which is part of the
     vertex group and optinally, has a specified selection state."""
 
     # TODO: This is probably our performance bottleneck atm.
@@ -126,21 +128,23 @@ def get_islands_of_vgroup(mesh: Mesh, vgroup: VertexGroup, vert_index_map: dict)
     islands = []
     while True:
         flat_islands = set(itertools.chain.from_iterable(islands))
-        any_vert_in_group = find_any_vertex_in_group(
-            mesh, vgroup, excluded_indicies=flat_islands)
+        any_vert_in_group = find_any_vertex_in_group(mesh, vgroup, excluded_indicies=flat_islands)
         if not any_vert_in_group:
             break
         # TODO: I guess recursion is bad and we should avoid it here? (we would just do the expand in a while True, and break if the current list of verts is the same as at the end of the last loop, no recursion involved.)
         sys.setrecursionlimit(len(mesh.vertices))
         island = find_weight_island_vertices(
-            mesh, any_vert_in_group.index, vgroup.index, vert_index_map, island=[])
+            mesh, any_vert_in_group.index, vgroup.index, vert_index_map, island=[]
+        )
         sys.setrecursionlimit(990)
         islands.append(island)
     return islands
 
 
 def select_vertices(mesh: Mesh, vert_indicies: List[int]):
-    assert bpy.context.mode != 'EDIT_MESH', "Object must not be in edit mode, otherwise vertex selection doesn't work!"
+    assert (
+        bpy.context.mode != 'EDIT_MESH'
+    ), "Object must not be in edit mode, otherwise vertex selection doesn't work!"
     for vi in vert_indicies:
         mesh.vertices[vi].select = True
 
@@ -156,16 +160,19 @@ def update_active_islands_index(obj):
                 break
             looped = True
         island_group = obj.island_groups[new_active_index]
-        if len(island_group.islands) < 2 or \
-                len(island_group.islands) == island_group.num_expected_islands:
+        if (
+            len(island_group.islands) < 2
+            or len(island_group.islands) == island_group.num_expected_islands
+        ):
             new_active_index += 1
             continue
         break
     obj.active_islands_index = new_active_index
 
 
-class MarkIslandsAsOkay(Operator):
+class EASYWEIGHT_OT_mark_island_as_okay(Operator):
     """Mark this number of vertex islands to be the intended amount. Vertex group will be hidden from the list until this number changes"""
+
     bl_idname = "object.set_expected_island_count"
     bl_label = "Set Intended Island Count"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -173,15 +180,17 @@ class MarkIslandsAsOkay(Operator):
     vgroup: StringProperty(
         name="Vertex Group",
         default="",
-        description="Name of the vertex group whose intended island count will be set"
+        description="Name of the vertex group whose intended island count will be set",
     )
 
     def execute(self, context):
-        obj = context.object
+        obj = context.active_object
         mesh = obj.data
         org_mode = obj.mode
 
-        assert self.vgroup in obj.island_groups, f"Island Group {self.vgroup} not found in object {obj.name}, aborting."
+        assert (
+            self.vgroup in obj.island_groups
+        ), f"Island Group {self.vgroup} not found in object {obj.name}, aborting."
 
         # Update existing island data first
         island_group = obj.island_groups[self.vgroup]
@@ -191,15 +200,20 @@ class MarkIslandsAsOkay(Operator):
         bpy.ops.object.mode_set(mode=org_mode)
         org_num_islands = len(island_group.islands)
         island_group = update_vgroup_islands(
-            mesh, vgroup, vert_index_map, obj.island_groups, island_group)
+            mesh, vgroup, vert_index_map, obj.island_groups, island_group
+        )
         new_num_islands = len(island_group.islands)
         if new_num_islands != org_num_islands:
             if new_num_islands == 1:
                 self.report(
-                    {'INFO'}, f"Vertex group is now a single island, changing expected island count no longer necessary.")
+                    {'INFO'},
+                    f"Vertex group is now a single island, changing expected island count no longer necessary.",
+                )
                 return {'FINISHED'}
             self.report(
-                {'INFO'}, f"Vertex group island count changed from {org_num_islands} to {new_num_islands}. Click again to mark this as the expected number.")
+                {'INFO'},
+                f"Vertex group island count changed from {org_num_islands} to {new_num_islands}. Click again to mark this as the expected number.",
+            )
             return {'FINISHED'}
 
         island_group.num_expected_islands = new_num_islands
@@ -207,8 +221,9 @@ class MarkIslandsAsOkay(Operator):
         return {'FINISHED'}
 
 
-class FocusSmallestIsland(Operator):
+class EASYWEIGHT_OT_focus_smallest_island(Operator):
     """Enter Weight Paint mode and focus on the smallest island"""
+
     bl_idname = "object.focus_smallest_weight_island"
     bl_label = "Focus Smallest Island"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -216,26 +231,28 @@ class FocusSmallestIsland(Operator):
     enter_wp: BoolProperty(
         name="Enter Weight Paint",
         default=True,
-        description="Enter Weight Paint Mode using the Toggle Weight Paint operator"
+        description="Enter Weight Paint Mode using the Toggle Weight Paint operator",
     )
     vgroup: StringProperty(
         name="Vertex Group",
         default="",
-        description="Name of the vertex group whose smallest island should be focused"
+        description="Name of the vertex group whose smallest island should be focused",
     )
     focus_view: BoolProperty(
         name="Focus View",
         default=True,
-        description="Whether to focus the 3D Viewport on the selected vertices"
+        description="Whether to focus the 3D Viewport on the selected vertices",
     )
 
     def execute(self, context):
         rig = context.pose_object
-        obj = context.object
+        obj = context.active_object
         mesh = obj.data
         org_mode = obj.mode
 
-        assert self.vgroup in obj.vertex_groups, f"Vertex Group {self.vgroup} not found in object {obj.name}, aborting."
+        assert (
+            self.vgroup in obj.vertex_groups
+        ), f"Vertex Group {self.vgroup} not found in object {obj.name}, aborting."
 
         # Also update the opposite side vertex group
         vgroup_names = [self.vgroup]
@@ -254,12 +271,15 @@ class FocusSmallestIsland(Operator):
                 vgroup = obj.vertex_groups[vg_name]
                 org_num_islands = len(island_group.islands)
                 island_group = update_vgroup_islands(
-                    mesh, vgroup, vert_index_map, obj.island_groups, island_group)
+                    mesh, vgroup, vert_index_map, obj.island_groups, island_group
+                )
                 new_num_islands = len(island_group.islands)
                 if new_num_islands < 2:
                     hid_islands = True
                     self.report(
-                        {'INFO'}, f"Vertex group {vg_name} no longer has multiple islands, hidden from list.")
+                        {'INFO'},
+                        f"Vertex group {vg_name} no longer has multiple islands, hidden from list.",
+                    )
         if hid_islands:
             update_active_islands_index(obj)
             return {'FINISHED'}
@@ -283,10 +303,8 @@ class FocusSmallestIsland(Operator):
         obj.active_islands_index = island_group.index
         obj.vertex_groups.active_index = vgroup.index
 
-        smallest_island = min(island_group.islands,
-                              key=lambda island: len(island.vert_indicies))
-        select_vertices(
-            mesh, [vi.index for vi in smallest_island.vert_indicies])
+        smallest_island = min(island_group.islands, key=lambda island: len(island.vert_indicies))
+        select_vertices(mesh, [vi.index for vi in smallest_island.vert_indicies])
 
         if self.focus_view:
             bpy.ops.object.mode_set(mode='EDIT')
@@ -310,8 +328,9 @@ class FocusSmallestIsland(Operator):
         return {'FINISHED'}
 
 
-class CalculateWeightIslands(Operator):
-    """Detect number of weight islands for each deforming vertex group"""
+class EASYWEIGHT_OT_calculate_weight_islands(Operator):
+    """Calculate and store number of weight islands for each deforming vertex group. Groups with more than one island will be displayed below"""
+
     bl_idname = "object.calculate_weight_islands"
     bl_label = "Calculate Weight Islands"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -321,7 +340,7 @@ class CalculateWeightIslands(Operator):
         """Store the weight island information of every deforming vertex group."""
         mesh = obj.data
         island_groups = obj.island_groups
-        # TODO: This is bad, we need to hold onto num_expected_islands.
+        # TODO: It would be nicer if instead of just clearing all our vertex group island data, we would hold onto the number of intended islands that the user already specified.
         island_groups.clear()
         obj.active_islands_index = 0
         for vgroup in get_deforming_vgroups(obj):
@@ -333,24 +352,13 @@ class CalculateWeightIslands(Operator):
 
     @classmethod
     def poll(cls, context):
-        if not context.object or context.object.type != 'MESH':
-            return False
-        return context.mode != 'EDIT_MESH'
+        return poll_deformed_mesh_with_vgroups(cls, context)
 
     def execute(self, context):
-        obj = context.object
-        rig = get_deforming_armature(obj)
+        obj = context.active_object
         org_mode = obj.mode
-
-        # TODO: Is it better to have this here instead of poll()?
-        assert rig, "Error: Object must be deformed by an armature, otherwise we can not tell which vertex groups are deforming."
-
-        org_vg_idx = obj.vertex_groups.active_index
-        org_mode = obj.mode
-
-        mesh = obj.data
         bpy.ops.object.mode_set(mode='EDIT')
-        vert_index_map = build_vert_index_map(mesh)
+        vert_index_map = build_vert_index_map(obj.data)
         bpy.ops.object.mode_set(mode='OBJECT')
 
         self.store_all_weight_islands(obj, vert_index_map)
@@ -379,8 +387,13 @@ class EASYWEIGHT_UL_weight_island_groups(UIList):
         helper_funcs = bpy.types.UI_UL_list
 
         if self.filter_name:
-            flt_flags = helper_funcs.filter_items_by_name(self.filter_name, self.bitflag_filter_item, island_groups, "name",
-                                                          reverse=self.use_filter_sort_reverse)
+            flt_flags = helper_funcs.filter_items_by_name(
+                self.filter_name,
+                self.bitflag_filter_item,
+                island_groups,
+                "name",
+                reverse=self.use_filter_sort_reverse,
+            )
 
         if not flt_flags:
             flt_flags = [self.bitflag_filter_item] * len(island_groups)
@@ -405,15 +418,13 @@ class EASYWEIGHT_UL_weight_island_groups(UIList):
         row = main_row.row(align=True)
 
         row.prop(self, 'filter_name', text="")
-        row.prop(self, 'use_filter_invert', toggle=True,
-                 text="", icon='ARROW_LEFTRIGHT')
+        row.prop(self, 'use_filter_invert', toggle=True, text="", icon='ARROW_LEFTRIGHT')
 
         row = main_row.row(align=True)
         row.use_property_split = True
         row.use_property_decorate = False
         row.prop(self, 'use_filter_sort_alpha', toggle=True, text="")
-        row.prop(self, 'use_filter_sort_reverse',
-                 toggle=True, text="", icon='SORT_ASC')
+        row.prop(self, 'use_filter_sort_reverse', toggle=True, text="", icon='SORT_ASC')
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         island_group = item
@@ -430,17 +441,19 @@ class EASYWEIGHT_UL_weight_island_groups(UIList):
             row1.label(text="|")
             row2 = split.row()
             row2.label(text=str(num_islands), icon=icon)
-            op = row2.operator(FocusSmallestIsland.bl_idname,
-                               text="", icon='VIEWZOOM').vgroup = island_group.name
-            row2.operator(MarkIslandsAsOkay.bl_idname, text="",
-                          icon='CHECKMARK').vgroup = island_group.name
-            # TODO: Operator to mark current number of islands as the expected amount
+            op = row2.operator(
+                EASYWEIGHT_OT_focus_smallest_island.bl_idname, text="", icon='VIEWZOOM'
+            ).vgroup = island_group.name
+            row2.operator(
+                EASYWEIGHT_OT_mark_island_as_okay.bl_idname, text="", icon='CHECKMARK'
+            ).vgroup = island_group.name
         elif self.layout_type in {'GRID'}:
             pass
 
 
 class EASYWEIGHT_PT_WeightIslands(Panel):
     """Panel with utilities for detecting rogue weights."""
+
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'EasyWeight'
@@ -448,17 +461,16 @@ class EASYWEIGHT_PT_WeightIslands(Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.object and context.object.type == 'MESH'
+        return context.active_object and context.active_object.type == 'MESH'
 
     def draw(self, context):
         layout = self.layout
-        layout.operator(CalculateWeightIslands.bl_idname)
+        layout.operator(EASYWEIGHT_OT_calculate_weight_islands.bl_idname)
 
-        obj = context.object
+        obj = context.active_object
         island_groups = obj.island_groups
         if len(island_groups) == 0:
             return
-        active_weight_islands = obj.island_groups[obj.active_islands_index]
 
         EASYWEIGHT_UL_weight_island_groups.draw_header(layout)
 
@@ -477,13 +489,11 @@ registry = [
     VertIndex,
     WeightIsland,
     IslandGroup,
-
-    CalculateWeightIslands,
-    FocusSmallestIsland,
-    MarkIslandsAsOkay,
-
+    EASYWEIGHT_OT_calculate_weight_islands,
+    EASYWEIGHT_OT_focus_smallest_island,
+    EASYWEIGHT_OT_mark_island_as_okay,
     EASYWEIGHT_PT_WeightIslands,
-    EASYWEIGHT_UL_weight_island_groups
+    EASYWEIGHT_UL_weight_island_groups,
 ]
 
 

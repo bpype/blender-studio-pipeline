@@ -16,16 +16,16 @@ from .prefs import get_addon_prefs
 
 def get_armature_of_meshob(obj: Object):
     """Find and return the armature that deforms this mesh object."""
-    for m in obj.modifiers:
-        if m.type == 'ARMATURE':
-            return m.object
+    for mod in obj.modifiers:
+        if mod.type == 'ARMATURE':
+            return mod.object
 
 
 def enter_wp(context) -> bool:
     """Enter weight paint mode, change the necessary settings, and save their
     original states so they can be restored when leaving wp mode."""
 
-    obj = context.object
+    obj = context.active_object
     wm = context.window_manager
 
     prefs = get_addon_prefs(context)
@@ -90,7 +90,7 @@ def leave_wp(context):
     """Leave weight paint mode, then find, restore, and delete the data
     that was stored about shading settings in enter_wp()."""
 
-    obj = context.object
+    obj = context.active_object
     wm = context.window_manager
 
     if 'weight_paint_toggle' not in wm or 'mode' not in wm['weight_paint_toggle'].to_dict():
@@ -119,8 +119,7 @@ def leave_wp(context):
 
     # Restore whether the armature is in local view or not.
     if 'arm_local_view' in wp_toggle_as_dict and context.space_data.local_view:
-        armature.local_view_set(
-            context.space_data, wp_toggle_as_dict['arm_local_view'])
+        armature.local_view_set(context.space_data, wp_toggle_as_dict['arm_local_view'])
 
     # Remove armature from scene root collection if it was moved there.
     if wp_toggle_as_dict['arm_coll_assigned']:
@@ -131,17 +130,21 @@ def leave_wp(context):
 
 class EASYWEIGHT_OT_toggle_weight_paint(Operator):
     """Enter weight paint mode on a mesh object and pose mode on its armature"""
+
     bl_idname = "object.weight_paint_toggle"
     bl_label = "Toggle Weight Paint Mode"
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
-        ob = context.object
-        return ob and ob.type == 'MESH'
+        obj = context.active_object
+        if not obj and obj.type == 'MESH':
+            cls.set_poll_message("Active object must be a mesh.")
+            return False
+        return True
 
     def execute(self, context):
-        obj = context.object
+        obj = context.active_object
 
         if obj.mode != 'WEIGHT_PAINT':
             armature_visible = enter_wp(context)
@@ -161,9 +164,7 @@ def draw_in_menu(self, context):
     self.layout.operator(EASYWEIGHT_OT_toggle_weight_paint.bl_idname)
 
 
-registry = [
-    EASYWEIGHT_OT_toggle_weight_paint
-]
+registry = [EASYWEIGHT_OT_toggle_weight_paint]
 
 
 def register():

@@ -57,22 +57,21 @@ class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
             brush.falloff_shape = 'SPHERE' if self.global_falloff_shape_sphere else 'PROJECTED'
             for i, val in enumerate(brush.cursor_color_add):
                 if val > 0:
-                    brush.cursor_color_add[i] = (
-                        0.5 if self.global_falloff_shape_sphere else 2.0)
+                    brush.cursor_color_add[i] = 0.5 if self.global_falloff_shape_sphere else 2.0
 
     global_front_faces_only: BoolProperty(
-        name="Front Faces Only", 
-        description="All weight brushes are able to paint on geometry that is facing away from the viewport", 
-        update=update_front_faces
+        name="Front Faces Only",
+        description="All weight brushes are able to paint on geometry that is facing away from the viewport",
+        update=update_front_faces,
     )
     global_accumulate: BoolProperty(
-        name="Accumulate", 
-        description="All weight paint brushes will accumulate their effect within a single stroke as you move the mouse", 
-        update=update_accumulate
+        name="Accumulate",
+        description="All weight paint brushes will accumulate their effect within a single stroke as you move the mouse",
+        update=update_accumulate,
     )
     global_falloff_shape_sphere: BoolProperty(
-        name="Falloff Shape", 
-        description="All weight paint brushes switch between a 3D spherical or a 2D projected circular falloff shape", 
+        name="Falloff Shape",
+        description="All weight paint brushes switch between a 3D spherical or a 2D projected circular falloff shape",
         update=update_falloff_shape,
     )
 
@@ -215,6 +214,7 @@ def set_brush_prefs_on_file_load(scene):
     prefs.global_accumulate = prefs.global_accumulate
     prefs.global_falloff_shape_sphere = prefs.global_falloff_shape_sphere
 
+
 # NOTE: This function is copied from CloudRig's cloudrig.py.
 def register_hotkey(
     bl_idname, hotkey_kwargs, *, key_cat='Window', space_type='EMPTY', op_kwargs={}
@@ -291,6 +291,7 @@ def register():
 
     bpy.app.handlers.load_post.append(set_brush_prefs_on_file_load)
 
+
 def unregister_hotkeys():
     prefs_class = bpy.types.AddonPreferences.bl_rna_get_subclass_py('EASYWEIGHT_addon_preferences')
     if not prefs_class:
@@ -299,6 +300,7 @@ def unregister_hotkeys():
         kc, km, kmi = kmi_tup
         km.keymap_items.remove(kmi)
     prefs_class.easyweight_keymap_items = {}
+
 
 def unregister():
     unregister_hotkeys()

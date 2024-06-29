@@ -832,10 +832,6 @@ class TaskType(Entity):
         return [cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Edit"]
 
     def get_short_name(self) -> str:
-        # HACK to accomodate custom task types @ blender studio
-        if self.name in ["Anim3D", "Anim2D"]:
-            return "anim"
-
         for key, value in bkglobals.SHOT_TASK_MAPPING.items():
             if value == self.name:
                 return key

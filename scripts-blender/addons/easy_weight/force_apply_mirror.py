@@ -1,4 +1,3 @@
-
 import bpy
 from bpy.props import BoolProperty
 from bpy.utils import flip_name
@@ -19,34 +18,41 @@ def flip_driver_targets(obj):
     for sk in shape_keys.key_blocks:
         # Capital D signifies that this is a driver container (known as a driver) rather than a driver(also known as driver) - Yes, the naming convention for drivers in python API is BAD. D=driver, d=driver.driver.
         for D in drivers:
-            if (sk.name in D.data_path):
+            if sk.name in D.data_path:
                 sk.vertex_group = flip_name(sk.vertex_group)
                 for var in D.driver.variables:
                     for t in var.targets:
-                        if (not t.bone_target):
+                        if not t.bone_target:
                             continue
                         t.bone_target = flip_name(t.bone_target)
 
 
 class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
-    """ Force apply mirror modifier by duplicating the object, flipping it on the X axis, merging into the original """
+    """Force apply mirror modifier by duplicating the object, flipping it on the X axis, merging into the original"""
+
     bl_idname = "object.force_apply_mirror_modifier"
     bl_label = "Force Apply Mirror Modifier"
     bl_options = {'REGISTER', 'UNDO'}
 
     remove_doubles: BoolProperty(name="Remove Doubles", default=False)
     weighted_normals: BoolProperty(name="Weighted Normals", default=True)
-    split_shape_keys: BoolProperty(name="Split Shape Keys", default=True,
-                                   description="If shape keys end in either .L or .R, duplicate them and flip their mask vertex group name")
+    split_shape_keys: BoolProperty(
+        name="Split Shape Keys",
+        default=True,
+        description="If shape keys end in either .L or .R, duplicate them and flip their mask vertex group name",
+    )
 
     @classmethod
     def poll(cls, context):
-        ob = context.object
-        if not ob or ob.type != 'MESH':
+        obj = context.active_object
+        if not obj or obj.type != 'MESH':
+            cls.set_poll_message("There must be an active mesh object deformed by an Armature.")
             return False
-        for m in ob.modifiers:
-            if m.type == 'MIRROR':
+        for mod in obj.modifiers:
+            if mod.type == 'MIRROR':
                 return True
+
+        cls.set_poll_message("This mesh is not deformed by an Armature modifier.")
         return False
 
     def execute(self, context):
@@ -59,46 +65,46 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
         # Recalc Normals
         # Weight Normals
 
-        o = context.object
+        obj = context.active_object
 
         # Find Mirror modifier.
         mirror = None
-        for m in o.modifiers:
-            if (m.type == 'MIRROR'):
-                mirror = m
+        for mod in obj.modifiers:
+            if mod.type == 'MIRROR':
+                mirror = mod
                 break
-        if (not mirror):
+        if not mirror:
             return {'CANCELLED'}
 
         if mirror.use_axis[:] != (True, False, False):
-            self.report(
-                {'ERROR'}, "Only X axis mirroring is supported for now.")
+            self.report({'ERROR'}, "Only X axis mirroring is supported for now.")
             return {'CANCELLED'}
 
         # Remove mirror modifier.
-        o.modifiers.remove(mirror)
+        obj.modifiers.remove(mirror)
 
         # Set mode and selection.
         bpy.ops.object.mode_set(mode='OBJECT')
         bpy.ops.object.select_all(action='DESELECT')
-        o.select_set(True)
-        context.view_layer.objects.active = o
+        obj.select_set(True)
+        context.view_layer.objects.active = obj
 
         # Remove Doubles - This should print out removed 0, otherwise we're gonna remove some important verts.
         if self.remove_doubles:
             print(
-                "Checking for doubles pre-mirror. If it doesn't say Removed 0 vertices, you should undo.")
+                "Checking for doubles pre-mirror. If it doesn't say Removed 0 vertices, you should undo."
+            )
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.remove_doubles(use_unselected=True)
             bpy.ops.object.mode_set(mode='OBJECT')
 
         # Reset scale
-        org_scale = o.scale[:]
-        o.scale = (1, 1, 1)
+        org_scale = obj.scale[:]
+        obj.scale = (1, 1, 1)
 
         # Duplicate and scale object.
         bpy.ops.object.duplicate()
-        flipped_o = bpy.context.object
+        flipped_o = context.active_object
         flipped_o.scale = (-1, 1, 1)
 
         # Flip vertex group names.
@@ -128,15 +134,15 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
             if shape_keys:
                 keys = shape_keys.key_blocks
                 for sk in keys:
-                    if (sk in done):
+                    if sk in done:
                         continue
                     old_name = sk.name
                     flipped_name = flip_name(sk.name)
-                    if (old_name == flipped_name):
+                    if old_name == flipped_name:
                         continue
 
                     opp_sk = keys.get(flipped_name)
-                    if (opp_sk):
+                    if opp_sk:
                         sk.name = "temp"
                         opp_sk.name = old_name
                         done.append(opp_sk)
@@ -149,26 +155,28 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
         # Joining objects does not seem to preserve drivers on any except the active object, at least for shape keys.
         # To work around this, we duplicate the flipped mesh again, so we can copy the drivers over from that copy to the merged version...
         bpy.ops.object.duplicate()
-        copy_of_flipped = bpy.context.object
+        copy_of_flipped = context.active_object
         copy_of_flipped.select_set(False)
 
         flipped_o.select_set(True)
-        o.select_set(True)
+        obj.select_set(True)
         # We want to be sure the original is the active so the object name doesn't get a .001
-        context.view_layer.objects.active = o
+        context.view_layer.objects.active = obj
         bpy.ops.object.join()
 
-        combined_object = bpy.context.object
+        combined_object = context.active_object
 
         # Copy drivers from the duplicate.
-        if hasattr(copy_of_flipped.data.shape_keys, "animation_data") and \
-                hasattr(copy_of_flipped.data.shape_keys.animation_data, "drivers"):
+        if hasattr(copy_of_flipped.data.shape_keys, "animation_data") and hasattr(
+            copy_of_flipped.data.shape_keys.animation_data, "drivers"
+        ):
             for old_D in copy_of_flipped.data.shape_keys.animation_data.drivers:
                 for sk in combined_object.data.shape_keys.key_blocks:
-                    if (sk.name in old_D.data_path):
+                    if sk.name in old_D.data_path:
                         # Create the driver...
                         new_D = combined_object.data.shape_keys.driver_add(
-                            'key_blocks["' + sk.name + '"].value')
+                            'key_blocks["' + sk.name + '"].value'
+                        )
                         new_d = new_D.driver
                         old_d = old_D.driver
 
@@ -179,7 +187,7 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
                         flip_z = False
                         flip_flags = sk.name.split("_")[0]
                         # This code is just getting better :)
-                        if (flip_flags in ['XYZ', 'XZ', 'XY', 'YZ', 'Z']):
+                        if flip_flags in ['XYZ', 'XZ', 'XY', 'YZ', 'Z']:
                             if ('X') in flip_flags:
                                 flip_x = True
                             if ('Y') in flip_flags:
@@ -192,7 +200,7 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
                             new_v.name = v.name
                             new_v.type = v.type
                             for i in range(len(v.targets)):
-                                if (new_v.type == 'SINGLE_PROP'):
+                                if new_v.type == 'SINGLE_PROP':
                                     new_v.targets[i].id_type = v.targets[i].id_type
                                 new_v.targets[i].id = v.targets[i].id
                                 new_v.targets[i].bone_target = v.targets[i].bone_target
@@ -200,23 +208,24 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
                                 new_v.targets[i].transform_type = v.targets[i].transform_type
                                 new_v.targets[i].transform_space = v.targets[i].transform_space
 
-                            if (new_v.targets[0].bone_target and
-                                "SCALE" not in v.targets[0].transform_type and
-                                        (v.targets[0].transform_type.endswith("_X") and flip_x) or
-                                    (v.targets[0].transform_type.endswith("_Y") and flip_y) or
-                                    (v.targets[0].transform_type.endswith(
-                                        "_Z") and flip_z)
-                                ):
+                            if (
+                                new_v.targets[0].bone_target
+                                and "SCALE" not in v.targets[0].transform_type
+                                and (v.targets[0].transform_type.endswith("_X") and flip_x)
+                                or (v.targets[0].transform_type.endswith("_Y") and flip_y)
+                                or (v.targets[0].transform_type.endswith("_Z") and flip_z)
+                            ):
                                 # Flipping sign - this is awful, I know.
-                                if ("-"+new_v.name in expression):
+                                if "-" + new_v.name in expression:
                                     expression = expression.replace(
-                                        "-"+new_v.name, "+"+new_v.name)
-                                elif ("+ "+new_v.name in expression):
+                                        "-" + new_v.name, "+" + new_v.name
+                                    )
+                                elif "+ " + new_v.name in expression:
                                     expression = expression.replace(
-                                        "+ "+new_v.name, "- "+new_v.name)
+                                        "+ " + new_v.name, "- " + new_v.name
+                                    )
                                 else:
-                                    expression = expression.replace(
-                                        new_v.name, "-"+new_v.name)
+                                    expression = expression.replace(new_v.name, "-" + new_v.name)
 
                         new_d.expression = expression
 
@@ -230,18 +239,17 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
         bpy.ops.mesh.normals_make_consistent(inside=False)
 
         # Mesh cleanup
-        if (self.remove_doubles):
+        if self.remove_doubles:
             bpy.ops.mesh.remove_doubles()
 
         bpy.ops.object.mode_set(mode='OBJECT')
-        if (self.weighted_normals and "calculate_weighted_normals" in dir(bpy.ops.object)):
+        if self.weighted_normals and "calculate_weighted_normals" in dir(bpy.ops.object):
             bpy.ops.object.calculate_weighted_normals()
 
         # Restore scale
-        context.object.scale = org_scale
+        context.active_object.scale = org_scale
 
         return {'FINISHED'}
 
-registry = [
-    EASYWEIGHT_OT_force_apply_mirror
-]
+
+registry = [EASYWEIGHT_OT_force_apply_mirror]
