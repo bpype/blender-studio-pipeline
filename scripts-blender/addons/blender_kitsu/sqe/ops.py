@@ -1552,6 +1552,7 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
         cache.shot_active_set_by_id(context, metadata_strip.kitsu.shot_id)
 
         # Upload render
+        self.report({"INFO"}, f"Trying to upload render for {shot_name}")
         self._upload_render(context, Path(bpy.path.abspath(active_strip.filepath)))
 
         self.report({"INFO"}, f"Uploaded render for {shot_name}")

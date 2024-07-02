@@ -25,20 +25,12 @@ import bpy
 
 from ..models import FileListModel
 from ..logger import LoggerFactory
-from ..playblast import core
 
 PLAYBLAST_FILE_MODEL = FileListModel()
 _playblast_enum_list: List[Tuple[str, str, str]] = []
 _playblast_file_model_init: bool = False
 
 logger = LoggerFactory.getLogger()
-
-
-def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
-    """
-    shortcut to get blender_kitsu addon preferences
-    """
-    return context.preferences.addons[__package__].preferences
 
 
 def init_playblast_file_model(

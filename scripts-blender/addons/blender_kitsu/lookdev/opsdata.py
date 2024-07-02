@@ -26,6 +26,7 @@ import bpy
 
 from ..models import FileListModel
 from ..logger import LoggerFactory
+from .. import prefs
 
 logger = LoggerFactory.getLogger()
 
@@ -39,20 +40,13 @@ _rd_preset_file_model_init: bool = False
 _rd_preset_data_dict: Dict[str, str] = {}
 
 
-def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
-    """
-    shortcut to get blender_kitsu addon preferences
-    """
-    return context.preferences.addons[__package__].preferences
-
-
 def init_rd_preset_file_model(
     context: bpy.types.Context,
 ) -> None:
 
     global RD_PRESET_FILE_MODEL
     global _rd_preset_file_model_init
-    addon_prefs = addon_prefs_get(context)
+    addon_prefs = prefs.addon_prefs_get(context)
 
     # Is None if invalid.
     if not addon_prefs.lookdev.is_presets_dir_valid:

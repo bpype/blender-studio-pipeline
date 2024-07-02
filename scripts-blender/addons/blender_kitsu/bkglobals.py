@@ -55,6 +55,7 @@ SEQ_TASK_MAPPING = {
 }
 
 SHOT_TASK_MAPPING = {
+    "anim2D": "Anim2D",
     "anim": "Animation",
     "comp": "Compositing",
     "fx": "FX",
