@@ -1,7 +1,7 @@
 import bpy, json
 from bpy.props import BoolProperty
 from . import __package__ as base_package
-
+from bpy.app.handlers import persistent
 
 def get_addon_prefs(context=None):
     if not context:
@@ -207,7 +207,7 @@ class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
             if kmi.properties['hash'] == kmi_hash:
                 return kmi
 
-
+@persistent
 def set_brush_prefs_on_file_load(scene):
     prefs = get_addon_prefs()
     prefs.global_front_faces_only = prefs.global_front_faces_only
