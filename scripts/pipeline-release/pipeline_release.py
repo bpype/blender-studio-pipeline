@@ -148,7 +148,7 @@ def get_api_token() -> None:
     if not api_token_file.exists():
         print("API Token File not Found")
         sys.exit(1)
-    API_TOKEN = open(api_token_file, 'r').read()
+    API_TOKEN = open(api_token_file, 'r').read().strip()
     # Don't use send_get_request() so we can print custom error message to user
     response = requests.get(url=f"{BASE_PATH}/settings/api?token={API_TOKEN}")
     if response.status_code != 200:
