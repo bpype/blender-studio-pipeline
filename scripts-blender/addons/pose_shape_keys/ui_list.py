@@ -118,6 +118,10 @@ def draw_ui_list(
     list_context_path='object.data.vertex_groups',
     active_idx_context_path='object.data.vertex_groups.active_index',
     insertion_operators=True,
+    add_op_name=None,
+    add_kwargs={},
+    remove_op_name=None,
+    remove_kwargs={},
     move_operators=True,
     menu_class_name='',
     **kwargs,
@@ -148,13 +152,19 @@ def draw_ui_list(
 
     col = row.column()
     if insertion_operators:
-        add_op = col.operator('ui.list_entry_add', text="", icon='ADD')
+        op_name = add_op_name or 'ui.list_entry_add'
+        add_op = col.operator(op_name, text="", icon='ADD')
+        for key, value in add_kwargs.items():
+            setattr(add_op, key, value)
         add_op.list_context_path = list_context_path
         add_op.active_idx_context_path = active_idx_context_path
 
         row = col.row()
         row.enabled = len(my_list) > 0
-        remove_op = row.operator('ui.list_entry_remove', text="", icon='REMOVE')
+        op_name = remove_op_name or 'ui.list_entry_remove'
+        remove_op = row.operator(op_name, text="", icon='REMOVE')
+        for key, value in remove_kwargs.items():
+            setattr(remove_op, key, value)
         remove_op.list_context_path = list_context_path
         remove_op.active_idx_context_path = active_idx_context_path
 

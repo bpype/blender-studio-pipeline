@@ -1,43 +1,29 @@
-# Pose Shape Keys addon for Blender
-# Copyright (C) 2022 Demeter Dzadik
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 bl_info = {
     "name": "Pose Shape Keys",
     "author": "Demeter Dzadik",
-    "version": (0, 0, 4),
+    "version": (1, 0, 0),
     "blender": (3, 1, 0),
     "location": "Properties -> Mesh Data -> Shape Keys -> Pose Keys",
     "description": "Create shape keys that blend deformed meshes into a desired shape",
     "category": "Rigging",
-    "doc_url": "",
-    "tracker_url": "",
+    "doc_url": "https://studio.blender.org/pipeline/addons/pose_shape_keys",
+    "tracker_url": "https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/pose_shape_keys",
 }
 
 import importlib
 import bpy
 
-from . import ui
-from . import pose_key
-from . import ui_list
-from . import reset_rig
-from . import symmetrize_shape_key
-from . import prefs
+from . import (
+    props, 
+    ui,
+    ops,
+    ui_list,
+    symmetrize_shape_key,
+    prefs,
+)
 
 # Each module can have register() and unregister() functions and a list of classes to register called "registry".
-modules = [prefs, ui, pose_key, ui_list, reset_rig, symmetrize_shape_key]
+modules = [props, prefs, ui, ops, ui_list, symmetrize_shape_key]
 
 
 def register_unregister_modules(modules, register: bool):

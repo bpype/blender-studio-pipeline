@@ -1,15 +1,94 @@
 import bpy
-from bpy.types import Object, Panel, UIList, Menu
-from .ui_list import draw_ui_list
-from bpy.props import EnumProperty
+from bpy.types import Panel, UIList, Menu
 from bl_ui.properties_data_mesh import DATA_PT_shape_keys
+from bpy.props import EnumProperty
+
+from .ui_list import draw_ui_list
+from .ops import get_deforming_armature, poll_correct_pose_key_pose
+from .prefs import get_addon_prefs
 
 
-def get_addon_prefs(context):
-    return context.preferences.addons[__package__].preferences
+class MESH_PT_pose_keys(Panel):
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'data'
+    bl_options = {'DEFAULT_CLOSED'}
+    bl_label = "Pose Shape Keys"
+
+    @classmethod
+    def poll(cls, context):
+        return context.object and context.object.type == 'MESH'
+
+    def draw(self, context):
+        obj = context.object
+        mesh = obj.data
+        layout = self.layout.column()
+
+        layout.row().prop(mesh, 'shape_key_ui_type', expand=True)
+
+        if mesh.shape_key_ui_type == 'DEFAULT':
+            return DATA_PT_shape_keys.draw(self, context)
+
+        arm_ob = get_deforming_armature(obj)
+        if not arm_ob:
+            layout.alert = True
+            layout.label(text="Object must be deformed by an Armature to use Pose Keys.")
+            return
+
+        if mesh.shape_keys and not mesh.shape_keys.use_relative:
+            layout.alert = True
+            layout.label("Relative Shape Keys must be enabled!")
+            return
+
+        list_row = layout.row()
+
+        groups_col = list_row.column()
+        draw_ui_list(
+            groups_col,
+            context,
+            class_name='POSEKEYS_UL_pose_keys',
+            list_context_path='object.data.pose_keys',
+            active_idx_context_path='object.data.active_pose_key_index',
+            menu_class_name='MESH_MT_pose_key_utils',
+            add_op_name='object.posekey_add',
+        )
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        if len(mesh.pose_keys) == 0:
+            return
+
+        idx = context.object.data.active_pose_key_index
+        active_posekey = context.object.data.pose_keys[idx]
+
+        action_split = layout.row().split(factor=0.4, align=True)
+        action_split.alignment = 'RIGHT'
+        action_split.label(text="Action")
+        row = action_split.row(align=True)
+        icon = 'FORWARD'
+        if active_posekey.action:
+            icon = 'FILE_REFRESH'
+        row.operator('object.posekey_auto_init', text="", icon=icon)
+        row.prop(active_posekey, 'action', text="")
+        layout.prop(active_posekey, 'frame')
+
+        layout.separator()
+
+        layout.operator('object.posekey_set_pose', text="Set Pose", icon="ARMATURE_DATA")
+
+        layout.separator()
+
+        row = layout.row(align=True)
+        text = "Save Posed Mesh"
+        if active_posekey.storage_object:
+            text = "Overwrite Posed Mesh"
+        row.operator('object.posekey_save', text=text, icon="FILE_TICK")
+        row.prop(active_posekey, 'storage_object', text="")
+        row.operator('object.posekey_jump_to_storage', text="", icon='RESTRICT_SELECT_OFF')
 
 
-class CK_UL_pose_keys(UIList):
+class POSEKEYS_UL_pose_keys(UIList):
     def draw_item(self, context, layout, data, item, _icon, _active_data, _active_propname):
         pose_key = item
 
@@ -21,13 +100,101 @@ class CK_UL_pose_keys(UIList):
 
         icon = 'SURFACE_NCIRCLE' if pose_key.storage_object else 'CURVE_NCIRCLE'
         name_row = split.row()
+        if not pose_key.name:
+            name_row.alert = True
+            split = name_row.split()
+            name_row = split.row()
+            split.label(text="Unnamed!", icon='ERROR')
         name_row.prop(pose_key, 'name', text="", emboss=False, icon=icon)
 
 
-class CK_UL_target_keys(UIList):
+class MESH_MT_pose_key_utils(Menu):
+    bl_label = "Pose Key Utilities"
+
+    def draw(self, context):
+        layout = self.layout
+        layout.operator('object.posekey_object_grid', icon='LIGHTPROBE_VOLUME')
+        layout.operator('object.posekey_push_all', icon='WORLD')
+        layout.operator('object.posekey_clamp_influence', icon='NORMALIZE_FCURVES')
+        layout.operator('object.posekey_copy_data', icon='PASTEDOWN')
+
+
+class MESH_PT_shape_key_subpanel(Panel):
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'data'
+    bl_options = {'DEFAULT_CLOSED'}
+    bl_label = "Shape Key Slots"
+    bl_parent_id = "MESH_PT_pose_keys"
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.object
+        if not (obj and obj.data and obj.data.shape_key_ui_type=='POSE_KEYS'):
+            return False
+        try:
+            return poll_correct_pose_key_pose(cls, context, demand_pose=False)
+        except AttributeError:
+            # Happens any time that function tries to set a poll message,
+            # since panels don't have poll messages, lol.
+            return False
+
+    def draw(self, context):
+        obj = context.object
+        mesh = obj.data
+        layout = self.layout
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        idx = context.object.data.active_pose_key_index
+        active_posekey = context.object.data.pose_keys[idx]
+
+        layout.operator('object.posekey_push', text="Overwrite Shape Keys", icon="IMPORT")
+
+        draw_ui_list(
+            layout,
+            context,
+            class_name='POSEKEYS_UL_target_shape_keys',
+            list_context_path=f'object.data.pose_keys[{idx}].target_shapes',
+            active_idx_context_path=f'object.data.pose_keys[{idx}].active_target_shape_index',
+            add_op_name='object.posekey_shape_add',
+            remove_op_name='object.posekey_shape_remove',
+        )
+
+        if len(active_posekey.target_shapes) == 0:
+            return
+
+        active_target = active_posekey.active_target
+        row = layout.row()
+        if not mesh.shape_keys:
+            return
+        row.prop_search(active_target, 'shape_key_name', mesh.shape_keys, 'key_blocks')
+        if not active_target.key_block:
+            add_shape_op = row.operator('object.posekey_shape_add', icon='ADD', text="")
+            add_shape_op.create_slot=False
+        sk = active_target.key_block
+        if not sk:
+            return
+        addon_prefs = get_addon_prefs(context)
+        icon = 'HIDE_OFF' if addon_prefs.show_shape_key_info else 'HIDE_ON'
+        row.prop(addon_prefs, 'show_shape_key_info', text="", icon=icon)
+        if addon_prefs.show_shape_key_info:
+            layout.prop(active_target, 'mirror_x')
+            split = layout.split(factor=0.1)
+            split.row()
+            col = split.column()
+            col.row().prop(sk, 'value')
+            row = col.row(align=True)
+            row.prop(sk, 'slider_min', text="Range")
+            row.prop(sk, 'slider_max', text="")
+            col.prop_search(sk, "vertex_group", obj, "vertex_groups", text="Vertex Mask")
+            col.row().prop(sk, 'relative_key')
+
+
+class POSEKEYS_UL_target_shape_keys(UIList):
     def draw_item(self, context, layout, data, item, _icon, _active_data, _active_propname):
         obj = context.object
-        pose_key = data  # I think?
         pose_key_target = item
         key_block = pose_key_target.key_block
 
@@ -51,174 +218,12 @@ class CK_UL_target_keys(UIList):
         ):
             name_row.active = value_row.active = False
 
+        value_row.operator('object.posekey_magic_driver', text="", icon='DECORATE_DRIVER').key_name = key_block.name
         value_row.prop(key_block, "value", text="")
 
         mute_row = split.row()
         mute_row.alignment = 'RIGHT'
         mute_row.prop(key_block, 'mute', emboss=False, text="")
-
-
-def ob_has_armature_mod(ob: Object) -> bool:
-    for m in ob.modifiers:
-        if m.type == 'ARMATURE':
-            return True
-    return False
-
-
-class MESH_PT_pose_keys(Panel):
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
-    bl_options = {'DEFAULT_CLOSED'}
-    bl_label = "Shape/Pose Keys"
-
-    @classmethod
-    def poll(cls, context):
-        return context.object and context.object.type == 'MESH'
-
-    def draw(self, context):
-        ob = context.object
-        mesh = ob.data
-        layout = self.layout
-
-        layout.prop(mesh, 'shape_key_ui_type', text="List Type: ", expand=True)
-
-        if mesh.shape_key_ui_type == 'DEFAULT':
-            return DATA_PT_shape_keys.draw(self, context)
-
-        if not ob_has_armature_mod(ob):
-            layout.alert = True
-            layout.label(text="Object must have an Armature modifier to use Pose Keys.")
-            return
-
-        if mesh.shape_keys and not mesh.shape_keys.use_relative:
-            layout.alert = True
-            layout.label("Relative Shape Keys must be enabled!")
-            return
-
-        list_row = layout.row()
-
-        groups_col = list_row.column()
-        draw_ui_list(
-            groups_col,
-            context,
-            class_name='CK_UL_pose_keys',
-            list_context_path='object.data.pose_keys',
-            active_idx_context_path='object.data.active_pose_key_index',
-            menu_class_name='MESH_MT_pose_key_utils',
-        )
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        if len(mesh.pose_keys) == 0:
-            return
-
-        idx = context.object.data.active_pose_key_index
-        active_posekey = context.object.data.pose_keys[idx]
-
-        col = layout.column(align=True)
-        col.prop(active_posekey, 'action')
-        if active_posekey.action:
-            col.prop(active_posekey, 'frame')
-
-        if active_posekey.storage_object:
-            row = layout.row()
-            row.prop(active_posekey, 'storage_object')
-            row.operator('object.posekey_jump_to_storage', text="", icon='RESTRICT_SELECT_OFF')
-        else:
-            layout.operator('object.posekey_set_pose', text="Set Pose", icon="ARMATURE_DATA")
-            row = layout.row()
-            row.operator('object.posekey_save', text="Store Evaluated Mesh", icon="FILE_TICK")
-            row.prop(active_posekey, 'storage_object', text="")
-            return
-
-        layout.separator()
-        col = layout.column(align=True)
-        col.operator('object.posekey_set_pose', text="Set Pose", icon="ARMATURE_DATA")
-        col.separator()
-
-        row = col.row()
-        row.operator('object.posekey_save', text="Overwrite Storage Object", icon="FILE_TICK")
-        row.operator('object.posekey_push', text="Overwrite Shape Keys", icon="IMPORT")
-
-
-class MESH_PT_shape_key_subpanel(Panel):
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'data'
-    bl_options = {'DEFAULT_CLOSED'}
-    bl_label = "Shape Key Slots"
-    bl_parent_id = "MESH_PT_pose_keys"
-
-    @classmethod
-    def poll(cls, context):
-        ob = context.object
-        return (
-            ob.data.shape_key_ui_type == 'POSE_KEYS'
-            and len(ob.data.pose_keys) > 0
-            and ob.data.pose_keys[ob.data.active_pose_key_index].storage_object
-            and ob_has_armature_mod(ob)
-        )
-
-    def draw(self, context):
-        ob = context.object
-        mesh = ob.data
-        layout = self.layout
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        idx = context.object.data.active_pose_key_index
-        active_posekey = context.object.data.pose_keys[idx]
-
-        draw_ui_list(
-            layout,
-            context,
-            class_name='CK_UL_target_keys',
-            list_context_path=f'object.data.pose_keys[{idx}].target_shapes',
-            active_idx_context_path=f'object.data.pose_keys[{idx}].active_target_shape_index',
-        )
-
-        if len(active_posekey.target_shapes) == 0:
-            return
-
-        active_target = active_posekey.target_shapes[active_posekey.active_target_shape_index]
-        row = layout.row()
-        if not mesh.shape_keys:
-            row.operator('object.create_shape_key_for_pose', icon='ADD')
-            return
-        row.prop_search(active_target, 'shape_key_name', mesh.shape_keys, 'key_blocks')
-        if not active_target.name:
-            row.operator('object.create_shape_key_for_pose', icon='ADD', text="")
-        sk = active_target.key_block
-        if not sk:
-            return
-        addon_prefs = get_addon_prefs(context)
-        icon = 'HIDE_OFF' if addon_prefs.show_shape_key_info else 'HIDE_ON'
-        row.prop(addon_prefs, 'show_shape_key_info', text="", icon=icon)
-        if addon_prefs.show_shape_key_info:
-            layout.prop(active_target, 'mirror_x')
-            split = layout.split(factor=0.1)
-            split.row()
-            col = split.column()
-            col.row().prop(sk, 'value')
-            row = col.row(align=True)
-            row.prop(sk, 'slider_min', text="Range")
-            row.prop(sk, 'slider_max', text="")
-            col.prop_search(sk, "vertex_group", ob, "vertex_groups", text="Vertex Mask")
-            col.row().prop(sk, 'relative_key')
-
-
-class MESH_MT_pose_key_utils(Menu):
-    bl_label = "Pose Key Utilities"
-
-    def draw(self, context):
-        layout = self.layout
-        layout.operator('object.posekey_object_grid', icon='LIGHTPROBE_VOLUME')
-        layout.operator('object.posekey_push_all', icon='WORLD')
-        layout.operator('object.posekey_clamp_influence', icon='NORMALIZE_FCURVES')
-        layout.operator('object.posekey_copy_data', icon='PASTEDOWN')
 
 
 @classmethod
@@ -229,8 +234,8 @@ def shape_key_panel_new_poll(cls, context):
 
 
 registry = [
-    CK_UL_pose_keys,
-    CK_UL_target_keys,
+    POSEKEYS_UL_pose_keys,
+    POSEKEYS_UL_target_shape_keys,
     MESH_PT_pose_keys,
     MESH_PT_shape_key_subpanel,
     MESH_MT_pose_key_utils,
@@ -244,7 +249,7 @@ def register():
             ('DEFAULT', 'Shape Keys', "Show a flat list of shape keys"),
             (
                 'POSE_KEYS',
-                'Pose Keys',
+                'Pose Shape Keys',
                 "Organize shape keys into a higher-level concept called Pose Keys. These can store vertex positions and push one shape to multiple shape keys at once, relative to existing deformation",
             ),
         ],

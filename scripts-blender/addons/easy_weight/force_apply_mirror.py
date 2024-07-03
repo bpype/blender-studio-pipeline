@@ -46,13 +46,13 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
     def poll(cls, context):
         obj = context.active_object
         if not obj or obj.type != 'MESH':
-            cls.set_poll_message("There must be an active mesh object deformed by an Armature.")
+            cls.poll_message_set("There must be an active mesh object deformed by an Armature.")
             return False
         for mod in obj.modifiers:
             if mod.type == 'MIRROR':
                 return True
 
-        cls.set_poll_message("This mesh is not deformed by an Armature modifier.")
+        cls.poll_message_set("This mesh is not deformed by an Armature modifier.")
         return False
 
     def execute(self, context):
