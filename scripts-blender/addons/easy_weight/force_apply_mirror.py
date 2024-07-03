@@ -2,8 +2,9 @@ import bpy
 from bpy.props import BoolProperty
 from bpy.utils import flip_name
 
-# TODO: Should find a way to select the X axis verts before doing Remove Doubles, or don't Remove Doubles at all. Also need to select the Basis shape before doing Remove Doubles.
-# TODO: Implement our own Remove Doubles algo with kdtree, which would average the vertex weights of the merged verts rather than just picking the weights of one of them at random.
+# TODO: 
+# Should find a way to select the X axis verts before doing Remove Doubles, or don't Remove Doubles at all. Also need to select the Basis shape before doing Remove Doubles.
+# Implement our own Remove Doubles algo with kdtree, which would average the vertex weights of the merged verts rather than just picking the weights of one of them at random.
 
 
 def flip_driver_targets(obj):
@@ -28,7 +29,7 @@ def flip_driver_targets(obj):
 
 
 class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
-    """Force apply mirror modifier by duplicating the object, flipping it on the X axis, merging into the original"""
+    """Force apply mirror modifier by duplicating the object, flipping it on the X axis, merging into the original, and welding it at the middle"""
 
     bl_idname = "object.force_apply_mirror_modifier"
     bl_label = "Force Apply Mirror Modifier"
@@ -45,14 +46,19 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         obj = context.active_object
-        if not obj or obj.type != 'MESH':
-            cls.poll_message_set("There must be an active mesh object deformed by an Armature.")
+        if not obj or obj.type != 'MESH' and obj.data and obj.data.shape_keys:
+            cls.poll_message_set("There must be an active mesh object with shape keys.")
             return False
         for mod in obj.modifiers:
             if mod.type == 'MIRROR':
-                return True
+                if mod.use_axis[:] != (True, False, False):
+                    cls.poll_message_set("Only X axis mirror modifier is supported.")
+                    return False
 
-        cls.poll_message_set("This mesh is not deformed by an Armature modifier.")
+                return True
+        else:
+            cls.poll_message_set("This mesh has no Mirror modifier.")
+
         return False
 
     def execute(self, context):
@@ -249,7 +255,19 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
         # Restore scale
         context.active_object.scale = org_scale
 
+        self.report({'INFO'}, "Applied X-Mirror modifier with shape keys.")
+
         return {'FINISHED'}
 
 
+def draw_force_apply_mirror(self, context):
+    self.layout.separator()
+    self.layout.operator(EASYWEIGHT_OT_force_apply_mirror.bl_idname, icon='MOD_MIRROR')
+
 registry = [EASYWEIGHT_OT_force_apply_mirror]
+
+def register():
+    bpy.types.MESH_MT_shape_key_context_menu.append(draw_force_apply_mirror)
+
+def unregister():
+    bpy.types.MESH_MT_shape_key_context_menu.remove(draw_force_apply_mirror)
