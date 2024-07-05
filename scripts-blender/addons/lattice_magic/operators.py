@@ -59,9 +59,9 @@ class LATTICE_OT_Reset(bpy.types.Operator):
 def draw_shape_key_reset(self, context):
 	layout = self.layout
 	ob = context.object
-	if ob.type=='MESH':
+	if ob.type=='MESH' and ob.data and ob.data.shape_keys:
 		op = layout.operator('mesh.blend_from_shape', text='Reset Shape Key', icon='FILE_REFRESH')
-		op.shape = ob.data.shape_keys.key_blocks[0].name
+		# op.shape = ob.data.shape_keys.key_blocks[0].name
 		op.blend = 1
 		op.add = False
 	else:

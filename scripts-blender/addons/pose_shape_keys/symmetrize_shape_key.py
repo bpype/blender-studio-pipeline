@@ -1,7 +1,4 @@
-# This script expects a mesh whose base shape is symmetrical, and symmetrize the
-# active shape key based on the symmetry of the base mesh.
-
-from typing import List, Tuple
+from bpy.types import Operator
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty
 from mathutils.kdtree import KDTree
@@ -9,12 +6,12 @@ from mathutils.kdtree import KDTree
 
 def mirror_mesh(
     *,
-    reference_verts: List,
-    vertices: List,
+    reference_verts: list,
+    vertices: list,
     axis: str,
     symmetrize=False,
     symmetrize_pos_to_neg=True,
-) -> Tuple[int, int]:
+) -> tuple[int, int]:
     """
     Symmetrize vertices around any axis in any direction based on a set of
     reference vertices which share the same vertex order and are known to be
@@ -95,8 +92,10 @@ def mirror_mesh(
     return good_counter, bad_counter
 
 
-class OBJECT_OT_Symmetrize_Shape_Key(bpy.types.Operator):
+class OBJECT_OT_symmetrize_shape_key(Operator):
     """Symmetrize shape key by matching vertex pairs by proximity in the original mesh"""
+    # NOTE: This script expects a mesh whose base shape is symmetrical, and symmetrize the
+    # active shape key based on the symmetry of the base mesh.
 
     bl_idname = "object.symmetrize_shape_key"
     bl_label = "Symmetrize Shape Key"
@@ -133,8 +132,8 @@ class OBJECT_OT_Symmetrize_Shape_Key(bpy.types.Operator):
         layout.prop(self, 'threshold', slider=True)
 
     def execute(self, context):
-        ob = context.object
-        mesh = ob.data
+        obj = context.object
+        mesh = obj.data
 
         if 'X' in self.direction:
             axis = 'X'
@@ -145,10 +144,10 @@ class OBJECT_OT_Symmetrize_Shape_Key(bpy.types.Operator):
 
         pos_to_neg = not self.direction.startswith('NEG')
 
-        key_blocks = [ob.active_shape_key]
+        key_blocks = [obj.active_shape_key]
         if self.all_keys:
             # TODO: This could be more optimized, right now we re-build the kdtree for each key block unneccessarily.
-            key_blocks = ob.data.shape_keys.key_blocks[:]
+            key_blocks = obj.data.shape_keys.key_blocks[:]
 
         for kb in key_blocks:
             good_counter, bad_counter = mirror_mesh(
@@ -175,12 +174,12 @@ class OBJECT_OT_Symmetrize_Shape_Key(bpy.types.Operator):
 def draw_symmetrize_buttons(self, context):
     layout = self.layout
     layout.separator()
-    op = layout.operator(OBJECT_OT_Symmetrize_Shape_Key.bl_idname, text="Symmetrize Active")
-    op = layout.operator(OBJECT_OT_Symmetrize_Shape_Key.bl_idname, text="Symmetrize All")
+    op = layout.operator(OBJECT_OT_symmetrize_shape_key.bl_idname, text="Symmetrize Active")
+    op = layout.operator(OBJECT_OT_symmetrize_shape_key.bl_idname, text="Symmetrize All")
     op.all_keys = True
 
 
-registry = [OBJECT_OT_Symmetrize_Shape_Key]
+registry = [OBJECT_OT_symmetrize_shape_key]
 
 
 def register():

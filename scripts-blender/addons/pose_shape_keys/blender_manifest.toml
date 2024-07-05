@@ -1,12 +1,12 @@
 schema_version = "1.0.0"
 
-id = "easyweight"
-version = "1.0.3"
-name = "EasyWeight"
-tagline = "Weight Painting Workflow Boosters"
+id = "pose_shape_keys"
+version = "0.0.2"
+name = "Pose Shape Keys"
+tagline = "Preserve your shape keys through weight changes, and much more"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
 type = "add-on"
-website = "https://studio.blender.org/pipeline/addons/easy_weight"
+website = "https://studio.blender.org/pipeline/addons/pose_shape_keys"
 tags = ["Rigging"]
 
 blender_version_min = "4.2.0"

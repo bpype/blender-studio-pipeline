@@ -71,4 +71,7 @@ If you have any more suggestions, feel free to open an Issue with a feature requ
 
 ## Force Apply Mirror Modifier
 In Blender, you cannot apply a mirror modifier to meshes that have shape keys.  
+
+![Force Apply Mirror](../media/addons/easy_weight/force_apply_mirror.png)
+
 This operator tries to anyways, by duplicating your mesh, flipping it on the X axis and merging into the original. It will also flip vertex groups, shape keys, shape key masks, and even (attempt) shape key drivers, assuming everything is named with .L/.R suffixes.  
