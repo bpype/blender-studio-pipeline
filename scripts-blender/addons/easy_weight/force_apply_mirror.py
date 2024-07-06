@@ -46,7 +46,7 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         obj = context.active_object
-        if not obj or obj.type != 'MESH' and obj.data and obj.data.shape_keys:
+        if not (obj and obj.type == 'MESH' and obj.data and obj.data.shape_keys):
             cls.poll_message_set("There must be an active mesh object with shape keys.")
             return False
         for mod in obj.modifiers:
