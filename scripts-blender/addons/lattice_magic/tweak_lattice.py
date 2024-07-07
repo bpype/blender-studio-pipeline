@@ -4,7 +4,15 @@
 # A root empty is also created that can be (manually) parented to a rig in order to use this for animation.
 
 import bpy
-from bpy.props import FloatProperty, IntVectorProperty, FloatVectorProperty, BoolProperty, PointerProperty, StringProperty, EnumProperty
+from bpy.props import (
+    FloatProperty,
+    IntVectorProperty,
+    FloatVectorProperty,
+    BoolProperty,
+    PointerProperty,
+    StringProperty,
+    EnumProperty,
+)
 from bpy.types import Operator, Object, VertexGroup, Scene, Collection, Modifier, Panel
 from typing import List, Tuple
 
@@ -18,32 +26,30 @@ TWEAKLAT_COLL_NAME = 'Tweak Lattices'
 
 class TWEAKLAT_OT_Create(Operator):
     """Create a lattice setup to deform selected objects"""
+
     bl_idname = "lattice.create_tweak_lattice"
     bl_label = "Create Tweak Lattice"
     bl_options = {'REGISTER', 'UNDO'}
 
-    resolution: IntVectorProperty(
-        name="Resolution",
-        default=(12, 12, 12),
-        min=6,
-        max=64
-    )
+    resolution: IntVectorProperty(name="Resolution", default=(12, 12, 12), min=6, max=64)
 
-    location: EnumProperty(name="Location", items=[
-        ('CURSOR', "3D Cursor", "Create at the location and orientation of the 3D cursor."),
-        ('CENTER', "Center", "Create at the bounding box center of all selected objects."),
-        ('PARENT', "Parent", "Create at the location of the parent object or bone.")
-    ])
+    location: EnumProperty(
+        name="Location",
+        items=[
+            ('CURSOR', "3D Cursor", "Create at the location and orientation of the 3D cursor."),
+            ('CENTER', "Center", "Create at the bounding box center of all selected objects."),
+            ('PARENT', "Parent", "Create at the location of the parent object or bone."),
+        ],
+    )
     radius: FloatProperty(
         name="Radius",
         description="Radius of influence of this lattice. Can be changed later",
         default=0.1,
         min=0.0001,
         max=1000,
-        soft_max=2
+        soft_max=2,
     )
-    parent_bone: StringProperty(
-        name="Bone", description="Bone to use as parent")
+    parent_bone: StringProperty(name="Bone", description="Bone to use as parent")
 
     @classmethod
     def poll(cls, context):
@@ -80,8 +86,7 @@ class TWEAKLAT_OT_Create(Operator):
 
         scene = context.scene
         if scene.tweak_lattice_parent_ob and scene.tweak_lattice_parent_ob.type == 'ARMATURE':
-            col.prop_search(self, 'parent_bone',
-                            scene.tweak_lattice_parent_ob.data, 'bones')
+            col.prop_search(self, 'parent_bone', scene.tweak_lattice_parent_ob.data, 'bones')
 
     def execute(self, context):
         scene = context.scene
@@ -97,7 +102,11 @@ class TWEAKLAT_OT_Create(Operator):
         lattice_ob.hide_viewport = True
 
         # Set resolution
-        lattice.points_u, lattice.points_v, lattice.points_w, = self.resolution
+        (
+            lattice.points_u,
+            lattice.points_v,
+            lattice.points_w,
+        ) = self.resolution
         lattice.points_u = clamp(lattice.points_u, 6, 64)
         lattice.points_v = clamp(lattice.points_v, 6, 64)
         lattice.points_w = clamp(lattice.points_w, 6, 64)
@@ -106,7 +115,7 @@ class TWEAKLAT_OT_Create(Operator):
         vg = ensure_falloff_vgroup(lattice_ob, vg_name="Hook")
 
         # Create an Empty at the 3D cursor
-        hook_name = "Hook_"+lattice_ob.name
+        hook_name = "Hook_" + lattice_ob.name
         hook = bpy.data.objects.new(hook_name, None)
         hook.empty_display_type = 'SPHERE'
         hook.empty_display_size = 0.5
@@ -119,13 +128,20 @@ class TWEAKLAT_OT_Create(Operator):
         hook['Expression'] = 'x'
 
         rna_idprop_ui_create(
-            hook, "Tweak Lattice", default=1.0,
-            min=0, max=1,
+            hook,
+            "Tweak Lattice",
+            default=1.0,
+            min=0,
+            max=1,
             description="Influence of this lattice on all of its target objects",
         )
         rna_idprop_ui_create(
-            hook, "Radius", default=self.radius,
-            min=0, soft_max=0.2, max=100,
+            hook,
+            "Radius",
+            default=self.radius,
+            min=0,
+            soft_max=0.2,
+            max=100,
             description="Size of the influenced area",
         )
 
@@ -138,15 +154,16 @@ class TWEAKLAT_OT_Create(Operator):
         root.empty_display_size = 0.5
         if self.location == 'CENTER':
             meshes = [o for o in context.selected_objects if o.type == 'MESH']
-            root.matrix_world.translation = bounding_box_center_of_objects(
-                meshes)
+            root.matrix_world.translation = bounding_box_center_of_objects(meshes)
         elif self.location == 'CURSOR':
             root.matrix_world = context.scene.cursor.matrix
         elif self.location == 'PARENT':
             matrix_of_parent = scene.tweak_lattice_parent_ob.matrix_world
             if self.parent_bone:
-                matrix_of_parent = scene.tweak_lattice_parent_ob.matrix_world @ scene.tweak_lattice_parent_ob.pose.bones[
-                    self.parent_bone].matrix
+                matrix_of_parent = (
+                    scene.tweak_lattice_parent_ob.matrix_world
+                    @ scene.tweak_lattice_parent_ob.pose.bones[self.parent_bone].matrix
+                )
             root.matrix_world = matrix_of_parent.copy()
         coll.objects.link(root)
         root.hide_viewport = True
@@ -180,8 +197,7 @@ class TWEAKLAT_OT_Create(Operator):
         add_radius_constraint(hook, hook, root)
         add_radius_constraint(lattice_ob, hook, root)
 
-        root_drv = simple_driver(
-            root, 'empty_display_size', hook, '["Radius"]')
+        root_drv = simple_driver(root, 'empty_display_size', hook, '["Radius"]')
         root_drv.expression = 'var/2'
 
         # Deselect everything, select the hook and make it active
@@ -193,9 +209,9 @@ class TWEAKLAT_OT_Create(Operator):
         return {'FINISHED'}
 
 
-
 class TWEAKLAT_OT_Duplicate(Operator):
     """Duplicate this Tweak Lattice set-up"""
+
     bl_idname = "lattice.duplicate_tweak_setup"
     bl_label = "Duplicate Tweak Lattice"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -236,6 +252,7 @@ class TWEAKLAT_OT_Duplicate(Operator):
 
 class TWEAKLAT_OT_Falloff(Operator):
     """Adjust falloff of the hook vertex group of a Tweak Lattice"""
+
     bl_idname = "lattice.tweak_lattice_adjust_falloww"
     bl_label = "Adjust Falloff"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -245,16 +262,15 @@ class TWEAKLAT_OT_Falloff(Operator):
             return
         hook, lattice, _root = get_tweak_setup(context.object)
         ret = ensure_falloff_vgroup(
-            lattice, 'Hook', multiplier=self.multiplier, expression=self.expression)
+            lattice, 'Hook', multiplier=self.multiplier, expression=self.expression
+        )
         self.is_expression_valid = ret != None
         if ret:
             hook['Expression'] = self.expression
         hook['Multiplier'] = self.multiplier
 
     is_expression_valid: BoolProperty(
-        name="Error",
-        description="Used to notify user if their expression is invalid",
-        default=True
+        name="Error", description="Used to notify user if their expression is invalid", default=True
     )
     # Actual parameters
     multiplier: FloatProperty(
@@ -263,7 +279,7 @@ class TWEAKLAT_OT_Falloff(Operator):
         default=1,
         update=update_falloff,
         min=0,
-        soft_max=2
+        soft_max=2,
     )
     expression: StringProperty(
         name="Expression",
@@ -315,6 +331,7 @@ class TWEAKLAT_OT_Falloff(Operator):
 
 class TWEAKLAT_OT_Delete(Operator):
     """Delete a tweak lattice setup with all its helper objects, drivers, etc"""
+
     bl_idname = "lattice.delete_tweak_lattice"
     bl_label = "Delete Tweak Lattice"
     bl_options = {'REGISTER', 'UNDO'}
@@ -351,6 +368,7 @@ class TWEAKLAT_OT_Delete(Operator):
 
 class TWEAKLAT_OT_Add_Objects(Operator):
     """Add selected objects to this tweak lattice"""
+
     bl_idname = "lattice.add_selected_objects"
     bl_label = "Add Selected Objects"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -380,6 +398,7 @@ class TWEAKLAT_OT_Add_Objects(Operator):
 
 class TWEAKLAT_OT_Remove_Selected_Objects(Operator):
     """Remove selected objects from this tweak lattice"""
+
     bl_idname = "lattice.remove_selected_objects"
     bl_label = "Remove Selected Objects"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -409,12 +428,14 @@ class TWEAKLAT_OT_Remove_Selected_Objects(Operator):
 
 class TWEAKLAT_OT_Remove_Object(Operator):
     """Remove this object from the tweak lattice"""
+
     bl_idname = "lattice.remove_object"
     bl_label = "Remove Object"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     ob_pointer_prop_name: StringProperty(
-        description="Name of the custom property that references the object that should be removed")
+        description="Name of the custom property that references the object that should be removed"
+    )
 
     def execute(self, context):
         hook, _lattice, _root = get_tweak_setup(context.object)
@@ -447,8 +468,7 @@ class TWEAKLAT_PT_Main(Panel):
 
         layout = layout.column()
         if not hook:
-            layout.operator(TWEAKLAT_OT_Create.bl_idname,
-                            icon='OUTLINER_OB_LATTICE')
+            layout.operator(TWEAKLAT_OT_Create.bl_idname, icon='OUTLINER_OB_LATTICE')
             return
 
         layout.prop(hook, '["Tweak Lattice"]', slider=True, text="Influence")
@@ -456,17 +476,16 @@ class TWEAKLAT_PT_Main(Panel):
         layout.operator(TWEAKLAT_OT_Falloff.bl_idname, text="Adjust Falloff")
 
         layout.separator()
-        layout.operator(TWEAKLAT_OT_Delete.bl_idname,
-                        text='Delete Tweak Lattice', icon='TRASH')
-        layout.operator(TWEAKLAT_OT_Duplicate.bl_idname,
-                        text='Duplicate Tweak Lattice', icon='DUPLICATE')
+        layout.operator(TWEAKLAT_OT_Delete.bl_idname, text='Delete Tweak Lattice', icon='TRASH')
+        layout.operator(
+            TWEAKLAT_OT_Duplicate.bl_idname, text='Duplicate Tweak Lattice', icon='DUPLICATE'
+        )
 
         layout.separator()
         layout.label(text="Helper Objects")
         lattice_row = layout.row()
         lattice_row.prop(hook, '["Lattice"]', text="Lattice")
-        lattice_row.prop(lattice, 'hide_viewport',
-                         text="", emboss=False)
+        lattice_row.prop(lattice, 'hide_viewport', text="", emboss=False)
 
         root_row = layout.row()
         root_row.prop(hook, '["Root"]', text="Root")
@@ -495,8 +514,7 @@ class TWEAKLAT_PT_Main(Panel):
         if num_to_add:
             if num_to_add > 1:
                 text = f"Add {num_to_add} Objects"
-            layout.operator(TWEAKLAT_OT_Add_Objects.bl_idname,
-                            icon='ADD', text=text)
+            layout.operator(TWEAKLAT_OT_Add_Objects.bl_idname, icon='ADD', text=text)
 
         layout.separator()
         num_to_remove = False
@@ -511,11 +529,9 @@ class TWEAKLAT_PT_Main(Panel):
         if num_to_remove:
             if num_to_remove > 1:
                 text = f"Remove {num_to_remove} Objects"
-            layout.operator(
-                TWEAKLAT_OT_Remove_Selected_Objects.bl_idname, icon='REMOVE', text=text)
+            layout.operator(TWEAKLAT_OT_Remove_Selected_Objects.bl_idname, icon='REMOVE', text=text)
 
-        objects_and_keys = [(hook[key], key)
-                            for key in hook.keys() if "object_" in key]
+        objects_and_keys = [(hook[key], key) for key in hook.keys() if "object_" in key]
         objects_and_keys.sort(key=lambda o_and_k: o_and_k[1])
         for ob, key in objects_and_keys:
             row = layout.row(align=True)
@@ -523,10 +539,8 @@ class TWEAKLAT_PT_Main(Panel):
             mod = get_lattice_modifier_of_object(ob, lattice)
             if not mod:
                 continue
-            row.prop_search(mod, 'vertex_group', ob,
-                            'vertex_groups', text="", icon='GROUP_VERTEX')
-            op = row.operator(
-                TWEAKLAT_OT_Remove_Object.bl_idname, text="", icon='X')
+            row.prop_search(mod, 'vertex_group', ob, 'vertex_groups', text="", icon='GROUP_VERTEX')
+            op = row.operator(TWEAKLAT_OT_Remove_Object.bl_idname, text="", icon='X')
             op.ob_pointer_prop_name = key
 
 
@@ -556,29 +570,28 @@ def ensure_tweak_lattice_collection(scene: Scene) -> Collection:
 
 
 def ensure_falloff_vgroup(
-        lattice_ob: Object,
-        vg_name="Group", multiplier=1, expression="x") -> VertexGroup:
+    lattice_ob: Object, vg_name="Group", multiplier=1, expression="x"
+) -> VertexGroup:
     lattice = lattice_ob.data
     res_x, res_y, res_z = lattice.points_u, lattice.points_v, lattice.points_w
 
     vg = lattice_ob.vertex_groups.get(vg_name)
 
-    center = Vector((res_x-1, res_y-1, res_z-1))/2
+    center = Vector((res_x - 1, res_y - 1, res_z - 1)) / 2
     max_res = max(res_x, res_y, res_z)
 
     if not vg:
         vg = lattice_ob.vertex_groups.new(name=vg_name)
-    for x in range(res_x-4):
-        for y in range(res_y-4):
-            for z in range(res_z-4):
-                index = get_lattice_vertex_index(lattice, (x+2, y+2, z+2))
+    for x in range(res_x - 4):
+        for y in range(res_y - 4):
+            for z in range(res_z - 4):
+                index = get_lattice_vertex_index(lattice, (x + 2, y + 2, z + 2))
 
-                coord = Vector((x+2, y+2, z+2))
-                distance_from_center = (coord-center).length
+                coord = Vector((x + 2, y + 2, z + 2))
+                distance_from_center = (coord - center).length
                 distance_factor = 1 - (distance_from_center / max_res * 2)
                 try:
-                    influence = eval(expression.replace(
-                        "x", "distance_factor"))
+                    influence = eval(expression.replace("x", "distance_factor"))
                 except:
                     return None
 
@@ -614,9 +627,7 @@ def get_lattice_modifier_of_object(obj, lattice) -> Modifier:
             return m
 
 
-def add_objects_to_lattice(
-        hook: Object,
-        objects: List[Object]):
+def add_objects_to_lattice(hook: Object, objects: List[Object]):
     lattice_ob = hook['Lattice']
 
     for i, o in enumerate(objects):
@@ -628,9 +639,9 @@ def add_objects_to_lattice(
 
         # Make sure the property name is available.
         offset = 0
-        while "object_"+str(offset) in hook:
+        while "object_" + str(offset) in hook:
             offset += 1
-        hook["object_"+str(i+offset)] = o
+        hook["object_" + str(i + offset)] = o
 
         # Add driver to the modifier influence.
         simple_driver(m, 'strength', hook, '["Tweak Lattice"]')
@@ -685,13 +696,12 @@ registry = [
     TWEAKLAT_OT_Add_Objects,
     TWEAKLAT_OT_Remove_Selected_Objects,
     TWEAKLAT_OT_Remove_Object,
-    TWEAKLAT_PT_Main
+    TWEAKLAT_PT_Main,
 ]
 
 
 def register():
-    Scene.tweak_lattice_parent_ob = PointerProperty(
-        type=Object, name="Parent")
+    Scene.tweak_lattice_parent_ob = PointerProperty(type=Object, name="Parent")
 
 
 def unregister():
