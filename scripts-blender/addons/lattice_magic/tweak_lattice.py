@@ -171,14 +171,14 @@ class TWEAKLAT_OT_Create(Operator):
 
         # Parent the root
         scene = context.scene
-        matrix_backup = root.matrix_world.copy()
         root.parent = scene.tweak_lattice_parent_ob
         if root.parent and root.parent.type == 'ARMATURE':
             bone = root.parent.pose.bones.get(self.parent_bone)
             if bone:
-                root.parent_type = 'BONE'
-                root.parent_bone = bone.name
-                root.matrix_world = matrix_backup
+                arm_con = root.constraints.new(type='ARMATURE')
+                tgt = arm_con.targets.new()
+                tgt.target = root.parent
+                tgt.subtarget = bone.name
 
         # Parent lattice and hook to root
         lattice_ob.parent = root
@@ -601,6 +601,7 @@ def ensure_falloff_vgroup(
 
 def add_radius_constraint(obj, hook, target):
     trans_con = obj.constraints.new(type='TRANSFORM')
+    trans_con.name += " (Radius Scaling)"
     trans_con.target = target
     trans_con.map_to = 'SCALE'
     trans_con.mix_mode_scale = 'MULTIPLY'
