@@ -33,7 +33,7 @@ logger = LoggerFactory.getLogger()
 RD_PRESET_FILE_MODEL = FileListModel()
 _rd_preset_enum_list: List[Tuple[str, str, str]] = []
 _rd_preset_file_model_init: bool = False
-# we need a second data dict because we want the enum propeties data value to be the filepath
+# we need a second data dict because we want the enum properties data value to be the filepath
 # but the ui (not only in enum dropdown mode) should display the label defined in the .py
 # file with 'bl_label'. This dict is basically a mapping from filepath > label
 
