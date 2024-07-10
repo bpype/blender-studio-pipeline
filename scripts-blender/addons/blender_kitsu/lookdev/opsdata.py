@@ -43,7 +43,6 @@ _rd_preset_data_dict: Dict[str, str] = {}
 def init_rd_preset_file_model(
     context: bpy.types.Context,
 ) -> None:
-
     global RD_PRESET_FILE_MODEL
     global _rd_preset_file_model_init
     addon_prefs = prefs.addon_prefs_get(context)
@@ -59,9 +58,7 @@ def init_rd_preset_file_model(
 
     RD_PRESET_FILE_MODEL.reset()
     RD_PRESET_FILE_MODEL.root_path = rd_settings_dir
-    valid_items = [
-        file for file in RD_PRESET_FILE_MODEL.items_as_paths if file.suffix == ".py"
-    ]
+    valid_items = [file for file in RD_PRESET_FILE_MODEL.items_as_paths if file.suffix == ".py"]
     if not valid_items:
         # Update playblast_version prop.
         context.scene.lookdev.preset_file = ""
@@ -77,7 +74,6 @@ def get_rd_settings_enum_list(
     self: Any,
     context: bpy.types.Context,
 ) -> List[Tuple[str, str, str]]:
-
     global _rd_preset_enum_list
     global RD_PRESET_FILE_MODEL
     global init_rd_preset_file_model
