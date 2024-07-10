@@ -115,7 +115,7 @@ def get_rd_settings_enum_list(
         data_dict[file.name] = label
         enum_list.append((file.as_posix(), label, ""))
 
-    # Udpate global variables.
+    # Update global variables.
     _rd_preset_data_dict.clear()
     _rd_preset_data_dict.update(data_dict)
     _rd_preset_enum_list.clear()
