@@ -138,7 +138,7 @@ class EASYWEIGHT_OT_toggle_weight_paint(Operator):
     @classmethod
     def poll(cls, context):
         obj = context.active_object
-        if not obj and obj.type == 'MESH':
+        if not obj or obj.type != 'MESH':
             cls.poll_message_set("Active object must be a mesh.")
             return False
         return True
