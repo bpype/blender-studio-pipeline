@@ -31,7 +31,11 @@ class WeightCleaner:
             cls.can_clean = False
             cls.cleaning_in_progress = True
             # This will trigger a depsgraph update, and therefore clean_weights, again.
-            bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0.001)
+            try:
+                bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0.001)
+            except Exception:
+                # This happens for example if the object has no vertex groups.
+                pass
             cls.cleaning_in_progress = False
 
     @classmethod
