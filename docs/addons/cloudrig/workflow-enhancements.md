@@ -1,48 +1,49 @@
 # Workflow Enhancements
-CloudRig ships with various small quality of life features. These usually have a default hotkey. If these ever get in the way for you, you can easily re-bind or disable them in the preferences.
+CloudRig includes several quality of life features, each with a default hotkey. If these interfere with your workflow, you can easily rebind or disable them in the preferences.
 
 <img src="/media/addons/cloudrig/hotkeys_ui.png">
 
 ## MetaRig Swapping / Generation
-- **Shift+T** lets you swap between a metarig and its generated rig, while syncing bone collections, visiblity, and selection.
-- **Shift+T** on a mesh object will put you in pose mode on its deforming armature, if any.
-- **Ctrl+Shift+R** regenerates the active metarig/rig. If there is only one metarig in the scene, it doesn't even need to be active.
+- **Shift+T** swaps between a metarig and its generated rig, syncing bone collections, visibility, and selection.
+- **Shift+T** on a mesh object enters pose mode on its deforming armature, if any.
+- **Ctrl+Shift+R** regenerates the active metarig/rig. If there is only one metarig in the scene, it doesn't need to be active.
 
 ## Better Duplicate & Extrude
--  Extruding (**E**) or duplicating (**Shift+D**) bones increments existing numbers in the bone name:
-- Duplicating `Bone1` creates `Bone2` rather than `Bone1.001`.
-- Accounts for occupied names: If `Bone2` already exists, it will create `Bone3` instead.
-- Works with symmetry: the opposite side bone will also be incremented.
-- With **Shift+D**, drivers on bone and constraint properties will also be copied.
+- **E** (Extrude) and **Shift+D** (Duplicate) increment bone names:
+    - Duplicating `Bone1` creates `Bone2`, not `Bone1.001`.
+    - Hold **Shift** while confirming to keep the original numbering.
+- Handles occupied names: if `Bone2` exists, it creates `Bone3`.
+- Supports symmetry: increments names on the opposite side.
+- **Shift+D** also copies drivers on bone and constraint properties.
 
 <video src="/media/addons/cloudrig/better_duplicate_extrude.mp4" controls></video>
 
 ## Bone Selection Pie (Alt+D)
-A pie menu bound to **Alt+D** lets you select bones related to the active bone, in Pose, Weight Paint, and Edit modes.
+Select bones related to the active bone. Available in Pose, Weight Paint, and Edit modes.
 <img src="/media/addons/cloudrig/pie_bone_find.png">
 
-- Up/Down: A bone with a higher/lower number in the name than current, letting you jump from `Hair1.L` to `Hair2.L`, even if those bones have nothing to do with each other.
-- Left/Right: The parent bone, or child bone. If there are multiple children, they're shown in a drop-down menu.
-- Top Left/Right: Bones who target or are targeted by this bone via constraints.
-- Bottom left: The start and end handles of Bendy Bones.
-- Bottom right: A pop-up menu to search a bone by name.
+- **Up/Down**: Select a bone with a higher/lower number in its name, e.g., from `Hair1.L` to `Hair2.L`.
+- **Left/Right**: Select the parent bone or a child bone. Multiple children are shown in a drop-down menu.
+- **Top Left/Right**: Select bones that target or are targeted by this bone via constraints.
+- **Bottom Left**: Select the start and end handles of Bendy Bones.
+- **Bottom Right**: Open a pop-up menu to search for a bone by name.
 
 ## Bone Specials Pie (X)
-A pie menu bound to the **X** key for deletion and symmetry.
+Bone deletion and symmetry.
 <img src="/media/addons/cloudrig/pie_bone_specials.png">
 
-- **Toggle Armature X-Mirror**: Whether armature editing operations affect both sides.
-- **Toggle Pose X-Mirror**: Whether transforming bones affects both sides.
-- **Delete**: Deletes the selected bones. Even in Pose Mode. Also deletes drivers of the deleted bones. The button indicates when Armature X-Mirror is on, to avoid accidental deletions.
-- **Symmetrize**: Blender's Symmetrize operator with some changes: It's made available in Pose Mode, it also symmetrizes Actions when there are Action Constraints present, and it also tries to symmetrize drivers.
+- **Toggle Armature X-Mirror**: Toggle symmetrical armature editing.
+- **Toggle Pose X-Mirror**: Toggle symmetrical posing.
+- **Delete**: Deletes selected bones and their drivers. Works in Pose Mode. Indicates X-Mirror status to prevent accidental deletions.
+- **(Enhanced) Symmetrize**: Works in Pose Mode. Symmetrizes Actions of Action Constraints. Attempts to symmetrize drivers.
 
 ## Bone Parenting Pie (P)
-A pie menu bound to the **P** key lets you quickly parent and un-parent bones without having to enter Edit Mode.
+Quickly parent and un-parent bones without having to enter Edit Mode.
 <img src="/media/addons/cloudrig/pie_bone_parenting.png">
 
 - **Clear Parent**: Clear the parent of selected bones.
 - **Selected to Active**: Parent all selected bones to the active one.
-- **Disconnect**: Disconnect a bone from its parent, without un-parenting it, so the bone can be translated freely.
+- **Disconnect**: Disconnect a bone from its parent without un-parenting, allowing free translation.
 - **Parent & Connect**: Parent selected bones to the active one, and connect them to the parent.
 - **Active to All Selected**: Parent the active bone to all other selected bones equally using an [Armature Constraint](https://docs.blender.org/manual/en/latest/animation/constraints/relationship/armature.html).
 <video src="/media/addons/cloudrig/parent_active_to_all_selected.mp4" controls></video>
@@ -50,20 +51,25 @@ A pie menu bound to the **P** key lets you quickly parent and un-parent bones wi
 <video src="/media/addons/cloudrig/parent_object_to_selected_bones.mp4" controls></video>
 
 
-## Edit Widget Pie (Ctrl+Alt+E)
-A pie menu to manage bone widgets. This is meant to be a one-stop-shop for all your bone widget fidgeting, no other add-ons needed. But, you be the judge.
+## Edit Custom Shapes Pie (Ctrl+Alt+E)
+A comprehensive toolset to manage bone custom shapes.
 
 <img src="/media/addons/cloudrig/pie_edit_widget.png">
 
-- **Edit Transforms**: A pop-up panel of the custom shape transform properties, for quick access.
-- **Unassign Custom Shape**: Simply remove the bone shape of the selected bones.
-- **Assign Selected Object**: Select a mesh object, then shift+select the armature and enter pose mode. Then, this button will assign the selected mesh as the widget of the selected bones.
-- **Reload Custom Shapes**: If you've modified a widget that was loaded from the Widgets library, this lets you reload the original.
-- **Edit Custom Shapes**: Enter mesh edit mode on the selected bones' widgets. You can then press Ctrl+Alt+E again to return to pose mode. This of course won't work on linked meshes, since those cannot be edited.
-- **Select Custom Shape**: Select a widget from the widget library to assign to selected bones. Any local object whose name starts with "WGT-" will also be in the list of options.
-- **Duplicate & Edit Custom Shapes**: Same as Edit Custom Shapes, but duplicate the widgets first, and name them according to the selected bones' names. This will work even if the widget is a linked mesh, since a local copy will be created. Handy when you want to edit only one usage of a widget, not all of them.
-- **Copy to Selected**: Simply copy the custom shape object and transforms from the active bone to all selected objects.
+- **Edit Transforms**: Quick access to custom shape transform properties.
+- **Unassign Custom Shape**: Remove the custom shape from selected bones.
+- **Assign Selected Object**: Set the selected mesh object as the custom shape of selected bones.
+- **Reload Custom Shapes**: Reload widgets from the Widgets.blend file, discarding any modifications to them.
+- **Edit Custom Shapes**: Enter mesh edit mode on the selected bones' widgets. Press Ctrl+Alt+E again to return to pose mode.
+- **Select Custom Shape**: Assign a widget from a library to the selected bones. Local objects named "WGT-" will also be listed.
+- **Duplicate & Edit Custom Shapes**: Duplicate selected bones' widgets before editing them. Handy when you want to edit only one usage of a widget, not all of them.
+- **Copy to Selected**: Copy the custom shape and transforms from the active bone selected bones.
 
 ## Bone Collections pop-up (Shift+M)
-A pop-up menu so you can access bone collections without leaving the 3D View. There is also a [Quick Select](organizing-bones#selection-sets) menu on **Shift+Alt+W** for collections that are marked to be included in that menu. Click the link to learn more.
+A pop-up menu to can access bone collections without leaving the 3D View.
+Available with the rig, even if a user doesn't have CloudRig installed.
 <img src="/media/addons/cloudrig/bone_collections_popup.png">
+
+## Quick Select (Shift+Alt+W)
+Pops up a list of collections that were [marked](organizing-bones#selection-sets) to be included in this list. Clicking on one of them selects the bones within. Shift+Click extends the selection. Ctrl+Click symmetrizes the selection. Alt+Click deselects the collection's bones. 
+Available with the rig, even if a user doesn't have CloudRig installed.
