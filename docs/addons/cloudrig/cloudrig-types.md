@@ -275,6 +275,8 @@ Extends the IK Chain component with cartoony rubber-hose functionality. This req
 
 - #### Duplicate IK Master
     Create an extra child control for the IK master.
+- #### Limit Elbow Axes
+    Lock the Y and Z rotation of the elbow, constraining the rig to realistic rotation axes. More importantly, this is necessary for precise IK->FK snapping.
 - #### Rubber Hose
     This option is only available when Smooth Chain is enabled and Deform Segments is greater than 1.
     When this option is enabled, a slider is added to a rig UI which lets you have an automatic cartoony rubber hose limb effect.
