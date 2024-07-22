@@ -1,0 +1,30 @@
+# This is the list of Blender Studio Tools authors for copyright purposes.
+#
+# This does not necessarily list everyone who has contributed code.
+# To see the full list of contributors, see the revision history in source
+# control.
+
+# Names should be added to this file with this pattern:
+#
+# For individuals:
+#   Name <email address>
+#
+# For organizations:
+#   Organization <fnmatch pattern>
+#
+
+# BEGIN individuals section.
+Andy Goralczyk <andy@blender.org>
+Demeter Dazdik <demeter@blender.org>
+Francesco Siddi <francesco@blender.org>
+Nick Alberelli <nick@blender.org>
+Paul Golter <paul@blender.org>
+Sebastian Parborg <sebastian@blender.org>
+Simon Thommes <simon@blender.org>
+# Please DO NOT APPEND here. See comments at the top of the file.
+# END individuals section.
+
+# BEGIN organizations section.
+Blender Foundation <*@blender.org>
+# Please DO NOT APPEND here. See comments at the top of the file.
+# END organizations section.
