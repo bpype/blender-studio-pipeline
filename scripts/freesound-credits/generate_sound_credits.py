@@ -1,11 +1,14 @@
+#!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2022 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy
 import os
 import pathlib
 import requests
 import sys
 import time
-
-
 
 # Must set API Key as Enviroinment Variable or add to script here.
 # API Key can be generated using an existing freesound.org account
