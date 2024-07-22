@@ -1,23 +1,6 @@
-# ***** BEGIN GPL LICENSE BLOCK *****
+# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-#
-# ***** END GPL LICENCE BLOCK *****
-#
-# (c) 2021, Blender Foundation - Paul Golter
-
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 from typing import Any, Union, List, Dict, Optional, Tuple
 
@@ -268,16 +251,16 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
     ################################
     """
     Kitsu Context Properties
-    
+
     These are properties used to store/manage the current "Context"
-    for a Kitsu Entity. Kitsu Entities represents things like Asset, 
+    for a Kitsu Entity. Kitsu Entities represents things like Asset,
     Shot and Sequence for a given production.
-    
+
     Each Entity has an 'ID' Property which is used internally by the add-on
     and a 'Name' Property which is used as part of the user interface. When a user selects
-    the 'Name' of a Kitsu Entity a custom Set function on the property will also update 
+    the 'Name' of a Kitsu Entity a custom Set function on the property will also update
     the Entity's ID.
-    
+
     NOTE: It would be nice to have searchable enums instead of doing all this work manually.
     """
 

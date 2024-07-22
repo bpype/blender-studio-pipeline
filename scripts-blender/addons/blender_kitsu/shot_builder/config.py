@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy
 from pathlib import Path
 from .. import bkglobals
