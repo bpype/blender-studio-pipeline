@@ -43,3 +43,10 @@ Guides are detailed series of instructions that start from the topics described 
 * Infrastructure setup (how to build a studio IT from scratch)
 
 For "external" tools like Flamenco or Kitsu, the idea is to explain the specific use or customization we do a Blender Studio and refer to the official documentation for the rest. For example: "Install Kitsu by following the official guide".
+
+
+## License and Credits
+
+All software available as part of the Blender Studio Tools is released under the GNU General Public 
+License v2 or later. A comprehensive list of authors and contributors is available in the 
+[AUTHORS file](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/AUTHORS) in the git repository.
