@@ -1050,7 +1050,7 @@ def unregister():
         # Remove hotkeys.
         keymap = bpy.context.window_manager.keyconfigs.addon.keymaps["Window"]
         for kmi in addon_keymap_items:
-            logger.info("Remove  hotkey: %s : %s", kmi.type, kmi.properties.bl_rna.name)
+            logger.info("Remove hotkey: %s : %s", kmi.type, kmi.properties.bl_rna.name)
             keymap.keymap_items.remove(kmi)
 
         addon_keymap_items.clear()
