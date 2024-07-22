@@ -1041,9 +1041,6 @@ def register():
 
 
 def unregister():
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
-
     # Does not work if blender runs in background.
     if not bpy.app.background:
         global addon_keymap_items
@@ -1054,3 +1051,6 @@ def unregister():
             keymap.keymap_items.remove(kmi)
 
         addon_keymap_items.clear()
+
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
