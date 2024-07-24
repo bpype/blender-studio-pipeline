@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2023 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import sys
 import bpy
 from pathlib import Path

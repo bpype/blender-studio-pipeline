@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy
 from . import ops
 from .ui import topbar_file_new_draw_handler
