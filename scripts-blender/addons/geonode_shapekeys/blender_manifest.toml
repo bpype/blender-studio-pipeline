@@ -1,0 +1,21 @@
+schema_version = "1.0.0"
+
+id = "geonode_shapekeys"
+version = "1.0.0"
+name = "GeoNode Shape Keys"
+tagline = "Sculpt on linked animated characters"
+maintainer = "Demeter Dzadik <demeter@blender.org>"
+type = "add-on"
+website = "https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/geonode_shapekeys"
+tags = ["Rigging"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-2.0-or-later",
+]
+copyright = [
+  "2019-2024 Demeter Dzadik & Blender Studio",
+]
+[permissions]
+files = "To load the necessary GeoNodes from its .blend file"
