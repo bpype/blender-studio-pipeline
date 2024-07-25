@@ -58,7 +58,7 @@ To update the workers on the workstations, you need to:
 1. SSH to the build server `ssh user@build-server-addr`
 2. Use `su` to login as root directly
 3. Run `emerge --oneshot flamenco` to update the [Flamenco](https://flamenco.blender.org/) worker/add-on
-4. Run `date -R > /var/cache/update_info/timestamp.chk` to signal to all workstations that there are updates available
+4. Run `~/signal_updates.sh` to signal to all workstations that there are updates available
 
 ### Workers
 

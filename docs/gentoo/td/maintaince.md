@@ -25,11 +25,31 @@ Packages need to be compiled on the Build Server and marked with a date to be ab
 2. Use `su` to Login as root or login as root directly
 3. Run `emerge --oneshot {package-name}` to update a live package.
     - Run `emerge --oneshot blender-studio-tools` to update the studio Add-ons
-4. Run `date -R > /var/cache/update_info/timestamp.chk` to mark this update as the latest
+4. Run `~/signal_updates.sh` to mark this update as the latest
 
 ::: info Info
 The command `emerge --oneshot {package-name}` compiles package, but does not add the packages to the [@world](https://wiki.gentoo.org/wiki/World_set_(Portage)), this means these packages will be removed when running `--depclean`.. We add this because these packages are already pulled in by another set. So we don’t want to add it again to the @world set. To learn more visit the [Gentoo  Handbook](https://wiki.gentoo.org/wiki/Emerge#:~:text=fetchonly%20%2D%2Demptytree%20%40world-,Do%20not%20add%20dependencies%20to%20the%20world%20file,-If%20a%20dependency) 
 ::: 
+
+## Manually Update the Blender daily build
+
+If you want to manually update the Blender daily build on the computers you:
+1. `ssh user@build-server-addr` connect to your build server via ssh
+2. Use `su` to Login as root or login as root directly
+3. Run `emerge --oneshot blender-bin` to download the current daily build from https://builder.blender.org/download/daily/.
+4. Run `~/signal_updates.sh` to let the client computers know they should update
+
+::: info How to specify a specific daily build
+If you want to deploy a specific daily build version from the daily archive (https://builder.blender.org/download/daily/archive/),
+then you can do the following:
+
+1. Get the URL for the .tar file you want to deploy.
+2. Assign the URL to the bash variable `BLENDER_BIN_URL`
+
+For example:
+`BLENDER_BIN_URL=https://url.to.the.blender-daily-build.tar.xz emerge -1 blender-bin`
+:::
+
 ## Update Local Add-Ons
 
 Add-Ons are locally stored in the following directories; `/usr/share/flamenco` and `/usr/share/blender_studio_tools`. These are updated by running the following commands. These directories are automatically updated daily by the Gentoo package manager.
