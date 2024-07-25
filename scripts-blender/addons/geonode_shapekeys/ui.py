@@ -1,6 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy
 from bl_ui.generic_ui_list import draw_ui_list
 from .operators import geomod_get_identifier
+from .prefs import get_addon_prefs
 
 
 class GNSK_UL_main(bpy.types.UIList):
@@ -18,7 +21,8 @@ class GNSK_UL_main(bpy.types.UIList):
             row.prop(gnsk.storage_object, 'name', text="", emboss=False, icon='OBJECT_DATA')
         modifier = gnsk.modifier
         if not modifier:
-            # TODO: Draw an error, the modifier was renamed or removed.
+            row.alert=True
+            row.label(text="Error: Modifier was removed.")
             return
         identifier = geomod_get_identifier(modifier, "Factor")
         row = split.row(align=True)
@@ -39,11 +43,8 @@ class GNSK_UL_main(bpy.types.UIList):
             )
         for other_ob in other_target_objs:
             if other_ob in context.selected_objects:
-                addon_prefs = context.preferences.addons[__package__].preferences
-                if (
-                    addon_prefs.pablico_mode
-                    and len(gnsk.storage_object.geonode_shapekey_targets) > 1
-                ):
+                addon_prefs = get_addon_prefs(context)
+                if addon_prefs.no_alt_key and len(gnsk.storage_object.geonode_shapekey_targets) > 1:
                     ops.append(
                         row.operator(
                             'object.geonode_shapekey_influence_slider',
@@ -79,7 +80,6 @@ class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
         if ob.geonode_shapekey_targets:
             layout.operator(
                 'object.geonode_shapekey_switch_focus',
-                text="Switch To Render Objects",
                 icon='FILE_REFRESH',
             )
             return
@@ -98,7 +98,6 @@ class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
         list_ops.operator('object.add_geonode_shape_key', text="", icon='ADD')
 
         row = list_ops.row()
-        row.enabled = len(ob.geonode_shapekeys) > 0
         row.operator('object.remove_geonode_shape_key', text="", icon='REMOVE')
 
 

@@ -1,15 +1,20 @@
-import bpy, os, importlib
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+import bpy, importlib
 
 from . import operators, ui, props, prefs
 
 bl_info = {
     'name': "GeoNode Shape Keys",
     'author': "Demeter Dzadik",
-    "version": (0, 0, 5),
+    "version": (1, 0, 0),
     'blender': (3, 5, 0),
-    'description': "Shape keys in the modifier stack",
+    'description': "Sculpt on linked meshes",
     'location': "Properties->Mesh->Shape Keys->GeoNode ShapeKeys, only on overridden meshes",
     'category': 'Animation',
+    'doc_url': "https://studio.blender.org/pipeline/addons/geonode_shapekeys",
+    'tracker_url': "https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/geonode_shapekeys",
+    'support': 'COMMUNITY',
 }
 
 modules = (
