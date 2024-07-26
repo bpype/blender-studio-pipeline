@@ -6,7 +6,7 @@ CloudRig includes several quality of life features, each with a default hotkey. 
 ## MetaRig Swapping / Generation
 - **Shift+T** swaps between a metarig and its generated rig, syncing bone collections, visibility, and selection.
 - **Shift+T** on a mesh object enters pose mode on its deforming armature, if any.
-- **Ctrl+Shift+R** regenerates the active metarig/rig. If there is only one metarig in the scene, it doesn't need to be active.
+- **Ctrl+Alt+R** regenerates the active metarig/rig. If there is only one metarig in the scene, it doesn't need to be active.
 
 ## Better Duplicate & Extrude
 - **E** (Extrude) and **Shift+D** (Duplicate) increment bone names:

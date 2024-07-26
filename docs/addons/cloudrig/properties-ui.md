@@ -140,7 +140,7 @@ Which is done like this:
 You can implement your own Python operator in a text datablock, then display it next to a property.
 CloudRig's generation process uses this to add the IK/FK snapping&baking operators, among others.
 
-This example implements an preset button for hair colors:
+This example implements a preset button for hair colors:
 
 ```python
 import bpy
