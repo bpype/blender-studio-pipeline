@@ -1225,7 +1225,7 @@ class MV_OT_delete_active_gpencil_frame(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Get active layer and remove active frame.
-        active_layer = gp_obj.layers.active
+        active_layer = gp_obj.layers[gp_obj.layers.active_index]
         if active_layer.active_frame:
             active_layer.frames.remove(active_layer.active_frame)
 
@@ -1249,8 +1249,9 @@ class MV_OT_delete_all_gpencil_frames(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Delete all frames of active layer.
-        for i in reversed(range(len(gp_obj.layers.active.frames))):
-            gp_obj.layers.active.frames.remove(gp_obj.layers.active.frames[i])
+        active_layer = gp_obj.layers[gp_obj.layers.active_index]
+        for i in reversed(range(len(active_layer.frames))):
+            active_layer.frames.remove(active_layer.frames[i])
 
         return {"FINISHED"}
 
