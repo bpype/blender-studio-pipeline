@@ -9,7 +9,7 @@ from ..utils import poll_deformed_mesh_with_vgroups
 
 
 class EASYWEIGHT_OT_symmetrize_groups(Operator):
-    """Symmetrize weights of vertex groups on a near-perfectly symmetrical mesh (Will have poor results on assymetrical meshes)"""
+    """Symmetrize weights of vertex groups on a near-symmetrical mesh.\nWill have poor results on assymetrical meshes"""
 
     bl_idname = "object.symmetrize_vertex_weights"
     bl_label = "Symmetrize Vertex Weights"
@@ -20,7 +20,7 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
         description="Subset of vertex groups that should be symmetrized",
         items=[
             ('ACTIVE', 'Active', 'Active'),
-            ('BONES', 'Selected Bones', 'Selected Bones'),
+            ('SELECTED', 'Selected Bones', 'Selected Bones'),
             ('ALL', 'All', 'All'),
         ],
     )
@@ -29,9 +29,11 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
         name="Direction",
         description="Whether to symmetrize left to right or vice versa",
         items=[
+            ('AUTOMATIC', "Automatic", "Figure out the symmetrizing direction based on the name of the given vertex groups"),
             ('LEFT_TO_RIGHT', "Left to Right", "Left to Right"),
             ('RIGHT_TO_LEFT', "Right to Left", "Right to Left"),
         ],
+        options={'SKIP_SAVE'},
     )
 
     @classmethod
@@ -43,12 +45,13 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
 
         vgroups = [obj.vertex_groups.active]
         if self.groups == 'SELECTED':
+            vgroups = []
             # Get vertex groups of selected bones.
-            for vg_name in context.context.selected_pose_bones:
-                vgroup = obj.vertex_groups.get(vg_name)
+            for pbone in context.selected_pose_bones:
+                vgroup = obj.vertex_groups.get(pbone.name)
                 if not vgroup:
                     continue
-                flipped_vg = flip_name(vg_name)
+                flipped_vg = flip_name(pbone.name)
                 if flipped_vg in vgroups:
                     self.report(
                         {'ERROR'},
@@ -57,11 +60,33 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
                     return {'CANCELLED'}
                 vgroups.append(vgroup)
 
-            vgroups = [obj.vertex_groups.get(pb.name) for pb in context.selected_pose_bones]
         elif self.groups == 'ALL':
             vgroups = obj.vertex_groups[:]
 
         symmetry_mapping = get_symmetry_mapping(obj=obj)
+
+        if self.direction == 'AUTOMATIC':
+            self.direction = 'LEFT_TO_RIGHT'
+            righties = 0
+            lefties = 0
+            for vgroup in vgroups:
+                name = vgroup.name.lower()
+                if (
+                    ".r" in name
+                    or "_r" in name
+                    or "r_" in name
+                    or "right" in name
+                ):
+                    righties += 1
+                if (
+                    ".l" in name
+                    or "_l" in name
+                    or "l_" in name
+                    or "left" in name
+                ):
+                    lefties += 1
+            if righties > lefties:
+                self.direction = 'RIGHT_TO_LEFT'
 
         for vgroup in vgroups:
             symmetrize_vertex_group(
@@ -70,6 +95,10 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
                 symmetry_mapping=symmetry_mapping,
                 right_to_left=self.direction == 'RIGHT_TO_LEFT',
             )
+
+        msg_direction = self.direction.replace("_", " ").lower()
+        self.report({'INFO'}, f"Symmetrized {len(vgroups)} groups {msg_direction}.")
+
         return {'FINISHED'}
 
 

@@ -30,6 +30,7 @@ class EASYWEIGHT_OT_focus_deform_bones(Operator):
                 continue
             reveal_bone(pb.bone, select=True)
 
+        self.report({'INFO'}, "Un-hid and selected all deforming bones.")
         return {'FINISHED'}
 
 

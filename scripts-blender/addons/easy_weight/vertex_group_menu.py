@@ -48,9 +48,9 @@ class MESH_MT_vertex_group_symmetry(Menu):
         ).groups = 'ACTIVE'
         layout.operator(
             "object.symmetrize_vertex_weights",
-            text="Symmetrize Selected Bones' Groups",
+            text="Symmetrize Weights of Selected Bones",
             icon='MOD_MIRROR',
-        ).groups = 'BONES'
+        ).groups = 'SELECTED'
         op = layout.operator(
             "object.symmetrize_vertex_weights", text="Symmetrize All Left->Right", icon='MOD_MIRROR'
         )
