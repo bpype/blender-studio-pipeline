@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 from bpy.types import Menu
-from .prefs import get_addon_prefs
-from .utils import get_deforming_armature
+from .utils import get_addon_prefs
 
 
 class EASYWEIGHT_MT_PIE_easy_weight(Menu):
@@ -15,7 +14,8 @@ class EASYWEIGHT_MT_PIE_easy_weight(Menu):
         prefs = get_addon_prefs(context)
 
         # 1) < Operators
-        self.draw_operators(pie.column().box(), context)
+        op = pie.operator('wm.call_menu_pie', text="Operators", icon='SETTINGS')
+        op.name = 'EASYWEIGHT_MT_PIE_easy_weight_operators'
 
         # 2) > Front Faces Only
         pie.prop(
@@ -27,7 +27,8 @@ class EASYWEIGHT_MT_PIE_easy_weight(Menu):
         )
 
         # 3) V Overlay & Armature Display settings
-        self.draw_overlay_settings(pie.column().box(), context)
+        op = pie.operator('wm.call_menu_pie', text="Overlays", icon='OVERLAY')
+        op.name = 'EASYWEIGHT_MT_PIE_easy_weight_overlays'
 
         # 4) ^ Accumulate
         pie.prop(prefs, 'global_accumulate', icon='GP_SELECT_STROKES')
@@ -52,69 +53,124 @@ class EASYWEIGHT_MT_PIE_easy_weight(Menu):
         # 8) v>Empty
         pie.separator()
 
-    def draw_operators(self, layout, context):
-        layout.label(text="Operators")
 
+
+class EASYWEIGHT_MT_PIE_easy_weight_operators(Menu):
+    bl_label = "Easy Weight Operators"
+
+    def draw(self, context):
+        layout = self.layout
         prefs = get_addon_prefs(context)
 
-        deform_rig = get_deforming_armature(context.active_object)
-        if deform_rig:
-            layout.operator('object.focus_deform_vgroups', icon='ZOOM_IN')
+        pie = layout.menu_pie()
 
-            layout.operator(
-                'object.delete_empty_deform_vgroups',
-                text="Delete Empty Deform Groups",
-                icon='GROUP_BONE',
-            )
-        if not prefs.auto_clean_weights:
-            layout.operator(
-                "object.vertex_group_clean", icon='BRUSH_DATA', text="Clean Zero-Weights"
-            ).group_select_mode = 'ALL'
-        layout.operator(
-            'object.delete_unused_vgroups', text="Delete Unused Groups", icon='BRUSH_DATA'
+        # 1) < Focus Deforming Bones.
+        pie.operator('object.focus_deform_vgroups', icon='ZOOM_IN')
+
+        # 2) > Delete Empty Deform Groups.
+        pie.operator(
+            'object.delete_empty_deform_vgroups',
+            text="Delete Empty Deform Groups",
+            icon='GROUP_BONE',
         )
 
-        layout.operator(
-            'paint.weight_from_bones', text="Assign Automatic from Bones", icon='BONE_DATA'
-        ).type = 'AUTOMATIC'
-        op = layout.operator(
+        # 3) V Symmetrize Weights.
+        pie.operator(
+            'object.symmetrize_vertex_weights',
+            text="Symmetrize Weights of Selected",
+            icon='MOD_MIRROR',
+        ).groups = 'SELECTED'
+
+        # 4) ^ Smooth Weights.
+        op = pie.operator(
+            'object.vertex_group_smooth',
+            icon='MOD_SMOOTH'
+        )
+        op.group_select_mode='BONE_DEFORM'
+        op.factor=1
+
+        # 5) <^ Normalize Deforming Groups.
+        op = pie.operator(
             'object.vertex_group_normalize_all', text="Normalize Deform Groups", icon='IPO_SINE'
         )
         op.group_select_mode = 'BONE_DEFORM'
         op.lock_active = False
 
-    def draw_overlay_settings(self, layout, context):
+        # 6) ^> Transfer Weights
+        op = pie.operator(
+            'object.data_transfer',
+            text="Transfer All Groups to Selected Objects",
+            icon='UV_SYNC_SELECT'
+        )
+        op.use_reverse_transfer=False
+        op.data_type='VGROUP_WEIGHTS'
+        op.layers_select_src='ALL'
+        op.layers_select_dst='NAME'
+
+        # 7) <v Auto Weights.
+        pie.operator(
+            'paint.weight_from_bones', text="Assign Automatic from Bones", icon='BONE_DATA'
+        ).type = 'AUTOMATIC'
+
+        # 8) v> Delete Unused Groups.
+        pie.operator('object.delete_unused_vgroups', text="Delete Unused Groups", icon='BRUSH_DATA')
+
+
+class EASYWEIGHT_MT_PIE_easy_weight_overlays(Menu):
+    bl_label = "Weight Painting Overlay"
+
+    def draw(self, context):
+        layout = self.layout
+        pie = layout.menu_pie()
+
         overlay = context.space_data.overlay
         tool_settings = context.tool_settings
         prefs = get_addon_prefs(context)
-        layout.label(text="Overlay")
-        if not prefs.always_show_zero_weights:
-            row = layout.row()
-            row.prop(tool_settings, "vertex_group_user", text="Zero Weights Display", expand=True)
-        if hasattr(context.space_data, "overlay"):
-            row = layout.row()
-            row.prop(
-                overlay,
-                "show_wpaint_contours",
-                text="Weight Contours",
-                toggle=True,
-                icon='MOD_INSTANCE',
-            )
-            row.prop(overlay, "show_paint_wire", text="Wireframe", toggle=True, icon='SHADING_WIRE')
-            icon = 'HIDE_OFF' if overlay.show_bones else 'HIDE_ON'
-            row.prop(overlay, "show_bones", text="Bones", toggle=True, icon=icon)
 
+        # 1) < X-Ray
+        if overlay.show_xray_bone:
+            pie.prop(overlay, 'show_xray_bone', text="X-Ray Overlay")
+        elif context.pose_object:
+            pie.prop(context.pose_object, "show_in_front", toggle=True, icon='XRAY', text="Armature X-Ray")
+        else:
+            pie.separator()
+        
+        # 2) > Weight Contours
+        pie.prop(
+            overlay,
+            "show_wpaint_contours",
+            text="Weight Contours",
+            toggle=True,
+            icon='MOD_INSTANCE',
+        )
+
+        # 3) V  Armature Display type
         if context.pose_object:
-            col = layout.column()
-            col.label(text="Armature Display")
-            row = col.row(align=True)
-            row.prop(context.pose_object.data, "display_type", expand=True)
-            x_row = col.row()
-            x_row.prop(context.pose_object, "show_in_front", toggle=True, icon='XRAY')
-            if overlay.show_xray_bone:
-                x_row.prop(overlay, 'show_xray_bone', text="X-Ray Overlay")
+            box = pie.box()
+            box.label(text="Armature Display Type")
+            box.row(align=True).prop(context.pose_object.data, "display_type", expand=True)
+        else:
+            pie.separator()
+
+        # 4) ^ Bones.
+        icon = 'HIDE_OFF' if overlay.show_bones else 'HIDE_ON'
+        pie.prop(overlay, "show_bones", text="Bones", toggle=True, icon=icon)
+
+        # 5) <^ Show Zero Weights.
+        if not prefs.always_show_zero_weights:
+            pie.prop(tool_settings, "vertex_group_user", text="Zero Weights Display", expand=True)
+        else:
+            pie.separator()
+
+        # 6) ^> Wireframe.
+        if hasattr(context.space_data, "overlay"):
+            pie.prop(overlay, "show_wireframes", text="Wireframe", toggle=True, icon='SHADING_WIRE')
+        else:
+            pie.separator()
 
 
 registry = [
     EASYWEIGHT_MT_PIE_easy_weight,
+    EASYWEIGHT_MT_PIE_easy_weight_operators,
+    EASYWEIGHT_MT_PIE_easy_weight_overlays,
 ]
