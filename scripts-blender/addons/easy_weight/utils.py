@@ -1,6 +1,19 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+import bpy
 from bpy.types import PoseBone, Object, VertexGroup, Bone, EditBone
+
+from . import __package__ as base_package
+
+
+def get_addon_prefs(context=None):
+    if not context:
+        context = bpy.context
+    if base_package.startswith('bl_ext'):
+        # 4.2
+        return context.preferences.addons[base_package].preferences
+    else:
+        return context.preferences.addons[base_package.split(".")[0]].preferences
 
 
 def poll_deformed_mesh_with_vgroups(operator, context, must_deform=True) -> bool:

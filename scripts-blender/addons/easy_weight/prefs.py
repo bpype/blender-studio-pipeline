@@ -2,19 +2,10 @@
 
 import bpy, json
 from bpy.props import BoolProperty
-from . import __package__ as base_package
 from bpy.app.handlers import persistent
 
-
-def get_addon_prefs(context=None):
-    if not context:
-        context = bpy.context
-    if base_package.startswith('bl_ext'):
-        # 4.2
-        return context.preferences.addons[base_package].preferences
-    else:
-        return context.preferences.addons[base_package.split(".")[0]].preferences
-
+from .weight_cleaner import start_cleaner, stop_cleaner
+from .utils import get_addon_prefs
 
 class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -35,6 +26,13 @@ class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
         description="Multi-paint will always be turned on, allowing you to select more than one deforming bone while weight painting",
         default=True,
     )
+
+    def update_auto_clean(self, context):
+        if self.auto_clean_weights:
+            start_cleaner()
+        else:
+            stop_cleaner()
+
     auto_clean_weights: BoolProperty(
         name="Always Auto Clean",
         description="While this is enabled, zero-weights will be removed automatically after every brush stroke",

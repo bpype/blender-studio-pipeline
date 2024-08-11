@@ -2,7 +2,7 @@
 
 import bpy
 from bpy.types import Object, Operator, VIEW3D_MT_paint_weight, VIEW3D_MT_object
-from .prefs import get_addon_prefs
+from .utils import get_addon_prefs
 
 
 class EASYWEIGHT_OT_toggle_weight_paint(Operator):

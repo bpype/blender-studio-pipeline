@@ -2,13 +2,21 @@
 
 import bpy
 from bpy.app.handlers import persistent
-from .prefs import get_addon_prefs
-
+from .utils import get_addon_prefs
 
 @persistent
-def start_cleaner(scene, depsgraph):
-    bpy.app.handlers.depsgraph_update_pre.append(WeightCleaner.clean_weights)
-    bpy.app.handlers.depsgraph_update_post.append(WeightCleaner.reset_flag)
+def start_cleaner(scene=None, depsgraph=None):
+    if WeightCleaner.clean_weights not in bpy.app.handlers.depsgraph_update_pre:
+        bpy.app.handlers.depsgraph_update_pre.append(WeightCleaner.clean_weights)
+    if WeightCleaner.reset_flag not in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.append(WeightCleaner.reset_flag)
+
+@persistent
+def stop_cleaner(scene=None, depsgraph=None):
+    if WeightCleaner.clean_weights in bpy.app.handlers.depsgraph_update_pre:
+        bpy.app.handlers.depsgraph_update_pre.remove(WeightCleaner.clean_weights)
+    if WeightCleaner.reset_flag in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(WeightCleaner.reset_flag)
 
 
 class WeightCleaner:
@@ -53,9 +61,10 @@ class WeightCleaner:
 
 
 def register():
-    start_cleaner(None, None)
+    start_cleaner()
     bpy.app.handlers.load_post.append(start_cleaner)
 
 
 def unregister():
+    stop_cleaner()
     bpy.app.handlers.load_post.remove(start_cleaner)
