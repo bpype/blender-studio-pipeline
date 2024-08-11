@@ -319,7 +319,7 @@ class EASYWEIGHT_OT_focus_smallest_island(Operator):
             bpy.ops.object.mode_set(mode=org_mode)
 
         if self.enter_wp and org_mode != 'WEIGHT_PAINT':
-            bpy.ops.object.weight_paint_toggle()
+            bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
 
         # Select the bone
         if context.mode == 'PAINT_WEIGHT':

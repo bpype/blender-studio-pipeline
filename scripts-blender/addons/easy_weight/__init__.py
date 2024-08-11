@@ -2,7 +2,7 @@
 
 from . import (
     force_apply_mirror,
-    toggle_weight_paint,
+    mode_switch_hook,
     operators,
     weight_cleaner,
     weight_pie,
@@ -29,7 +29,7 @@ bl_info = {
 
 modules = [
     force_apply_mirror,
-    toggle_weight_paint,
+    mode_switch_hook,
     operators,
     weight_cleaner,
     weight_pie,

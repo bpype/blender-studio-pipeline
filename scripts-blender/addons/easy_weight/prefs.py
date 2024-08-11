@@ -285,11 +285,6 @@ def register():
         key_cat='Weight Paint',
         op_kwargs={'name': 'EASYWEIGHT_MT_PIE_easy_weight'},
     )
-    register_hotkey(
-        bl_idname='object.weight_paint_toggle',
-        hotkey_kwargs={'type': 'TAB', 'value': 'PRESS', 'ctrl': True},
-        key_cat='3D View',
-    )
 
     bpy.app.handlers.load_post.append(set_brush_prefs_on_file_load)
 
