@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy
 from bpy.types import Object, Operator, VIEW3D_MT_paint_weight, VIEW3D_MT_object
 from .prefs import get_addon_prefs

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 from bpy.types import Menu
 from .prefs import get_addon_prefs
 from .vertex_group_operators import get_deforming_armature

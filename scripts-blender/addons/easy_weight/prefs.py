@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy, json
 from bpy.props import BoolProperty
 from . import __package__ as base_package
