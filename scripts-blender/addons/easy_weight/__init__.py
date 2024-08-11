@@ -3,12 +3,13 @@
 from . import (
     force_apply_mirror,
     toggle_weight_paint,
-    vertex_group_operators,
+    operators,
     weight_cleaner,
     weight_pie,
     vertex_group_menu,
     rogue_weights,
     prefs,
+    utils,
 )
 import bpy
 import importlib
@@ -16,7 +17,7 @@ import importlib
 bl_info = {
     "name": "Easy Weight",
     "author": "Demeter Dzadik",
-    "version": (1, 0, 0),
+    "version": (1, 0, 4),
     "blender": (4, 2, 0),
     "location": "3D View -> Sidebar -> Easy Weight",
     "description": "Operators to make weight painting easier.",
@@ -29,12 +30,13 @@ bl_info = {
 modules = [
     force_apply_mirror,
     toggle_weight_paint,
-    vertex_group_operators,
+    operators,
     weight_cleaner,
     weight_pie,
     vertex_group_menu,
     rogue_weights,
     prefs,
+    utils,
 ]
 
 
@@ -45,25 +47,25 @@ def register_unregister_modules(modules, register: bool):
     """
     register_func = bpy.utils.register_class if register else bpy.utils.unregister_class
 
-    for m in modules:
+    for mod in modules:
         if register:
-            importlib.reload(m)
-        if hasattr(m, 'registry'):
-            for c in m.registry:
+            importlib.reload(mod)
+        if hasattr(mod, 'registry'):
+            for class_to_register in mod.registry:
                 try:
-                    register_func(c)
+                    register_func(class_to_register)
                 except Exception as e:
                     un = 'un' if not register else ''
-                    print(f"Warning: Failed to {un}register class: {c.__name__}")
+                    print(f"Warning: Failed to {un}register class: {class_to_register.__name__}")
                     print(e)
 
-        if hasattr(m, 'modules'):
-            register_unregister_modules(m.modules, register)
+        if hasattr(mod, 'modules'):
+            register_unregister_modules(mod.modules, register)
 
-        if register and hasattr(m, 'register'):
-            m.register()
-        elif hasattr(m, 'unregister'):
-            m.unregister()
+        if register and hasattr(mod, 'register'):
+            mod.register()
+        elif hasattr(mod, 'unregister'):
+            mod.unregister()
 
 
 def register():

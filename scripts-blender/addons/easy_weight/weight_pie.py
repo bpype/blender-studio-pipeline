@@ -2,7 +2,7 @@
 
 from bpy.types import Menu
 from .prefs import get_addon_prefs
-from .vertex_group_operators import get_deforming_armature
+from .utils import get_deforming_armature
 
 
 class EASYWEIGHT_MT_PIE_easy_weight(Menu):
@@ -63,7 +63,7 @@ class EASYWEIGHT_MT_PIE_easy_weight(Menu):
 
             layout.operator(
                 'object.delete_empty_deform_vgroups',
-                text="Clear Empty Deform Groups",
+                text="Delete Empty Deform Groups",
                 icon='GROUP_BONE',
             )
         if not prefs.auto_clean_weights:
@@ -71,7 +71,7 @@ class EASYWEIGHT_MT_PIE_easy_weight(Menu):
                 "object.vertex_group_clean", icon='BRUSH_DATA', text="Clean Zero-Weights"
             ).group_select_mode = 'ALL'
         layout.operator(
-            'object.delete_unused_vgroups', text="Clear Unused Groups", icon='BRUSH_DATA'
+            'object.delete_unused_vgroups', text="Delete Unused Groups", icon='BRUSH_DATA'
         )
 
         layout.operator(

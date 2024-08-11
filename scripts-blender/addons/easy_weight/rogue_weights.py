@@ -9,7 +9,7 @@ from bpy.props import IntProperty, CollectionProperty, StringProperty, BoolPrope
 from bpy.types import PropertyGroup, Panel, UIList, Operator, Mesh, VertexGroup, MeshVertex, Object
 from bpy.utils import flip_name
 
-from .vertex_group_operators import get_deforming_vgroups, poll_deformed_mesh_with_vgroups
+from .utils import get_deforming_vgroups, poll_deformed_mesh_with_vgroups
 
 """
 This module implements the Sidebar -> EasyWeight -> Weight Islands panel, which provides
@@ -51,9 +51,9 @@ def update_vgroup_islands(
         island_group.islands.clear()
     for island in islands:
         island_storage = island_group.islands.add()
-        for v_idx in island:
-            v_idx_storage = island_storage.vert_indicies.add()
-            v_idx_storage.index = v_idx
+        for vert_idx in island:
+            vert_idx_storage = island_storage.vert_indicies.add()
+            vert_idx_storage.index = vert_idx
 
     return island_group
 
@@ -71,16 +71,16 @@ def build_vert_index_map(mesh) -> dict:
     bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0, keep_single=False)
 
     bm = bmesh.from_edit_mesh(mesh)
-    v_dict = {}
+    vert_dict = {}
     for vert in bm.verts:
         connected_verts = []
-        for be in vert.link_edges:
-            for connected_vert in be.verts:
+        for edge in vert.link_edges:
+            for connected_vert in edge.verts:
                 if connected_vert.index == vert.index:
                     continue
                 connected_verts.append(connected_vert.index)
-        v_dict[vert.index] = connected_verts
-    return v_dict
+        vert_dict[vert.index] = connected_verts
+    return vert_dict
 
 
 def find_weight_island_vertices(
@@ -261,7 +261,7 @@ class EASYWEIGHT_OT_focus_smallest_island(Operator):
             self.vgroup in obj.vertex_groups
         ), f"Vertex Group {self.vgroup} not found in object {obj.name}, aborting."
 
-        # Also update the opposite side vertex group
+        # Also update the opposite side vertex group.
         vgroup_names = [self.vgroup]
         flipped = flip_name(self.vgroup)
         if flipped != self.vgroup:
@@ -273,7 +273,7 @@ class EASYWEIGHT_OT_focus_smallest_island(Operator):
         hid_islands = False
         for vg_name in vgroup_names:
             if vg_name in obj.island_groups:
-                # Update existing island data first
+                # Update existing island data first.
                 island_group = obj.island_groups[vg_name]
                 vgroup = obj.vertex_groups[vg_name]
                 org_num_islands = len(island_group.islands)
