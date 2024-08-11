@@ -1,27 +1,20 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-from typing import List
-
 import bpy
 import sys
 import itertools
+import bmesh
 
 from bpy.props import IntProperty, CollectionProperty, StringProperty, BoolProperty
 from bpy.types import PropertyGroup, Panel, UIList, Operator, Mesh, VertexGroup, MeshVertex, Object
-import bmesh
 from bpy.utils import flip_name
 
-from .vertex_group_operators import get_deforming_armature, get_deforming_vgroups, poll_deformed_mesh_with_vgroups
+from .vertex_group_operators import get_deforming_vgroups, poll_deformed_mesh_with_vgroups
 
 """
-This module implements a workflow for hunting down and cleaning up rogue weights in the most efficient way possible.
-All functionality can be found in the Sidebar->EasyWeight->Weight Islands panel.
+This module implements the Sidebar -> EasyWeight -> Weight Islands panel, which provides
+a workflow for hunting down and cleaning up rogue weights efficiently.
 """
-
-# TODO:
-# UIList: Filtering options, explanations as to what the numbers mean. Maybe a warning for Calculate Islands operator when the mesh has a lot of verts or vgroups.
-# Take the ProgressTracker class from Dependency Graph add-on and use it to give user feedback on weight island calculation progress.
-
 
 class VertIndex(PropertyGroup):
     index: IntProperty()
@@ -66,7 +59,9 @@ def update_vgroup_islands(
 
 
 def build_vert_index_map(mesh) -> dict:
-    """Build a dictionary of vertex indicies pointing to a list of other vertex indicies that the vertex is connected to by an edge."""
+    """Build a dictionary of vertex indicies pointing to a list of other vertex indicies 
+    that the vertex is connected to by an edge.
+    """
 
     assert bpy.context.mode == 'EDIT_MESH'
 
@@ -90,20 +85,26 @@ def build_vert_index_map(mesh) -> dict:
 
 def find_weight_island_vertices(
     mesh: Mesh, vert_idx: int, group_index: int, vert_idx_map: dict, island=[]
-) -> List[int]:
-    """Recursively find all vertices that are connected to a vertex by edges, and are also in the same vertex group."""
+) -> list[int]:
+    """Recursively find all vertices that are connected to a vertex by edges,
+    and are also in the same vertex group.
+
+    Recursion depth may exceed system default on high poly meshes.
+    """
 
     island.append(vert_idx)
-    # For each edge connected to the vert
+    # For each edge connected to the vert.
     for connected_vert_idx in vert_idx_map[vert_idx]:
-        if connected_vert_idx in island:  # Avoid infinite recursion!
+        if connected_vert_idx in island:
+            # Avoid infinite recursion!
             continue
-        # For each group this other vertex belongs to
-        for g in mesh.vertices[connected_vert_idx].groups:
-            if g.group == group_index and g.weight:  # If this vert is in the group
+        # For each group this other vertex belongs to.
+        for group_data in mesh.vertices[connected_vert_idx].groups:
+            if group_data.group == group_index and group_data.weight:
+                # If this vert is in the group, continue recursion.
                 find_weight_island_vertices(
                     mesh, connected_vert_idx, group_index, vert_idx_map, island
-                )  # Continue recursion
+                )
     return island
 
 
@@ -116,24 +117,28 @@ def find_any_vertex_in_group(mesh: Mesh, vgroup: VertexGroup, excluded_indicies=
     # to map each vertex group to all of the verts within it, so we only need to iterate
     # like this once.
 
-    for v in mesh.vertices:
-        if v.index in excluded_indicies:
+    for vert in mesh.vertices:
+        if vert.index in excluded_indicies:
             continue
-        for g in v.groups:
-            if vgroup.index == g.group:
-                return v
+        for group in vert.groups:
+            if vgroup.index == group.group:
+                return vert
     return None
 
 
-def get_islands_of_vgroup(mesh: Mesh, vgroup: VertexGroup, vert_index_map: dict) -> List[List[int]]:
+def get_islands_of_vgroup(mesh: Mesh, vgroup: VertexGroup, vert_index_map: dict) -> list[list[int]]:
     """Return a list of lists of vertex indicies: Weight islands within this vertex group."""
     islands = []
     while True:
-        flat_islands = set(itertools.chain.from_iterable(islands))
-        any_vert_in_group = find_any_vertex_in_group(mesh, vgroup, excluded_indicies=flat_islands)
+        verts_already_part_of_an_island = set(itertools.chain.from_iterable(islands))
+        any_vert_in_group = find_any_vertex_in_group(
+            mesh, vgroup, excluded_indicies=verts_already_part_of_an_island
+        )
         if not any_vert_in_group:
             break
-        # TODO: I guess recursion is bad and we should avoid it here? (we would just do the expand in a while True, and break if the current list of verts is the same as at the end of the last loop, no recursion involved.)
+        # NOTE: We could avoid recursion here by doing the expansion in a `while True` block,
+        # and break if the current list of verts is the same as at the end of the last loop.
+        # But I'm fine with just changing the recursion limit.
         sys.setrecursionlimit(len(mesh.vertices))
         island = find_weight_island_vertices(
             mesh, any_vert_in_group.index, vgroup.index, vert_index_map, island=[]
@@ -143,7 +148,7 @@ def get_islands_of_vgroup(mesh: Mesh, vgroup: VertexGroup, vert_index_map: dict)
     return islands
 
 
-def select_vertices(mesh: Mesh, vert_indicies: List[int]):
+def select_vertices(mesh: Mesh, vert_indicies: list[int]):
     assert (
         bpy.context.mode != 'EDIT_MESH'
     ), "Object must not be in edit mode, otherwise vertex selection doesn't work!"
@@ -338,19 +343,24 @@ class EASYWEIGHT_OT_calculate_weight_islands(Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @staticmethod
-    def store_all_weight_islands(obj: Object, vert_index_map: dict):
+    def store_all_weight_islands(context, obj: Object, vert_index_map: dict):
         """Store the weight island information of every deforming vertex group."""
+        wm = context.window_manager
+
         mesh = obj.data
         island_groups = obj.island_groups
-        # TODO: It would be nicer if instead of just clearing all our vertex group island data, we would hold onto the number of intended islands that the user already specified.
         island_groups.clear()
         obj.active_islands_index = 0
-        for vgroup in get_deforming_vgroups(obj):
+        vgroups = get_deforming_vgroups(obj)
+        wm.progress_begin(0, len(vgroups))
+        for i, vgroup in enumerate(vgroups):
             if 'skip_groups' in obj and vgroup.name in obj['skip_groups']:
                 continue
             obj.vertex_groups.active_index = vgroup.index
 
             update_vgroup_islands(mesh, vgroup, vert_index_map, island_groups)
+            wm.progress_update(i)
+        wm.progress_end()
 
     @classmethod
     def poll(cls, context):
@@ -360,12 +370,14 @@ class EASYWEIGHT_OT_calculate_weight_islands(Operator):
         obj = context.active_object
         org_mode = obj.mode
         bpy.ops.object.mode_set(mode='EDIT')
+
         vert_index_map = build_vert_index_map(obj.data)
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        self.store_all_weight_islands(obj, vert_index_map)
+        self.store_all_weight_islands(context, obj, vert_index_map)
 
         bpy.ops.object.mode_set(mode=org_mode)
+
         return {'FINISHED'}
 
 
