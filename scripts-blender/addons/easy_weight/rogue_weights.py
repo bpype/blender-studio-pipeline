@@ -366,6 +366,28 @@ class EASYWEIGHT_OT_calculate_weight_islands(Operator):
         return {'FINISHED'}
 
 
+class EASYWEIGHT_OT_remove_island_data(Operator):
+    """Remove weight island data"""
+
+    bl_idname = "object.remove_island_data"
+    bl_label = "Remove Island Data"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not context.active_object:
+            cls.poll_message_set("No active object.")
+            return False
+        if 'island_groups' not in context.active_object:
+            cls.poll_message_set("No island data to remove.")
+            return False
+        return True
+
+    def execute(self, context):
+        del context.active_object['island_groups']
+        return {'FINISHED'}
+
+
 class EASYWEIGHT_UL_weight_island_groups(UIList):
     @staticmethod
     def draw_header(layout):
@@ -464,7 +486,9 @@ class EASYWEIGHT_PT_WeightIslands(Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator(EASYWEIGHT_OT_calculate_weight_islands.bl_idname)
+        row = layout.row(align=True)
+        row.operator(EASYWEIGHT_OT_calculate_weight_islands.bl_idname)
+        row.operator(EASYWEIGHT_OT_remove_island_data.bl_idname, text="", icon='X')
 
         obj = context.active_object
         island_groups = obj.island_groups
@@ -489,6 +513,7 @@ registry = [
     WeightIsland,
     IslandGroup,
     EASYWEIGHT_OT_calculate_weight_islands,
+    EASYWEIGHT_OT_remove_island_data,
     EASYWEIGHT_OT_focus_smallest_island,
     EASYWEIGHT_OT_mark_island_as_okay,
     EASYWEIGHT_PT_WeightIslands,
