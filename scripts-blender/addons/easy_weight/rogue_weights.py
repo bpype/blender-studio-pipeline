@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+from collections import defaultdict
 import bpy
 import sys
 import itertools
-import bmesh
 
 from bpy.props import IntProperty, CollectionProperty, StringProperty, BoolProperty
 from bpy.types import PropertyGroup, Panel, UIList, Operator, Mesh, VertexGroup, MeshVertex, Object
@@ -16,6 +16,7 @@ This module implements the Sidebar -> EasyWeight -> Weight Islands panel, which 
 a workflow for hunting down and cleaning up rogue weights efficiently.
 """
 
+
 class VertIndex(PropertyGroup):
     index: IntProperty()
 
@@ -26,7 +27,7 @@ class WeightIsland(PropertyGroup):
 
 class IslandGroup(PropertyGroup):
     name: StringProperty(
-        name="Name", description="Name of the vertex group this set of island is associated with"
+        name="Name", description="Name of the vertex group this set of islands is associated with"
     )
     islands: CollectionProperty(type=WeightIsland)
     num_expected_islands: IntProperty(
@@ -58,28 +59,17 @@ def update_vgroup_islands(
     return island_group
 
 
-def build_vert_index_map(mesh) -> dict:
-    """Build a dictionary of vertex indicies pointing to a list of other vertex indicies 
+def build_vert_connection_map_new(mesh) -> dict:
+    """Build a dictionary of vertex indicies pointing to a list of other vertex indicies
     that the vertex is connected to by an edge.
     """
 
-    assert bpy.context.mode == 'EDIT_MESH'
+    vert_dict = defaultdict(list)
 
-    bpy.ops.mesh.select_mode(type='VERT')
-    bpy.ops.mesh.reveal()
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0, keep_single=False)
+    for edge in mesh.edges:
+        vert_dict[edge.vertices[0]] += [edge.vertices[1]]
+        vert_dict[edge.vertices[1]] += [edge.vertices[0]]
 
-    bm = bmesh.from_edit_mesh(mesh)
-    vert_dict = {}
-    for vert in bm.verts:
-        connected_verts = []
-        for edge in vert.link_edges:
-            for connected_vert in edge.verts:
-                if connected_vert.index == vert.index:
-                    continue
-                connected_verts.append(connected_vert.index)
-        vert_dict[vert.index] = connected_verts
     return vert_dict
 
 
@@ -113,7 +103,7 @@ def find_any_vertex_in_group(mesh: Mesh, vgroup: VertexGroup, excluded_indicies=
     vertex group and optinally, has a specified selection state."""
 
     # TODO: This is probably our performance bottleneck atm.
-    # We should build an acceleration structure for this similar to build_vert_index_map,
+    # We should build an acceleration structure for this similar to build_vert_connection_map_new,
     # to map each vertex group to all of the verts within it, so we only need to iterate
     # like this once.
 
@@ -152,11 +142,13 @@ def select_vertices(mesh: Mesh, vert_indicies: list[int]):
     assert (
         bpy.context.mode != 'EDIT_MESH'
     ), "Object must not be in edit mode, otherwise vertex selection doesn't work!"
-    for vi in vert_indicies:
-        mesh.vertices[vi].select = True
+
+    for i, vert in enumerate(mesh.vertices):
+        vert.select = i in vert_indicies
+        vert.hide = False
 
 
-def update_active_islands_index(obj):
+def ensure_active_islands_is_visible(obj):
     """Make sure the active entry is visible, keep incrementing index until that is the case."""
     new_active_index = obj.active_islands_index + 1
     looped = False
@@ -203,7 +195,7 @@ class EASYWEIGHT_OT_mark_island_as_okay(Operator):
         island_group = obj.island_groups[self.vgroup]
         vgroup = obj.vertex_groups[self.vgroup]
         bpy.ops.object.mode_set(mode='EDIT')
-        vert_index_map = build_vert_index_map(mesh)
+        vert_index_map = build_vert_connection_map_new(mesh)
         bpy.ops.object.mode_set(mode=org_mode)
         org_num_islands = len(island_group.islands)
         island_group = update_vgroup_islands(
@@ -224,7 +216,7 @@ class EASYWEIGHT_OT_mark_island_as_okay(Operator):
             return {'FINISHED'}
 
         island_group.num_expected_islands = new_num_islands
-        update_active_islands_index(obj)
+        ensure_active_islands_is_visible(obj)
         return {'FINISHED'}
 
 
@@ -267,8 +259,7 @@ class EASYWEIGHT_OT_focus_smallest_island(Operator):
         if flipped != self.vgroup:
             vgroup_names.append(flipped)
 
-        bpy.ops.object.mode_set(mode='EDIT')
-        vert_index_map = build_vert_index_map(mesh)
+        vert_index_map = build_vert_connection_map_new(mesh)
         bpy.ops.object.mode_set(mode=org_mode)
         hid_islands = False
         for vg_name in vgroup_names:
@@ -281,45 +272,38 @@ class EASYWEIGHT_OT_focus_smallest_island(Operator):
                     mesh, vgroup, vert_index_map, obj.island_groups, island_group
                 )
                 new_num_islands = len(island_group.islands)
-                if new_num_islands < 2:
+                if new_num_islands < 2 and org_num_islands > 1:
                     hid_islands = True
                     self.report(
                         {'INFO'},
                         f"Vertex group {vg_name} no longer has multiple islands, hidden from list.",
                     )
         if hid_islands:
-            update_active_islands_index(obj)
+            ensure_active_islands_is_visible(obj)
             return {'FINISHED'}
             # self.report({'INFO'}, f"Vertex group island count changed from {org_num_islands} to {new_num_islands}. Click again to focus smallest island.")
             # return {'FINISHED'}
-
-        if org_mode != 'EDIT':
-            bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_mode(type='VERT')
-        bpy.ops.mesh.reveal()
-        bpy.ops.mesh.select_all(action='DESELECT')
-
-        if org_mode != 'EDIT':
-            bpy.ops.object.mode_set(mode=org_mode)
-        else:
-            bpy.ops.object.mode_set(mode='OBJECT')
 
         island_groups = obj.island_groups
         island_group = island_groups[self.vgroup]
         vgroup = obj.vertex_groups[self.vgroup]
         obj.active_islands_index = island_group.index
-        obj.vertex_groups.active_index = vgroup.index
 
         smallest_island = min(island_group.islands, key=lambda island: len(island.vert_indicies))
         select_vertices(mesh, [vi.index for vi in smallest_island.vert_indicies])
 
+        # NOTE: Unfortunately these mode switches introduce some lag.
+        # Especially because the weight paint switch triggers mode_switch_hook,
+        # which causes more mode switches to put the Armature into pose mode.
+
         if self.focus_view:
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.view3d.view_selected()
-            bpy.ops.object.mode_set(mode=org_mode)
 
-        if self.enter_wp and org_mode != 'WEIGHT_PAINT':
+        if self.enter_wp:
             bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
+        else:
+            bpy.ops.object.mode_set(mode=org_mode)
 
         # Select the bone
         if context.mode == 'PAINT_WEIGHT':
@@ -332,6 +316,7 @@ class EASYWEIGHT_OT_focus_smallest_island(Operator):
 
         mesh.use_paint_mask_vertex = True
 
+        self.report({'INFO'}, "Focused on the smallest island of weights.")
         return {'FINISHED'}
 
 
@@ -371,7 +356,7 @@ class EASYWEIGHT_OT_calculate_weight_islands(Operator):
         org_mode = obj.mode
         bpy.ops.object.mode_set(mode='EDIT')
 
-        vert_index_map = build_vert_index_map(obj.data)
+        vert_index_map = build_vert_connection_map_new(obj.data)
         bpy.ops.object.mode_set(mode='OBJECT')
 
         self.store_all_weight_islands(context, obj, vert_index_map)
@@ -385,7 +370,7 @@ class EASYWEIGHT_UL_weight_island_groups(UIList):
     @staticmethod
     def draw_header(layout):
         row = layout.row()
-        split1 = row.split(factor=0.5)
+        split1 = row.split(factor=0.6)
         row1 = split1.row()
         row1.label(text="Vertex Group")
         row1.alignment = 'RIGHT'
@@ -448,14 +433,14 @@ class EASYWEIGHT_UL_weight_island_groups(UIList):
             if num_islands == island_group.num_expected_islands:
                 icon = 'CHECKMARK'
             row = layout.row()
-            split = row.split(factor=0.5)
+            split = row.split(factor=0.6)
             row1 = split.row()
             row1.label(text=island_group.name)
             row1.alignment = 'RIGHT'
             row1.label(text="|")
-            row2 = split.row()
+            row2 = split.row(align=True)
             row2.label(text=str(num_islands), icon=icon)
-            op = row2.operator(
+            row2.operator(
                 EASYWEIGHT_OT_focus_smallest_island.bl_idname, text="", icon='VIEWZOOM'
             ).vgroup = island_group.name
             row2.operator(
@@ -511,9 +496,17 @@ registry = [
 ]
 
 
+def update_active_islands_index(obj, context):
+    if len(obj.island_groups) == 0:
+        return
+    obj.vertex_groups.active_index = obj.vertex_groups.find(
+        obj.island_groups[obj.active_islands_index].name
+    )
+
+
 def register():
     Object.island_groups = CollectionProperty(type=IslandGroup)
-    Object.active_islands_index = IntProperty()
+    Object.active_islands_index = IntProperty(update=update_active_islands_index)
 
 
 def unregister():
