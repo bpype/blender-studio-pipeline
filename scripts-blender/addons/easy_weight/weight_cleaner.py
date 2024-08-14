@@ -1,12 +1,22 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy
 from bpy.app.handlers import persistent
-from .prefs import get_addon_prefs
-
+from .utils import get_addon_prefs
 
 @persistent
-def start_cleaner(scene, depsgraph):
-    bpy.app.handlers.depsgraph_update_pre.append(WeightCleaner.clean_weights)
-    bpy.app.handlers.depsgraph_update_post.append(WeightCleaner.reset_flag)
+def start_cleaner(scene=None, depsgraph=None):
+    if WeightCleaner.clean_weights not in bpy.app.handlers.depsgraph_update_pre:
+        bpy.app.handlers.depsgraph_update_pre.append(WeightCleaner.clean_weights)
+    if WeightCleaner.reset_flag not in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.append(WeightCleaner.reset_flag)
+
+@persistent
+def stop_cleaner(scene=None, depsgraph=None):
+    if WeightCleaner.clean_weights in bpy.app.handlers.depsgraph_update_pre:
+        bpy.app.handlers.depsgraph_update_pre.remove(WeightCleaner.clean_weights)
+    if WeightCleaner.reset_flag in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(WeightCleaner.reset_flag)
 
 
 class WeightCleaner:
@@ -32,6 +42,7 @@ class WeightCleaner:
             cls.cleaning_in_progress = True
             # This will trigger a depsgraph update, and therefore clean_weights, again.
             try:
+                ensure_mirror_groups(context.active_object)
                 bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0.001)
             except Exception:
                 # This happens for example if the object has no vertex groups.
@@ -49,11 +60,23 @@ class WeightCleaner:
             return
         cls.can_clean = True
 
+def ensure_mirror_groups(mesh_obj):
+    mod_types = [mod.type for mod in mesh_obj.modifiers]
+    rigs = [m.object for m in mesh_obj.modifiers if m.type == 'ARMATURE' and m.object]
+    if rigs and 'MIRROR' in mod_types:
+        for rig in rigs:
+            for pb in rig.pose.bones:
+                if pb.name in mesh_obj.vertex_groups:
+                    flipped_name = bpy.utils.flip_name(pb.name)
+                    if flipped_name != pb.name and flipped_name not in mesh_obj.vertex_groups:
+                        mesh_obj.vertex_groups.new(name=flipped_name)
+        
 
 def register():
-    start_cleaner(None, None)
+    start_cleaner()
     bpy.app.handlers.load_post.append(start_cleaner)
 
 
 def unregister():
+    stop_cleaner()
     bpy.app.handlers.load_post.remove(start_cleaner)

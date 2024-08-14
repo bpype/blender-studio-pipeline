@@ -1,8 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy
 from bpy.props import BoolProperty
 from bpy.utils import flip_name
 
-# TODO: 
+# TODO:
 # Should find a way to select the X axis verts before doing Remove Doubles, or don't Remove Doubles at all. Also need to select the Basis shape before doing Remove Doubles.
 # Implement our own Remove Doubles algo with kdtree, which would average the vertex weights of the merged verts rather than just picking the weights of one of them at random.
 
@@ -104,7 +106,7 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
             bpy.ops.mesh.remove_doubles(use_unselected=True)
             bpy.ops.object.mode_set(mode='OBJECT')
 
-        # Reset scale
+        # Reset scale.
         org_scale = obj.scale[:]
         obj.scale = (1, 1, 1)
 
@@ -115,46 +117,46 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
 
         # Flip vertex group names.
         done = []  # Don't flip names twice...
-        for vg in flipped_o.vertex_groups:
-            if vg in done:
+        for vgroup in flipped_o.vertex_groups:
+            if vgroup in done:
                 continue
-            old_name = vg.name
-            flipped_name = flip_name(vg.name)
+            old_name = vgroup.name
+            flipped_name = flip_name(vgroup.name)
             if old_name == flipped_name:
                 continue
 
-            opp_vg = flipped_o.vertex_groups.get(flipped_name)
-            if opp_vg:
-                vg.name = "temp"
-                opp_vg.name = old_name
-                vg.name = flipped_name
-                done.append(opp_vg)
+            opp_vgroup = flipped_o.vertex_groups.get(flipped_name)
+            if opp_vgroup:
+                vgroup.name = "temp"
+                opp_vgroup.name = old_name
+                vgroup.name = flipped_name
+                done.append(opp_vgroup)
 
-            vg.name = flipped_name
-            done.append(vg)
+            vgroup.name = flipped_name
+            done.append(vgroup)
 
         # Split/Flip shape keys.
         if self.split_shape_keys:
             done = []  # Don't flip names twice...
             shape_keys = flipped_o.data.shape_keys
             if shape_keys:
-                keys = shape_keys.key_blocks
-                for sk in keys:
-                    if sk in done:
+                key_blocks = shape_keys.key_blocks
+                for key_block in key_blocks:
+                    if key_block in done:
                         continue
-                    old_name = sk.name
-                    flipped_name = flip_name(sk.name)
+                    old_name = key_block.name
+                    flipped_name = flip_name(key_block.name)
                     if old_name == flipped_name:
                         continue
 
-                    opp_sk = keys.get(flipped_name)
+                    opp_sk = key_blocks.get(flipped_name)
                     if opp_sk:
-                        sk.name = "temp"
+                        key_block.name = "temp"
                         opp_sk.name = old_name
                         done.append(opp_sk)
 
-                    sk.name = flipped_name
-                    done.append(sk)
+                    key_block.name = flipped_name
+                    done.append(key_block)
 
         flip_driver_targets(flipped_o)
 
@@ -177,11 +179,11 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
             copy_of_flipped.data.shape_keys.animation_data, "drivers"
         ):
             for old_D in copy_of_flipped.data.shape_keys.animation_data.drivers:
-                for sk in combined_object.data.shape_keys.key_blocks:
-                    if sk.name in old_D.data_path:
+                for key_block in combined_object.data.shape_keys.key_blocks:
+                    if key_block.name in old_D.data_path:
                         # Create the driver...
                         new_D = combined_object.data.shape_keys.driver_add(
-                            'key_blocks["' + sk.name + '"].value'
+                            'key_blocks["' + key_block.name + '"].value'
                         )
                         new_d = new_D.driver
                         old_d = old_D.driver
@@ -191,7 +193,7 @@ class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
                         flip_x = False
                         flip_y = False
                         flip_z = False
-                        flip_flags = sk.name.split("_")[0]
+                        flip_flags = key_block.name.split("_")[0]
                         # This code is just getting better :)
                         if flip_flags in ['XYZ', 'XZ', 'XY', 'YZ', 'Z']:
                             if ('X') in flip_flags:
@@ -264,10 +266,13 @@ def draw_force_apply_mirror(self, context):
     self.layout.separator()
     self.layout.operator(EASYWEIGHT_OT_force_apply_mirror.bl_idname, icon='MOD_MIRROR')
 
+
 registry = [EASYWEIGHT_OT_force_apply_mirror]
+
 
 def register():
     bpy.types.MESH_MT_shape_key_context_menu.append(draw_force_apply_mirror)
+
 
 def unregister():
     bpy.types.MESH_MT_shape_key_context_menu.remove(draw_force_apply_mirror)

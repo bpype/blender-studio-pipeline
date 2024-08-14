@@ -1,17 +1,40 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 import bpy
 from bpy.types import Object, Operator, VIEW3D_MT_paint_weight, VIEW3D_MT_object
-from .prefs import get_addon_prefs
+from .utils import get_addon_prefs
 
-# This operator is added to the Object menu.
 
-# It does the following:
-#  Set active object to weight paint mode
-#  Find first armature via the object's modifiers.
-#   Ensure it is visible, select it and set it to pose mode.
+class EASYWEIGHT_OT_toggle_weight_paint(Operator):
+    """Enter weight paint mode on a mesh object and pose mode on its armature"""
 
-# This allows you to start weight painting with a single button press from any state.
+    bl_idname = "object.weight_paint_toggle"
+    bl_label = "Toggle Weight Paint Mode"
+    bl_options = {'REGISTER', 'UNDO'}
 
-# When running the operator again, it should restore all armature visibility related settings to how it was before.
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        if not obj or obj.type != 'MESH':
+            cls.poll_message_set("Active object must be a mesh.")
+            return False
+        return True
+
+    def execute(self, context):
+        obj = context.active_object
+
+        if obj.mode != 'WEIGHT_PAINT':
+            armature_visible = enter_wp(context)
+            if armature_visible == False:
+                # This should never happen, but it also doesn't break anything.
+                self.report({'WARNING'}, "Could not make Armature visible.")
+            return {'FINISHED'}
+        else:
+            leave_wp(context)
+            wm = context.window_manager
+            if 'weight_paint_toggle' in wm:
+                del wm['weight_paint_toggle']
+            return {'FINISHED'}
 
 
 def get_armature_of_meshob(obj: Object):
@@ -126,38 +149,6 @@ def leave_wp(context):
         context.scene.collection.objects.unlink(armature)
 
     return
-
-
-class EASYWEIGHT_OT_toggle_weight_paint(Operator):
-    """Enter weight paint mode on a mesh object and pose mode on its armature"""
-
-    bl_idname = "object.weight_paint_toggle"
-    bl_label = "Toggle Weight Paint Mode"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    @classmethod
-    def poll(cls, context):
-        obj = context.active_object
-        if not obj or obj.type != 'MESH':
-            cls.poll_message_set("Active object must be a mesh.")
-            return False
-        return True
-
-    def execute(self, context):
-        obj = context.active_object
-
-        if obj.mode != 'WEIGHT_PAINT':
-            armature_visible = enter_wp(context)
-            if armature_visible == False:
-                # This should never happen, but it also doesn't break anything.
-                self.report({'WARNING'}, "Could not make Armature visible.")
-            return {'FINISHED'}
-        else:
-            leave_wp(context)
-            wm = context.window_manager
-            if 'weight_paint_toggle' in wm:
-                del wm['weight_paint_toggle']
-            return {'FINISHED'}
 
 
 def draw_in_menu(self, context):
