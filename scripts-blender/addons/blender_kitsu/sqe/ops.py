@@ -279,8 +279,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
             for s in selected_sequences
             if s.kitsu.initialized
             and not s.kitsu.linked
-            and s.kitsu.manual_shot_name
-            and s.kitsu.sequence_name
+            and (s.kitsu.manual_shot_name or s.kitsu.sequence_name)
         ]
 
         if len(selected_sequences) > 1:
