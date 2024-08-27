@@ -661,7 +661,6 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         )
 
     def draw_media(self, context: bpy.types.Context) -> None:
-
         sel_metadata_strips = [strip for strip in context.selected_sequences if strip.kitsu.linked]
 
         noun = get_selshots_noun(len(sel_metadata_strips), prefix=f"{len(sel_metadata_strips)}")

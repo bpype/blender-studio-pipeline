@@ -54,9 +54,7 @@ class KITSU_OT_sqe_push_shot_meta(bpy.types.Operator):
             selected_sequences = context.scene.sequence_editor.sequences_all
 
         # Sort strips.
-        selected_sequences = sorted(
-            selected_sequences, key=lambda strip: strip.frame_final_start
-        )
+        selected_sequences = sorted(selected_sequences, key=lambda strip: strip.frame_final_start)
 
         # Begin progress update.
         context.window_manager.progress_begin(0, len(selected_sequences))
@@ -177,9 +175,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
             selected_sequences = context.scene.sequence_editor.sequences_all
 
         # Sort strips.
-        selected_sequences = sorted(
-            selected_sequences, key=lambda strip: strip.frame_final_start
-        )
+        selected_sequences = sorted(selected_sequences, key=lambda strip: strip.frame_final_start)
 
         # Begin progress update.
         context.window_manager.progress_begin(0, len(selected_sequences))
@@ -216,9 +212,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
                 seq = push.new_sequence(strip, project_active)
 
             # Check if shot already to server  > create it.
-            shot = checkstrip.shot_exists_by_name(
-                strip, project_active, seq, clear_cache=False
-            )
+            shot = checkstrip.shot_exists_by_name(strip, project_active, seq, clear_cache=False)
             if shot:
                 failed.append(strip)
                 continue
@@ -296,8 +290,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
         col.prop(
             self,
             "confirm",
-            text="Submit %s to server. Will skip shots if they already exist"
-            % (noun.lower()),
+            text="Submit %s to server. Will skip shots if they already exist" % (noun.lower()),
         )
         col.prop(self, "add_tasks", text="Add Tasks with the default status to shot(s)")
 
@@ -305,9 +298,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
 class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
     bl_idname = "kitsu.sqe_push_new_sequence"
     bl_label = "Submit New Sequence"
-    bl_description = (
-        "Creates new sequence on server. Will skip if sequence already exists"
-    )
+    bl_description = "Creates new sequence on server. Will skip if sequence already exists"
 
     sequence_name: bpy.props.StringProperty(
         name="Name", default="", description="Name of new sequence"
@@ -420,9 +411,7 @@ class KITSU_OT_sqe_init_strip(bpy.types.Operator):
             selected_sequences = context.scene.sequence_editor.sequences_all
 
         # Sort strips.
-        selected_sequences = sorted(
-            selected_sequences, key=lambda strip: strip.frame_final_start
-        )
+        selected_sequences = sorted(selected_sequences, key=lambda strip: strip.frame_final_start)
 
         for strip in selected_sequences:
             if not checkstrip.is_valid_type(strip):
@@ -519,7 +508,9 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
 
     bl_idname = "kitsu.sqe_link_shot"
     bl_label = "Link Shot"
-    bl_description = "Links selected sequence strip to shot on server. Pulls all metadata of shot from server"
+    bl_description = (
+        "Links selected sequence strip to shot on server. Pulls all metadata of shot from server"
+    )
     bl_options = {"REGISTER", "UNDO"}
 
     use_url: bpy.props.BoolProperty(
@@ -549,7 +540,6 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
         )
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-
         shot_id = self._strip.kitsu.shot_id
 
         # By url.
@@ -597,9 +587,7 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
             self.url = context.window_manager.clipboard
         self._strip = context.scene.sequence_editor.active_strip
 
-        return context.window_manager.invoke_props_dialog(  # type: ignore
-            self, width=400
-        )
+        return context.window_manager.invoke_props_dialog(self, width=400)  # type: ignore
 
     def draw(self, context):
         layout = self.layout
@@ -644,11 +632,7 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
 
         seq_name = sel_shots[0].kitsu.sequence_name
         for s in sel_shots:
-            if (
-                s.kitsu.linked
-                or not s.kitsu.initialized
-                or not checkstrip.is_valid_type(s)
-            ):
+            if s.kitsu.linked or not s.kitsu.initialized or not checkstrip.is_valid_type(s):
                 cls.poll_message_set(
                     "Please select unlinked, initialized strips, of either MOVIE or COLOR type"
                 )
@@ -684,9 +668,7 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
 
         # Sort sequence after frame in.
         selected_sequences = context.selected_sequences
-        selected_sequences = sorted(
-            selected_sequences, key=lambda x: x.frame_final_start
-        )
+        selected_sequences = sorted(selected_sequences, key=lambda x: x.frame_final_start)
         episode = cache.episode_active_get()
 
         for idx, strip in enumerate(selected_sequences):
@@ -711,8 +693,7 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
 
             succeeded.append(strip)
             logger.info(
-                "Strip: %s Assign sequence: %s Assign shot: %s"
-                % (strip.name, sequence, shot)
+                "Strip: %s Assign sequence: %s Assign shot: %s" % (strip.name, sequence, shot)
             )
 
         # Report.
@@ -764,9 +745,7 @@ class KITSU_OT_sqe_pull_shot_meta(bpy.types.Operator):
             selected_sequences = context.scene.sequence_editor.sequences_all
 
         # Sort sequences.
-        selected_sequences = sorted(
-            selected_sequences, key=lambda strip: strip.frame_final_start
-        )
+        selected_sequences = sorted(selected_sequences, key=lambda strip: strip.frame_final_start)
 
         # Begin progress update.
         context.window_manager.progress_begin(0, len(selected_sequences))
@@ -947,9 +926,7 @@ class KITSU_OT_sqe_unlink_shot(bpy.types.Operator):
 class KITSU_OT_sqe_push_del_shot(bpy.types.Operator):
     bl_idname = "kitsu.sqe_push_del_shot"
     bl_label = "Delete Shot"
-    bl_description = (
-        "Deletes shot on server and clears metadata of selected sequence strips"
-    )
+    bl_description = "Deletes shot on server and clears metadata of selected sequence strips"
 
     confirm: bpy.props.BoolProperty(name="Confirm")
 
@@ -1077,9 +1054,7 @@ class KITSU_OT_sqe_set_sqe_render_task_type(bpy.types.Operator):
     bl_label = "Set Sqe Render Task Type"
     bl_options = {"INTERNAL"}
     bl_property = "enum_prop"
-    bl_description = (
-        "Sets kitsu task type that will be used when uploading sequence editor renders"
-    )
+    bl_description = "Sets kitsu task type that will be used when uploading sequence editor renders"
 
     enum_prop: bpy.props.EnumProperty(items=cache.get_shot_task_types_enum)  # type: ignore
 
@@ -1119,9 +1094,7 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(
-            prefs.session_auth(context) and context.scene.kitsu.task_type_thumbnail_id
-        )
+        return bool(prefs.session_auth(context) and context.scene.kitsu.task_type_thumbnail_id)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         nr_of_strips: int = len(context.selected_sequences)
@@ -1194,9 +1167,7 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
         # Process thumbnail queue.
         for idx, filepath in enumerate(upload_queue):
             context.window_manager.progress_update(idx)
-            opsdata.upload_preview(
-                context, filepath, task_type, comment="Update thumbnail"
-            )
+            opsdata.upload_preview(context, filepath, task_type, comment="Update thumbnail")
 
         # End second progress update.
         context.window_manager.progress_update(len(upload_queue))
@@ -1218,15 +1189,11 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
         logger.info("-END- Pushing shot thumbnails")
         return {"FINISHED"}
 
-    def make_thumbnail(
-        self, context: bpy.types.Context, strip: bpy.types.Sequence
-    ) -> Path:
+    def make_thumbnail(self, context: bpy.types.Context, strip: bpy.types.Sequence) -> Path:
         bpy.ops.render.render()
         file_name = f"{strip.kitsu.shot_id}_{str(context.scene.frame_current)}.jpg"
         path = self._save_render(bpy.data.images["Render Result"], file_name)
-        logger.info(
-            f"Saved thumbnail of shot {strip.kitsu.shot_name} to {path.as_posix()}"
-        )
+        logger.info(f"Saved thumbnail of shot {strip.kitsu.shot_name} to {path.as_posix()}")
         return path
 
     def _save_render(self, datablock: bpy.types.Image, file_name: str) -> Path:
@@ -1306,9 +1273,7 @@ class KITSU_OT_sqe_push_render(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(
-            prefs.session_auth(context) and context.scene.kitsu.task_type_sqe_render_id
-        )
+        return bool(prefs.session_auth(context) and context.scene.kitsu.task_type_sqe_render_id)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         failed = []
@@ -1382,9 +1347,7 @@ class KITSU_OT_sqe_push_render(bpy.types.Operator):
         # Process thumbnail queue.
         for idx, filepath in enumerate(upload_queue):
             context.window_manager.progress_update(idx)
-            opsdata.upload_preview(
-                context, filepath, task_type, comment="Sequence Editor Render"
-            )
+            opsdata.upload_preview(context, filepath, task_type, comment="Sequence Editor Render")
 
         # End second progress update.
         context.window_manager.progress_update(len(upload_queue))
@@ -1583,9 +1546,7 @@ class KITSU_OT_sqe_debug_duplicates(bpy.types.Operator):
         "shot id. Shows them in a drop down menu which triggers a selection"
     )
 
-    duplicates: bpy.props.EnumProperty(
-        items=opsdata.sqe_get_duplicates, name="Duplicates"
-    )
+    duplicates: bpy.props.EnumProperty(items=opsdata.sqe_get_duplicates, name="Duplicates")
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -1621,9 +1582,7 @@ class KITSU_OT_sqe_debug_not_linked(bpy.types.Operator):
         "Shows them in a drop down menu which triggers a selection"
     )
 
-    not_linked: bpy.props.EnumProperty(
-        items=opsdata.sqe_get_not_linked, name="Not Linked"
-    )
+    not_linked: bpy.props.EnumProperty(items=opsdata.sqe_get_not_linked, name="Not Linked")
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -1660,9 +1619,7 @@ class KITSU_OT_sqe_debug_multi_project(bpy.types.Operator):
         "Shows them in a drop down menu which triggers a selection"
     )
 
-    multi_project: bpy.props.EnumProperty(
-        items=opsdata.sqe_get_multi_project, name="Multi Project"
-    )
+    multi_project: bpy.props.EnumProperty(items=opsdata.sqe_get_multi_project, name="Multi Project")
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -1712,7 +1669,11 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
         channel = context.scene.kitsu.pull_edit_channel
         active_project = cache.project_active_get()
         active_episode = cache.episode_active_get()
-        sequences = active_episode.get_sequences_all() if active_episode else active_project.get_sequences_all()
+        sequences = (
+            active_episode.get_sequences_all()
+            if active_episode
+            else active_project.get_sequences_all()
+        )
         shot_strips = checksqe.get_shot_strips(context)
         occupied_ranges = checksqe.get_occupied_ranges(context)
         all_shots = active_project.get_shots_all()
@@ -1770,9 +1731,7 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
 
                 # Check if on the specified channel there is space to put the strip.
                 if str(channel) in occupied_ranges:
-                    if checksqe.is_range_occupied(
-                        shot_range, occupied_ranges[str(channel)]
-                    ):
+                    if checksqe.is_range_occupied(shot_range, occupied_ranges[str(channel)]):
                         failed.append(shot)
                         logger.error(
                             "Failed to create shot %s. Channel: %i Range: %i - %i is occupied",
@@ -1839,9 +1798,7 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
         return {"FINISHED"}
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
-        return context.window_manager.invoke_props_dialog(  # type: ignore
-            self, width=300
-        )
+        return context.window_manager.invoke_props_dialog(self, width=300)  # type: ignore
 
     def draw(self, context):
         layout = self.layout
@@ -1971,9 +1928,7 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
 
             # Check if one channel above strip there is space to put the metadata strip.
             if str(channel) in occupied_ranges:
-                if checksqe.is_range_occupied(
-                    strip_range, occupied_ranges[str(channel)]
-                ):
+                if checksqe.is_range_occupied(strip_range, occupied_ranges[str(channel)]):
                     failed.append(strip)
                     logger.error(
                         "Failed to create metadata strip for %s. Channel: %i Range: %i - %i is occupied",
@@ -2029,7 +1984,6 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
 
 
 class KITSU_OT_sqe_fix_metadata_strips(bpy.types.Operator):
-
     bl_idname = "kitsu.sqe_fix_metadata_strip"
     bl_label = "Fix Metadata Strip Missing Media"
     bl_description = "Fixes missing media error in metadata strips. "
@@ -2151,9 +2105,7 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
                     break
 
             if not included:
-                logger.info(
-                    "Not included in media update search list: %s", strip.filepath
-                )
+                logger.info("Not included in media update search list: %s", strip.filepath)
                 excluded.append(strip)
                 continue
 
@@ -2165,9 +2117,7 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
             # Gather valid files to compare source media to.
             media_folder = media_path_old.parent
             media_all: List[Path] = [
-                f
-                for f in media_folder.iterdir()
-                if f.is_file() and util.get_version(f.name)
+                f for f in media_folder.iterdir() if f.is_file() and util.get_version(f.name)
             ]
             # List of files that are named as source except for version str.
             valid_files: List[Path] = []
@@ -2463,9 +2413,7 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
         with bpy.context.temp_override(
             window=bpy.context.window,
             area=areas[0],
-            regions=[region for region in areas[0].regions if region.type == 'WINDOW'][
-                0
-            ],
+            regions=[region for region in areas[0].regions if region.type == 'WINDOW'][0],
             screen=bpy.context.window.screen,
         ):
             bpy.ops.sequencer.image_strip_add(
@@ -2498,9 +2446,7 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
         addon_prefs = prefs.addon_prefs_get(context)
         path_string = os.path.realpath(bpy.path.abspath(filepath))
         path = Path(
-            path_string.replace(
-                addon_prefs.shot_playblast_root_dir, addon_prefs.frames_root_dir
-            )
+            path_string.replace(addon_prefs.shot_playblast_root_dir, addon_prefs.frames_root_dir)
         )
         return path.parent
 
@@ -2510,13 +2456,8 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
         failed = []
         channel = int(self.channel_selection)
         addon_prefs = prefs.addon_prefs_get(context)
-        if not (
-            Path(addon_prefs.frames_root_dir).is_dir()
-            and addon_prefs.frames_root_dir != ''
-        ):
-            self.report(
-                {"ERROR"}, f"Frames Directory does not exist, check add-on preferences"
-            )
+        if not (Path(addon_prefs.frames_root_dir).is_dir() and addon_prefs.frames_root_dir != ''):
+            self.report({"ERROR"}, f"Frames Directory does not exist, check add-on preferences")
             return {"CANCELLED"}
 
         if self.set_color_space:
@@ -2641,9 +2582,7 @@ class KITSU_OT_sqe_change_strip_source(bpy.types.Operator):
         # Gather valid files to compare source media to.
         media_folder = media_path_old.parent
         media_all: List[Path] = [
-            f
-            for f in media_folder.iterdir()
-            if f.is_file() and util.get_version(f.name)
+            f for f in media_folder.iterdir() if f.is_file() and util.get_version(f.name)
         ]
         # List of files that are named as source except for version str.
         valid_files: List[Path] = []
@@ -2653,9 +2592,7 @@ class KITSU_OT_sqe_change_strip_source(bpy.types.Operator):
             version = util.get_version(file.name)
 
             # We only want to consider files that have the same name except for version string.
-            if file.name.replace(version, "") != media_path_old.name.replace(
-                current_version, ""
-            ):
+            if file.name.replace(version, "") != media_path_old.name.replace(current_version, ""):
                 continue
 
             valid_files.append(file)
