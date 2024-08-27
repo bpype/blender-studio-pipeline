@@ -53,15 +53,11 @@ def has_meta(strip: bpy.types.Sequence) -> bool:
         logger.info("Strip: %s. Missing metadata", strip.name)
         return False
 
-    logger.info(
-        "Strip: %s. Has metadata (Sequence: %s, Shot: %s)", strip.name, seq, shot
-    )
+    logger.info("Strip: %s. Has metadata (Sequence: %s, Shot: %s)", strip.name, seq, shot)
     return True
 
 
-def shot_exists_by_id(
-    strip: bpy.types.Sequence, clear_cache: bool = True
-) -> Optional[Shot]:
+def shot_exists_by_id(strip: bpy.types.Sequence, clear_cache: bool = True) -> Optional[Shot]:
     """Returns Shot instance if shot with strip.kitsu.shot_id exists else None"""
 
     if clear_cache:
@@ -77,9 +73,7 @@ def shot_exists_by_id(
         )
         return None
 
-    logger.info(
-        "Strip: %s Shot %s exists on server (ID: %s)", strip.name, shot.name, shot.id
-    )
+    logger.info("Strip: %s Shot %s exists on server (ID: %s)", strip.name, shot.name, shot.id)
     return shot
 
 
@@ -128,9 +122,7 @@ def shot_exists_by_name(
         )
         return None
 
-    logger.info(
-        "Strip: %s Shot already existent on server (ID: %s)", strip.name, shot.id
-    )
+    logger.info("Strip: %s Shot already existent on server (ID: %s)", strip.name, shot.id)
     return shot
 
 
