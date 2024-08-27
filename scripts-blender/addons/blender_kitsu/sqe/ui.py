@@ -318,7 +318,8 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         split = col.split(factor=split_factor, align=True)
         split.label(text="Shot")
         if not strip.kitsu.shot_id:
-            split.prop(strip.kitsu, "manual_shot_name", text="")
+            placeholder = strip.kitsu.shot_name or ''
+            split.prop(strip.kitsu, "manual_shot_name", text="", placeholder=placeholder)
         else:
             split.prop(strip.kitsu, "shot_name", text="")
 
@@ -463,7 +464,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
                 strips_to_tb.append(s)
                 strips_to_meta.append(s)
 
-            elif s.kitsu.initialized and s.kitsu.manual_shot_name != "":
+            elif s.kitsu.initialized and (s.kitsu.manual_shot_name != "" or s.kitsu.shot_name):
                 strips_to_submit.append(s)
 
         return bool(strips_to_meta or strips_to_tb or strips_to_submit)
@@ -660,7 +661,6 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         )
 
     def draw_media(self, context: bpy.types.Context) -> None:
-
         sel_metadata_strips = [strip for strip in context.selected_sequences if strip.kitsu.linked]
 
         noun = get_selshots_noun(len(sel_metadata_strips), prefix=f"{len(sel_metadata_strips)}")
