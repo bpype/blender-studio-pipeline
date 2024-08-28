@@ -57,9 +57,6 @@ def get_file_dir(seq: Sequence, shot: Shot, task_type: TaskType) -> Path:
 
 
 def set_render_engine(scene: bpy.types.Scene, engine='CYCLES'):
-    """
-    By default we set Cycles as the renderer.
-    """
     scene.render.engine = engine
 
 
