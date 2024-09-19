@@ -283,3 +283,4 @@ def unregister():
 
     del bpy.types.Mesh.shape_key_ui_type
     DATA_PT_shape_keys.poll = DATA_PT_shape_keys.old_poll
+    DATA_PT_shape_keys.replacement = None

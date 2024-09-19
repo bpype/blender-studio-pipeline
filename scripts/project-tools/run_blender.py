@@ -305,7 +305,7 @@ def update_addons():
         logger.info("Addon artifacts folder not found at: " + str(addon_artifacts_folder))
         logger.info("Skipping addon updates.")
         return
-    addons_list = [entry.name for entry in addon_artifacts_folder.iterdir() if entry.suffix == ".zip"]
+    addons_list = [entry.name for entry in addon_artifacts_folder.iterdir() if entry.suffix == ".zip" and entry.name[0] != "."]
     local_artifact_dir = PATH_LOCAL / 'artifacts' / 'addons'
     # Remove addons that doesn't exist in the artifact directory anymore.
     if local_artifact_dir.exists():
@@ -335,7 +335,7 @@ def update_presets():
         logger.info("Presets artifacts folder not found at: " + str(preset_artifacts_folder))
         logger.info("Skipping preset updates.")
         return
-    presets_list = [entry.name for entry in preset_artifacts_folder.iterdir() if entry.suffix == ".zip"]
+    presets_list = [entry.name for entry in preset_artifacts_folder.iterdir() if entry.suffix == ".zip" and entry.name[0] != "."]
     for zip_name in presets_list:
         update_addon(zip_name, 'presets')
 
