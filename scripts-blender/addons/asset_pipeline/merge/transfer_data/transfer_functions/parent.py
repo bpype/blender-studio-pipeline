@@ -54,6 +54,8 @@ def init_parent(scene, obj):
 
 def transfer_parent(target_obj, source_obj):
     target_obj.parent = source_obj.parent
+    target_obj.parent_type = source_obj.parent_type
+    target_obj.parent_bone = source_obj.parent_bone
 
     target_obj.location = source_obj.location
     if source_obj.rotation_mode == 'QUATERNION':
