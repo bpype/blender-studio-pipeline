@@ -1,5 +1,5 @@
-name: Bug Report
-about: File a bug report
+name: CloudRig Bug
+about: File a bug report about CloudRig
 labels:
   - "Type/Report"
   - "Status/Needs Triage"
@@ -31,3 +31,5 @@ body:
 
                **Exact steps for others to reproduce the error**
                Based on the default human metarig or a simplified attached .blend file.
+
+               @Mets
