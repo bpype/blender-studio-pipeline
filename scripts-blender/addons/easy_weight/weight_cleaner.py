@@ -37,6 +37,11 @@ class WeightCleaner:
             return
         if not prefs.auto_clean_weights:
             return
+        tool = context.workspace.tools.from_space_view3d_mode("PAINT_WEIGHT", create=False).idname
+        if tool == "builtin.gradient":
+            # Trying to clean while using gradient causes a crash:
+            # https://projects.blender.org/studio/blender-studio-pipeline/issues/332
+            return
         if cls.can_clean:
             cls.can_clean = False
             cls.cleaning_in_progress = True
