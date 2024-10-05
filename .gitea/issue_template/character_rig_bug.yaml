@@ -1,0 +1,22 @@
+name: Character Rig Issue
+about: File a report about one of the characters in our library
+labels:
+  - "Type/Report"
+  - "Status/Needs Triage"
+  - "Priority/Normal"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Please note that not all characters may be perfectly compatible with the latest version of Blender.
+  - type: textarea
+    id: body
+    attributes:
+      label: "Description"
+      hide_label: true
+      value: |
+        @Mets
+        Character: 
+        Blender Version: 
+
+        **Description of the issue**
