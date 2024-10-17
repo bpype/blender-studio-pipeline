@@ -1,7 +1,15 @@
-# Another lattice addon, this time inspired by https://twitter.com/soyposmoderno/status/1307222594047758337
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-# This one lets you create an empty hooked up to a Lattice to deform all selected objects.
+# Inspired by https://twitter.com/soyposmoderno/status/1307222594047758337
+
+# This lets you create an empty hooked up to a Lattice to deform all selected objects.
 # A root empty is also created that can be (manually) parented to a rig in order to use this for animation.
+
+# TODO:
+# Automatically parent using an Armature constraint copying the weights of the nearest vertex on a selected mesh.
+# Fix lattice not spawning at the correct place when a parent bone is chosen.
+# Maybe add an operator for easily tweaking the radius (Shift+Alt+S) and lerp falloff to be sharper or smoother (F?).
+# Ability to customize the name of the objects instead of just being "Tweak".
 
 import bpy
 from bpy.props import (
@@ -16,7 +24,8 @@ from bpy.props import (
 from bpy.types import Operator, Object, VertexGroup, Scene, Collection, Modifier, Panel
 from typing import List, Tuple
 
-from mathutils import Vector
+from mathutils import Vector, kdtree
+
 from rna_prop_ui import rna_idprop_ui_create
 
 from .utils import clamp, get_lattice_vertex_index, simple_driver, bounding_box_center_of_objects
@@ -24,7 +33,7 @@ from .utils import clamp, get_lattice_vertex_index, simple_driver, bounding_box_
 TWEAKLAT_COLL_NAME = 'Tweak Lattices'
 
 
-class TWEAKLAT_OT_Create(Operator):
+class OBJECT_OT_tweaklattice_create(Operator):
     """Create a lattice setup to deform selected objects"""
 
     bl_idname = "lattice.create_tweak_lattice"
@@ -111,17 +120,17 @@ class TWEAKLAT_OT_Create(Operator):
         lattice.points_v = clamp(lattice.points_v, 6, 64)
         lattice.points_w = clamp(lattice.points_w, 6, 64)
 
-        # Create a falloff vertex group
+        # Create a falloff vertex group.
         vg = ensure_falloff_vgroup(lattice_ob, vg_name="Hook")
 
-        # Create an Empty at the 3D cursor
+        # Create the Hook Empty.
         hook_name = "Hook_" + lattice_ob.name
         hook = bpy.data.objects.new(hook_name, None)
         hook.empty_display_type = 'SPHERE'
         hook.empty_display_size = 0.5
         coll.objects.link(hook)
 
-        # Create some custom properties
+        # Create some custom properties.
         hook['Lattice'] = lattice_ob
         lattice_ob['Hook'] = hook
         hook['Multiplier'] = 1.0
@@ -146,12 +155,16 @@ class TWEAKLAT_OT_Create(Operator):
         )
 
         # Create a Root Empty to parent both the hook and the lattice to.
-        # This will allow pressing Ctrl+G/R/S on the hook to reset its transforms.
+        # This will allow pressing Alt+G/R/S on the hook to reset its transforms.
         root_name = "Root_" + hook.name
         root = bpy.data.objects.new(root_name, None)
         root['Hook'] = hook
         root.empty_display_type = 'CUBE'
         root.empty_display_size = 0.5
+        coll.objects.link(root)
+        root.hide_viewport = True
+        hook['Root'] = root
+        # Set the location.
         if self.location == 'CENTER':
             meshes = [o for o in context.selected_objects if o.type == 'MESH']
             root.matrix_world.translation = bounding_box_center_of_objects(meshes)
@@ -165,27 +178,12 @@ class TWEAKLAT_OT_Create(Operator):
                     @ scene.tweak_lattice_parent_ob.pose.bones[self.parent_bone].matrix
                 )
             root.matrix_world = matrix_of_parent.copy()
-        coll.objects.link(root)
-        root.hide_viewport = True
-        hook['Root'] = root
 
-        # Parent the root
-        scene = context.scene
-        root.parent = scene.tweak_lattice_parent_ob
-        if root.parent and root.parent.type == 'ARMATURE':
-            bone = root.parent.pose.bones.get(self.parent_bone)
-            if bone:
-                arm_con = root.constraints.new(type='ARMATURE')
-                tgt = arm_con.targets.new()
-                tgt.target = root.parent
-                tgt.subtarget = bone.name
-
-        # Parent lattice and hook to root
+        # Parent lattice and hook to root.
         lattice_ob.parent = root
-
         hook.parent = root
 
-        # Add Hook modifier to the lattice
+        # Add Hook modifier to the lattice.
         hook_mod = lattice_ob.modifiers.new(name="Hook", type='HOOK')
         hook_mod.object = hook
         hook_mod.vertex_group = vg.name
@@ -209,7 +207,7 @@ class TWEAKLAT_OT_Create(Operator):
         return {'FINISHED'}
 
 
-class TWEAKLAT_OT_Duplicate(Operator):
+class OBJECT_OT_tweaklattice_duplicate(Operator):
     """Duplicate this Tweak Lattice set-up"""
 
     bl_idname = "lattice.duplicate_tweak_setup"
@@ -250,7 +248,7 @@ class TWEAKLAT_OT_Duplicate(Operator):
         return {'FINISHED'}
 
 
-class TWEAKLAT_OT_Falloff(Operator):
+class OBJECT_OT_tweaklattice_set_falloff(Operator):
     """Adjust falloff of the hook vertex group of a Tweak Lattice"""
 
     bl_idname = "lattice.tweak_lattice_adjust_falloww"
@@ -329,7 +327,7 @@ class TWEAKLAT_OT_Falloff(Operator):
         return {'FINISHED'}
 
 
-class TWEAKLAT_OT_Delete(Operator):
+class OBJECT_OT_tweaklattice_delete(Operator):
     """Delete a tweak lattice setup with all its helper objects, drivers, etc"""
 
     bl_idname = "lattice.delete_tweak_lattice"
@@ -366,7 +364,7 @@ class TWEAKLAT_OT_Delete(Operator):
         return {'FINISHED'}
 
 
-class TWEAKLAT_OT_Add_Objects(Operator):
+class OBJECT_OT_tweaklattice_objects_add(Operator):
     """Add selected objects to this tweak lattice"""
 
     bl_idname = "lattice.add_selected_objects"
@@ -396,7 +394,7 @@ class TWEAKLAT_OT_Add_Objects(Operator):
         return {'FINISHED'}
 
 
-class TWEAKLAT_OT_Remove_Selected_Objects(Operator):
+class OBJECT_OT_tweaklattice_objects_remove(Operator):
     """Remove selected objects from this tweak lattice"""
 
     bl_idname = "lattice.remove_selected_objects"
@@ -426,7 +424,7 @@ class TWEAKLAT_OT_Remove_Selected_Objects(Operator):
         return {'FINISHED'}
 
 
-class TWEAKLAT_OT_Remove_Object(Operator):
+class OBJECT_OT_tweaklattice_object_remove_single(Operator):
     """Remove this object from the tweak lattice"""
 
     bl_idname = "lattice.remove_object"
@@ -447,7 +445,7 @@ class TWEAKLAT_OT_Remove_Object(Operator):
         return {'FINISHED'}
 
 
-class TWEAKLAT_PT_Main(Panel):
+class VIEW3D_PT_tweak_lattice(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Lattice Magic'
@@ -468,17 +466,17 @@ class TWEAKLAT_PT_Main(Panel):
 
         layout = layout.column()
         if not hook:
-            layout.operator(TWEAKLAT_OT_Create.bl_idname, icon='OUTLINER_OB_LATTICE')
+            layout.operator(OBJECT_OT_tweaklattice_create.bl_idname, icon='OUTLINER_OB_LATTICE')
             return
 
         layout.prop(hook, '["Tweak Lattice"]', slider=True, text="Influence")
         layout.prop(hook, '["Radius"]', slider=True)
-        layout.operator(TWEAKLAT_OT_Falloff.bl_idname, text="Adjust Falloff")
+        layout.operator(OBJECT_OT_tweaklattice_set_falloff.bl_idname, text="Adjust Falloff")
 
         layout.separator()
-        layout.operator(TWEAKLAT_OT_Delete.bl_idname, text='Delete Tweak Lattice', icon='TRASH')
+        layout.operator(OBJECT_OT_tweaklattice_delete.bl_idname, text='Delete Tweak Lattice', icon='TRASH')
         layout.operator(
-            TWEAKLAT_OT_Duplicate.bl_idname, text='Duplicate Tweak Lattice', icon='DUPLICATE'
+            OBJECT_OT_tweaklattice_duplicate.bl_idname, text='Duplicate Tweak Lattice', icon='DUPLICATE'
         )
 
         layout.separator()
@@ -514,7 +512,7 @@ class TWEAKLAT_PT_Main(Panel):
         if num_to_add:
             if num_to_add > 1:
                 text = f"Add {num_to_add} Objects"
-            layout.operator(TWEAKLAT_OT_Add_Objects.bl_idname, icon='ADD', text=text)
+            layout.operator(OBJECT_OT_tweaklattice_objects_add.bl_idname, icon='ADD', text=text)
 
         layout.separator()
         num_to_remove = False
@@ -529,7 +527,7 @@ class TWEAKLAT_PT_Main(Panel):
         if num_to_remove:
             if num_to_remove > 1:
                 text = f"Remove {num_to_remove} Objects"
-            layout.operator(TWEAKLAT_OT_Remove_Selected_Objects.bl_idname, icon='REMOVE', text=text)
+            layout.operator(OBJECT_OT_tweaklattice_objects_remove.bl_idname, icon='REMOVE', text=text)
 
         objects_and_keys = [(hook[key], key) for key in hook.keys() if "object_" in key]
         objects_and_keys.sort(key=lambda o_and_k: o_and_k[1])
@@ -540,7 +538,7 @@ class TWEAKLAT_PT_Main(Panel):
             if not mod:
                 continue
             row.prop_search(mod, 'vertex_group', ob, 'vertex_groups', text="", icon='GROUP_VERTEX')
-            op = row.operator(TWEAKLAT_OT_Remove_Object.bl_idname, text="", icon='X')
+            op = row.operator(OBJECT_OT_tweaklattice_object_remove_single.bl_idname, text="", icon='X')
             op.ob_pointer_prop_name = key
 
 
@@ -631,21 +629,26 @@ def get_lattice_modifier_of_object(obj, lattice) -> Modifier:
 def add_objects_to_lattice(hook: Object, objects: List[Object]):
     lattice_ob = hook['Lattice']
 
-    for i, o in enumerate(objects):
-        o.select_set(False)
-        if o.type != 'MESH' or o in hook.values():
+    for i, obj in enumerate(objects):
+        obj.select_set(False)
+        if obj.type != 'MESH' or obj in hook.values():
             continue
-        m = o.modifiers.new(name=lattice_ob.name, type='LATTICE')
-        m.object = lattice_ob
+
+        # Make sure overridden object is editable.
+        if obj.override_library:
+            obj.override_library.is_system_override=False
+
+        mod = obj.modifiers.new(name=lattice_ob.name, type='LATTICE')
+        mod.object = lattice_ob
 
         # Make sure the property name is available.
         offset = 0
         while "object_" + str(offset) in hook:
             offset += 1
-        hook["object_" + str(i + offset)] = o
+        hook["object_" + str(i + offset)] = obj
 
         # Add driver to the modifier influence.
-        simple_driver(m, 'strength', hook, '["Tweak Lattice"]')
+        simple_driver(mod, 'strength', hook, '["Tweak Lattice"]')
 
 
 def remove_object_from_lattice(hook: Object, obj: Object):
@@ -690,14 +693,14 @@ def remove_all_objects_from_lattice(hook: Object) -> List[Object]:
 
 
 registry = [
-    TWEAKLAT_OT_Create,
-    TWEAKLAT_OT_Duplicate,
-    TWEAKLAT_OT_Delete,
-    TWEAKLAT_OT_Falloff,
-    TWEAKLAT_OT_Add_Objects,
-    TWEAKLAT_OT_Remove_Selected_Objects,
-    TWEAKLAT_OT_Remove_Object,
-    TWEAKLAT_PT_Main,
+    OBJECT_OT_tweaklattice_create,
+    OBJECT_OT_tweaklattice_duplicate,
+    OBJECT_OT_tweaklattice_delete,
+    OBJECT_OT_tweaklattice_set_falloff,
+    OBJECT_OT_tweaklattice_objects_add,
+    OBJECT_OT_tweaklattice_objects_remove,
+    OBJECT_OT_tweaklattice_object_remove_single,
+    VIEW3D_PT_tweak_lattice,
 ]
 
 

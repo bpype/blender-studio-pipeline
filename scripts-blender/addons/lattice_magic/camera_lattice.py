@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Inspired by https://animplay.wordpress.com/2015/11/18/smear-frame-script-maya/.
 
 # This addon allows the user to specify a camera and a collection,
@@ -87,7 +89,7 @@ class LatticeSlot(bpy.types.PropertyGroup):
     )
 
 
-class CAMLAT_OT_Add(bpy.types.Operator):
+class OBJECT_OT_camlattice_add(bpy.types.Operator):
     """Add a Camera Lattice Slot"""
 
     bl_idname = "lattice.add_slot"
@@ -109,7 +111,7 @@ class CAMLAT_OT_Add(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_Remove(bpy.types.Operator):
+class OBJECT_OT_camlattice_remove(bpy.types.Operator):
     """Remove Lattice Slot along with its Lattice object, animation and modifiers"""
 
     bl_idname = "lattice.remove_slot"
@@ -141,7 +143,7 @@ class CAMLAT_OT_Remove(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_Move(bpy.types.Operator):
+class OBJECT_OT_camlattice_move(bpy.types.Operator):
     """Move Lattice Slot"""
 
     bl_idname = "lattice.move_slot"
@@ -179,7 +181,7 @@ class CAMLAT_OT_Move(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_Generate(bpy.types.Operator):
+class OBJECT_OT_camlattice_generate(bpy.types.Operator):
     """Generate a lattice to smear the selected collection from the selected camera"""
 
     bl_idname = "lattice.generate_lattice_for_slot"
@@ -309,7 +311,7 @@ class CAMLAT_OT_Generate(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_Delete(bpy.types.Operator):
+class OBJECT_OT_camlattice_delete(bpy.types.Operator):
     """Delete Lattice object, its animation and modifiers that target it in the selected collection's objects"""
 
     bl_idname = "lattice.delete_lattice_from_slot"
@@ -362,7 +364,7 @@ class CAMLAT_OT_Delete(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_ShapeKey_Add(bpy.types.Operator):
+class OBJECT_OT_camlattice_shapekey_add(bpy.types.Operator):
     """Add a shape key to the active Lattice Slot's lattice, named after the current frame number"""
 
     bl_idname = "lattice.smear_add_shape"
@@ -395,7 +397,7 @@ def shape_key_poll(context):
     return True
 
 
-class CAMLAT_OT_ShapeKey_Zero_All(bpy.types.Operator):
+class OBJECT_OT_camlattice_zero_all(bpy.types.Operator):
     """Set all shape key values to 0"""
 
     bl_idname = "lattice.shape_keys_zero_all"
@@ -418,7 +420,7 @@ class CAMLAT_OT_ShapeKey_Zero_All(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_ShapeKey_Keyframe_All(bpy.types.Operator):
+class OBJECT_OT_camlattice_keyframe_all(bpy.types.Operator):
     """Insert a keyframe on the current frame for all shape key values"""
 
     bl_idname = "lattice.shape_keys_keyframe_all"
@@ -441,7 +443,7 @@ class CAMLAT_OT_ShapeKey_Keyframe_All(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_PT_Main(bpy.types.Panel):
+class VIEW3D_PT_camlattice_panel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Lattice Magic'
@@ -469,13 +471,13 @@ class CAMLAT_PT_Main(bpy.types.Panel):
         )
 
         col = row.column()
-        col.operator(CAMLAT_OT_Add.bl_idname, text="", icon='ADD')
-        remove_op = col.operator(CAMLAT_OT_Remove.bl_idname, text="", icon='REMOVE')
+        col.operator(OBJECT_OT_camlattice_add.bl_idname, text="", icon='ADD')
+        remove_op = col.operator(OBJECT_OT_camlattice_remove.bl_idname, text="", icon='REMOVE')
         remove_op.index = active_index
         col.separator()
-        move_up_op = col.operator(CAMLAT_OT_Move.bl_idname, text="", icon='TRIA_UP')
+        move_up_op = col.operator(OBJECT_OT_camlattice_move.bl_idname, text="", icon='TRIA_UP')
         move_up_op.direction = 'UP'
-        move_down_op = col.operator(CAMLAT_OT_Move.bl_idname, text="", icon='TRIA_DOWN')
+        move_down_op = col.operator(OBJECT_OT_camlattice_move.bl_idname, text="", icon='TRIA_DOWN')
         move_down_op.direction = 'DOWN'
 
         if len(scene.lattice_slots) == 0:
@@ -499,9 +501,9 @@ class CAMLAT_PT_Main(bpy.types.Panel):
         layout.separator()
 
         if not active_slot.lattice:
-            layout.operator(CAMLAT_OT_Generate.bl_idname, icon='OUTLINER_OB_LATTICE')
+            layout.operator(OBJECT_OT_camlattice_generate.bl_idname, icon='OUTLINER_OB_LATTICE')
         else:
-            layout.operator(CAMLAT_OT_Delete.bl_idname, icon='TRASH')
+            layout.operator(OBJECT_OT_camlattice_delete.bl_idname, icon='TRASH')
 
         row = layout.row()
         row.enabled = False
@@ -516,8 +518,8 @@ class CAMLAT_PT_Main(bpy.types.Panel):
         col = layout.column()
 
         row = layout.row(align=True)
-        row.operator(CAMLAT_OT_ShapeKey_Zero_All.bl_idname, text="", icon='RADIOBUT_OFF')
-        row.operator(CAMLAT_OT_ShapeKey_Keyframe_All.bl_idname, text="", icon='HANDLETYPE_FREE_VEC')
+        row.operator(OBJECT_OT_camlattice_zero_all.bl_idname, text="", icon='RADIOBUT_OFF')
+        row.operator(OBJECT_OT_camlattice_keyframe_all.bl_idname, text="", icon='HANDLETYPE_FREE_VEC')
         row.separator()
         prefs = get_addon_prefs(context)
         row.prop(prefs, 'update_active_shape_key', toggle=True, text="", icon='TIME')
@@ -535,7 +537,7 @@ class CAMLAT_PT_Main(bpy.types.Panel):
         )
 
         col = row.column()
-        col.operator(CAMLAT_OT_ShapeKey_Add.bl_idname, text="", icon='ADD')
+        col.operator(OBJECT_OT_camlattice_shapekey_add.bl_idname, text="", icon='ADD')
         remove_op = col.operator('object.shape_key_remove', text="", icon='REMOVE')
 
         col.separator()
@@ -588,15 +590,15 @@ def camera_lattice_frame_change(scene):
 registry = [
     LatticeSlot,
     CAMLAT_UL_lattice_slots,
-    CAMLAT_OT_Add,
-    CAMLAT_OT_Remove,
-    CAMLAT_OT_Move,
-    CAMLAT_OT_Generate,
-    CAMLAT_OT_Delete,
-    CAMLAT_OT_ShapeKey_Add,
-    CAMLAT_OT_ShapeKey_Zero_All,
-    CAMLAT_OT_ShapeKey_Keyframe_All,
-    CAMLAT_PT_Main,
+    OBJECT_OT_camlattice_add,
+    OBJECT_OT_camlattice_remove,
+    OBJECT_OT_camlattice_move,
+    OBJECT_OT_camlattice_generate,
+    OBJECT_OT_camlattice_delete,
+    OBJECT_OT_camlattice_shapekey_add,
+    OBJECT_OT_camlattice_zero_all,
+    OBJECT_OT_camlattice_keyframe_all,
+    VIEW3D_PT_camlattice_panel,
 ]
 
 
