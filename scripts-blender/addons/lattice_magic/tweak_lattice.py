@@ -6,8 +6,6 @@
 # A root empty is also created that can be (manually) parented to a rig in order to use this for animation.
 
 # TODO:
-# Automatically parent using an Armature constraint copying the weights of the nearest vertex on a selected mesh.
-# Fix lattice not spawning at the correct place when a parent bone is chosen.
 # Maybe add an operator for easily tweaking the radius (Shift+Alt+S) and lerp falloff to be sharper or smoother (F?).
 # Ability to customize the name of the objects instead of just being "Tweak".
 
@@ -24,7 +22,8 @@ from bpy.props import (
 from bpy.types import Operator, Object, VertexGroup, Scene, Collection, Modifier, Panel
 from typing import List, Tuple
 
-from mathutils import Vector, kdtree
+from mathutils import Matrix, Vector, kdtree
+from math import *
 
 from rna_prop_ui import rna_idprop_ui_create
 
@@ -40,7 +39,13 @@ class OBJECT_OT_tweaklattice_create(Operator):
     bl_label = "Create Tweak Lattice"
     bl_options = {'REGISTER', 'UNDO'}
 
-    resolution: IntVectorProperty(name="Resolution", default=(12, 12, 12), min=6, max=64)
+    name: StringProperty(
+        name="Name",
+        description="A unique name to identify this tweak lattice. Used in helper objects and modifiers",
+        default="Tweak",
+    )
+
+    resolution: IntVectorProperty(name="Resolution", default=(25, 25, 25), min=6, max=64)
 
     location: EnumProperty(
         name="Location",
@@ -63,8 +68,16 @@ class OBJECT_OT_tweaklattice_create(Operator):
         name="Parent Method",
         description="How to parent the tweak lattice",
         items=[
-            ('AUTO', 'Automatic', "Parent using an Armature constraint which mimics the deformation of the nearest vertex to the cursor"),
-            ('MANUAL', 'Manual', "Manually select a single object or bone as the tweak lattice parent"),
+            (
+                'AUTO',
+                'Automatic',
+                "Parent using an Armature constraint which mimics the deformation of the nearest vertex to the cursor",
+            ),
+            (
+                'MANUAL',
+                'Manual',
+                "Manually select a single object or bone as the tweak lattice parent",
+            ),
         ],
         default='AUTO',
     )
@@ -121,17 +134,10 @@ class OBJECT_OT_tweaklattice_create(Operator):
         lattice = bpy.data.lattices.new(lattice_name)
         lattice_ob = bpy.data.objects.new(lattice_name, lattice)
         coll.objects.link(lattice_ob)
-        lattice_ob.hide_viewport = True
 
         # Set resolution
-        (
-            lattice.points_u,
-            lattice.points_v,
-            lattice.points_w,
-        ) = self.resolution
-        lattice.points_u = clamp(lattice.points_u, 6, 64)
-        lattice.points_v = clamp(lattice.points_v, 6, 64)
-        lattice.points_w = clamp(lattice.points_w, 6, 64)
+        set_lattice_resolution(lattice_ob, *self.resolution)
+        lattice_ob.hide_viewport = True
 
         # Create a falloff vertex group.
         vg = ensure_falloff_vgroup(lattice_ob, vg_name="Hook")
@@ -177,60 +183,10 @@ class OBJECT_OT_tweaklattice_create(Operator):
         coll.objects.link(root)
         hook['Root'] = root
 
-        # Determine location. (Take care with order of this and parenting.)
-        if self.location == 'CENTER':
-            meshes = [o for o in context.selected_objects if o.type == 'MESH']
-            matrix_of_parent.translation = bounding_box_center_of_objects(meshes)
-        elif self.location == 'CURSOR':
-            matrix_of_parent = context.scene.cursor.matrix
-        elif self.location == 'PARENT':
-            if self.parent_bone:
-                matrix_of_parent = (
-                    scene.tweak_lattice_parent_ob.matrix_world
-                    @ scene.tweak_lattice_parent_ob.pose.bones[self.parent_bone].matrix
-                )
-            else:
-                matrix_of_parent = scene.tweak_lattice_parent_ob.matrix_world
-
-        depsgraph = context.evaluated_depsgraph_get()
-
-        root.matrix_world = matrix_of_parent.copy()
-        context.view_layer.update()
-        mat_pre_arm_con = root.matrix_world.copy()
-
-        if self.parent_method == 'AUTO':
-            # Parent to the nearest deforming vertex.
-            nearest_vertex = get_nearest_evaluated_vertex(
-                dg = depsgraph,
-                coord = matrix_of_parent.copy().to_translation(),
-                objs = context.selected_objects,
-            )
-            obj, eval_obj, vert_idx, _vert_co = nearest_vertex
-
-            root.parent = obj.find_armature()
-            weights = get_deforming_weights(obj, eval_obj, vert_idx)
-        else:
-            root.parent = scene.tweak_lattice_parent_ob
-            weights = {self.parent_bone: 1.0}
-
-        if weights:
-            arm_con = root.constraints.new(type='ARMATURE')
-            for bone_name, weight in weights.items():
-                tgt = arm_con.targets.new()
-                tgt.target = root.parent
-                tgt.subtarget = bone_name
-                tgt.weight = weight
-
-            context.view_layer.update()
-            mat_post_arm_con = root.matrix_world.copy()
-
-            delta = mat_pre_arm_con.inverted() @ mat_post_arm_con
-
-            root.matrix_world = matrix_of_parent @ delta.inverted()
-            root.rotation_euler = 0, 0, 0
+        self.set_parent_and_transform(context, root)
 
         # Disable the root from view.
-        # NOTE: This must be done AFTER any reliance on view_layer.update() calls! 
+        # NOTE: This must be done AFTER any reliance on view_layer.update() calls!
         #   They don't work when the object is disabled!
         root.hide_viewport = True
 
@@ -258,8 +214,70 @@ class OBJECT_OT_tweaklattice_create(Operator):
         hook.select_set(True)
         context.view_layer.objects.active = hook
 
+        # Clear the parent selector helper property.
         scene.tweak_lattice_parent_ob = None
         return {'FINISHED'}
+
+    def set_parent_and_transform(self, context, root):
+        scene = context.scene
+        depsgraph = context.evaluated_depsgraph_get()
+
+        matrix_of_parent = self.get_lattice_parent_matrix(context)
+
+        root.matrix_world = matrix_of_parent.copy()
+        context.view_layer.update()
+        mat_pre_arm_con = root.matrix_world.copy()
+
+        if self.parent_method == 'AUTO':
+            # Parent to the nearest deforming vertex.
+            nearest_vertex = get_nearest_evaluated_vertex(
+                dg=depsgraph,
+                coord=matrix_of_parent.copy().to_translation(),
+                objs=context.selected_objects,
+            )
+            obj, eval_obj, vert_idx, _vert_co = nearest_vertex
+
+            root.parent = obj.find_armature()
+            weights = get_deforming_weights(obj, eval_obj, vert_idx)
+        else:
+            root.parent = scene.tweak_lattice_parent_ob
+            weights = {self.parent_bone: 1.0}
+
+        if weights:
+            arm_con = root.constraints.new(type='ARMATURE')
+            for bone_name, weight in weights.items():
+                tgt = arm_con.targets.new()
+                tgt.target = root.parent
+                tgt.subtarget = bone_name
+                tgt.weight = weight
+
+            context.view_layer.update()
+            mat_post_arm_con = root.matrix_world.copy()
+
+            delta = mat_pre_arm_con.inverted() @ mat_post_arm_con
+
+            root.matrix_world = matrix_of_parent @ delta.inverted()
+            root.rotation_euler = 0, 0, 0
+
+    def get_lattice_parent_matrix(self, context):
+        location = self.location
+        parent_bone = self.parent_bone
+        scene = context.scene
+
+        if location == 'CENTER':
+            meshes = [o for o in context.selected_objects if o.type == 'MESH']
+            mat = Matrix.Identity((4))
+            mat.translation = bounding_box_center_of_objects(meshes)
+            return mat
+        elif location == 'CURSOR':
+            return context.scene.cursor.matrix.copy()
+        elif location == 'PARENT':
+            ob_mat = scene.tweak_lattice_parent_ob.matrix_world
+            if parent_bone:
+                bone_mat = scene.tweak_lattice_parent_ob.pose.bones[parent_bone].matrix
+                return ob_mat @ bone_mat
+            else:
+                return ob_mat
 
 
 class OBJECT_OT_tweaklattice_duplicate(Operator):
@@ -306,26 +324,35 @@ class OBJECT_OT_tweaklattice_duplicate(Operator):
 class OBJECT_OT_tweaklattice_set_falloff(Operator):
     """Adjust falloff of the hook vertex group of a Tweak Lattice"""
 
-    bl_idname = "lattice.tweak_lattice_adjust_falloww"
+    bl_idname = "lattice.tweak_lattice_adjust_falloff"
     bl_label = "Adjust Falloff"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def update_falloff(self, context):
+        FALLOFF_TYPES = {
+            # Since these expressions manipulate the shape of the lattice,
+            # which then manipulates the shape of the mesh,
+            # it's hard to come up with these functions in any meaningful way.
+            # So, it was done more so with artistic trial and error.
+            'LINEAR': lambda x: x + x * 0.1,
+            'CONSTANT': lambda x: 1,
+            'SHARP': lambda x: pow(x, 2) * 1.25,
+            'ROOT': lambda x: pow(x, 0.5) * 1.05,
+            'SMOOTH': lambda x: (1 - cos(x * pi)) / 2,
+            'SPHERE': lambda x: sin(pow(x, 0.5)) * 1.25,
+            'DONUT': lambda x: (sin(pow(x, 0.5)) - pow(x, 2)) * 2.5,
+        }
+        falloff_func = FALLOFF_TYPES[self.falloff_type]
+
         if self.doing_invoke:
             return
         hook, lattice, _root = get_tweak_setup(context.object)
-        ret = ensure_falloff_vgroup(
-            lattice, 'Hook', multiplier=self.multiplier, expression=self.expression
-        )
+        ret = ensure_falloff_vgroup(lattice, 'Hook', multiplier=self.multiplier, func=falloff_func)
         self.is_expression_valid = ret != None
         if ret:
             hook['Expression'] = self.expression
         hook['Multiplier'] = self.multiplier
 
-    is_expression_valid: BoolProperty(
-        name="Error", description="Used to notify user if their expression is invalid", default=True
-    )
-    # Actual parameters
     multiplier: FloatProperty(
         name="Multiplier",
         description="Multiplier on the weight values",
@@ -334,10 +361,19 @@ class OBJECT_OT_tweaklattice_set_falloff(Operator):
         min=0,
         soft_max=2,
     )
-    expression: StringProperty(
-        name="Expression",
-        default="x",
-        description="Expression to calculate the weight values where 'x' is a 0-1 value representing a point's closeness to the lattice center",
+    falloff_type: EnumProperty(
+        name="Falloff Shape",
+        description="Choose shape of influence for this lattice",
+        items=[
+            ('LINEAR', 'Linear', 'Linear'),
+            ('CONSTANT', 'Constant', 'Constant'),
+            ('SHARP', 'Sharp', 'Sharp'),
+            ('ROOT', 'Root', 'Root'),
+            ('SMOOTH', 'Smooth', 'Smooth'),
+            ('SPHERE', 'Sphere', 'Sphere'),
+            ('DONUT', 'Donut', 'Donut'),
+        ],
+        default='SMOOTH',
         update=update_falloff,
     )
 
@@ -370,12 +406,7 @@ class OBJECT_OT_tweaklattice_set_falloff(Operator):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
-        layout.prop(self, 'expression', text="Expression", slider=True)
-        if not self.is_expression_valid:
-            row = layout.row()
-            row.alert = True
-            row.label(text="Invalid expression.", icon='ERROR')
-
+        layout.prop(self, 'falloff_type', text="Falloff Type", slider=True)
         layout.prop(self, 'multiplier', text="Strength", slider=True)
 
     def execute(self, context):
@@ -529,9 +560,13 @@ class VIEW3D_PT_tweak_lattice(Panel):
         layout.operator(OBJECT_OT_tweaklattice_set_falloff.bl_idname, text="Adjust Falloff")
 
         layout.separator()
-        layout.operator(OBJECT_OT_tweaklattice_delete.bl_idname, text='Delete Tweak Lattice', icon='TRASH')
         layout.operator(
-            OBJECT_OT_tweaklattice_duplicate.bl_idname, text='Duplicate Tweak Lattice', icon='DUPLICATE'
+            OBJECT_OT_tweaklattice_delete.bl_idname, text='Delete Tweak Lattice', icon='TRASH'
+        )
+        layout.operator(
+            OBJECT_OT_tweaklattice_duplicate.bl_idname,
+            text='Duplicate Tweak Lattice',
+            icon='DUPLICATE',
         )
 
         layout.separator()
@@ -582,7 +617,9 @@ class VIEW3D_PT_tweak_lattice(Panel):
         if num_to_remove:
             if num_to_remove > 1:
                 text = f"Remove {num_to_remove} Objects"
-            layout.operator(OBJECT_OT_tweaklattice_objects_remove.bl_idname, icon='REMOVE', text=text)
+            layout.operator(
+                OBJECT_OT_tweaklattice_objects_remove.bl_idname, icon='REMOVE', text=text
+            )
 
         objects_and_keys = [(hook[key], key) for key in hook.keys() if "object_" in key]
         objects_and_keys.sort(key=lambda o_and_k: o_and_k[1])
@@ -593,25 +630,43 @@ class VIEW3D_PT_tweak_lattice(Panel):
             if not mod:
                 continue
             row.prop_search(mod, 'vertex_group', ob, 'vertex_groups', text="", icon='GROUP_VERTEX')
-            op = row.operator(OBJECT_OT_tweaklattice_object_remove_single.bl_idname, text="", icon='X')
+            op = row.operator(
+                OBJECT_OT_tweaklattice_object_remove_single.bl_idname, text="", icon='X'
+            )
             op.ob_pointer_prop_name = key
+
+
+def set_lattice_resolution(lat_ob: Object, res_u, res_v=None, res_w=None):
+    assert lat_ob.type == 'LATTICE', f"This isn't a lattice object: {lat_ob.name}"
+
+    if not res_v:
+        res_v = res_u
+    if not res_w:
+        res_w = res_u
+
+    lat_ob.data.points_u = res_u
+    lat_ob.data.points_v = res_v
+    lat_ob.data.points_w = res_w
 
 
 def build_kdtree(obj):
     # Get the vertices of the mesh in world coordinates
     vertices = [obj.matrix_world @ v.co for v in obj.data.vertices]
-    
+
     # Build KD-Tree from the vertices
     size = len(vertices)
     kd = kdtree.KDTree(size)
-    
+
     for i, vertex in enumerate(vertices):
         kd.insert(vertex, i)
-    
+
     kd.balance()
     return kd
 
-def get_nearest_evaluated_vertex(dg, coord: Vector, objs: list[Object]) -> tuple[Object, int, Vector]:
+
+def get_nearest_evaluated_vertex(
+    dg, coord: Vector, objs: list[Object]
+) -> tuple[Object, int, Vector]:
     """Get nearest EVALUATED vertex to a coordinate out of a list of passed mesh objects.
     Return the original object, and the evaluated object, vertex index, and coordinate.
     """
@@ -625,7 +680,7 @@ def get_nearest_evaluated_vertex(dg, coord: Vector, objs: list[Object]) -> tuple
         eval_ob = obj.evaluated_get(dg)
 
         kd = build_kdtree(eval_ob)
-        
+
         # Find the nearest vertex to the 3D cursor
 
         eval_co, eval_idx, dist = kd.find(coord)
@@ -636,6 +691,7 @@ def get_nearest_evaluated_vertex(dg, coord: Vector, objs: list[Object]) -> tuple
             nearest_vertex = (obj, eval_ob, eval_idx, eval_co)
 
     return nearest_vertex
+
 
 def get_deforming_weights(obj: Object, eval_obj, vert_idx: int) -> dict[str, float] | None:
     armature = obj.find_armature()
@@ -654,9 +710,10 @@ def get_deforming_weights(obj: Object, eval_obj, vert_idx: int) -> dict[str, flo
         group_name = obj.vertex_groups[group_index].name
         pbone = armature.pose.bones.get(group_name)
         if pbone and pbone.bone.use_deform:
-            weights[group_name] = group_weight  
+            weights[group_name] = group_weight
 
     return weights
+
 
 def get_tweak_setup(obj: Object) -> Tuple[Object, Object, Object]:
     """Based on either the hook, lattice or root, return all three."""
@@ -684,7 +741,7 @@ def ensure_tweak_lattice_collection(scene: Scene) -> Collection:
 
 
 def ensure_falloff_vgroup(
-    lattice_ob: Object, vg_name="Group", multiplier=1, expression="x"
+    lattice_ob: Object, vg_name="Group", multiplier=1, func=lambda x: x
 ) -> VertexGroup:
     lattice = lattice_ob.data
     res_x, res_y, res_z = lattice.points_u, lattice.points_v, lattice.points_w
@@ -703,11 +760,8 @@ def ensure_falloff_vgroup(
 
                 coord = Vector((x + 2, y + 2, z + 2))
                 distance_from_center = (coord - center).length
-                distance_factor = 1 - (distance_from_center / max_res * 2)
-                try:
-                    influence = eval(expression.replace("x", "distance_factor"))
-                except:
-                    return None
+                distance_factor = clamp(1 - (distance_from_center / max_res * 2), 0, 1)
+                influence = func(distance_factor)
 
                 vg.add([index], influence * multiplier, 'REPLACE')
     return vg
@@ -752,7 +806,7 @@ def add_objects_to_lattice(hook: Object, objects: List[Object]):
 
         # Make sure overridden object is editable.
         if obj.override_library:
-            obj.override_library.is_system_override=False
+            obj.override_library.is_system_override = False
 
         mod = obj.modifiers.new(name=lattice_ob.name, type='LATTICE')
         mod.object = lattice_ob

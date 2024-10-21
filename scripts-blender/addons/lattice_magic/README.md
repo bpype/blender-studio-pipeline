@@ -29,7 +29,7 @@ Tweak Lattice lets you create a lattice setup at the 3D cursor to make deformati
 <video controls src="/media/addons/lattice_magic/tweak_lattice.mp4" title="Title"></video>
 
 ### Parenting
-This tool was designed for use with a character rig: After pressing the "Create Tweak Lattice" button, you can simply select the desired parent rig object and bone in the pop-up before confirming.
+By default, the lattice will be deformed according to the weights of the nearest vertex on the selected object. Alternatively, you can manually select an object or bone to parent the lattice to.
 
 ### Deletion
 If you want to delete a lattice, don't just delete the empty object that was created for you. This would leave behind broken modifiers and drivers. Instead, use the "Delete Tweak Lattice" button.
@@ -43,6 +43,9 @@ Once objects are added to the lattice, you can remove them in the same way, or j
 
 ### Masking
 If you want a tweak lattice to only affect a certain area, you can create a vertex group, and then specify this under the "Affected Objects" list.
+
+### Influence
+You can choose different deformation shapes for the lattice, such as linear, sharp, smooth, or even donut shaped.
 
 ### Going under the hood
 With the lattice control selected, you can see a "Helper Objects" section in the UI. This lists two objects which are taking care of things under the hood. If you want, you can enable them with the screen icon, which will let you mess with them. This should rarely be necessary though, and you should only do it at your own risk, since there's no way to get these back to their original states once modified.
