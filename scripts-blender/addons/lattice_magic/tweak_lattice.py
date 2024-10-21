@@ -2,12 +2,9 @@
 
 # Inspired by https://twitter.com/soyposmoderno/status/1307222594047758337
 
-# This lets you create an empty hooked up to a Lattice to deform all selected objects.
-# A root empty is also created that can be (manually) parented to a rig in order to use this for animation.
-
-# TODO:
-# Maybe add an operator for easily tweaking the radius (Shift+Alt+S) and lerp falloff to be sharper or smoother (F?).
-# Ability to customize the name of the objects instead of just being "Tweak".
+# This lets you create an empty hooked up to a Lattice to deform all selected 
+# objects. A root empty is also created that can be (manually) parented to a 
+# rig in order to use this for animation.
 
 import bpy
 from bpy.props import (
@@ -110,6 +107,8 @@ class OBJECT_OT_tweaklattice_create(Operator):
         for ob in context.selected_objects:
             if ob.type == 'MESH':
                 return True
+        
+        cls.poll_message_set("No selected mesh objects.")
         return False
 
     def invoke(self, context, _event):
@@ -261,11 +260,13 @@ class OBJECT_OT_tweaklattice_create(Operator):
             )
             obj, eval_obj, vert_idx, _vert_co = nearest_vertex
 
-            root.parent = obj.find_armature()
+            root.parent = obj.find_armature() or obj
             weights = get_deforming_weights(obj, eval_obj, vert_idx)
         else:
             root.parent = scene.tweak_lattice_parent_ob
-            weights = {self.parent_bone: 1.0}
+            weights = {}
+            if self.parent_bone:
+                weights = {self.parent_bone: 1.0}
 
         if weights:
             arm_con = root.constraints.new(type='ARMATURE')
@@ -281,6 +282,8 @@ class OBJECT_OT_tweaklattice_create(Operator):
             delta = mat_pre_arm_con.inverted() @ mat_post_arm_con
 
             root.matrix_world = matrix_of_parent @ delta.inverted()
+        
+        if self.parent_method != 'AUTO' or self.location != 'CURSOR':
             root.rotation_euler = 0, 0, 0
 
     def get_lattice_parent_matrix(self, context):
@@ -388,7 +391,11 @@ class OBJECT_OT_tweaklattice_delete(Operator):
     @classmethod
     def poll(cls, context):
         hook, lattice, root = get_tweak_setup(context.object)
-        return hook and lattice and root
+        if hook and lattice and root:
+            return True
+
+        cls.poll_message_set("Tweak Lattice set-up is incomplete. Some objects were manually deleted.")
+        return False
 
     def execute(self, context):
         hook, lattice, root = get_tweak_setup(context.object)
@@ -426,6 +433,7 @@ class OBJECT_OT_tweaklattice_objects_add(Operator):
     def poll(cls, context):
         hook, _lattice, _root = get_tweak_setup(context.object)
         if not hook:
+            cls.poll_message_set("Cannot find hook object of this Tweak Lattice set-up. Perhaps it was deleted?")
             return False
 
         values = hook.values()
@@ -434,6 +442,8 @@ class OBJECT_OT_tweaklattice_objects_add(Operator):
                 continue
             if sel_o not in values:
                 return True
+        
+        cls.poll_message_set("No selected objects to add to this Tweak Lattice.")
         return False
 
     def execute(self, context):
@@ -456,6 +466,7 @@ class OBJECT_OT_tweaklattice_objects_remove(Operator):
     def poll(cls, context):
         hook, _lattice, _root = get_tweak_setup(context.object)
         if not hook:
+            cls.poll_message_set("Cannot find hook object of this Tweak Lattice set-up. Perhaps it was deleted?")
             return False
 
         values = hook.values()
@@ -464,6 +475,8 @@ class OBJECT_OT_tweaklattice_objects_remove(Operator):
                 continue
             if sel_o in values:
                 return True
+            
+        cls.poll_message_set("No selected objects to remove from this Tweak Lattice.")
         return False
 
     def execute(self, context):
