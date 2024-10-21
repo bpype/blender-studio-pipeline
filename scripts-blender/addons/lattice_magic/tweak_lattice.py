@@ -58,6 +58,16 @@ class OBJECT_OT_tweaklattice_create(Operator):
         max=1000,
         soft_max=2,
     )
+
+    parent_method: EnumProperty(
+        name="Parent Method",
+        description="How to parent the tweak lattice",
+        items=[
+            ('AUTO', 'Automatic', "Parent using an Armature constraint which mimics the deformation of the nearest vertex to the cursor"),
+            ('MANUAL', 'Manual', "Manually select a single object or bone as the tweak lattice parent"),
+        ],
+        default='AUTO',
+    )
     parent_bone: StringProperty(name="Bone", description="Bone to use as parent")
 
     @classmethod
@@ -90,12 +100,15 @@ class OBJECT_OT_tweaklattice_create(Operator):
         layout.prop(self, 'radius', slider=True)
         layout.separator()
 
-        col = layout.column(align=True)
-        col.prop(context.scene, 'tweak_lattice_parent_ob')
+        layout.prop(self, 'parent_method', expand=True)
 
-        scene = context.scene
-        if scene.tweak_lattice_parent_ob and scene.tweak_lattice_parent_ob.type == 'ARMATURE':
-            col.prop_search(self, 'parent_bone', scene.tweak_lattice_parent_ob.data, 'bones')
+        if self.parent_method == 'MANUAL':
+            col = layout.column(align=True)
+            col.prop(context.scene, 'tweak_lattice_parent_ob')
+
+            scene = context.scene
+            if scene.tweak_lattice_parent_ob and scene.tweak_lattice_parent_ob.type == 'ARMATURE':
+                col.prop_search(self, 'parent_bone', scene.tweak_lattice_parent_ob.data, 'bones')
 
     def execute(self, context):
         scene = context.scene
@@ -162,22 +175,64 @@ class OBJECT_OT_tweaklattice_create(Operator):
         root.empty_display_type = 'CUBE'
         root.empty_display_size = 0.5
         coll.objects.link(root)
-        root.hide_viewport = True
         hook['Root'] = root
-        # Set the location.
+
+        # Determine location. (Take care with order of this and parenting.)
         if self.location == 'CENTER':
             meshes = [o for o in context.selected_objects if o.type == 'MESH']
-            root.matrix_world.translation = bounding_box_center_of_objects(meshes)
+            matrix_of_parent.translation = bounding_box_center_of_objects(meshes)
         elif self.location == 'CURSOR':
-            root.matrix_world = context.scene.cursor.matrix
+            matrix_of_parent = context.scene.cursor.matrix
         elif self.location == 'PARENT':
-            matrix_of_parent = scene.tweak_lattice_parent_ob.matrix_world
             if self.parent_bone:
                 matrix_of_parent = (
                     scene.tweak_lattice_parent_ob.matrix_world
                     @ scene.tweak_lattice_parent_ob.pose.bones[self.parent_bone].matrix
                 )
-            root.matrix_world = matrix_of_parent.copy()
+            else:
+                matrix_of_parent = scene.tweak_lattice_parent_ob.matrix_world
+
+        depsgraph = context.evaluated_depsgraph_get()
+
+        root.matrix_world = matrix_of_parent.copy()
+        context.view_layer.update()
+        mat_pre_arm_con = root.matrix_world.copy()
+
+        if self.parent_method == 'AUTO':
+            # Parent to the nearest deforming vertex.
+            nearest_vertex = get_nearest_evaluated_vertex(
+                dg = depsgraph,
+                coord = matrix_of_parent.copy().to_translation(),
+                objs = context.selected_objects,
+            )
+            obj, eval_obj, vert_idx, _vert_co = nearest_vertex
+
+            root.parent = obj.find_armature()
+            weights = get_deforming_weights(obj, eval_obj, vert_idx)
+        else:
+            root.parent = scene.tweak_lattice_parent_ob
+            weights = {self.parent_bone: 1.0}
+
+        if weights:
+            arm_con = root.constraints.new(type='ARMATURE')
+            for bone_name, weight in weights.items():
+                tgt = arm_con.targets.new()
+                tgt.target = root.parent
+                tgt.subtarget = bone_name
+                tgt.weight = weight
+
+            context.view_layer.update()
+            mat_post_arm_con = root.matrix_world.copy()
+
+            delta = mat_pre_arm_con.inverted() @ mat_post_arm_con
+
+            root.matrix_world = matrix_of_parent @ delta.inverted()
+            root.rotation_euler = 0, 0, 0
+
+        # Disable the root from view.
+        # NOTE: This must be done AFTER any reliance on view_layer.update() calls! 
+        #   They don't work when the object is disabled!
+        root.hide_viewport = True
 
         # Parent lattice and hook to root.
         lattice_ob.parent = root
@@ -541,6 +596,67 @@ class VIEW3D_PT_tweak_lattice(Panel):
             op = row.operator(OBJECT_OT_tweaklattice_object_remove_single.bl_idname, text="", icon='X')
             op.ob_pointer_prop_name = key
 
+
+def build_kdtree(obj):
+    # Get the vertices of the mesh in world coordinates
+    vertices = [obj.matrix_world @ v.co for v in obj.data.vertices]
+    
+    # Build KD-Tree from the vertices
+    size = len(vertices)
+    kd = kdtree.KDTree(size)
+    
+    for i, vertex in enumerate(vertices):
+        kd.insert(vertex, i)
+    
+    kd.balance()
+    return kd
+
+def get_nearest_evaluated_vertex(dg, coord: Vector, objs: list[Object]) -> tuple[Object, int, Vector]:
+    """Get nearest EVALUATED vertex to a coordinate out of a list of passed mesh objects.
+    Return the original object, and the evaluated object, vertex index, and coordinate.
+    """
+    nearest_vertex = None
+    nearest_distance = float('inf')
+
+    for obj in objs:
+        if obj.type != 'MESH':
+            continue
+
+        eval_ob = obj.evaluated_get(dg)
+
+        kd = build_kdtree(eval_ob)
+        
+        # Find the nearest vertex to the 3D cursor
+
+        eval_co, eval_idx, dist = kd.find(coord)
+
+        # If this vertex is closer than any previously found, store it
+        if dist < nearest_distance:
+            nearest_distance = dist
+            nearest_vertex = (obj, eval_ob, eval_idx, eval_co)
+
+    return nearest_vertex
+
+def get_deforming_weights(obj: Object, eval_obj, vert_idx: int) -> dict[str, float] | None:
+    armature = obj.find_armature()
+
+    if not armature:
+        return
+
+    vertex = eval_obj.data.vertices[vert_idx]
+
+    weights = {}
+
+    # Loop through the vertex groups the vertex belongs to
+    for group in vertex.groups:
+        group_index = group.group
+        group_weight = group.weight
+        group_name = obj.vertex_groups[group_index].name
+        pbone = armature.pose.bones.get(group_name)
+        if pbone and pbone.bone.use_deform:
+            weights[group_name] = group_weight  
+
+    return weights
 
 def get_tweak_setup(obj: Object) -> Tuple[Object, Object, Object]:
     """Based on either the hook, lattice or root, return all three."""
