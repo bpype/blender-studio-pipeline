@@ -6,9 +6,6 @@
 # and create a 2D lattice that fills the camera's view,
 # to deform the mesh objects in that collection.
 
-# TODO:
-# 3D Lattices: Need to have a distance, thickness and Z resolution parameter.
-
 import bpy
 import math
 from bpy.app.handlers import persistent
@@ -123,7 +120,11 @@ class OBJECT_OT_camlattice_remove(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         scene = context.scene
-        return len(scene.lattice_slots) > 0
+        if len(scene.lattice_slots) > 0:
+            return True
+        
+        cls.poll_message_set("No slots to remove.")
+        return False
 
     def execute(self, context):
         scene = context.scene
@@ -162,7 +163,11 @@ class OBJECT_OT_camlattice_move(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         scene = context.scene
-        return len(scene.lattice_slots) > 1
+        if len(scene.lattice_slots) > 1:
+            return True
+        
+        cls.poll_message_set("No slots to re-order.")
+        return False
 
     def execute(self, context):
         scene = context.scene
@@ -193,7 +198,17 @@ class OBJECT_OT_camlattice_generate(bpy.types.Operator):
         scene = context.scene
         active_slot = scene.lattice_slots[scene.active_lattice_index]
 
-        return active_slot.collection and active_slot.camera and not active_slot.lattice
+        if not active_slot.collection:
+            cls.poll_message_set("A collection must be selected above.")
+            return False
+        if not active_slot.camera:
+            cls.poll_message_set("A camera must be selected above.")
+            return False
+        if active_slot.lattice:
+            cls.poll_message_set("This slot already has a lattice generated for it. You can delete it above if you wish to re-generate it.")
+            return False
+        return True
+
 
     def execute(self, context):
         scene = context.scene
@@ -203,7 +218,8 @@ class OBJECT_OT_camlattice_generate(bpy.types.Operator):
         camera = active_slot.camera
         resolution = active_slot.resolution
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+        if context.active_object and context.active_object.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
 
         # Create a lattice object.
         lattice_name = "Lattice_" + collection.name
@@ -323,7 +339,11 @@ class OBJECT_OT_camlattice_delete(bpy.types.Operator):
         scene = context.scene
         active_slot = scene.lattice_slots[scene.active_lattice_index]
 
-        return active_slot.lattice
+        if not active_slot.lattice:
+            cls.poll_message_set("This slot has no lattice to delete.")
+            return False
+
+        return True
 
     def execute(self, context):
         scene = context.scene
@@ -539,6 +559,9 @@ class VIEW3D_PT_camlattice_panel(bpy.types.Panel):
         col = row.column()
         col.operator(OBJECT_OT_camlattice_shapekey_add.bl_idname, text="", icon='ADD')
         remove_op = col.operator('object.shape_key_remove', text="", icon='REMOVE')
+
+        col.separator()
+        col.menu("MESH_MT_shape_key_context_menu", icon='DOWNARROW_HLT', text="")
 
         col.separator()
         move_up_op = col.operator('object.shape_key_move', text="", icon='TRIA_UP')

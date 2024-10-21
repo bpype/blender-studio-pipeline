@@ -1,21 +1,12 @@
 # Lattice Magic
-This addon adds some Lattice-based utilities to Blender. 
+This add-on adds two major lattice-based deformation tools as well as some minor additional utilities for lattices to Blender. 
 
 ![Lattice Magic UI](/media/addons/lattice_magic/lattice_magic.png)
 
 ## Table of Contents
 
-- [Installation](#installation)
 - [Tweak Lattice](#tweak-lattice)
-    - [Parenting](#parenting)
-    - [Deletion](#deletion)
-    - [Adding/Removing meshes](#addingremoving-meshes)
-    - [Going under the hood](#going-under-the-hood)
 - [Camera Lattice](#camera-lattice)
-    - [Creation](#creation)
-    - [Parenting](#parenting-1)
-    - [Animation](#animation)
-    - [Deletion](#deletion-1)
 
 
 ## Installation
@@ -47,11 +38,11 @@ If you want a tweak lattice to only affect a certain area, you can create a vert
 ### Influence
 You can choose different deformation shapes for the lattice, such as linear, sharp, smooth, or even donut shaped.
 
-### Going under the hood
-With the lattice control selected, you can see a "Helper Objects" section in the UI. This lists two objects which are taking care of things under the hood. If you want, you can enable them with the screen icon, which will let you mess with them. This should rarely be necessary though, and you should only do it at your own risk, since there's no way to get these back to their original states once modified.
+### Under the hood
+You can enable helper objects with the screen icons under the "Helper Objects" label. This should rarely be necessary though, and you should only do it at your own risk, since there's no way to get these back to their original states once modified.
 
 
-## Camera Lattice
+# Camera Lattice
 Camera Lattice lets you create a lattice in a camera's view frame and deform a character (or any collection) with the lattice.
 
 <video controls src="/media/addons/lattice_magic/camera_lattice.mp4" title="Title"></video>
@@ -67,13 +58,14 @@ On creation, the lattice is parented to the camera. You can feel free to remove 
 Just remember, there's no reset button for these sort of things.
 
 ### Animation
-Feel free to animate the lattice in object mode as you wish, although unless the above mentioned Damped Track constraint is enabled, you will only be able to rotate it on one axis.  
+Feel free to animate the lattice in object mode as you wish, although unless the above mentioned Damped Track constraint is disabled, you will only be able to rotate it on one axis.  
 
 Animating the lattice's vertices is possible using shape keys. The addon provides some UI and helper operators for this, but at the end of the day it's up to you how you organize and keyframe these shape keys.
 The intended workflow is that a shape key should only be active for a single frame. To help with this, shape keys are named when they are added, according to the current frame. There are also some buttons above the list:
 - Zero All Shape Keys: Operator to set all shape key values to 0.0. This does not insert a keyframe!  
 - Keyframe All Shape Keys: Operator to insert a keyframe for all shape keys on the current frame with their current value.  
 - Update Active Shape Key: Toggle to automatically change the active shape key based on the current frame. Useful when switching into edit mode quickly on different frames.  
+- Specials Menu -> Reset Shape Key: Allows you to reset a lattice to its original shape, including the Basis shape key. Not sure why this wasn't in Blender already!
 
 Note that Blender is not capable of displaying the effect of multiple shape keys on a lattice at the same time, which is another reason to go with the intended workflow, since that will always only have one shape key active at a time.
 
