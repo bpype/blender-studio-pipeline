@@ -13,13 +13,21 @@ import bpy
 from bpy.props import (
     FloatProperty,
     IntVectorProperty,
-    FloatVectorProperty,
-    BoolProperty,
     PointerProperty,
     StringProperty,
     EnumProperty,
 )
-from bpy.types import Operator, Object, VertexGroup, Scene, Collection, Modifier, Panel
+from bpy.types import (
+    Operator,
+    Object,
+    Lattice,
+    VertexGroup,
+    Scene,
+    Collection,
+    Modifier,
+    Panel,
+    PropertyGroup,
+)
 from typing import List, Tuple
 
 from mathutils import Matrix, Vector, kdtree
@@ -30,6 +38,20 @@ from rna_prop_ui import rna_idprop_ui_create
 from .utils import clamp, get_lattice_vertex_index, simple_driver, bounding_box_center_of_objects
 
 TWEAKLAT_COLL_NAME = 'Tweak Lattices'
+
+FALLOFF_TYPES = {
+    # Since these expressions manipulate the shape of the lattice,
+    # which then manipulates the shape of the mesh,
+    # it's hard to come up with these functions in any meaningful way.
+    # So, it was done more so with artistic trial and error.
+    'LINEAR': lambda x: x + x * 0.1,
+    'CONSTANT': lambda x: 1,
+    'SHARP': lambda x: pow(x, 2) * 1.25,
+    'ROOT': lambda x: pow(x, 0.5) * 1.05,
+    'SMOOTH': lambda x: (1 - cos(x * pi)) / 2,
+    'SPHERE': lambda x: sin(pow(x, 0.5)) * 1.25,
+    'DONUT': lambda x: (sin(pow(x, 0.5)) - pow(x, 2)) * 2.5,
+}
 
 
 class OBJECT_OT_tweaklattice_create(Operator):
@@ -102,12 +124,15 @@ class OBJECT_OT_tweaklattice_create(Operator):
         context.scene.tweak_lattice_parent_ob = parent_obj
 
         wm = context.window_manager
-        return wm.invoke_props_dialog(self)
+        return wm.invoke_props_dialog(self, width=400)
 
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
+
+        layout.prop(self, 'name')
+        layout.separator()
 
         layout.prop(self, 'location', expand=True)
         layout.prop(self, 'radius', slider=True)
@@ -130,7 +155,7 @@ class OBJECT_OT_tweaklattice_create(Operator):
         coll = ensure_tweak_lattice_collection(context.scene)
 
         # Create a lattice object at the 3D cursor.
-        lattice_name = "LTC-Tweak"
+        lattice_name = f"LTC-{self.name}"
         lattice = bpy.data.lattices.new(lattice_name)
         lattice_ob = bpy.data.objects.new(lattice_name, lattice)
         coll.objects.link(lattice_ob)
@@ -140,7 +165,7 @@ class OBJECT_OT_tweaklattice_create(Operator):
         lattice_ob.hide_viewport = True
 
         # Create a falloff vertex group.
-        vg = ensure_falloff_vgroup(lattice_ob, vg_name="Hook")
+        vg = ensure_falloff_vgroup(lattice_ob, vg_name="Hook", func=FALLOFF_TYPES['SMOOTH'])
 
         # Create the Hook Empty.
         hook_name = "Hook_" + lattice_ob.name
@@ -152,12 +177,11 @@ class OBJECT_OT_tweaklattice_create(Operator):
         # Create some custom properties.
         hook['Lattice'] = lattice_ob
         lattice_ob['Hook'] = hook
-        hook['Multiplier'] = 1.0
-        hook['Expression'] = 'x'
+        hook['Strength'] = 1.0
 
         rna_idprop_ui_create(
             hook,
-            "Tweak Lattice",
+            "Influence",
             default=1.0,
             min=0,
             max=1,
@@ -321,41 +345,17 @@ class OBJECT_OT_tweaklattice_duplicate(Operator):
         return {'FINISHED'}
 
 
-class OBJECT_OT_tweaklattice_set_falloff(Operator):
-    """Adjust falloff of the hook vertex group of a Tweak Lattice"""
-
-    bl_idname = "lattice.tweak_lattice_adjust_falloff"
-    bl_label = "Adjust Falloff"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
+class TweakLatticeProperties(PropertyGroup):
     def update_falloff(self, context):
-        FALLOFF_TYPES = {
-            # Since these expressions manipulate the shape of the lattice,
-            # which then manipulates the shape of the mesh,
-            # it's hard to come up with these functions in any meaningful way.
-            # So, it was done more so with artistic trial and error.
-            'LINEAR': lambda x: x + x * 0.1,
-            'CONSTANT': lambda x: 1,
-            'SHARP': lambda x: pow(x, 2) * 1.25,
-            'ROOT': lambda x: pow(x, 0.5) * 1.05,
-            'SMOOTH': lambda x: (1 - cos(x * pi)) / 2,
-            'SPHERE': lambda x: sin(pow(x, 0.5)) * 1.25,
-            'DONUT': lambda x: (sin(pow(x, 0.5)) - pow(x, 2)) * 2.5,
-        }
         falloff_func = FALLOFF_TYPES[self.falloff_type]
 
-        if self.doing_invoke:
-            return
-        hook, lattice, _root = get_tweak_setup(context.object)
-        ret = ensure_falloff_vgroup(lattice, 'Hook', multiplier=self.multiplier, func=falloff_func)
-        self.is_expression_valid = ret != None
-        if ret:
-            hook['Expression'] = self.expression
-        hook['Multiplier'] = self.multiplier
+        hook, lattice, _root = get_tweak_setup(context.active_object)
+        ensure_falloff_vgroup(lattice, 'Hook', multiplier=self.strength, func=falloff_func)
+        hook['Strength'] = self.strength
 
-    multiplier: FloatProperty(
-        name="Multiplier",
-        description="Multiplier on the weight values",
+    strength: FloatProperty(
+        name="Strength",
+        description="A multiplier on the weight values",
         default=1,
         update=update_falloff,
         min=0,
@@ -376,41 +376,6 @@ class OBJECT_OT_tweaklattice_set_falloff(Operator):
         default='SMOOTH',
         update=update_falloff,
     )
-
-    # Storage to share info between Invoke and Update
-    lattice_start_scale: FloatVectorProperty()
-    hook_start_scale: FloatVectorProperty()
-    doing_invoke: BoolProperty(default=True)
-
-    @classmethod
-    def poll(cls, context):
-        hook, lattice, root = get_tweak_setup(context.object)
-        return hook and lattice and root
-
-    def invoke(self, context, event):
-        hook, _lattice, _root = get_tweak_setup(context.object)
-        self.multiplier = hook['Multiplier']
-        self.hook_start_scale = hook.scale.copy()
-        lattice_ob = hook['Lattice']
-        self.lattice_start_scale = lattice_ob.scale.copy()
-        if 'Expression' not in hook:
-            # Back-comp for Tweak Lattices created with older versions of the add-on.
-            hook['Expression'] = 'x'
-        self.expression = hook['Expression']
-
-        self.doing_invoke = False
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
-
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-        layout.prop(self, 'falloff_type', text="Falloff Type", slider=True)
-        layout.prop(self, 'multiplier', text="Strength", slider=True)
-
-    def execute(self, context):
-        return {'FINISHED'}
 
 
 class OBJECT_OT_tweaklattice_delete(Operator):
@@ -555,9 +520,12 @@ class VIEW3D_PT_tweak_lattice(Panel):
             layout.operator(OBJECT_OT_tweaklattice_create.bl_idname, icon='OUTLINER_OB_LATTICE')
             return
 
-        layout.prop(hook, '["Tweak Lattice"]', slider=True, text="Influence")
+        layout.prop(hook, '["Influence"]', slider=True, text="Influence")
+        layout.prop(hook["Lattice"].data.lattice_magic, 'strength')
+        layout.separator()
+
+        layout.prop(hook["Lattice"].data.lattice_magic, 'falloff_type')
         layout.prop(hook, '["Radius"]', slider=True)
-        layout.operator(OBJECT_OT_tweaklattice_set_falloff.bl_idname, text="Adjust Falloff")
 
         layout.separator()
         layout.operator(
@@ -818,7 +786,7 @@ def add_objects_to_lattice(hook: Object, objects: List[Object]):
         hook["object_" + str(i + offset)] = obj
 
         # Add driver to the modifier influence.
-        simple_driver(mod, 'strength', hook, '["Tweak Lattice"]')
+        simple_driver(mod, 'strength', hook, '["Influence"]')
 
 
 def remove_object_from_lattice(hook: Object, obj: Object):
@@ -866,17 +834,19 @@ registry = [
     OBJECT_OT_tweaklattice_create,
     OBJECT_OT_tweaklattice_duplicate,
     OBJECT_OT_tweaklattice_delete,
-    OBJECT_OT_tweaklattice_set_falloff,
     OBJECT_OT_tweaklattice_objects_add,
     OBJECT_OT_tweaklattice_objects_remove,
     OBJECT_OT_tweaklattice_object_remove_single,
     VIEW3D_PT_tweak_lattice,
+    TweakLatticeProperties,
 ]
 
 
 def register():
     Scene.tweak_lattice_parent_ob = PointerProperty(type=Object, name="Parent")
+    Lattice.lattice_magic = PointerProperty(type=TweakLatticeProperties)
 
 
 def unregister():
     del Scene.tweak_lattice_parent_ob
+    del Lattice.lattice_magic
