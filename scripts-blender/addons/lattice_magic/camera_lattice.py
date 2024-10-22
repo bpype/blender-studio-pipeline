@@ -1,11 +1,10 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Inspired by https://animplay.wordpress.com/2015/11/18/smear-frame-script-maya/.
 
 # This addon allows the user to specify a camera and a collection,
 # and create a 2D lattice that fills the camera's view,
 # to deform the mesh objects in that collection.
-
-# TODO:
-# 3D Lattices: Need to have a distance, thickness and Z resolution parameter.
 
 import bpy
 import math
@@ -87,7 +86,7 @@ class LatticeSlot(bpy.types.PropertyGroup):
     )
 
 
-class CAMLAT_OT_Add(bpy.types.Operator):
+class OBJECT_OT_camlattice_add(bpy.types.Operator):
     """Add a Camera Lattice Slot"""
 
     bl_idname = "lattice.add_slot"
@@ -109,7 +108,7 @@ class CAMLAT_OT_Add(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_Remove(bpy.types.Operator):
+class OBJECT_OT_camlattice_remove(bpy.types.Operator):
     """Remove Lattice Slot along with its Lattice object, animation and modifiers"""
 
     bl_idname = "lattice.remove_slot"
@@ -121,7 +120,11 @@ class CAMLAT_OT_Remove(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         scene = context.scene
-        return len(scene.lattice_slots) > 0
+        if len(scene.lattice_slots) > 0:
+            return True
+        
+        cls.poll_message_set("No slots to remove.")
+        return False
 
     def execute(self, context):
         scene = context.scene
@@ -141,7 +144,7 @@ class CAMLAT_OT_Remove(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_Move(bpy.types.Operator):
+class OBJECT_OT_camlattice_move(bpy.types.Operator):
     """Move Lattice Slot"""
 
     bl_idname = "lattice.move_slot"
@@ -160,7 +163,11 @@ class CAMLAT_OT_Move(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         scene = context.scene
-        return len(scene.lattice_slots) > 1
+        if len(scene.lattice_slots) > 1:
+            return True
+        
+        cls.poll_message_set("No slots to re-order.")
+        return False
 
     def execute(self, context):
         scene = context.scene
@@ -179,7 +186,7 @@ class CAMLAT_OT_Move(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_Generate(bpy.types.Operator):
+class OBJECT_OT_camlattice_generate(bpy.types.Operator):
     """Generate a lattice to smear the selected collection from the selected camera"""
 
     bl_idname = "lattice.generate_lattice_for_slot"
@@ -191,7 +198,17 @@ class CAMLAT_OT_Generate(bpy.types.Operator):
         scene = context.scene
         active_slot = scene.lattice_slots[scene.active_lattice_index]
 
-        return active_slot.collection and active_slot.camera and not active_slot.lattice
+        if not active_slot.collection:
+            cls.poll_message_set("A collection must be selected above.")
+            return False
+        if not active_slot.camera:
+            cls.poll_message_set("A camera must be selected above.")
+            return False
+        if active_slot.lattice:
+            cls.poll_message_set("This slot already has a lattice generated for it. You can delete it above if you wish to re-generate it.")
+            return False
+        return True
+
 
     def execute(self, context):
         scene = context.scene
@@ -201,7 +218,8 @@ class CAMLAT_OT_Generate(bpy.types.Operator):
         camera = active_slot.camera
         resolution = active_slot.resolution
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+        if context.active_object and context.active_object.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
 
         # Create a lattice object.
         lattice_name = "Lattice_" + collection.name
@@ -309,7 +327,7 @@ class CAMLAT_OT_Generate(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_Delete(bpy.types.Operator):
+class OBJECT_OT_camlattice_delete(bpy.types.Operator):
     """Delete Lattice object, its animation and modifiers that target it in the selected collection's objects"""
 
     bl_idname = "lattice.delete_lattice_from_slot"
@@ -321,7 +339,11 @@ class CAMLAT_OT_Delete(bpy.types.Operator):
         scene = context.scene
         active_slot = scene.lattice_slots[scene.active_lattice_index]
 
-        return active_slot.lattice
+        if not active_slot.lattice:
+            cls.poll_message_set("This slot has no lattice to delete.")
+            return False
+
+        return True
 
     def execute(self, context):
         scene = context.scene
@@ -362,7 +384,7 @@ class CAMLAT_OT_Delete(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_ShapeKey_Add(bpy.types.Operator):
+class OBJECT_OT_camlattice_shapekey_add(bpy.types.Operator):
     """Add a shape key to the active Lattice Slot's lattice, named after the current frame number"""
 
     bl_idname = "lattice.smear_add_shape"
@@ -395,7 +417,7 @@ def shape_key_poll(context):
     return True
 
 
-class CAMLAT_OT_ShapeKey_Zero_All(bpy.types.Operator):
+class OBJECT_OT_camlattice_zero_all(bpy.types.Operator):
     """Set all shape key values to 0"""
 
     bl_idname = "lattice.shape_keys_zero_all"
@@ -418,7 +440,7 @@ class CAMLAT_OT_ShapeKey_Zero_All(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_OT_ShapeKey_Keyframe_All(bpy.types.Operator):
+class OBJECT_OT_camlattice_keyframe_all(bpy.types.Operator):
     """Insert a keyframe on the current frame for all shape key values"""
 
     bl_idname = "lattice.shape_keys_keyframe_all"
@@ -441,7 +463,7 @@ class CAMLAT_OT_ShapeKey_Keyframe_All(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CAMLAT_PT_Main(bpy.types.Panel):
+class VIEW3D_PT_camlattice_panel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Lattice Magic'
@@ -469,13 +491,13 @@ class CAMLAT_PT_Main(bpy.types.Panel):
         )
 
         col = row.column()
-        col.operator(CAMLAT_OT_Add.bl_idname, text="", icon='ADD')
-        remove_op = col.operator(CAMLAT_OT_Remove.bl_idname, text="", icon='REMOVE')
+        col.operator(OBJECT_OT_camlattice_add.bl_idname, text="", icon='ADD')
+        remove_op = col.operator(OBJECT_OT_camlattice_remove.bl_idname, text="", icon='REMOVE')
         remove_op.index = active_index
         col.separator()
-        move_up_op = col.operator(CAMLAT_OT_Move.bl_idname, text="", icon='TRIA_UP')
+        move_up_op = col.operator(OBJECT_OT_camlattice_move.bl_idname, text="", icon='TRIA_UP')
         move_up_op.direction = 'UP'
-        move_down_op = col.operator(CAMLAT_OT_Move.bl_idname, text="", icon='TRIA_DOWN')
+        move_down_op = col.operator(OBJECT_OT_camlattice_move.bl_idname, text="", icon='TRIA_DOWN')
         move_down_op.direction = 'DOWN'
 
         if len(scene.lattice_slots) == 0:
@@ -499,9 +521,9 @@ class CAMLAT_PT_Main(bpy.types.Panel):
         layout.separator()
 
         if not active_slot.lattice:
-            layout.operator(CAMLAT_OT_Generate.bl_idname, icon='OUTLINER_OB_LATTICE')
+            layout.operator(OBJECT_OT_camlattice_generate.bl_idname, icon='OUTLINER_OB_LATTICE')
         else:
-            layout.operator(CAMLAT_OT_Delete.bl_idname, icon='TRASH')
+            layout.operator(OBJECT_OT_camlattice_delete.bl_idname, icon='TRASH')
 
         row = layout.row()
         row.enabled = False
@@ -516,8 +538,8 @@ class CAMLAT_PT_Main(bpy.types.Panel):
         col = layout.column()
 
         row = layout.row(align=True)
-        row.operator(CAMLAT_OT_ShapeKey_Zero_All.bl_idname, text="", icon='RADIOBUT_OFF')
-        row.operator(CAMLAT_OT_ShapeKey_Keyframe_All.bl_idname, text="", icon='HANDLETYPE_FREE_VEC')
+        row.operator(OBJECT_OT_camlattice_zero_all.bl_idname, text="", icon='RADIOBUT_OFF')
+        row.operator(OBJECT_OT_camlattice_keyframe_all.bl_idname, text="", icon='HANDLETYPE_FREE_VEC')
         row.separator()
         prefs = get_addon_prefs(context)
         row.prop(prefs, 'update_active_shape_key', toggle=True, text="", icon='TIME')
@@ -535,8 +557,11 @@ class CAMLAT_PT_Main(bpy.types.Panel):
         )
 
         col = row.column()
-        col.operator(CAMLAT_OT_ShapeKey_Add.bl_idname, text="", icon='ADD')
+        col.operator(OBJECT_OT_camlattice_shapekey_add.bl_idname, text="", icon='ADD')
         remove_op = col.operator('object.shape_key_remove', text="", icon='REMOVE')
+
+        col.separator()
+        col.menu("MESH_MT_shape_key_context_menu", icon='DOWNARROW_HLT', text="")
 
         col.separator()
         move_up_op = col.operator('object.shape_key_move', text="", icon='TRIA_UP')
@@ -588,15 +613,15 @@ def camera_lattice_frame_change(scene):
 registry = [
     LatticeSlot,
     CAMLAT_UL_lattice_slots,
-    CAMLAT_OT_Add,
-    CAMLAT_OT_Remove,
-    CAMLAT_OT_Move,
-    CAMLAT_OT_Generate,
-    CAMLAT_OT_Delete,
-    CAMLAT_OT_ShapeKey_Add,
-    CAMLAT_OT_ShapeKey_Zero_All,
-    CAMLAT_OT_ShapeKey_Keyframe_All,
-    CAMLAT_PT_Main,
+    OBJECT_OT_camlattice_add,
+    OBJECT_OT_camlattice_remove,
+    OBJECT_OT_camlattice_move,
+    OBJECT_OT_camlattice_generate,
+    OBJECT_OT_camlattice_delete,
+    OBJECT_OT_camlattice_shapekey_add,
+    OBJECT_OT_camlattice_zero_all,
+    OBJECT_OT_camlattice_keyframe_all,
+    VIEW3D_PT_camlattice_panel,
 ]
 
 

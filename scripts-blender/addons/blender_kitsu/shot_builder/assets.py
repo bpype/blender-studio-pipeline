@@ -4,29 +4,8 @@
 
 import bpy
 from .. import prefs, bkglobals
-from pathlib import Path
-import json
 from ..types import Shot
 from . import core, config
-
-
-def get_asset_dir() -> str:
-    svn_project_root_dir = prefs.project_root_dir_get(bpy.context)
-    asset_dir = Path(svn_project_root_dir).joinpath("pro").joinpath("assets")
-    return asset_dir.__str__()
-
-
-def get_asset_index_file() -> str:
-    asset_index_file = Path(get_asset_dir()).joinpath("asset_index.json")
-    if asset_index_file.exists():
-        return asset_index_file.__str__()
-
-
-def get_assset_index() -> dict:
-    asset_index_file = get_asset_index_file()
-    if asset_index_file is None:
-        return
-    return json.load(open(asset_index_file))
 
 
 def get_shot_assets(
@@ -34,9 +13,6 @@ def get_shot_assets(
     output_collection: bpy.types.Collection,
     shot: Shot,
 ):
-    asset_index = get_assset_index()
-    if asset_index is None:
-        return
     kitsu_assets = shot.get_all_assets()
 
     for kitsu_asset in kitsu_assets:
@@ -57,12 +33,12 @@ def get_shot_assets(
                 collection_name=collection_name, file_path=str(filepath), scene=scene
             )
             core.add_action_to_armature(linked_collection, shot)
-            print(f"'{collection_name}': Succesfully Linked & Overriden")
+            print(f"'{collection_name}': Successfully Linked & Overridden")
         else:
             linked_collection = core.link_data_block(
                 file_path=str(filepath),
                 data_block_name=collection_name,
                 data_block_type="Collection",
             )
-            print(f"'{collection_name}': Succesfully Linked")
+            print(f"'{collection_name}': Successfully Linked")
         output_collection.children.link(linked_collection)

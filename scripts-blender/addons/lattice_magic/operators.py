@@ -1,9 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.props import FloatProperty
 from .utils import get_lattice_point_original_position
 
 
-class LATTICE_OT_Reset(bpy.types.Operator):
+class LATTICE_OT_reset(bpy.types.Operator):
     """Reset selected lattice points to their default position"""
 
     bl_idname = "lattice.reset_points"
@@ -14,7 +16,7 @@ class LATTICE_OT_Reset(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(context.selected_objects) > 0 and context.mode == 'EDIT_LATTICE'
+        return len(context.selected_objects) > 0
 
     def draw(self, context):
         layout = self.layout
@@ -22,7 +24,13 @@ class LATTICE_OT_Reset(bpy.types.Operator):
         layout.prop(self, 'factor', slider=True)
 
     def execute(self, context):
-        bpy.ops.object.mode_set(mode='OBJECT')
+        org_mode = context.active_object.mode
+        check_selection = False
+        if org_mode != 'OBJECT':
+            if org_mode == 'EDIT':
+                check_selection = True
+            bpy.ops.object.mode_set(mode='OBJECT')
+
         for ob in context.selected_objects:
             if ob.type != 'LATTICE':
                 continue
@@ -35,13 +43,13 @@ class LATTICE_OT_Reset(bpy.types.Operator):
                 basis_block = key_blocks[0]
                 if active_index > 0:
                     for i, skp in enumerate(active_block.data):
-                        if not ob.data.points[i].select:
+                        if check_selection and not ob.data.points[i].select:
                             continue
                         skp.co = skp.co.lerp(basis_block.data[i].co, self.factor)
                     continue
                 else:
                     for i, skp in enumerate(active_block.data):
-                        if not ob.data.points[i].select:
+                        if check_selection and not ob.data.points[i].select:
                             continue
                         base = get_lattice_point_original_position(ob.data, i)
                         # Resetting the Basis shape
@@ -58,7 +66,8 @@ class LATTICE_OT_Reset(bpy.types.Operator):
                 mix = point.co_deform.lerp(base, self.factor)
                 point.co_deform = mix
 
-        bpy.ops.object.mode_set(mode='EDIT')
+        if org_mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode=org_mode)
         return {'FINISHED'}
 
 
@@ -71,16 +80,16 @@ def draw_shape_key_reset(self, context):
         op.blend = 1
         op.add = False
     else:
-        layout.operator(LATTICE_OT_Reset.bl_idname, text="Reset Shape Key", icon='FILE_REFRESH')
+        layout.operator(LATTICE_OT_reset.bl_idname, text="Reset Shape Key", icon='FILE_REFRESH')
 
 
 def draw_lattice_reset(self, context):
     self.layout.operator(
-        LATTICE_OT_Reset.bl_idname, text="Reset Point Positions", icon='FILE_REFRESH'
+        LATTICE_OT_reset.bl_idname, text="Reset Point Positions", icon='FILE_REFRESH'
     )
 
 
-registry = [LATTICE_OT_Reset]
+registry = [LATTICE_OT_reset]
 
 
 def register():

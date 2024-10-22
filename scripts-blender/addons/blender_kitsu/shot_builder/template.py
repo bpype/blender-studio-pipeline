@@ -7,12 +7,12 @@ from pathlib import Path
 from . import config
 
 
-def list_dir_blend_files(dir: Path) -> list[Path]:
-    return list(dir.glob('*.blend'))
+def list_dir_blend_files(p: Path) -> list[Path]:
+    return list(p.glob('*.blend'))
 
 
 def get_template_for_task_type(task_type_name: str) -> Path:
-    # Find Custom Template in Config Dir if avaliable
+    # Find Custom Template in Config Dir if available
     for file in list_dir_blend_files(config.template_dir_get()):
         if file.stem.lower() == task_type_name.lower():
             return file
@@ -20,6 +20,7 @@ def get_template_for_task_type(task_type_name: str) -> Path:
     for file in list_dir_blend_files(config.template_example_dir_get()):
         if file.stem.lower() == task_type_name.lower():
             return file
+
 
 def replace_workspace_with_template(context: bpy.types.Context, task_type_name: str):
     if task_type_name is None:

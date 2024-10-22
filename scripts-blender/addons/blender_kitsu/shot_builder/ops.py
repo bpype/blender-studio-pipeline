@@ -40,7 +40,6 @@ def get_tasks_for_shot(self: Any, context: bpy.types.Context) -> List[Tuple[str,
 
 
 class KITSU_OT_build_config_base_class(bpy.types.Operator):
-
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         addon_prefs = prefs.addon_prefs_get(context)
@@ -51,7 +50,7 @@ class KITSU_OT_build_config_base_class(bpy.types.Operator):
             return False
         if not addon_prefs.is_project_root_valid:
             cls.poll_message_set(
-                "Check project root directiory is configured in 'Blender Kitsu' addon preferences."
+                "Check project root directory is configured in 'Blender Kitsu' addon preferences."
             )
             return False
         return True
