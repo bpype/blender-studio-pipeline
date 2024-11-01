@@ -8,7 +8,7 @@ const studioURL = 'https://studio.blender.org'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: '/pipeline/',
+  base: '/tools/',
   title: "Blender Studio",
   description: "Documentation for the Blender Studio pipeline and tools.",
   lastUpdated: true,
