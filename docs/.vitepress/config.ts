@@ -60,50 +60,118 @@ export default defineConfig({
         items: [
           { text: 'Introduction', link: '/overview/introduction'},
           { text: 'Design Principles', link: '/overview/design-principles'},
+
+        ]
+      },
+      {
+        text: 'Artist Guide',
+        collapsed: false,
+        items: [
+          {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
+          {text: 'Project Blender', link: '/artist-guide/project_tools/project-blender' },
           {
-            text: 'Organization',
+            text: 'Project Tools',
             collapsed: true,
             items: [
-              { text: 'Infrastructure', link: '/overview/organization/infrastructure'},
-              { text: 'Task Review', link: '/overview/organization/task-review'},
-            ]
+              { text: 'Project Overview', link: '/artist-guide/project_tools/project-overview' },
+              {
+                text: 'Project Usage',
+                collapsed: true,
+                items: [
+                  {text: 'Introduction', link: '/artist-guide/project_tools/project-usage'},
+                  {text: 'Prepare Edit', link: '/artist-guide/project_tools/usage-sync-edit'},
+                  {text: 'Building Shots', link: '/artist-guide/project_tools/usage-build-shot'},
+                  {text: 'Playblast Shot', link: '/artist-guide/project_tools/usage-playblast'},
+                  {text: 'Update Shot', link: '/artist-guide/project_tools/usage-update-shot'},
+                  {text: 'Flamenco Render', link: '/artist-guide/project_tools/usage-render-flamenco'},
+                  {text: 'Render Review', link: '/artist-guide/project_tools/usage-render-review'},
+                  {text: 'Final Render', link: '/artist-guide/project_tools/usage-final-render'},
+                ],
+              },
+            ],
           },
+          { text: 'Debugging', link: '/artist-guide/debugging' },
+          { text: 'Kitsu', link: '/artist-guide/kitsu' },
           {
             text: 'Pre-Production',
             collapsed: true,
             items: [
-              { text: 'Storyboard', link: '/overview/pre-production/storyboard'},
-              { text: 'Editorial', link: '/overview/pre-production/editorial'},
-              { text: 'Previz', link: '/overview/pre-production/previz'},
-              { text: 'Research and Development', link: '/overview/pre-production/research-and-development'},
-              { text: 'Concept and Design', link: '/overview/pre-production/concept-and-design'},
+              { text: 'Storyboard', link: '/artist-guide/pre-production/storyboard'},
+              { text: 'Editorial', link: '/artist-guide/pre-production/editorial'},
+              { text: 'Previz', link: '/artist-guide/pre-production/previz'},
+              { text: 'Research and Development', link: '/artist-guide/pre-production/research-and-development'},
+              { text: 'Concept and Design', link: '/artist-guide/pre-production/concept-and-design'},
             ]
           },
           {
             text: 'Asset Creation',
             collapsed: true,
             items: [
-              { text: 'Modeling and Sculpting', link: '/overview/asset-creation/modeling'},
-              { text: 'Shading', link: '/overview/asset-creation/shading'},
-              { text: 'Rigging', link: '/overview/asset-creation/rigging'},
-              { text: 'Animation Testing', link: '/overview/asset-creation/animation-testing'},
-              { text: '2D Assets', link: '/overview/asset-creation/2d-assets'},
+              { text: 'Modeling and Sculpting', link: '/artist-guide/asset-creation/modeling'},
+              { text: 'Shading', link: '/artist-guide/asset-creation/shading'},
+              { text: 'Rigging', link: '/artist-guide/asset-creation/rigging'},
+              { text: 'Animation Testing', link: '/artist-guide/asset-creation/animation-testing'},
+              { text: '2D Assets', link: '/artist-guide/asset-creation/2d-assets'},
             ]
           },
           {
             text: 'Shot Production',
             collapsed: true,
             items: [
-              { text: 'Shot Assembly', link: '/overview/shot-production/shot-assembly'},
-              { text: 'Layout', link: '/overview/shot-production/layout'},
-              { text: 'Animation', link: '/overview/shot-production/animation'},
-              { text: 'Lighting', link: '/overview/shot-production/lighting'},
-              { text: 'Effects', link: '/overview/shot-production/effects'},
-              { text: 'Rendering', link: '/overview/shot-production/rendering'},
-              { text: 'Coloring', link: '/overview/shot-production/coloring'},
+              { text: 'Shot Assembly', link: '/artist-guide/shot-production/shot-assembly'},
+              { text: 'Layout', link: '/artist-guide/shot-production/layout'},
+              { text: 'Animation', link: '/artist-guide/shot-production/animation'},
+              { text: 'Lighting', link: '/artist-guide/shot-production/lighting'},
+              { text: 'Effects', link: '/artist-guide/shot-production/effects'},
+              { text: 'Rendering', link: '/artist-guide/shot-production/rendering'},
+              { text: 'Coloring', link: '/artist-guide/shot-production/coloring'},
             ]
           },
-          { text: 'Publishing', link: '/overview/publishing'},
+        ],
+      },
+
+      {
+        text: 'IT and TD Guide',
+        collapsed: true,
+        items: [
+          { text: 'Infrastructure', link: '/td-guide/infrastructure'},
+          {text: 'Introduction', link: '/td-guide/project-tools-setup'},
+          {text: 'Repository', link: '/td-guide/repository'},
+          {text: 'Python', link: '/td-guide/python'},
+
+          {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
+          {
+            text: 'Shared',
+            collapsed: true,
+            items: [
+              {text: 'Syncthing Setup', link: '/td-guide/syncthing-setup'},
+              {text: 'Populating Shared', link: '/td-guide/populating_shared'},
+            ],
+          },
+          {
+            text: 'SVN',
+            collapsed: true,
+            items: [
+              {text: 'SVN Setup', link: '/td-guide/svn-setup'},
+              {text: 'Populating SVN', link: '/td-guide/populating_svn'},
+            ],
+          },
+
+
+
+          {text: 'Kitsu', link: '/td-guide/kitsu_server'},
+          {
+            text: 'Blender',
+            collapsed: true,
+            items: [
+              {text: 'Blender Setup', link: '/td-guide/blender_setup'},
+              {text: 'Add-Ons Setup', link: '/td-guide/addon_setup'},
+              {text: 'Add-Ons Preferences', link: '/td-guide/addon_preferences'},
+            ],
+          },
+          {text: 'Flamenco', link: '/td-guide/flamenco_setup'},
+
+
         ]
       },
       {
@@ -155,91 +223,7 @@ export default defineConfig({
           { text: 'SVN Folder Structure', link: '/naming-conventions/svn-folder-structure'},
         ]
       },
-      {
-        text: 'User Guide',
-        collapsed: false,
-        items: [
-          {
-            text: 'Project Tools',
-            collapsed: true,
-            items: [
-              { text: 'Project Overview', link: '/user-guide/project_tools/project-overview' },
-              { },
-              {
-                text: 'Project Usage',
-                collapsed: true,
-                items: [
-                  {text: 'Introduction', link: '/user-guide/project_tools/project-usage'},
-                  {text: 'Prepare Edit', link: '/user-guide/project_tools/usage-sync-edit'},
-                  {text: 'Building Shots', link: '/user-guide/project_tools/usage-build-shot'},
-                  {text: 'Playblast Shot', link: '/user-guide/project_tools/usage-playblast'},
-                  {text: 'Update Shot', link: '/user-guide/project_tools/usage-update-shot'},
-                  {text: 'Flamenco Render', link: '/user-guide/project_tools/usage-render-flamenco'},
-                  {text: 'Render Review', link: '/user-guide/project_tools/usage-render-review'},
-                  {text: 'Final Render', link: '/user-guide/project_tools/usage-final-render'},
-                ],
-              },
-              {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
-              { text: 'Project Blender', link: '/user-guide/project_tools/project-blender' },
-            ],
-          },
 
-          {
-            text: 'Organization',
-            collapsed: true,
-            items: [
-              { text: 'Planning', link: '/user-guide/organization/planning' },
-              { text: 'Task Review', link: '/user-guide/organization/task-review' },
-            ],
-          },
-          { text: 'Debugging', link: '/user-guide/debugging' },
-          { text: 'Kitsu', link: '/user-guide/kitsu' },
-        ],
-      },
-
-      {
-        text: 'TD Guide',
-        collapsed: true,
-        items: [
-          {text: 'Introduction', link: '/td-guide/project-tools-setup'},
-          {text: 'Repository', link: '/td-guide/repository'},
-          {text: 'Python', link: '/td-guide/python'},
-
-          {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
-          {
-            text: 'Shared',
-            collapsed: true,
-            items: [
-              {text: 'Syncthing Setup', link: '/td-guide/syncthing-setup'},
-              {text: 'Populating Shared', link: '/td-guide/populating_shared'},
-            ],
-          },
-          {
-            text: 'SVN',
-            collapsed: true,
-            items: [
-              {text: 'SVN Setup', link: '/td-guide/svn-setup'},
-              {text: 'Populating SVN', link: '/td-guide/populating_svn'},
-            ],
-          },
-
-
-
-          {text: 'Kitsu', link: '/td-guide/kitsu_server'},
-          {
-            text: 'Blender',
-            collapsed: true,
-            items: [
-              {text: 'Blender Setup', link: '/td-guide/blender_setup'},
-              {text: 'Add-Ons Setup', link: '/td-guide/addon_setup'},
-              {text: 'Add-Ons Preferences', link: '/td-guide/addon_preferences'},
-            ],
-          },
-          {text: 'Flamenco', link: '/td-guide/flamenco_setup'},
-
-
-        ]
-      },
       {
         text: 'Archive',
         collapsed: true,

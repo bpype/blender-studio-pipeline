@@ -42,9 +42,10 @@
 }
 
 .VPHero {
-  background-image: url("/media/images/hero_banner.jpg");
+  background-image: url("/media/images/hero_banner.webp");
   background-size: cover;
   margin-bottom: 2em;
+  background-position: center;
 }
 
 .VPHero .name .clip,

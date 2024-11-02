@@ -1,9 +1,6 @@
 # Infrastructure
 
-::: warning Work in Progress
-30 Apr. 2023 - The content of this page is currently being edited/updated.
-:::
-
+Description of the infrastructure used at Blender Studio.
 
 ## Workstations
 Artists at Blender Studio use Linux workstations, running Gentoo Linux. While the infrastructure is meant to support other Operating Systems, it's primarily designed to work in an eterogeneous enviroment, where every machine is setup in a similar way.

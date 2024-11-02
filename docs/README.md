@@ -1,7 +1,7 @@
-# Blender Studio Pipeline Docs
+# Blender Studio Tools Docs
 
 ## Installation
-To setup the environment to work on Blender Studio Pipeline Docs.
+To setup the environment to work on Blender Studio Tools Docs.
 
 * Make sure you have NodeJS installed
 * `cd blender-studio-pipeline/docs/`
