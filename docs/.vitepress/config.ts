@@ -8,7 +8,7 @@ const studioURL = 'https://studio.blender.org'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: '/pipeline/',
+  base: '/tools/',
   title: "Blender Studio",
   description: "Documentation for the Blender Studio pipeline and tools.",
   lastUpdated: true,
@@ -56,54 +56,54 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: 'Pipeline Overview',
+        text: 'Blender Studio Tools',
         items: [
-          { text: 'Introduction', link: '/pipeline-overview/introduction'},
-          { text: 'Design Principles', link: '/pipeline-overview/design-principles'},
+          { text: 'Introduction', link: '/overview/introduction'},
+          { text: 'Design Principles', link: '/overview/design-principles'},
           {
             text: 'Organization',
             collapsed: true,
             items: [
-              { text: 'Infrastructure', link: '/pipeline-overview/organization/infrastructure'},
-              { text: 'Task Review', link: '/pipeline-overview/organization/task-review'},
+              { text: 'Infrastructure', link: '/overview/organization/infrastructure'},
+              { text: 'Task Review', link: '/overview/organization/task-review'},
             ]
           },
           {
             text: 'Pre-Production',
             collapsed: true,
             items: [
-              { text: 'Storyboard', link: '/pipeline-overview/pre-production/storyboard'},
-              { text: 'Editorial', link: '/pipeline-overview/pre-production/editorial'},
-              { text: 'Previz', link: '/pipeline-overview/pre-production/previz'},
-              { text: 'Research and Development', link: '/pipeline-overview/pre-production/research-and-development'},
-              { text: 'Concept and Design', link: '/pipeline-overview/pre-production/concept-and-design'},
+              { text: 'Storyboard', link: '/overview/pre-production/storyboard'},
+              { text: 'Editorial', link: '/overview/pre-production/editorial'},
+              { text: 'Previz', link: '/overview/pre-production/previz'},
+              { text: 'Research and Development', link: '/overview/pre-production/research-and-development'},
+              { text: 'Concept and Design', link: '/overview/pre-production/concept-and-design'},
             ]
           },
           {
             text: 'Asset Creation',
             collapsed: true,
             items: [
-              { text: 'Modeling and Sculpting', link: '/pipeline-overview/asset-creation/modeling'},
-              { text: 'Shading', link: '/pipeline-overview/asset-creation/shading'},
-              { text: 'Rigging', link: '/pipeline-overview/asset-creation/rigging'},
-              { text: 'Animation Testing', link: '/pipeline-overview/asset-creation/animation-testing'},
-              { text: '2D Assets', link: '/pipeline-overview/asset-creation/2d-assets'},
+              { text: 'Modeling and Sculpting', link: '/overview/asset-creation/modeling'},
+              { text: 'Shading', link: '/overview/asset-creation/shading'},
+              { text: 'Rigging', link: '/overview/asset-creation/rigging'},
+              { text: 'Animation Testing', link: '/overview/asset-creation/animation-testing'},
+              { text: '2D Assets', link: '/overview/asset-creation/2d-assets'},
             ]
           },
           {
             text: 'Shot Production',
             collapsed: true,
             items: [
-              { text: 'Shot Assembly', link: '/pipeline-overview/shot-production/shot-assembly'},
-              { text: 'Layout', link: '/pipeline-overview/shot-production/layout'},
-              { text: 'Animation', link: '/pipeline-overview/shot-production/animation'},
-              { text: 'Lighting', link: '/pipeline-overview/shot-production/lighting'},
-              { text: 'Effects', link: '/pipeline-overview/shot-production/effects'},
-              { text: 'Rendering', link: '/pipeline-overview/shot-production/rendering'},
-              { text: 'Coloring', link: '/pipeline-overview/shot-production/coloring'},
+              { text: 'Shot Assembly', link: '/overview/shot-production/shot-assembly'},
+              { text: 'Layout', link: '/overview/shot-production/layout'},
+              { text: 'Animation', link: '/overview/shot-production/animation'},
+              { text: 'Lighting', link: '/overview/shot-production/lighting'},
+              { text: 'Effects', link: '/overview/shot-production/effects'},
+              { text: 'Rendering', link: '/overview/shot-production/rendering'},
+              { text: 'Coloring', link: '/overview/shot-production/coloring'},
             ]
           },
-          { text: 'Publishing', link: '/pipeline-overview/publishing'},
+          { text: 'Publishing', link: '/overview/publishing'},
         ]
       },
       {
