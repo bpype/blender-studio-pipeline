@@ -3,12 +3,12 @@
 layout: home
 
 hero:
-  name: "Blender Studio Pipeline and Tools"
+  name: "Blender Studio Tools and Pipeline"
   tagline: "Sharing production knowledge based on the Blender open movie projects. Welcome to the official documentation of the Blender-centric pipeline."
   actions:
     - theme: brand
       text: Get Started
-      link: /pipeline-overview/introduction
+      link: /overview/introduction
     - theme: alt
       text: User Guide
       link: /user-guide/project_tools/project-overview
@@ -19,6 +19,7 @@ features:
     link: https://blender.org
   - title: Production-Tested
     details: This documentation describes the latest version of the pipeline currently in use at Blender Studio.
+    link: https://studio.blender.org
   - title: Blender-Centric
-    details:  Built around Blender, we are working under the assumtion that it's main/only content creation tool available.
+    details:  These tools and processes are aimed at enabling teams to collaborate using Blender as the primary content creation tool.
 ---
