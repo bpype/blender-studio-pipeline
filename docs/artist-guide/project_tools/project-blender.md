@@ -81,7 +81,7 @@ You must run the Create Linux Shortcut step before running a custom build. This 
 <!---
 TODO Replace Image with Project-Tools version
 
-![Image of Blender Icon in KDE Taskbar/Start Menu](/media/user-guide/launch_blender.mp4)
+![Image of Blender Icon in KDE Taskbar/Start Menu](/media/artist-guide/launch_blender.mp4)
 --->
 
 ### Create Windows Shortcut

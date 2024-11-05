@@ -1,1 +1,1 @@
-<!--@include: ../user-guide/project_tools/project-blender.md-->
+<!--@include: ../artist-guide/project_tools/project-blender.md-->
