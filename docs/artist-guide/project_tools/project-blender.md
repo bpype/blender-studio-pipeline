@@ -1,6 +1,6 @@
 # Project Blender
 
-Project Tools will store a version of Blender within the `shared` directory. This version of Blender is internal to that project. This allows for multiple Blenders to be installed on your system, each with their own preferences tailored specifically to that project. The main advantage to running/managing Blender using the Project Tools scripts is that it will synchronize the Blender version and Shared Add-Ons across for all users contributing the the project. Project Tools also allows you to run a custom build of Blender with the Add-Ons and preferences set for your project. 
+Project Tools will store a version of Blender within the `shared` directory. This version of Blender is internal to that project. This allows for multiple Blenders to be installed on your system, each with their own preferences tailored specifically to that project. The main advantage to running/managing Blender using the Project Tools scripts is that it will synchronize the Blender version and Shared Add-Ons across for all users contributing the the project. Project Tools also allows you to run a custom build of Blender with the Add-Ons and preferences set for your project.
 
 <!---
 TODO Note from Julien:
@@ -66,7 +66,7 @@ cd ~/data/your_project_name/svn/tools
 ./install_desktop_file.sh
 ```
 ::: info Available on Gentoo
-To learn more about running the Blender if you are on a Gentoo system please see the [Gentoo guide](/gentoo/user/running-blender.md), including how to run a [debug build](/gentoo/user/running-blender.md#debug-build). 
+To learn more about running the Blender if you are on a Gentoo system please see the [Gentoo guide](/gentoo/user/running-blender.md), including how to run a [debug build](/gentoo/user/running-blender.md#debug-build).
 :::
 
 #### Launch with Custom Build on Linux
@@ -86,16 +86,16 @@ TODO Replace Image with Project-Tools version
 
 ### Create Windows Shortcut
 
-1. Open the directory `%HOMEPATH%\data\your_project_name\svn\tools` 
+1. Open the directory `%HOMEPATH%\data\your_project_name\svn\tools`
 2. Create a shortcut to `launch_blender_win.bat` on your desktop
 
 ### Create Mac Shortcut
 
-1. Open the directory `~/data/your_project_name/svn/tools` 
+1. Open the directory `~/data/your_project_name/svn/tools`
 2. In finder, select the `launch_blender_mac.command` and press `ctrl+shift+command+t` to add it to the dock.
 
 
-## Launch via Terminal 
+## Launch via Terminal
 
 To launch Blender from the terminal, open the tools directory within your project folder, and from the terminal use the run Blender script.
 
@@ -111,15 +111,15 @@ python run_blender.py
 ```
 
 ::: warning Command Line Arguments
-Note: Command Line Arguments also known as Flags are not supported by the `run_blender.py` script. 
+Note: Command Line Arguments also known as Flags are not supported by the `run_blender.py` script.
 :::
 
 ## Update Blender
 
-This script will fetch the latest Blender download from https://builder.blender.org/download/  The Blender download for Linux, Mac, and Windows will be downloaded into the `your_project_name/shared/artifacts/blender` folder. It will keep up to 10 previous downloaded versions for backup. This Blender doesn't update automatically, at least one user in the project must manually initiate an update, all users will receive this update because blender is stored within the `shared` directory. 
+This script will fetch the latest Blender download from https://builder.blender.org/download/  The Blender download for Linux, Mac, and Windows will be downloaded into the `your_project_name/shared/artifacts/blender` folder. It will keep up to 10 previous downloaded versions for backup. This Blender doesn't update automatically, at least one user in the project must manually initiate an update, all users will receive this update because blender is stored within the `shared` directory.
 
 ::: info  Blender Studio Users
-Internally to the Blender Studio only, the blender inside your project is automatically updated overnight, not manual update is required. 
+Internally to the Blender Studio only, the blender inside your project is automatically updated overnight, not manual update is required.
 :::
 
 ```bash
@@ -150,7 +150,7 @@ python rollback_blender.py
 
 ### Run a previous version of Blender Locally
 
-In some cases users may want to run a previous version of Blender on their machine without affecting other users. 
+In some cases users may want to run a previous version of Blender on their machine without affecting other users.
 
 ```bash
 # Linux/Mac
@@ -177,7 +177,7 @@ cd %HOMEPATH%\data\your_project_name\svn\tools
 python update_addons.py
 ```
 
-*To learn more see [Add-On Setup page](/td-guide/addon_setup.md)* 
+*To learn more see [Add-On Setup page](/td-guide/addon_setup.md)*
 
 
 ::: info Gentoo Users
