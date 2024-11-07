@@ -185,6 +185,7 @@ export default defineConfig({
           { text: 'Blender Kitsu', link: '/addons/blender_kitsu'},
           { text: 'Blender SVN', link: '/addons/blender_svn'},
           { text: 'Blender Gizmos', link: '/addons/bone_gizmos'},
+          { text: 'Brushstroke Tools', link: '/addons/brushstroke_tools'},
           { text: 'Cache Manager', link: '/addons/cache_manager'},
           {
             text: 'CloudRig',
