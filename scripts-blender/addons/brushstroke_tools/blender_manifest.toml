@@ -1,30 +1,23 @@
 schema_version = "1.0.0"
 
 id = "brushstroke_tools"
-version = "1.0.1"
+version = "1.0.2"
 name = "Brushstroke Tools"
 tagline = "Brushstroke painting tools by the Blender Studio"
 maintainer = "Simon Thommes <simon@blender.org>"
 type = "add-on"
 
-# Optional link to documentation, support, source files, etc
-# website = "https://studio.blender.org/tools/addons/brushstroke_tools"
-
-# Optional list defined by Blender and server, see:
-# https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html
+website = "https://studio.blender.org/tools/addons/brushstroke_tools"
 tags = ["Geometry Nodes", "Grease Pencil", "Node", ]
 
 blender_version_min = "4.2.0"
 
-# License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
-# https://docs.blender.org/manual/en/dev/advanced/extensions/licenses.html
 license = [
   "SPDX:GPL-3.0-or-later",
 ]
-# Optional: required by some licenses.
-# copyright = [
-#   "2024 Blender Foundation",
-# ]
+copyright = [
+  "2024 Blender Foundation",
+]
 
-# [permissions]
-# files = "Read/write brushstroke asset resources from/to disk"
+[permissions]
+files = "Read/write brushstroke asset resources from/to disk"
