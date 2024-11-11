@@ -40,6 +40,9 @@ def update_context_material(self, context):
     if not style_object:
         return
     utils.set_brushstroke_material(style_object, self.context_material)
+    if not self.context_material:
+        utils.set_preview(None)
+        return
     ng = bpy.data.node_groups.get(f'BSBST-BS.{self.context_material.brush_style}')
     if not ng:
         utils.set_preview(None)

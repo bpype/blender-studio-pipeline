@@ -285,7 +285,7 @@ def compare_versions(v1: tuple, v2: tuple):
 
 def import_brushstroke_material():
     name = 'Brush Material'
-    path = f"{get_resource_directory()}/brushstroke_tools-resources.blend"
+    path = str(get_resource_directory().joinpath('brushstroke_tools-resources.blend'))
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
 
     mats_pre = set(bpy.data.materials)
@@ -322,7 +322,7 @@ def ensure_node_group(name, path=''):
     
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
     if not path:
-        path=f'{get_resource_directory()}/brushstroke_tools-resources.blend'
+        path=str(get_resource_directory().joinpath('brushstroke_tools-resources.blend'))
 
     with bpy.data.libraries.load(path, link=addon_prefs.import_method=='LINK', relative=addon_prefs.import_relative_path) as (data_src, data_dst):
         data_dst.node_groups = [name]
@@ -355,7 +355,6 @@ def register_asset_lib():
     lib.name = asset_lib_name
     lib.path = str(get_resource_directory())
     lib.use_relative_path = False
-    refresh_brushstroke_styles()
 
 def unregister_asset_lib():
     asset_libs = bpy.context.preferences.filepaths.asset_libraries

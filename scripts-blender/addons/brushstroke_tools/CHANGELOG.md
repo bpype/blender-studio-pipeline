@@ -1,3 +1,10 @@
+## 1.0.4 - 2024-11-11
+
+### FIXED
+- fix incorrect path use for material import (#346)
+- fix registry issue by not importing brushstrokes on addon registry (#346)
+- add nullcheck for noe context material (#346)
+
 ## 1.0.3 - 2024-11-11 
 
 ### FIXED
