@@ -2,50 +2,54 @@
 .nav-global {
   -webkit-font-smoothing: antialiased;
 
-  --nav-global-color-bg: hsl(213, 10%, 14%);
-  --nav-global-color-text: hsl(213, 5%, 64%);
-  --nav-global-color-text-secondary: hsl(213, 5%, 44%);
-  --nav-global-color-text-highlight: hsl(213, 5%, 84%);
-  --nav-global-color-text-hover: white;
-  --nav-global-color-text-active: white;
+  /*
+   *Variables come from, and match partial _variables, and are prefixed with 'bwa-'.
+   *Sizes must be defined in pixels as default rem-sizing might vary in projects.
+   */
 
-  --nav-global-color-primary: hsl(204, 98%, 54%);
-  --nav-global-color-primary-bg: hsla(204, 100%, 46%, .1);
+  --bwa-color-bg-primary: hsl(213, 10%, 21%);
+  --bwa-color-bg-tertiary: hsl(213, 10%, 14%);
 
-  --nav-global-color-button-bg-hover: hsl(213, 10%, 24%);
-  --nav-global-color-button-text: var(--nav-global-color-text);
+  --bwa-color-text: hsl(213, 10%, 80%);
+  --bwa-color-text-primary: hsl(213, 10%, 98%);
 
-  --nav-global-color-menu-bg: var(--nav-global-color-bg);
-  --nav-global-color-menu-border: hsl(213, 10%, 18%);
+  /* Colours Components. */
+  --bwa-border-color: hsla(213, 10%, 80%, .15);
 
-  --nav-global-color-menu-zindex: 1040;
+  --bwa-btn-color-bg-hover: hsl(213, 10%, 30%);
 
-  --nav-global-box-shadow-menu: 0px 5px 15px -2px rgba(0, 0, 0, 0.33), 0px 5px 15px -5px rgba(0, 0, 0, 0.33);
-  --nav-global-box-shadow-menu-item: 0px 1px 4px 0px rgba(0, 0, 0, 0.05), 0px 15px 20px -1px rgba(0, 0, 0, 0.025);
+  /* Colours Status. */
+  --bwa-color-accent: hsl(204deg, 100%, 50%);
+  --bwa-color-accent-bg: hsla(204deg, 100%, 50%, .1);
+  --bwa-color-accent-bg-hover: hsla(204deg, 100%, 50%, .2);
 
-  --nav-global-navbar-height: var(--navbar-primary-height, 56px);
+  --bwa-border-radius: 6px;
+  --bwa-border-radius-lg: 12px;
 
-  --nav-global-spacer: 15px;
-  --nav-global-spacer-sm: 10px;
-  --nav-global-spacer-xs: 5px;
+  --bwa-transition-speed: 150ms;
 
-  --nav-global-border-radius: 6px;
-  --nav-global-border-radius-lg: 10px;
+  --bwa-zindex-dropdown: 1040;
+  --bwa-zindex-fixed: 1030;
 
-  --nav-global-button-height: 35px;
-  --nav-global-link-padding-x: var(--nav-global-spacer);
-  --nav-global-link-padding-y: var(--nav-global-spacer-sm);
+  /* Grid. */
+  --bwa-spacer: 16px;
+  --bwa-spacer-1: calc(var(--bwa-spacer) * 0.25);
+  --bwa-spacer-2: calc(var(--bwa-spacer) * 0.5);
+  --bwa-spacer-3: var(--bwa-spacer);
 
-  --nav-global-font-size: 14px;
-  --nav-global-transition-speed: 150ms;
+  /* Type. */
+  --bwa-fs-base: 14px;
+
+  /* Components. */
+  --bwa-navbar-zindex: calc(var(--bwa-zindex-fixed) + 1);
 }
 
 /* Reset. */
+@namespace svg "http://www.w3.org/2000/svg";
+
 .nav-global :not(svg|*),
 .nav-global *::before,
 .nav-global *::after {
-  -webkit-box-sizing: border-box;
-
   all: unset;
   display: revert;
   box-sizing: border-box;
@@ -58,17 +62,17 @@
 .nav-global * {
   -webkit-text-size-adjust: 100%;
 
-  font-family: 'Heebo', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-variation-settings: 'wght' 400;
   font-weight: normal;
 }
 
 .nav-global {
-  background-color: var(--nav-global-color-bg);
-  color: var(--nav-global-color-text);
+  background-color: var(--bwa-color-bg-tertiary);
+  color: var(--bwa-color-text);
   display: flex;
   position: relative;
-  z-index: var(--zindex-fixed);
+  z-index: var(--bwa-navbar-zindex);
 }
 
 .nav-global h3,
@@ -96,11 +100,12 @@
 .nav-global nav {
   align-items: center;
   display: flex;
-  line-height: var(--nav-global-font-size);
-  font-size: var(--nav-global-font-size);
-  min-height: var(--nav-global-navbar-height);
+  line-height: var(--bwa-fs-base);
+  font-size: var(--bwa-fs-base);
+  justify-content: space-between;
+  min-height: calc(var(--bwa-spacer) * 4);
   margin: 0 auto;
-  padding: 0 var(--nav-global-spacer);
+  padding: 0 var(--bwa-spacer);
   position: relative;
 }
 
@@ -109,7 +114,11 @@
   color: inherit;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color var(--nav-global-transition-speed) ease-out, color var(--nav-global-transition-speed) ease-out;
+  transition: background-color var(--bwa-transition-speed) ease-out, color var(--bwa-transition-speed) ease-out;
+}
+
+.nav-global-nav-links {
+  flex-grow: 1;
 }
 
 .nav-global-nav-links a:not(.dropdown-item) {
@@ -119,7 +128,7 @@
 }
 
 .nav-global a:not(.dropdown-item):hover {
-  color: var(--nav-global-color-text-hover);
+  color: var(--bwa-color-text-primary);
 }
 
 /* Navigation items. */
@@ -144,32 +153,40 @@
 }
 
 .nav-global nav>ul>li>a {
-  padding: var(--nav-global-link-padding-y) var(--nav-global-link-padding-x);
+  padding: var(--bwa-spacer-2);
+}
+
+@media (min-width: 1320px) {
+  .nav-global nav>ul>li>a {
+    padding-left: var(--bwa-spacer);
+    padding-right: var(--bwa-spacer);
+  }
 }
 
 .nav-global nav>a.is-active,
 .nav-global nav>a.is-active svg,
-.nav-global nav>ul>li>a.is-active,
-.nav-global .nav-global-link-active,
-.nav-global .nav-global-link-active svg {
-  color: var(--nav-global-color-text-active) !important;
-  fill: var(--nav-global-color-text-active);
-  @include font-weight(500);
+.nav-global nav>ul>li>a.is-active {
+  color: var(--bwa-color-text-primary) !important;
+  fill: var(--bwa-color-text-primary);
+  font-variation-settings: 'wght', 500;
+  font-weight: bold;
 }
 
 .nav-global .nav-global-links-right {
-  margin-left: auto;
+  flex-wrap: nowrap;
+  gap: 0 var(--bwa-spacer-2);
 }
 
 /* Logo. */
 .nav-global a.nav-global-logo {
-  margin-right: var(--nav-global-spacer);
+  margin-right: var(--bwa-spacer);
   position: relative;
   top: 2px;
+  white-space: nowrap;
 }
 
 .nav-global a.nav-global-logo strong {
-  margin-inline: var(--nav-global-spacer-sm);
+  margin-inline: var(--bwa-spacer-2);
   font-size: 18px;
 }
 
@@ -181,39 +198,70 @@
 
 .nav-global a.nav-global-logo svg {
   position: relative;
-  top: -4px;
+  top: calc(var(--bwa-spacer-1) * -1);
 }
 
 .nav-global svg {
-  fill: var(--nav-global-color-text);
-  transition: fill var(--nav-global-transition-speed) ease-out;
+  fill: var(--bwa-color-text);
+  transition: fill var(--bwa-transition-speed) ease-out;
 }
 
 .nav-global .nav-global-logo:hover svg {
-  fill: white;
+  fill: var(--bwa-color-text-primary);
+}
+
+.nav-global .nav-global-logo.is-active,
+.nav-global .nav-global-logo.is-active svg,
+/* TODO: make classes 'is-active' and 'nav-global-btn-active' consistent */
+.nav-global button.nav-global-btn-active svg {
+  color: var(--bwa-color-text-primary);
+  fill: var(--bwa-color-text-primary);
 }
 
 /* Apps button. */
+.nav-global {
+  --bwa-nav-global-btn-height: calc(var(--bwa-spacer) * 2.25);
+}
+
 .nav-global button,
 .nav-global .nav-global-btn {
   -webkit-appearance: button;
 
   align-items: center;
   background-color: transparent;
-  border-radius: var(--nav-global-border-radius);
+  border-radius: var(--bwa-border-radius);
   border: 0;
-  color: var(--nav-global-color-button-text);
+  color: var(--bwa-btn-color-text);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
-  height: var(--nav-global-button-height);
+  height: var(--bwa-nav-global-btn-height);
   margin: 0;
   outline: 0;
   overflow: visible;
-  padding: var(--nav-global-spacer-xs) var(--nav-global-spacer);
+  padding: var(--bwa-spacer-1) var(--bwa-spacer-2);
   text-transform: none;
-  transition: background-color var(--nav-global-transition-speed) ease-out, color var(--nav-global-transition-speed) ease-out, transform var(--nav-global-transition-speed) ease-out;
+  transition: background-color var(--bwa-transition-speed) ease-out, color var(--bwa-transition-speed) ease-out, transform var(--bwa-transition-speed) ease-out;
   white-space: nowrap;
+}
+
+/* Button overrides. */
+/*
+  *Button overrides for Web Assets button components for BWA projects.
+  */
+.nav-global button,
+.nav-global .btn {
+  height: var(--bwa-nav-global-btn-height);
+  line-height: 1;
+}
+
+.nav-global .btn-accent {
+  color: white !important;
+}
+
+.nav-global .nav-global-btn.nav-global-btn-primary {
+  padding-left: var(--bwa-spacer);
+  padding-right: var(--bwa-spacer);
 }
 
 .nav-global button span,
@@ -222,21 +270,25 @@
 }
 
 .nav-global button:hover,
-.nav-global .nav-global-btn:hover {
-  background-color: var(--nav-global-color-button-bg-hover);
-  color: var(--nav-global-color-text-hover);
+.nav-global .nav-global-btn:hover,
+.nav-global button.nav-global-btn-active,
+.nav-global .nav-global-btn.nav-global-btn-active {
+  background-color: var(--bwa-btn-color-bg-hover);
+  color: var(--bwa-color-text-primary);
   cursor: pointer;
 }
 
-.nav-global button.nav-global-btn-active,
-.nav-global .nav-global-btn.nav-global-btn-active {
-  background-color: var(--nav-global-color-primary-bg);
-  color: var(--nav-global-color-primary);
+.nav-global .nav-global-btn span {
+  margin-left: var(--bwa-spacer-2);
 }
 
-.nav-global button.nav-global-btn-active svg,
-.nav-global .nav-global-btn.nav-global-btn-active svg {
-  fill: var(--nav-global-color-primary);
+.nav-global .nav-global-btn-primary {
+  background-color: var(--bwa-color-accent-bg);
+  color: var(--bwa-color-accent) !important;
+}
+
+.nav-global .nav-global-btn-primary:hover {
+  background-color: var(--bwa-color-accent-bg-hover);
 }
 
 .nav-global .nav-global-icon {
@@ -245,12 +297,12 @@
   width: 20px;
 }
 
-.nav-global-icon-dropdown-toggle {
-  margin-left: var(--nav-global-spacer-xs);
+.nav-global .nav-global-icon-alt {
+  transform: rotate(90deg);
 }
 
 .nav-global .dropdown-toggle.active {
-  color: var(--nav-global-color-text-active)
+  color: var(--bwa-color-text-primary)
 }
 
 .nav-global button:hover svg,
@@ -260,18 +312,18 @@
 
 /* Apps dropdown menu. */
 .nav-global .nav-global-apps-menu {
-  background-color: var(--nav-global-color-menu-bg);
-  border-radius: var(--nav-global-border-radius-lg);
-  border: thin solid var(--nav-global-color-menu-border);
-  box-shadow: var(--nav-global-box-shadow-menu);
+  background-color: var(--bwa-color-bg-tertiary);
+  border-radius: var(--bwa-border-radius-lg);
+  border: thin solid var(--bwa-border-color);
+  box-shadow: 0 var(--bwa-spacer-1) var(--bwa-spacer) -2px rgba(0, 0, 0, 0.33), 0px var(--bwa-spacer-1) var(--bwa-spacer) calc(var(--bwa-spacer-1) * -1) rgba(0, 0, 0, 0.33);
   display: none;
-  padding: var(--nav-global-spacer-sm);
+  padding: var(--bwa-spacer-2);
   position: absolute;
   right: 0;
-  top: calc(100% + 15px);
+  top: calc(100% + var(--bwa-spacer));
   visibility: hidden;
   width: 640px;
-  z-index: var(--nav-global-color-menu-zindex);
+  z-index: var(--bwa-zindex-dropdown);
 }
 
 .nav-global .nav-global-dropdown.is-visible {
@@ -280,10 +332,11 @@
 }
 
 /* Tiny triangle in the corner. */
+/* TODO: consider removing for consistency */
 .nav-global .nav-global-apps-menu::before {
-  background-color: var(--nav-global-color-menu-bg);
+  background-color: var(--bwa-color-bg-tertiary);
   border-radius: 3px;
-  border: 2px var(--nav-global-color-menu-bg) solid;
+  border: 2px var(--bwa-color-bg-tertiary) solid;
   content: '';
   display: block;
   height: .85rem;
@@ -298,15 +351,15 @@
 .nav-global .nav-global-apps-menu ul {
   border-bottom: 2px solid rgba(255, 255, 255, .05);
   display: grid;
-  gap: var(--nav-global-spacer-sm);
+  gap: var(--bwa-spacer-2);
   grid-template-columns: repeat(2, 1fr);
   list-style: none;
-  margin: 0 0 var(--nav-global-spacer-xs) 0;
-  padding: var(--nav-global-spacer-xs) 0 var(--nav-global-spacer-sm) 0;
+  margin: 0 0 var(--bwa-spacer-1) 0;
+  padding: var(--bwa-spacer-1) 0 var(--bwa-spacer-2) 0;
 }
 
 .nav-global .nav-global-apps-menu ul>li>a {
-  border-radius: var(--nav-global-border-radius-lg);
+  border-radius: var(--bwa-border-radius-lg);
   display: flex;
   flex: 1;
   height: 100%;
@@ -314,45 +367,46 @@
 
 .nav-global .nav-global-apps-menu ul>li>a:hover {
   background-color: rgba(255, 255, 255, .05);
-  color: var(--nav-global-color-text-active);
-  box-shadow: var(--nav-global-box-shadow-menu-item);
+  color: var(--bwa-color-text-primary);
+  box-shadow: 0px 1px var(--bwa-spacer-1) 0 rgba(0, 0, 0, 0.05), 0 var(--bwa-spacer) 20px -1px rgba(0, 0, 0, 0.025);
 }
 
 .nav-global .nav-global-apps-menu ul>li>a:hover h4,
 .nav-global .nav-global-apps-menu ul>li>a:hover svg {
-  color: var(--nav-global-color-primary);
-  fill: var(--nav-global-color-primary);
+  color: var(--bwa-color-accent);
+  fill: var(--bwa-color-accent);
 }
 
 .nav-global .nav-global-apps-menu h3 {
   color: white;
   display: inline-block;
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 12px;
+  line-height: var(--bwa-spacer);
   margin: 0;
+  margin-top: 2px;
   opacity: .3;
-  padding-left: var(--nav-global-spacer);
+  padding-left: var(--bwa-spacer);
 }
 
 .nav-global .nav-global-apps-menu h4 {
-  color: var(--nav-global-color-text-highlight);
-  font-size: 17px;
-  line-height: 18px;
-  margin: var(--nav-global-spacer-xs) 0 0;
-  padding: var(--nav-global-spacer-sm) var(--nav-global-spacer) 0;
-  transition: color var(--nav-global-transition-speed) ease-out;
+  color: var(--bwa-color-text-primary);
+  font-size: 18px;
+  line-height: 20px;
+  margin: var(--bwa-spacer-1) 0 0;
+  padding: var(--bwa-spacer-2) var(--bwa-spacer) 0;
+  transition: color var(--bwa-transition-speed) ease-out;
 }
 
 .nav-global .nav-global-apps-menu p {
-  font-size: 15px;
+  font-size: var(--bwa-fs-base);
   line-height: 20px;
   margin: 0;
   opacity: .8;
-  padding: var(--nav-global-spacer-xs) var(--nav-global-spacer) var(--nav-global-spacer-sm);
+  padding: var(--bwa-spacer-1) var(--bwa-spacer) var(--bwa-spacer-2);
 }
 
 .nav-global .nav-global-apps-menu figure {
-  margin: var(--nav-global-spacer) 0 0 var(--nav-global-spacer);
+  margin: var(--bwa-spacer) 0 0 var(--bwa-spacer);
 }
 
 .nav-global .nav-global-apps-menu ul>li>a svg {
@@ -369,7 +423,7 @@
 
 .nav-global .nav-global-apps-menu-section-donate a svg {
   fill: hsl(352, 90%, 62%) !important;
-  transition: transform var(--nav-global-transition-speed) ease-out;
+  transition: transform var(--bwa-transition-speed) ease-out;
 }
 
 .nav-global .nav-global-apps-menu-section-donate ul>li:first-child>a {
@@ -396,77 +450,86 @@
 }
 
 @media (max-width: 767px) {
-
   .nav-global-apps-dropdown-container,
   .nav-global a.nav-global-logo {
     display: none;
   }
 
   .nav-global button.nav-global-logo {
-    display: block;
+    display: flex;
     visibility: visible;
+  }
+
+  .nav-global button.nav-global-logo strong,
+  .nav-global button.nav-global-logo svg {
+    margin-right: var(--bwa-spacer-2)
   }
 
   .nav-global .nav-global-nav-links {
     align-items: flex-start;
-    background-color: var(--nav-global-color-menu-bg);
-    border-radius: var(--nav-global-border-radius-lg);
+    background-color: var(--bwa-color-bg-primary);
+    border-radius: 6px;
     display: none;
     flex-direction: column;
-    left: 1rem;
-    padding: 0 var(--nav-global-spacer-sm);
+    height: auto;
+    padding: var(--bwa-spacer-1);
     position: absolute;
-    top: calc(100% + .5rem);
+    top: 72px;
     visibility: visible;
-    width: 10rem;
-    z-index: var(--nav-global-color-menu-zindex);
+    z-index: var(--bwa-zindex-dropdown);
   }
 
   .nav-global .nav-global-nav-links.is-visible {
     display: flex;
   }
 
-  .nav-global .nav-global-nav-links::before {
-    background-color: var(--nav-global-color-menu-bg);
-    border-radius: 3px;
-    border: 2px var(--nav-global-color-menu-bg) solid;
-    content: '';
-    display: block;
-    height: 0.8rem;
-    position: absolute;
-    left: 1.5rem;
-    top: -0.133rem;
-    transform: rotate(45deg);
-    width: 1rem;
-    z-index: -1;
-  }
-
-  .nav-global nav>ul {
-    height: initial;
-  }
-
-  .nav-global .nav-global-nav-links>li {
-    border-bottom: 2px solid rgba(255, 255, 255, .05);
+  .nav-global .nav-global-nav-links li {
+    align-items: center;
+    display: flex;
+    margin-bottom: var(--bwa-spacer-1);
     width: 100%;
   }
 
-  .nav-global .nav-global-nav-links>li:last-child {
-    border: none;
+  .nav-global .nav-global-nav-links li:last-child {
+    margin-bottom: 0;
   }
 
-  .nav-global .nav-global-nav-links>li>a {
-    padding-inline: 0;
+  .nav-global .nav-global-nav-links li a {
+    border-radius: 6px;
+    color: var(--bwa-color-text);
+    display: inline-flex;
+    flex: 1;
+    line-height: initial;
+    padding: var(--bwa-spacer-2) var(--bwa-spacer);
+    transition: background-color var(--bwa-transition-speed) var(--bwa-transition-timing-fast), color var(--bwa-transition-speed) var(--bwa-transition-timing-fast);
+    text-decoration: none;
+    white-space: nowrap;
     width: 100%;
   }
+
+
+  .nav-global .nav-global-nav-links li a:hover,
+  .nav-global .nav-global-nav-links li a.nav-global-link-active {
+    background-color: var(--bwa-color-accent-bg);
+    color: var(--bwa-color-accent);
+    text-decoration: none;
+  }
+}
+
+.nav-global .nav-global-nav-links li a.nav-global-link-active {
+  font-variation-settings: 'wght' 700;
+  font-weight: bold;
 }
 
 /* Site-specific tweaks. */
 /* Make sure to start every line with ".nav-global"
 * so changes affect the developer navbar only. */
 
-/* Limit navbar width on large screens. */
-@media (min-width: 1200px) {
+/* Limit navbar width on large screens (optional). */
+/*
+@media (min-width: 1380px) { // grid breakpoint 'xl'
   .nav-global .nav-global-container {
-    max-width: 1170px;
+    max-width: var(--container-width);
   }
 }
+*/
