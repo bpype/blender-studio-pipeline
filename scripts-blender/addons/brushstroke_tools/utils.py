@@ -1,4 +1,5 @@
 import os, ast
+from pathlib import Path
 import bpy
 from bpy.app.handlers import persistent
 import math, shutil, errno, numpy
@@ -201,21 +202,24 @@ def deep_copy_mod_info(source_object, target_object):
             for attr in socket_info.keys():
                 setattr(socket_info_tgt, attr, getattr(socket_info, attr))
 
-def get_addon_directory() -> str:
+def get_addon_directory() -> Path:
     """
     Returns the path of the addon directory.
     """
-    return bpy.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+    path = os.path.dirname(os.path.realpath(__file__))
+    abspath = bpy.path.abspath(path)
+    return Path(abspath)
 
-def get_resource_directory() -> str:
+def get_resource_directory() -> Path:
     """
     Returns the path to be used to append resource data-blocks.
     """
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
-    resource_path = addon_prefs.resource_path
-    if not resource_path:
-        resource_path = f'{get_addon_directory()}/assets/'
-    return resource_path
+    resource_dir = addon_prefs.resource_path
+    if resource_dir:
+        return Path(resource_dir)
+    else:
+        return get_addon_directory().joinpath('assets')
 
 def import_resources(ng_names = ng_list):
     """
@@ -225,7 +229,8 @@ def import_resources(ng_names = ng_list):
 
     path = get_resource_directory()
 
-    with bpy.data.libraries.load(f'{path}brushstroke_tools-resources.blend', link=addon_prefs.import_method=='LINK', relative=addon_prefs.import_relative_path) as (data_src, data_dst):
+    resource_path = str(path.joinpath('brushstroke_tools-resources.blend'))
+    with bpy.data.libraries.load(resource_path, link=addon_prefs.import_method=='LINK', relative=addon_prefs.import_relative_path) as (data_src, data_dst):
         data_dst.node_groups = ng_names
     if addon_prefs.import_method=='APPEND':
         # pack imported resources
@@ -238,18 +243,18 @@ def import_resources(ng_names = ng_list):
                 img.pack()
 
 def read_lib_version():
-    resource_dir = f'{get_resource_directory()}'
-    with open(f"{resource_dir}.version", "r") as file:
+    resource_dir = get_resource_directory()
+    with open(resource_dir.joinpath(".version"), "r") as file:
         version = ast.literal_eval(file.read())
         return version
 
 def write_lib_version():
-    resource_dir = f'{get_resource_directory()}'
-    with open(f"{resource_dir}.version", "w") as file:
+    resource_dir = get_resource_directory()
+    with open(resource_dir.joinpath(".version"), "w") as file:
         file.write(str(addon_version))
 
 def copy_resources_to_dir(tgt_dir = ''):
-    resource_dir = f'{get_addon_directory()}/assets/'
+    resource_dir = get_addon_directory().joinpath('assets')
     if not tgt_dir:
         tgt_dir = get_resource_directory()
 
@@ -263,6 +268,7 @@ def copy_resources_to_dir(tgt_dir = ''):
             write_lib_version()
         else:
             print("Error: % s" % err)
+    refresh_brushstroke_styles()
 
 def compare_versions(v1: tuple, v2: tuple):
     """ Returns n when v1 > v2, 0 when v1 == v2, -n when v1 < v2, while n = 'Index of first significant version tuple element' + 1.
@@ -347,8 +353,9 @@ def register_asset_lib():
         return asset_libs[asset_lib_name]
     lib = asset_libs.new()
     lib.name = asset_lib_name
-    lib.path = get_resource_directory()
+    lib.path = str(get_resource_directory())
     lib.use_relative_path = False
+    refresh_brushstroke_styles()
 
 def unregister_asset_lib():
     asset_libs = bpy.context.preferences.filepaths.asset_libraries
@@ -363,7 +370,8 @@ def update_asset_lib_path():
         register_asset_lib()
         return
     lib = asset_libs[asset_lib_name]
-    lib.path = get_resource_directory()
+    lib.path = str(get_resource_directory())
+    refresh_brushstroke_styles()
 
 def refresh_brushstroke_styles():
     addon_prefs = bpy.context.preferences.addons[__package__].preferences

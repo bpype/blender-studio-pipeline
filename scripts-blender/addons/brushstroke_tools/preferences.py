@@ -48,7 +48,7 @@ class BSBST_OT_copy_resources_to_path(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         layout.label(text='This will overwrite files in the target directory!', icon='ERROR')
-        layout.label(text=utils.get_resource_directory())
+        layout.label(text=str(utils.get_resource_directory()))
 
 class BSBST_brush_style(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(default='')
@@ -62,7 +62,7 @@ class BSBST_UL_brush_styles(bpy.types.UIList):
             split.label(text=item.name)
             row = split.row()
             row.active = False
-            row.label(text=item.filepath.replace(resource_dir, '{LIB}/'), icon='FILE_FOLDER')
+            row.label(text=item.filepath.replace(str(resource_dir), '{LIB}'), icon='FILE_FOLDER')
         elif self.layout_type == 'GRID':
             layout.label(text=item.name)
 
@@ -91,10 +91,10 @@ class BSBST_preferences(bpy.types.AddonPreferences):
         row = layout.row()
         col = row.column()
         dir_exists = os.path.isdir(utils.get_resource_directory())
-        resources_available = os.path.isfile(f"{utils.get_resource_directory()}brushstroke_tools-resources.blend")
+        resources_available = utils.get_resource_directory().joinpath("brushstroke_tools-resources.blend").exists()
         if not dir_exists or not resources_available:
             col.alert = True
-        col.prop(self, 'resource_path', placeholder=utils.get_resource_directory())
+        col.prop(self, 'resource_path', placeholder=str(utils.get_resource_directory()))
         
         split = layout.split(factor=0.25)
         split.column()
