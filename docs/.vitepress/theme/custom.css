@@ -14,6 +14,10 @@
     Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
+.VPLocalSearchBox {
+  z-index: 1031 !important; /* --bwa-navbar-zindex + 1 */
+}
+
 .VPNav {
   /* Fix Vitepress VPNav arbitrary style */
   pointer-events: auto !important;
@@ -56,7 +60,15 @@
 }
 
 /* Web Assets overrides. */
+/* TODO: @blender-studio check style overrides */
+.nav-global {
+  background-color: hsl(213, 10%, 12%); /* --color-bg */
+}
+
+.nav-global .nav-global-apps-dropdown-container button {
+  padding-left: 12px;
+  padding-right: 12px;
+}
 .nav-global .nav-global-logo svg {
   display: inline;
 }
-

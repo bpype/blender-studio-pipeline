@@ -1,14 +1,14 @@
 schema_version = "1.0.0"
 
 id = "brushstroke_tools"
-version = "1.0.2"
+version = "1.0.4"
 name = "Brushstroke Tools"
 tagline = "Brushstroke painting tools by the Blender Studio"
 maintainer = "Simon Thommes <simon@blender.org>"
 type = "add-on"
 
 website = "https://studio.blender.org/tools/addons/brushstroke_tools"
-tags = ["Geometry Nodes", "Grease Pencil", "Node", ]
+tags = ["Paint", "Geometry Nodes", "Material", ]
 
 blender_version_min = "4.2.0"
 
