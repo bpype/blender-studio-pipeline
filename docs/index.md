@@ -10,8 +10,8 @@ hero:
       text: Get Started
       link: /overview/introduction
     - theme: alt
-      text: User Guide
-      link: /user-guide/project_tools/project-overview
+      text: Artist Guide
+      link: /td-guide/project_folder_structure
 
 features:
   - title: Free Software
