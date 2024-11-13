@@ -68,3 +68,4 @@ ENV/
 # Docs
 node_modules/
 docs/.vitepress/cache
+*.local
