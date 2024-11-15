@@ -35,6 +35,8 @@ def draw_panel_ui_recursive(panel, panel_name, mod, items, display_mode, hide_pa
 
     mode_compare = []
     for k, v in items:
+        if not v.parent.name == panel_name:
+            continue
         if type(v) == bpy.types.NodeTreeInterfacePanel:
 
             v_id = f'Panel_{v.index}' # TODO: replace with panel identifier once that is exposed in Blender 4.3
