@@ -1,12 +1,12 @@
 # Pose Shape Keys
 
-This add-on enables a workflow where you can continue iterating on your vertex weights and bone constraints after you've already created your shape keys, without having to re-sculpt those shape keys. To put another way, you can think of shape keys as a final shape rather than as deltas on some deformation.
-
-The only limitation is that there is some precision loss when using bendy bone deformations.
-
-It also lets you manage multiple copies of a shape key together. Each copy can have a different vertex group mask, or be applied mirrored around the X axis.
+This add-on enables a workflow where you can continue iterating on your vertex weights and bone constraints after you've already created your shape keys, without having to re-sculpt those shape keys.
 
 You can find a video tutorial and more detailed explanation of how it works [here](https://studio.blender.org/blog/rig-with-shape-keys-like-never-before/).
+
+
+### Installation
+Pose Shape Keys can be [found on the Extensions Platform](https://extensions.blender.org/add-ons/pose-shape-keys/), meaning you can simply search for it in Blender.
 
 ## Basic Workflow:
 - Create a pose whose deformation you want to correct. A pose is defined as an Action and a frame number.

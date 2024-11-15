@@ -1,11 +1,14 @@
 # CloudRig
 
-Welcome to CloudRig!
+This page aims to give you an introduction to CloudRig, the Blender Studio's rig generation and rigging workflow enhancement add-on. You can find [CloudRig on the Extensions platform](https://extensions.blender.org/add-ons/cloudrig/), which also means you can install it from directly within Blender.
 
-This page aims to give you an overview of CloudRig's features, with links for further diving into each topic.
-
-## Accessing these pages from Blender
-You can right click on most CloudRig UI elements and click on Online Manual to open the relevant page in a browser.
+## Learning Resources
+Older pieces of documentation may still be useful, but CloudRig has changed a lot over the years, so things might look quite different now.
+- [2021: Video Documentation Series](https://studio.blender.org/training/blender-studio-rigging-tools/)
+- [2021: Snow Rigging Livestream Series](https://www.youtube.com/watch?v=SB3qIbwvq8Y&list=PLav47HAVZMjnA3P7yQvneyQPiVxZ6erFS)
+- [2024: Mikassa Rigging Livestream Series (Unfinished)](https://www.youtube.com/watch?v=nJQbMqbWeuc&list=PLav47HAVZMjmQNihV3a22ztg0ielYFEas&index=2)
+- This wiki is always kept up to date, since updating text is much easier than updating videos.
+- Inside Blender, on most CloudRig UI elements, you can Right Click -> Online Manual to open the relevant wiki page in a browser.
 
 ## General workflow
 The rig generation workflow with CloudRig revolves around inputting parameters on a simple **Metarig**, which is then used to generate the **Control Rig**, which is what you will actually use to control your character. The Control Rig can be re-generated based on new Metarig parameters or proportions as many times as needed, until you get exactly what you want.
@@ -55,3 +58,14 @@ CloudRig provides a way to add arbitrary custom properties to this UI as well, i
 If you don't like the collections that CloudRig assigns the generated bones to by default, you can customize them in the [Bone Organization](organizing-bones#organizing-bones-1) parameters, which are only visible when [Advanced Mode](cloudrig-types#advaned-mode) is enabled.
 
 
+## Making Tweaks
+If you're rigging a character with specific needs, you will most likely end up needing a fine level of control over the rig. There are three primary ways to do this:
+- The [Bone Copy](cloudrig-types#bone-copy) component lets you copy bones to the metarig with all their constraints, bone shape, and other settings.
+- The [Bone Tweak](cloudrig-types#bone-tweak) component lets you tweak individual aspects of a bone that CloudRig generates for you, as long as the bone name matches.
+- The [Post-Generation Script](generator-parameters#post-generation-script) feature lets you run a script whenever you generate the rig, allowing you to make completely arbitrary procedural changes, but this does require familiarity with Python.
+
+
+## Efficient Workflow
+If you enjoy an efficient workflow that lets you focus on the actual work rather than searching for buttons and objects, I highly recommend reading through the [Workflow Boosters](workflow-enhancements) page. CloudRig comes with a bunch of built-in hotkeys and pie menus to let you work faster.  
+
+Additionally, I recommend checking out my other rigging-related extensions, [Easy Weight](../easy_weight) and [Pose Shape Keys](../pose_shape_keys).
