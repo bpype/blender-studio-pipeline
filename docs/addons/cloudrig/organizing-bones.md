@@ -58,7 +58,7 @@ Collections marked with the circle will be included in the Quick Select menu, wh
 
 
 ## Bone Display Size
-You might often encounter that the sizes of the bone shapes are too big or too small for some parts of your character. This can result in an eye sore, or worse, important controls only being visible with Bone X-Ray. For this reason, all CloudRig components' bone shapes will scale according to the BBone scale of the bone in the metarig. You can adjust the BBone scale of bones using Ctrl+Alt+S, but only if your armature's bone display type is set to BBone. This will not affect any behaviour on the rig, it's purely for visual aid.
+You might often encounter that the sizes of the bone shapes are too big or too small for some parts of your character. This can result in an eye sore, or worse, important controls only being visible with Bone X-Ray. For this reason, all CloudRig components' bone shapes will scale according to the BBone scale of the bone in the metarig. You can find the Display Size X/Z properties in the Bendy Bone panel of the Properties Editor, or use the well-hidden Bone Envelope tool in the toolbar to change the bone size. In both cases, your armature's bone display type needs to be set to BBone. This will not affect any behaviour on the rig, it's purely for visual aid.
 
 *Here I increase the BBone scale, then re-generate the rig, to make sure the FK controls are bigger than the mesh.*
 <img src="/media/addons/cloudrig/bbone_scale.gif" width=600>

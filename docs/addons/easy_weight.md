@@ -1,13 +1,11 @@
 # Easy Weight
 
-Easy Weight is an addon focused on quality of life improvements for weight painting in Blender.
+Easy Weight is an add-on focused on quality of life improvements for weight painting in Blender.
 
 ---
 
 ### Installation
-In Blender 4.2, Easy Weight can be added through the official extensions repository, so you can simply search for it in Blender.
-
-For older versions, find installation instructions [here](https://studio.blender.org/pipeline/addons/overview).
+Easy Weight can be [found on the Extensions Platform](https://extensions.blender.org/add-ons/easyweight/), meaning you can simply search for it in Blender.
 
 ## Features
 

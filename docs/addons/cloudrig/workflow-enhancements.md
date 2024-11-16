@@ -66,7 +66,7 @@ A comprehensive toolset to manage bone custom shapes.
 - **Copy to Selected**: Copy the custom shape and transforms from the active bone selected bones.
 
 ## Bone Collections pop-up (Shift+M)
-A pop-up menu to can access bone collections without leaving the 3D View.
+A pop-up menu to access bone collections without leaving the 3D View.
 Available with the rig, even if a user doesn't have CloudRig installed.
 <img src="/media/addons/cloudrig/bone_collections_popup.png">
 
