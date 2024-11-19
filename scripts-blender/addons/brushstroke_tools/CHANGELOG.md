@@ -1,3 +1,9 @@
+## 1.0.5
+
+### ADDED
+- track `brush_stroke.curve_parameter` attribute on original curves for draw layers
+- add `Taper Shift` parameter to draw layers
+
 ## 1.0.4 - 2024-11-11
 
 ### FIXED
