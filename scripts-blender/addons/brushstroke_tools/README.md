@@ -89,3 +89,15 @@ When choosing an external path for the add-on resources in the user preferences 
 
 There will be more brush style packs available to achieve different styles in the future. Adding more brush styles is a matter of duplicating the node-group asset that defines one in the resource directory and changing its referenced texture and parameters.  
 Brush styles can be spread out over multiple files in the resource directory. They are identified via the node-group name.
+
+# FAQ
+- Why does the fill layer not react to me drawing the flow curves?
+    - Most likely you don't have a valid UV map on your surface mesh. Try doing a simple Auto-UV unwrap and adding the fill layer again.
+- Why is the fill layer reacting badly and inaccurately to the drawn flow curves?
+    - Most likely your surface mesh has a low resolution. The flow requires a certain mesh resolution to be interpolated properly.
+- I am using Cycles for rendering and there are black spots all over the place.
+    - This method of stylized rendering makes heavy use of overlapping transparent planes. This means Cycles need to do a high number of transparent bounces for the image to resolve nicely during rendering. To help with this setting you can use the `Render Setup` operator in the `Advanced` panel.
+- I'm experiencing poor performance. How can this be avoided?
+    - This method is computationally intensive and relies on high level hardware to run smoothly. But there are a few things that can be done to avoid low perfromance.
+    - If it's about tweaking shape parameters, then it doesn't have to do with the rendering, but is about the geometry evaluation and it just helps to keep the amount of brushstrokes and their resolution low, to reduce the amount of geometry that needs to be processed.
+    - If just in the static case, orbiting the camera is slow, then it has to do with Eevee and keeping the amount of pixels that need to be rendered low helps most. For example you can change the Pixel Size in the `Performance` - `Viewport` settings. Samples don't help with interaction, since during that only 1 sample is rendered anyways.
