@@ -1,7 +1,6 @@
 import bpy
 from typing import List, Dict, Set, Optional, Tuple
 from bpy.types import Collection, Object, Operator
-from .better_purge import better_purge
 
 
 def outliner_get_active_id(context):
@@ -104,11 +103,11 @@ def relink_single_override_hierarchy(context, hierarchy_root: Collection):
 
     clear_collection_hierarchy_fake_user(hierarchy_root)
     nuke_override_hidden()
-    better_purge(context)
+    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_recursive=True, do_linked_ids=True)
 
     remap_users_from_temp_empties(empty_map, new_hierarchy_root)
 
-    better_purge(context)
+    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_recursive=True, do_linked_ids=True)
     restore_names(new_hierarchy_root)
 
 

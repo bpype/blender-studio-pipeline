@@ -10,7 +10,6 @@ from bpy.types import Library
 from bpy.props import BoolProperty
 import os
 from .relink_overridden_asset import relink_all_override_hierarchies
-from .better_purge import better_purge
 
 
 def clean_file(
@@ -250,8 +249,7 @@ class OUTLINER_OT_cleanup_shotfile(bpy.types.Operator):
     )
 
     def execute(self, context):
-
-        better_purge(context)
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_recursive=True, do_linked_ids=True)
 
         if self.relink_overrides:
             # Relink ALL overridden assets from scratch, while (hopefully)

@@ -27,7 +27,7 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
         # >
         pie.operator(OUTLINER_OT_blenlog_list_datablock_deps.bl_idname, icon='LOOP_FORWARDS')
         # V
-        pie.operator('outliner.blenlog_better_purge', icon='TRASH')
+        pie.operator('outliner.orphans_purge', icon='ORPHAN_DATA')
 
         id = self.get_id(context)
         if id:
