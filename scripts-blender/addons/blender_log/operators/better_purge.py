@@ -1,10 +1,10 @@
 import bpy
 
 
-class OUTLINER_OT_better_purge(bpy.types.Operator):
+class OUTLINER_OT_blenlog_better_purge(bpy.types.Operator):
     """Like Blender's purge, but clears fake users from linked IDs and collections"""
 
-    bl_idname = "outliner.better_purge"
+    bl_idname = "outliner.blenlog_better_purge"
     bl_label = "Better Purge"
 
     bl_options = {'REGISTER', 'UNDO'}
@@ -42,10 +42,10 @@ def better_purge(context, clear_coll_fake_users=True):
 def draw_purge_ui(self, context):
     layout = self.layout
     layout.separator()
-    layout.operator(OUTLINER_OT_better_purge.bl_idname)
+    layout.operator(OUTLINER_OT_blenlog_better_purge.bl_idname)
 
 
-registry = [OUTLINER_OT_better_purge]
+registry = [OUTLINER_OT_blenlog_better_purge]
 
 
 def register():

@@ -79,8 +79,8 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
 
     def update_library_path(self, context):
         # Prepare the ID selector.
-        remap_targets = context.scene.remap_targets
-        remap_targets.clear()
+        blenlog_remap_targets = context.scene.blenlog_remap_targets
+        blenlog_remap_targets.clear()
         source_id = get_id(self.id_name_source, self.id_type, self.library_path_source)
         for id in get_id_storage_by_type_str(self.id_type)[0]:
             if id == source_id:
@@ -88,7 +88,7 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
             if (self.library_path == 'Local Data' and not id.library) or (
                 id.library and (self.library_path == id.library.filepath)
             ):
-                id_entry = remap_targets.add()
+                id_entry = blenlog_remap_targets.add()
                 id_entry.name = id.name
 
     library_path: StringProperty(
@@ -106,7 +106,7 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
     )
 
     def invoke(self, context, _event):
-        # Populate the remap_targets string list with possible options based on
+        # Populate the blenlog_remap_targets string list with possible options based on
         # what was passed to the operator.
 
         assert (
@@ -114,15 +114,15 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
         ), "Error: UI must provide ID and ID type to this operator."
 
         # Prepare the library selector.
-        remap_target_libraries = context.scene.remap_target_libraries
-        remap_target_libraries.clear()
-        local = remap_target_libraries.add()
+        blenlog_remap_target_libs = context.scene.blenlog_remap_target_libs
+        blenlog_remap_target_libs.clear()
+        local = blenlog_remap_target_libs.add()
         local.name = "Local Data"
         source_id = get_id(self.id_name_source, self.id_type, self.library_path_source)
         for lib in bpy.data.libraries:
             for id in lib.users_id:
                 if type(id) == type(source_id):
-                    lib_entry = remap_target_libraries.add()
+                    lib_entry = blenlog_remap_target_libs.add()
                     lib_entry.name = lib.filepath
                     break
 
@@ -155,19 +155,19 @@ class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
         layout.separator()
         col = layout.column()
         col.label(text="Will now reference this instead: ")
-        if len(scene.remap_target_libraries) > 1:
+        if len(scene.blenlog_remap_target_libs) > 1:
             col.prop_search(
                 self,
                 'library_path',
                 scene,
-                'remap_target_libraries',
+                'blenlog_remap_target_libs',
                 icon=get_library_icon(self.library_path),
             )
         col.prop_search(
             self,
             'id_name_target',
             scene,
-            'remap_targets',
+            'blenlog_remap_targets',
             text="Datablock",
             icon=id_icon,
         )
@@ -249,10 +249,10 @@ registry = [
 
 
 def register():
-    bpy.types.Scene.remap_targets = CollectionProperty(type=RemapTarget)
-    bpy.types.Scene.remap_target_libraries = CollectionProperty(type=RemapTarget)
+    bpy.types.Scene.blenlog_remap_targets = CollectionProperty(type=RemapTarget)
+    bpy.types.Scene.blenlog_remap_target_libs = CollectionProperty(type=RemapTarget)
 
 
 def unregister():
-    del bpy.types.Scene.remap_targets
-    del bpy.types.Scene.remap_target_libraries
+    del bpy.types.Scene.blenlog_remap_targets
+    del bpy.types.Scene.blenlog_remap_target_libs
