@@ -23,11 +23,11 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
         layout = self.layout
         pie = layout.menu_pie()
         # <
-        pie.operator(OUTLINER_OT_list_users_of_datablock.bl_idname, icon='LOOP_BACK')
+        pie.operator(OUTLINER_OT_blenlog_list_datablock_users.bl_idname, icon='LOOP_BACK')
         # >
-        pie.operator(OUTLINER_OT_list_dependencies_of_datablock.bl_idname, icon='LOOP_FORWARDS')
+        pie.operator(OUTLINER_OT_blenlog_list_datablock_deps.bl_idname, icon='LOOP_FORWARDS')
         # V
-        pie.operator('outliner.better_purge', icon='TRASH')
+        pie.operator('outliner.orphans_purge', icon='ORPHAN_DATA')
 
         id = self.get_id(context)
         if id:
@@ -62,8 +62,8 @@ class IDMAN_MT_relationship_pie(bpy.types.Menu):
             pie.separator()
 
         # v>
-        if OUTLINER_OT_instancer_empty_to_collection.should_draw(context):
-            pie.operator(OUTLINER_OT_instancer_empty_to_collection.bl_idname, icon='LINKED')
+        if OUTLINER_OT_blenlog_instancer_to_collection.should_draw(context):
+            pie.operator(OUTLINER_OT_blenlog_instancer_to_collection.bl_idname, icon='LINKED')
         else:
             pie.separator()
 
@@ -156,10 +156,10 @@ class RelationshipOperatorMixin:
         return {'FINISHED'}
 
 
-class OUTLINER_OT_list_users_of_datablock(RelationshipOperatorMixin, bpy.types.Operator):
+class OUTLINER_OT_blenlog_list_datablock_users(RelationshipOperatorMixin, bpy.types.Operator):
     """Show list of users of this datablock"""
 
-    bl_idname = "object.list_datablock_users"
+    bl_idname = "object.blenlog_list_datablock_users"
     bl_label = "List Datablock Users"
 
     datablock_name: StringProperty()
@@ -172,10 +172,10 @@ class OUTLINER_OT_list_users_of_datablock(RelationshipOperatorMixin, bpy.types.O
         return sorted(users, key=lambda u: (str(type(u)), u.name))
 
 
-class OUTLINER_OT_list_dependencies_of_datablock(RelationshipOperatorMixin, bpy.types.Operator):
+class OUTLINER_OT_blenlog_list_datablock_deps(RelationshipOperatorMixin, bpy.types.Operator):
     """Show list of dependencies of this datablock"""
 
-    bl_idname = "object.list_datablock_dependencies"
+    bl_idname = "object.blenlog_list_datablock_deps"
     bl_label = "List Datablock Dependencies"
 
     def get_label(self):
@@ -189,10 +189,10 @@ class OUTLINER_OT_list_dependencies_of_datablock(RelationshipOperatorMixin, bpy.
 
 
 ### Instance Collection To Scene
-class OUTLINER_OT_instancer_empty_to_collection(bpy.types.Operator):
+class OUTLINER_OT_blenlog_instancer_to_collection(bpy.types.Operator):
     """Replace an Empty that instances a collection, with the collection itself"""
 
-    bl_idname = "outliner.instancer_empty_to_collection"
+    bl_idname = "outliner.blenlog_instancer_to_collection"
     bl_label = "Instancer Empty To Collection"
     bl_options = {'UNDO'}
 
@@ -222,9 +222,9 @@ class OUTLINER_OT_instancer_empty_to_collection(bpy.types.Operator):
 
 registry = [
     IDMAN_MT_relationship_pie,
-    OUTLINER_OT_list_users_of_datablock,
-    OUTLINER_OT_list_dependencies_of_datablock,
-    OUTLINER_OT_instancer_empty_to_collection,
+    OUTLINER_OT_blenlog_list_datablock_users,
+    OUTLINER_OT_blenlog_list_datablock_deps,
+    OUTLINER_OT_blenlog_instancer_to_collection,
 ]
 
 

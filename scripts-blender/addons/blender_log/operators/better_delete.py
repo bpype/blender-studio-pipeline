@@ -9,8 +9,8 @@ from typing import List
 from ..hotkeys import addon_hotkey_register
 from ..util import get_addon_prefs
 
-class OBJECT_OT_unlink_from_scene(bpy.types.Operator):
-    bl_idname = "object.unlink_from_scene"
+class OBJECT_OT_blenlog_unlink_from_scene(bpy.types.Operator):
+    bl_idname = "object.blenlog_unlink_from_scene"
     bl_label = "Unlink Selected From Scene"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -28,8 +28,8 @@ class OBJECT_OT_unlink_from_scene(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class OUTLINER_OT_better_delete(bpy.types.Operator):
-    bl_idname = "outliner.better_delete"
+class OUTLINER_OT_blenlog_better_delete(bpy.types.Operator):
+    bl_idname = "outliner.blenlog_better_delete"
     bl_label = "Delete Datablocks From File"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -97,7 +97,7 @@ class OBJECT_MT_delete_pie(bpy.types.Menu):
         layout = self.layout
         pie = layout.menu_pie()
         # <
-        pie.operator(OBJECT_OT_unlink_from_scene.bl_idname, icon='TRASH', text="Unlink From Scene")
+        pie.operator(OBJECT_OT_blenlog_unlink_from_scene.bl_idname, icon='TRASH', text="Unlink From Scene")
 
         if context.area.type == 'VIEW_3D':
             # > 3D View
@@ -107,7 +107,7 @@ class OBJECT_MT_delete_pie(bpy.types.Menu):
             return
 
         # >
-        pie.operator('outliner.better_delete', icon='X', text="Delete From File")
+        pie.operator('outliner.blenlog_better_delete', icon='X', text="Delete From File")
 
         # V
         pie.operator('outliner.id_operation', text="Unlink From Collection", icon="OUTLINER_COLLECTION").type='UNLINK'
@@ -116,8 +116,8 @@ class OBJECT_MT_delete_pie(bpy.types.Menu):
         pie.operator('outliner.delete', text="Delete Hierarchy", icon="OUTLINER").hierarchy=True
 
 registry = [
-    OBJECT_OT_unlink_from_scene,
-    OUTLINER_OT_better_delete,
+    OBJECT_OT_blenlog_unlink_from_scene,
+    OUTLINER_OT_blenlog_better_delete,
     OBJECT_MT_delete_pie
 ]
 
