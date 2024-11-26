@@ -4,6 +4,7 @@
 - subpanel compatibility in preparation for Blender 4.4 (#347)
 - track `brush_stroke.curve_parameter` attribute on original curves for draw layers (#349)
 - add `Taper Shift` parameter to draw layers (#349)
+- warnings when toggling deformable (mirrored surface/grease pencil) (#357)
 
 ## 1.0.4 - 2024-11-11
 
