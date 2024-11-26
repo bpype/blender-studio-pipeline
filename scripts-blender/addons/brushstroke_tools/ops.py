@@ -699,6 +699,13 @@ class BSBST_OT_switch_deformable(bpy.types.Operator):
     def execute(self, context):
         settings = context.scene.BSBST_settings
 
+        if self.deformable:
+            surf_ob = utils.get_active_context_surface_object(context)
+            if surf_ob:
+                for mod in surf_ob.modifiers:
+                    if mod.type == 'MIRROR':
+                        self.report({"WARNING"}, "Surface Objects with mirror modifier cannot properly support stable deformation. Apply the mirror modifier to proceed.")
+
         if self.switch_all:
             bs_objects = [bpy.data.objects.get(bs.name) for bs in settings.context_brushstrokes]
             bs_objects = [bs for bs in bs_objects if bs]
@@ -708,6 +715,10 @@ class BSBST_OT_switch_deformable(bpy.types.Operator):
             return {"CANCELLED"}
 
         for ob in bs_objects:
+            if self.deformable:
+                if utils.compare_versions(bpy.app.version, (5,0,0)) < 0: # TODO adjust for when GP supports node tool execution
+                    if ob.type == 'GREASEPENCIL':
+                        self.report({"WARNING"}, "Grease Pencil does not currently support drawing on deformable surface geometry.")
             set_brushstrokes_deformable(ob, self.deformable)
         
         context.view_layer.depsgraph.update()
