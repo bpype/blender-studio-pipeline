@@ -71,8 +71,12 @@ def get_rd_settings_enum_list(
     # Reload model to update.
     RD_PRESET_FILE_MODEL.reload()
 
-    # Get all python files.
-    py_files = [f for f in RD_PRESET_FILE_MODEL.items_as_paths if f.suffix == ".py"]
+    # Get all Python files. Ignore hidden files.
+    py_files = [
+        f
+        for f in RD_PRESET_FILE_MODEL.items_as_paths
+        if f.suffix == ".py" and not f.name.startswith('.')
+    ]
     py_labels: List[Tuple[Path, str]] = []
 
     # Get bl_label of each python file, if not use file name as label.
