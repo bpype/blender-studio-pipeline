@@ -1,5 +1,6 @@
-import os, ast
+import os, ast, fnmatch
 from pathlib import Path
+from zipfile import ZipFile
 import bpy
 from bpy.app.handlers import persistent
 import math, shutil, errno, numpy
@@ -270,6 +271,32 @@ def copy_resources_to_dir(tgt_dir = ''):
             print("Error: % s" % err)
     refresh_brushstroke_styles()
 
+def install_brush_style_pack(filepath, tgt_dir='', ot=None):
+
+    if type(filepath) != Path:
+        filepath = Path(filepath)
+
+    filename, extension = os.path.splitext(filepath)
+
+    if not tgt_dir:
+        tgt_dir = get_resource_directory().joinpath('styles')
+    elif type(tgt_dir) != Path:
+        tgt_dir = Path(tgt_dir)
+
+    if extension=='.zip':
+        with ZipFile(filepath, 'r') as zip_object:
+            zip_object.extractall( 
+                path=tgt_dir)
+    elif extension.startswith('.blend'):
+        shutil.copy2(filepath, tgt_dir)
+    else:
+        if ot:
+            ot.report({"ERROR"}, "Selected file has to be either .zip or .blend")
+        else:
+            print("ERROR: Selected file has to be either .zip or .blend")
+        return False
+    return True
+
 def compare_versions(v1: tuple, v2: tuple):
     """ Returns n when v1 > v2, 0 when v1 == v2, -n when v1 < v2, while n = 'Index of first significant version tuple element' + 1.
     e.g. (0,2,0), (0,2,1) -> -3
@@ -332,6 +359,8 @@ def ensure_node_group(name, path=''):
             if not img.library_weak_reference:
                 continue
             if path in img.library_weak_reference.filepath:
+                if len(img.packed_files) > 0:
+                    continue
                 img.pack()
     ng = bpy.data.node_groups.get(name)
     
@@ -374,15 +403,34 @@ def update_asset_lib_path():
 
 def refresh_brushstroke_styles():
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    bs_list = addon_prefs.brush_styles
 
-    for a in range(len(addon_prefs.brush_styles)):
-        addon_prefs.brush_styles.remove(0)
+    for a in range(len(bs_list)):
+        bs_list.remove(0)
 
     lib_path = get_resource_directory()
-    add_brush_styles_from_directory(lib_path)
+    add_brush_styles_from_directory(bs_list, lib_path)
 
-def add_brush_styles_from_directory(path):
-    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    # find additional local brush styles
+    add_brush_styles_from_names(bs_list, [ng.name for ng in bpy.data.node_groups], '', name_filter = [bs.name for bs in bs_list])
+
+def add_brush_styles_from_names(bs_list, ng_names, filepath, name_filter = []):
+
+    names = [name for name in ng_names if name.startswith('BSBST-BS')]
+
+    for ng_name in names:
+        name_elements = ng_name.split('.')
+        if name_elements[-1] in name_filter:
+            continue
+        b_style = bs_list.add()
+        b_style.name = name_elements[-1]
+        b_style.id_name = ng_name
+        b_style.filepath = filepath
+        if len(name_elements) >= 4:
+            b_style.category = name_elements[1]
+        b_style.type = name_elements[-2]
+
+def add_brush_styles_from_directory(bs_list, path):
     subdirs = [f.path for f in os.scandir(path) if f.is_dir()]
     files = [f.path for f in os.scandir(path) if not f.is_dir()]
 
@@ -392,15 +440,67 @@ def add_brush_styles_from_directory(path):
 
         names = []
         with bpy.data.libraries.load(filepath) as (data_from, data_to):
-            names = [name for name in data_from.node_groups if name.startswith('BSBST-BS')]
-
-            for ng_name in names:
-                b_style = addon_prefs.brush_styles.add()
-                b_style.name = '.'.join(ng_name.split('.')[1:])
-                b_style.filepath = filepath
+            add_brush_styles_from_names(bs_list, data_from.node_groups, filepath)
 
     for dir in subdirs:
-        add_brush_styles_from_directory(dir)
+        add_brush_styles_from_directory(bs_list, dir)
+
+def find_brush_style_by_name(name: str):
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+
+    for brush_style in addon_prefs.brush_styles:
+        if name == brush_style.name:
+            return brush_style
+    return None
+
+def copy_collection_property(col_target, col_source):
+
+    for i in range(len(col_target)):
+        col_target.remove(0)
+    
+    for i in range(len(col_source)):
+        element_source = col_source[i]
+        element_target = col_target.add()
+        for k, v in element_source.items():
+            element_target[k] = v
+    
+def update_filtered_brush_styles(self, context):
+    addon_prefs = context.preferences.addons[__package__].preferences
+
+    active_bs_name = ''
+    if self.brush_styles_filtered:
+        active_bs_name = self.brush_styles_filtered[self.brush_styles_filtered_active_index].name
+    
+    copy_collection_property(self.brush_styles_filtered, addon_prefs.brush_styles)
+
+    # filter by type
+    if self.brush_type != 'ALL':
+        bs_count = len(self.brush_styles_filtered)
+        for i, bs in enumerate(reversed(self.brush_styles_filtered[:])):
+            if bs.type.upper() != self.brush_type:
+                self.brush_styles_filtered.remove(bs_count-i-1)
+    
+    # filter by category
+    if self.brush_category != 'ALL':
+        bs_count = len(self.brush_styles_filtered)
+        for i, bs in enumerate(reversed(self.brush_styles_filtered[:])):
+            if bs.category.upper() != self.brush_category:
+                self.brush_styles_filtered.remove(bs_count-i-1)
+
+    # filter by name
+    filtered_list = fnmatch.filter([bs.name.lower() for bs in self.brush_styles_filtered], f'*{self.name_filter}*'.lower())
+    bs_count = len(self.brush_styles_filtered)
+    for i, bs in enumerate(reversed(self.brush_styles_filtered[:])):
+        if bs.name.lower() not in filtered_list:
+            self.brush_styles_filtered.remove(bs_count-i-1)
+
+    self.brush_styles_filtered_active_index = 0
+    for i, bs in enumerate(self.brush_styles_filtered):
+        if bs.name == active_bs_name:
+            self.brush_styles_filtered_active_index = i
+            break
+
+    return
 
 def transfer_modifier(modifier_name, target_obj, source_obj):
     """
@@ -638,8 +738,23 @@ def set_preview(pixels, size = (256, 256), id=''):
     # TODO delete pre-save
     # TODO set height of preview region
 
+class BSBST_brush_style(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(default='')
+    id_name: bpy.props.StringProperty(default='')
+    filepath: bpy.props.StringProperty(default='')
+    category: bpy.props.StringProperty(default='')
+    type: bpy.props.StringProperty(default='')
+
+classes = [
+    BSBST_brush_style,
+]
+
 def register():
+    for c in classes:
+        bpy.utils.register_class(c)
     bpy.app.handlers.depsgraph_update_post.append(refresh_preset)
 
 def unregister():
+    for c in classes:
+        bpy.utils.unregister_class(c)
     bpy.app.handlers.depsgraph_update_post.remove(refresh_preset)

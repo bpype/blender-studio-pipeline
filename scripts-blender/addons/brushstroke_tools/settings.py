@@ -43,7 +43,13 @@ def update_context_material(self, context):
     if not self.context_material:
         utils.set_preview(None)
         return
-    ng = bpy.data.node_groups.get(f'BSBST-BS.{self.context_material.brush_style}')
+    
+    bs = utils.find_brush_style_by_name(self.context_material.brush_style)
+    if bs is None:
+        ng_name = self.context_material.brush_style
+    else:
+        ng_name = bs.id_name
+    ng = bpy.data.node_groups.get(ng_name)
     if not ng:
         utils.set_preview(None)
         return
@@ -138,12 +144,17 @@ def set_active_context_brushstrokes_index(self, value):
 
 def get_brush_style(self):
     name = self.node_tree.nodes['Brush Style'].node_tree.name
-    return '.'.join(name.split('.')[1:])
+    return name.split('.')[-1]
 
 def set_brush_style(self, value):
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
-    ng_name = f'BSBST-BS.{value}'
-    ng = utils.ensure_node_group(ng_name, [bs for bs in addon_prefs.brush_styles if bs.name==value][0].filepath)
+
+    brush_style = utils.find_brush_style_by_name(value)
+    if brush_style is None:
+        print("ERROR: Brush style not found")
+        return
+
+    ng = utils.ensure_node_group(brush_style.id_name, brush_style.filepath)
 
     if ng.preview:
         utils.set_preview(ng.preview.image_pixels_float, ng.preview.image_size[:], ng.name)

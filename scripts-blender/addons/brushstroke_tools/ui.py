@@ -230,8 +230,20 @@ def draw_material_settings(layout, material, surface_object=None):
                 row.template_preview(settings.preview_texture, show_buttons=False, preview_id='brushstroke_preview')
 
             row = brush_panel.row(align=True)
-            row.prop_search(material, 'brush_style', addon_prefs, 'brush_styles', text='', icon='BRUSHES_ALL')
+
+            brush_style_name = material.brush_style
+            brush_style_category = ''
+            bs = utils.find_brush_style_by_name(brush_style_name)
+            if bs is not None:
+                brush_style_name = bs.name
+                brush_style_category = bs.category
+                brush_style_label = f'{brush_style_category}: {brush_style_name}' if brush_style_category else brush_style_name
+            else:
+                brush_style_label = brush_style_name
+
+            row.operator('brushstroke_tools.select_brush_style', text=brush_style_label, icon='BRUSHES_ALL')
             row.operator('brushstroke_tools.refresh_styles', text='', icon='FILE_REFRESH')
+
             if n1.inputs:
                 for in_s in n1.inputs:
                     brush_panel.prop(in_s, 'default_value', text=f"{in_s.name}")
