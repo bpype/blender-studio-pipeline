@@ -150,6 +150,10 @@ def draw_material_settings(layout, material, surface_object=None):
             n4 = material.node_tree.nodes['Image Texture']
             n5 = material.node_tree.nodes['UV Map']
             n6 = material.node_tree.nodes['Color Variation']
+            n7 = material.node_tree.nodes.get('Variation Scale')
+            n8 = material.node_tree.nodes.get('Variation Hue')
+            n9 = material.node_tree.nodes.get('Variation Saturation')
+            n10 = material.node_tree.nodes.get('Variation Luminance')
 
             box = material_panel.box()
             box.prop(n1, 'mute', text='Use Brush Color', invert_checkbox=True)
@@ -166,7 +170,18 @@ def draw_material_settings(layout, material, surface_object=None):
                         box.prop(n5, 'uv_map', icon='UV')
                     else:
                         box.prop_search(n5, 'uv_map', surface_object.data, 'uv_layers', icon='UV')
-            box.prop(n6.inputs[0], 'default_value', text='Color Variation')
+
+            variation_box = box.box()
+            variation_box.prop(n6.inputs[0], 'default_value', text='Color Variation')
+            if n7:
+                variation_box.prop(n7.outputs[0], 'default_value', text='Variation Scale')
+            col = variation_box.column(align=True)
+            if n8:
+                col.prop(n8.inputs[0], 'default_value', text='Hue')
+            if n9:
+                col.prop(n9.inputs[0], 'default_value', text='Saturation')
+            if n10:
+                col.prop(n10.inputs[0], 'default_value', text='Luminance')
         except:
             pass
 
@@ -298,6 +313,7 @@ def draw_advanced_settings(layout, settings):
     new_advanced_panel.prop(settings, 'estimate_dimensions')
     new_advanced_panel.prop(settings, 'style_context')
     new_advanced_panel.operator('brushstroke_tools.render_setup')
+    new_advanced_panel.operator('brushstroke_tools.upgrade_resources')
 
 def draw_shape_properties(layout, settings, style_object, is_preset, display_mode):
     if not style_object:
@@ -550,7 +566,7 @@ class BSBST_MT_PIE_brushstroke_data_marking(bpy.types.Menu):
             op = pie.operator("geometry.execute_node_group", text=name, icon=info[0])
             op.asset_library_type='CUSTOM'
             op.asset_library_identifier=utils.asset_lib_name
-            op.relative_asset_identifier=f"brushstroke_tools-resources.blend/NodeTree/{name}"
+            op.relative_asset_identifier=f"core/brushstroke_tools-resources.blend/NodeTree/{name}"
     
 class BSBST_OT_brushstroke_data_marking(bpy.types.Operator):
     """

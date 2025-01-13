@@ -143,7 +143,10 @@ def set_active_context_brushstrokes_index(self, value):
         settings.context_material = bs_ob['BSBST_material']
 
 def get_brush_style(self):
-    name = self.node_tree.nodes['Brush Style'].node_tree.name
+    node = self.node_tree.nodes.get('Brush Style')
+    if node is None:
+        return ''
+    name = node.node_tree.name
     return name.split('.')[-1]
 
 def set_brush_style(self, value):
@@ -151,7 +154,6 @@ def set_brush_style(self, value):
 
     brush_style = utils.find_brush_style_by_name(value)
     if brush_style is None:
-        print("ERROR: Brush style not found")
         return
 
     ng = utils.ensure_node_group(brush_style.id_name, brush_style.filepath)

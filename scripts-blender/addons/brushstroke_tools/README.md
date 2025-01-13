@@ -77,7 +77,15 @@ Controls the shadow visibility of the brushstrokes layer.
 # User Preferences
 
 In the user preferences for the Brushstroke Tools addon you can modify the way resource assets are loaded into the file. Be catious of linking to the default directory though, since links can easily break when moving the file, or sharing it with others.  
-When changing the resource directory path, you need to provide the resource files in the directory. Use the operator to do so and copy the resource files from the add-on directory to your custom directory.
+When changing the resource directory path (`{LIB}`), you need to provide the resource files in the directory. Use the operator to do so and copy the resource files from the add-on directory to your custom directory.  
+
+The default resource directory is relative to the user home directory:  
+- WINDOWS: `%USERPROFILE%\AppData\Roaming\Blender Studio Tools\Brushstroke Tools\`
+- MAC: `/Users/$USER/Library/Application Support/Blender Studio Tools/Brushstroke Tools`
+- LINUX: `$HOME/.config/blender_studio_tools/brushstroke_tools`
+
+Assets that are provided with the add-on will be automatically overwritten with updates in the default directory when the resource directory is not specified differently.
+When making changes to these files, specify a custom resource directory to preserve the changes. Additional files that are not part ofthe default add-on files will be kept in place (e.g. installed brush styles).
 
 ## Brush Styles
 

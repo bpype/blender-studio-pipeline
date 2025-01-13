@@ -6,9 +6,14 @@ import os
 
 @persistent
 def load_handler(dummy):
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    if not addon_prefs.resource_path:
+        utils.unpack_resources()
     utils.refresh_brushstroke_styles()
 
 def update_resource_path(self, context):
+    if utils.get_resource_directory() == utils.get_default_resource_directory():
+        utils.unpack_resources()
     utils.update_asset_lib_path()
 
 class BSBST_OT_install_brush_style_pack(bpy.types.Operator, ImportHelper):
@@ -71,6 +76,20 @@ class BSBST_OT_copy_resources_to_path(bpy.types.Operator):
         layout = self.layout
         layout.label(text='This will overwrite files in the target directory!', icon='ERROR')
         layout.label(text=str(utils.get_resource_directory()))
+class BSBST_OT_open_resource_directory(bpy.types.Operator):
+    """
+    Open resource directory in system's default file manager.
+    """
+    bl_idname = "brushstroke_tools.open_resource_directory"
+    bl_label = "Open Resource Directory"
+    bl_description = "Open directory in system's default file manager"
+    bl_options = {"REGISTER"}
+
+    path: bpy.props.StringProperty(default='', subtype='DIR_PATH')
+
+    def execute(self, context):
+        utils.open_in_file_manager(utils.get_resource_directory())
+        return {"FINISHED"}
 
 class BSBST_UL_brush_styles(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -120,10 +139,11 @@ class BSBST_preferences(bpy.types.AddonPreferences):
         row = layout.row()
         col = row.column()
         dir_exists = os.path.isdir(utils.get_resource_directory())
-        resources_available = utils.get_resource_directory().joinpath("brushstroke_tools-resources.blend").exists()
+        resources_available = utils.check_resources_valid()
         if not dir_exists or not resources_available:
             col.alert = True
         col.prop(self, 'resource_path', placeholder=str(utils.get_resource_directory()))
+        op = col.operator('brushstroke_tools.open_resource_directory', icon='ASSET_MANAGER')
         
         split = layout.split(factor=0.25)
         split.column()
@@ -189,6 +209,7 @@ classes = [
     BSBST_OT_copy_resources_to_path,
     BSBST_OT_refresh_brushstroke_styles,
     BSBST_OT_install_brush_style_pack,
+    BSBST_OT_open_resource_directory,
 ]
 
 def register():

@@ -1,5 +1,5 @@
 import bpy
-import random
+import random, fnmatch
 from . import utils, settings
 import mathutils
 
@@ -1281,6 +1281,79 @@ class BSBST_OT_select_brush_style(bpy.types.Operator):
         self.name_filter = ''
 
         return context.window_manager.invoke_props_dialog(self, width=450)
+    
+class BSBST_OT_upgrade_resources(bpy.types.Operator):
+    """ Upgrade all local BST assets to available addon resources.
+    """
+    bl_idname = "brushstroke_tools.upgrade_resources"
+    bl_label = "Upgrade Resources"
+    bl_description = "Upgrade local BST assets to available addon resources."
+    bl_options = {"REGISTER", "UNDO"}
+
+    upgrade_shape_modifiers: bpy.props.BoolProperty(name='Shape Modifiers', default=True)
+    upgrade_materials: bpy.props.BoolProperty(name='Materials', default=True)
+    upgrade_brush_styles: bpy.props.BoolProperty(name='Brush Styles', default=True)
+
+    modifier_id_count = 0
+    modifier_user_count = 0
+
+    material_id_count = 0
+    material_user_count = 0
+
+    brush_style_id_count = 0
+    brush_style_user_count = 0
+
+    def draw(self, context):
+        settings = context.scene.BSBST_settings
+
+        layout = self.layout
+
+        split = layout.split(factor=.6)
+        
+        col = split.column()
+        col.prop(self, 'upgrade_shape_modifiers', icon='MODIFIER')
+        col.prop(self, 'upgrade_materials', icon='MATERIAL')
+        col.prop(self, 'upgrade_brush_styles', icon='BRUSHES_ALL')
+        
+        col = split.column()
+        row = col.row()
+        row.active = self.upgrade_shape_modifiers
+        row.label(text=f'({self.modifier_id_count} IDs, {self.modifier_user_count} users)')
+        row = col.row()
+        row.active = self.upgrade_materials
+        row.label(text=f'({self.material_id_count} IDs, {self.material_user_count} users)')
+        row = col.row()
+        row.active = self.upgrade_brush_styles
+        row.label(text=f'({self.brush_style_id_count} IDs, {self.brush_style_user_count} users)')
+
+    def execute(self, context):
+        settings = context.scene.BSBST_settings
+
+        if self.upgrade_shape_modifiers and self.modifier_id_count:
+            utils.upgrade_geonodes_from_library()
+        if self.upgrade_materials and self.material_id_count:
+            utils.upgrade_materials_from_library()
+        if self.upgrade_brush_styles and self.brush_style_id_count:
+            utils.upgrade_brush_styles_from_library()
+
+        return {"FINISHED"}
+
+    def invoke(self, context, event):
+        settings = context.scene.BSBST_settings
+
+        mod_map = utils.find_local_geonodes_resources()
+        self.modifier_id_count = len(mod_map)
+        self.modifier_user_count = sum([len(v) for k,v in mod_map.items()])
+
+        mat_map = utils.find_local_material_resources()
+        self.material_id_count = len(mat_map)
+        self.material_user_count = sum([len(v) for k,v in mat_map.items()])
+
+        bs_map = utils.find_local_brush_style_resources()
+        self.brush_style_id_count = len(bs_map)
+        self.brush_style_user_count = sum([len(v) for k,v in bs_map.items()])
+
+        return context.window_manager.invoke_props_dialog(self)
 
 class BSBST_OT_new_material(bpy.types.Operator):
     """
@@ -1321,6 +1394,7 @@ classes = [
     BSBST_OT_render_setup,
     BSBST_UL_brush_styles_filtered,
     BSBST_OT_select_brush_style,
+    BSBST_OT_upgrade_resources,
     BSBST_OT_new_material,
     ]
 
