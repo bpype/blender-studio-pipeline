@@ -250,7 +250,6 @@ def check_resources_valid():
     return True
 
 def unpack_resources():
-    path = get_resource_directory()
     if check_resources_valid():
         lib_version = read_lib_version()
         if compare_versions(addon_version, lib_version)<=0:
@@ -489,6 +488,8 @@ def refresh_brushstroke_styles():
     add_brush_styles_from_directory(bs_list, lib_path)
 
     # find additional local brush styles
+    if not 'node_groups' in dir(bpy.data):
+        return
     add_brush_styles_from_names(bs_list, [ng.name for ng in bpy.data.node_groups], '', name_filter = [bs.name for bs in bs_list])
 
 def add_brush_styles_from_names(bs_list, ng_names, filepath, name_filter = []):
@@ -508,6 +509,8 @@ def add_brush_styles_from_names(bs_list, ng_names, filepath, name_filter = []):
         b_style.type = name_elements[-2]
 
 def add_brush_styles_from_directory(bs_list, path):
+    if not 'libraries' in dir(bpy.data):
+        return
     subdirs = [f.path for f in os.scandir(path) if f.is_dir()]
     files = [f.path for f in os.scandir(path) if not f.is_dir()]
 
@@ -519,8 +522,8 @@ def add_brush_styles_from_directory(bs_list, path):
         with bpy.data.libraries.load(filepath) as (data_from, data_to):
             add_brush_styles_from_names(bs_list, data_from.node_groups, filepath)
 
-    for dir in subdirs:
-        add_brush_styles_from_directory(bs_list, dir)
+    for d in subdirs:
+        add_brush_styles_from_directory(bs_list, d)
 
 def find_brush_style_by_name(name: str):
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
