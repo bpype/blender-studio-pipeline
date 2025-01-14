@@ -1,14 +1,41 @@
 import bpy
 from bpy.app.handlers import persistent
+from bpy_extras.io_utils import ImportHelper
 from . import utils
 import os
 
 @persistent
 def load_handler(dummy):
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    if not addon_prefs.resource_path:
+        utils.unpack_resources()
     utils.refresh_brushstroke_styles()
 
 def update_resource_path(self, context):
+    if utils.get_resource_directory() == utils.get_default_resource_directory():
+        utils.unpack_resources()
     utils.update_asset_lib_path()
+
+class BSBST_OT_install_brush_style_pack(bpy.types.Operator, ImportHelper):
+    bl_idname = "brushstroke_tools.install_brush_style_pack"
+    bl_label = "Install Brush Style Pack"
+
+    filter_glob: bpy.props.StringProperty(
+        default='*.zip;*.blend',
+        options={'HIDDEN'}
+        )
+    
+    def execute(self, context):
+        """ Install selected brush style pack at resource location and refresh available brush styles.
+        """
+        
+        install_state = utils.install_brush_style_pack(self.filepath, ot=self)
+        if not install_state:
+            return {'CANCELLED'}
+        
+        utils.refresh_brushstroke_styles()
+        
+        return {'FINISHED'}
 
 class BSBST_OT_refresh_brushstroke_styles(bpy.types.Operator):
     """
@@ -49,18 +76,39 @@ class BSBST_OT_copy_resources_to_path(bpy.types.Operator):
         layout = self.layout
         layout.label(text='This will overwrite files in the target directory!', icon='ERROR')
         layout.label(text=str(utils.get_resource_directory()))
+class BSBST_OT_open_resource_directory(bpy.types.Operator):
+    """
+    Open resource directory in system's default file manager.
+    """
+    bl_idname = "brushstroke_tools.open_resource_directory"
+    bl_label = "Open Resource Directory"
+    bl_description = "Open directory in system's default file manager"
+    bl_options = {"REGISTER"}
 
-class BSBST_brush_style(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(default='')
-    filepath: bpy.props.StringProperty(default='')
+    path: bpy.props.StringProperty(default='', subtype='DIR_PATH')
+
+    def execute(self, context):
+        utils.open_in_file_manager(utils.get_resource_directory())
+        return {"FINISHED"}
 
 class BSBST_UL_brush_styles(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         resource_dir = utils.get_resource_directory()
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
-            split = layout.split(factor=0.4)
-            split.label(text=item.name)
-            row = split.row()
+            main_split = layout.split(factor=0.5)
+
+            row = main_split.row()
+            split = row.split()
+            if not item.filepath:
+                split.label(text=item.name, icon='FILE_BLEND')
+            else:
+                split.label(text=item.name, icon='BRUSHES_ALL')
+
+            split = split.split()
+            split.label(text=item.category)
+            split.label(text=item.type)
+
+            row = main_split.row()
             row.active = False
             row.label(text=item.filepath.replace(str(resource_dir), '{LIB}'), icon='FILE_FOLDER')
         elif self.layout_type == 'GRID':
@@ -78,7 +126,7 @@ class BSBST_preferences(bpy.types.AddonPreferences):
                                        items= [('APPEND', 'Append', 'Append data-blocks and pack image data as local to this file.', 'APPEND_BLEND', 0),\
                                                ('LINK', 'Link', 'Link data-blocks from resource directory.', 'LINK_BLEND', 1),
                                                ])
-    brush_styles: bpy.props.CollectionProperty(type=BSBST_brush_style)
+    brush_styles: bpy.props.CollectionProperty(type=utils.BSBST_brush_style)
     active_brush_style_index: bpy.props.IntProperty()
 
     def draw(self, context):
@@ -91,10 +139,11 @@ class BSBST_preferences(bpy.types.AddonPreferences):
         row = layout.row()
         col = row.column()
         dir_exists = os.path.isdir(utils.get_resource_directory())
-        resources_available = utils.get_resource_directory().joinpath("brushstroke_tools-resources.blend").exists()
+        resources_available = utils.check_resources_valid()
         if not dir_exists or not resources_available:
             col.alert = True
         col.prop(self, 'resource_path', placeholder=str(utils.get_resource_directory()))
+        op = col.operator('brushstroke_tools.open_resource_directory', icon='ASSET_MANAGER')
         
         split = layout.split(factor=0.25)
         split.column()
@@ -128,22 +177,39 @@ class BSBST_preferences(bpy.types.AddonPreferences):
         
         style_box = layout.box()
         style_box_header = style_box.row(align=True)
-        style_box_header.label(text=f'Brush Styles ({len(self.brush_styles)} loaded)', icon='BRUSHES_ALL')
+        count_local = len([bs for bs in self.brush_styles if not  bs.filepath])
+        if count_local:
+            count_info = f'Brush Styles ({len(self.brush_styles)-count_local} loaded, {count_local} local)'
+        else:
+            count_info = f'Brush Styles ({len(self.brush_styles)} loaded)'
+        style_box_header.label(text=count_info, icon='BRUSHES_ALL')
+        style_box_header.operator('brushstroke_tools.install_brush_style_pack')
         style_box_header.operator('brushstroke_tools.refresh_styles', text='', icon='FILE_REFRESH')
         if not self.brush_styles:
             style_box.label(text='No Brush styles found in library directory', icon='ERROR')
         else:
+            row = style_box.row(align=True)
+            row.active = False
+            main_split = style_box.split()
+            row = main_split.row()
+            split = row.split()
+            split.label(text='Name')
+            split = split.split()
+            split.label(text='Category')
+            split.label(text='Type')
+            main_split.label(text='Filepath')
             style_box.template_list('BSBST_UL_brush_styles', "", self, "brush_styles",
                              self, "active_brush_style_index", rows=3, maxrows=5, sort_lock=True)
 
 
 
 classes = [
-    BSBST_brush_style,
     BSBST_UL_brush_styles,
     BSBST_preferences,
     BSBST_OT_copy_resources_to_path,
     BSBST_OT_refresh_brushstroke_styles,
+    BSBST_OT_install_brush_style_pack,
+    BSBST_OT_open_resource_directory,
 ]
 
 def register():

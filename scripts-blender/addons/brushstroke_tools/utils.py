@@ -1,9 +1,11 @@
-import os, ast
+import os, ast, fnmatch, platform, subprocess
 from pathlib import Path
+from zipfile import ZipFile
 import bpy
 from bpy.app.handlers import persistent
 import math, shutil, errno, numpy
 from bpy.app.handlers import persistent
+from mathutils import Vector
 
 addon_version = (0,0,0)
 
@@ -210,6 +212,16 @@ def get_addon_directory() -> Path:
     abspath = bpy.path.abspath(path)
     return Path(abspath)
 
+def get_default_resource_directory() -> Path:
+    path = Path.home().joinpath('Blender Studio Tools/Brushstroke Tools/')
+    if platform.system() == "Windows":
+        path = Path.home().joinpath('AppData/Roaming/Blender Studio Tools/Brushstroke Tools/')
+    elif platform.system() == "Darwin":
+        path = Path.home().joinpath('Library/Application Support/Blender Studio Tools/Brushstroke Tools/')
+    else:
+        path = Path.home().joinpath('.config/blender_studio_tools/brushstroke_tools/')
+    return path
+
 def get_resource_directory() -> Path:
     """
     Returns the path to be used to append resource data-blocks.
@@ -219,19 +231,51 @@ def get_resource_directory() -> Path:
     if resource_dir:
         return Path(resource_dir)
     else:
-        return get_addon_directory().joinpath('assets')
+        return get_default_resource_directory()
 
-def import_resources(ng_names = ng_list):
+def check_resources_valid():
+    path = get_resource_directory()
+    if not path.exists:
+        return False
+    
+    check_paths = [
+        "core/brushstroke_tools-resources.blend",
+        "blender_assets.cats.txt",
+        ".version"
+    ]
+
+    for s in check_paths:
+        if not path.joinpath(s).exists():
+            return False
+    return True
+
+def unpack_resources():
+    path = get_resource_directory()
+    if check_resources_valid():
+        lib_version = read_lib_version()
+        if compare_versions(addon_version, lib_version)<=0:
+            return
+    copy_resources_to_dir()
+    update_asset_lib_path()
+
+def import_resources(ng_names = ng_list, filepath = ''):
     """
     Imports the necessary blend data resources required by the addon.
     """
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
 
-    path = get_resource_directory()
+    if not filepath:
+        filepath = get_resource_directory()
 
-    resource_path = str(path.joinpath('brushstroke_tools-resources.blend'))
+    data_pre = set()
+    for attr in dir(bpy.data):
+        if not type(getattr(bpy.data, attr)) == type(bpy.data.scenes):
+            continue
+        data_pre |= set(getattr(bpy.data, attr))
+
+    resource_path = str(filepath.joinpath('core/brushstroke_tools-resources.blend'))
     with bpy.data.libraries.load(resource_path, link=addon_prefs.import_method=='LINK', relative=addon_prefs.import_relative_path) as (data_src, data_dst):
-        data_dst.node_groups = ng_names
+        data_dst.node_groups = ng_names[:]
     if addon_prefs.import_method=='APPEND':
         # pack imported resources
         for img in bpy.data.images:
@@ -241,6 +285,14 @@ def import_resources(ng_names = ng_list):
                 continue
             if 'brushstroke_tools-resources.blend' in img.library_weak_reference.filepath:
                 img.pack()
+
+    data_post = set()
+    for attr in dir(bpy.data):
+        if not type(getattr(bpy.data, attr)) == type(bpy.data.scenes):
+            continue
+        data_post |= set(getattr(bpy.data, attr))
+    
+    return data_post - data_pre
 
 def read_lib_version():
     resource_dir = get_resource_directory()
@@ -270,6 +322,32 @@ def copy_resources_to_dir(tgt_dir = ''):
             print("Error: % s" % err)
     refresh_brushstroke_styles()
 
+def install_brush_style_pack(filepath, tgt_dir='', ot=None):
+
+    if type(filepath) != Path:
+        filepath = Path(filepath)
+
+    filename, extension = os.path.splitext(filepath)
+
+    if not tgt_dir:
+        tgt_dir = get_resource_directory().joinpath('styles')
+    elif type(tgt_dir) != Path:
+        tgt_dir = Path(tgt_dir)
+
+    if extension=='.zip':
+        with ZipFile(filepath, 'r') as zip_object:
+            zip_object.extractall( 
+                path=tgt_dir)
+    elif extension.startswith('.blend'):
+        shutil.copy2(filepath, tgt_dir)
+    else:
+        if ot:
+            ot.report({"ERROR"}, "Selected file has to be either .zip or .blend")
+        else:
+            print("ERROR: Selected file has to be either .zip or .blend")
+        return False
+    return True
+
 def compare_versions(v1: tuple, v2: tuple):
     """ Returns n when v1 > v2, 0 when v1 == v2, -n when v1 < v2, while n = 'Index of first significant version tuple element' + 1.
     e.g. (0,2,0), (0,2,1) -> -3
@@ -283,9 +361,19 @@ def compare_versions(v1: tuple, v2: tuple):
         c += 1
     return 0
 
+def split_id_name(name):
+    if not '.'in name:
+        return (name, None)
+    name_el = name.split('.')
+    extension = name_el[-1]
+    if not extension.isdigit():
+        return (name, None)
+    name_string = '.'.join(name_el[:-1])
+    return (name_string, extension)
+
 def import_brushstroke_material():
     name = 'Brush Material'
-    path = str(get_resource_directory().joinpath('brushstroke_tools-resources.blend'))
+    path = str(get_resource_directory().joinpath('core/brushstroke_tools-resources.blend'))
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
 
     mats_pre = set(bpy.data.materials)
@@ -315,14 +403,10 @@ def import_brushstroke_material():
     else:
         return bpy.data.materials.get(name)
 
-def ensure_node_group(name, path=''):
-    ng = bpy.data.node_groups.get(name)
-    if ng:
-        return ng
-    
+def import_node_group(name, path):
+    ng_pre = set(bpy.data.node_groups)
+
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
-    if not path:
-        path=str(get_resource_directory().joinpath('brushstroke_tools-resources.blend'))
 
     with bpy.data.libraries.load(path, link=addon_prefs.import_method=='LINK', relative=addon_prefs.import_relative_path) as (data_src, data_dst):
         data_dst.node_groups = [name]
@@ -332,8 +416,30 @@ def ensure_node_group(name, path=''):
             if not img.library_weak_reference:
                 continue
             if path in img.library_weak_reference.filepath:
+                if len(img.packed_files) > 0:
+                    continue
                 img.pack()
+
+    new_ids = set(bpy.data.node_groups) - ng_pre
+
+    for ng in new_ids:
+        if ng.name == name:
+            return ng
+        
+    for ng in new_ids:
+        if split_id_name(name)[0] == split_id_name(ng.name)[0]:
+            return ng
+    return None
+
+def ensure_node_group(name, path=''):
     ng = bpy.data.node_groups.get(name)
+    if ng:
+        return ng
+    
+    if not path:
+        path=str(get_resource_directory().joinpath('core/brushstroke_tools-resources.blend'))
+
+    ng = import_node_group(name, path)
     
     return ng
 
@@ -374,15 +480,34 @@ def update_asset_lib_path():
 
 def refresh_brushstroke_styles():
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    bs_list = addon_prefs.brush_styles
 
-    for a in range(len(addon_prefs.brush_styles)):
-        addon_prefs.brush_styles.remove(0)
+    for a in range(len(bs_list)):
+        bs_list.remove(0)
 
     lib_path = get_resource_directory()
-    add_brush_styles_from_directory(lib_path)
+    add_brush_styles_from_directory(bs_list, lib_path)
 
-def add_brush_styles_from_directory(path):
-    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+    # find additional local brush styles
+    add_brush_styles_from_names(bs_list, [ng.name for ng in bpy.data.node_groups], '', name_filter = [bs.name for bs in bs_list])
+
+def add_brush_styles_from_names(bs_list, ng_names, filepath, name_filter = []):
+
+    names = [name for name in ng_names if name.startswith('BSBST-BS')]
+
+    for ng_name in names:
+        name_elements = ng_name.split('.')
+        if name_elements[-1] in name_filter:
+            continue
+        b_style = bs_list.add()
+        b_style.name = name_elements[-1]
+        b_style.id_name = ng_name
+        b_style.filepath = filepath
+        if len(name_elements) >= 4:
+            b_style.category = name_elements[1]
+        b_style.type = name_elements[-2]
+
+def add_brush_styles_from_directory(bs_list, path):
     subdirs = [f.path for f in os.scandir(path) if f.is_dir()]
     files = [f.path for f in os.scandir(path) if not f.is_dir()]
 
@@ -392,15 +517,67 @@ def add_brush_styles_from_directory(path):
 
         names = []
         with bpy.data.libraries.load(filepath) as (data_from, data_to):
-            names = [name for name in data_from.node_groups if name.startswith('BSBST-BS')]
-
-            for ng_name in names:
-                b_style = addon_prefs.brush_styles.add()
-                b_style.name = '.'.join(ng_name.split('.')[1:])
-                b_style.filepath = filepath
+            add_brush_styles_from_names(bs_list, data_from.node_groups, filepath)
 
     for dir in subdirs:
-        add_brush_styles_from_directory(dir)
+        add_brush_styles_from_directory(bs_list, dir)
+
+def find_brush_style_by_name(name: str):
+    addon_prefs = bpy.context.preferences.addons[__package__].preferences
+
+    for brush_style in addon_prefs.brush_styles:
+        if name == brush_style.name:
+            return brush_style
+    return None
+
+def copy_collection_property(col_target, col_source):
+
+    for i in range(len(col_target)):
+        col_target.remove(0)
+    
+    for i in range(len(col_source)):
+        element_source = col_source[i]
+        element_target = col_target.add()
+        for k, v in element_source.items():
+            element_target[k] = v
+    
+def update_filtered_brush_styles(self, context):
+    addon_prefs = context.preferences.addons[__package__].preferences
+
+    active_bs_name = ''
+    if self.brush_styles_filtered:
+        active_bs_name = self.brush_styles_filtered[self.brush_styles_filtered_active_index].name
+    
+    copy_collection_property(self.brush_styles_filtered, addon_prefs.brush_styles)
+
+    # filter by type
+    if self.brush_type != 'ALL':
+        bs_count = len(self.brush_styles_filtered)
+        for i, bs in enumerate(reversed(self.brush_styles_filtered[:])):
+            if bs.type.upper() != self.brush_type:
+                self.brush_styles_filtered.remove(bs_count-i-1)
+    
+    # filter by category
+    if self.brush_category != 'ALL':
+        bs_count = len(self.brush_styles_filtered)
+        for i, bs in enumerate(reversed(self.brush_styles_filtered[:])):
+            if bs.category.upper() != self.brush_category:
+                self.brush_styles_filtered.remove(bs_count-i-1)
+
+    # filter by name
+    filtered_list = fnmatch.filter([bs.name.lower() for bs in self.brush_styles_filtered], f'*{self.name_filter}*'.lower())
+    bs_count = len(self.brush_styles_filtered)
+    for i, bs in enumerate(reversed(self.brush_styles_filtered[:])):
+        if bs.name.lower() not in filtered_list:
+            self.brush_styles_filtered.remove(bs_count-i-1)
+
+    self.brush_styles_filtered_active_index = 0
+    for i, bs in enumerate(self.brush_styles_filtered):
+        if bs.name == active_bs_name:
+            self.brush_styles_filtered_active_index = i
+            break
+
+    return
 
 def transfer_modifier(modifier_name, target_obj, source_obj):
     """
@@ -418,7 +595,10 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
     if source_mod.type == 'NODES':
         # Transfer geo node attributes
         for key, value in source_mod.items():
-            target_mod[key] = value
+            try:
+                target_mod[key] = value
+            except (TypeError, ValueError) as e:
+                target_mod[key] = type(target_mod[key])(value)
 
         # Transfer geo node bake settings
         target_mod.bake_directory = source_mod.bake_directory
@@ -638,8 +818,424 @@ def set_preview(pixels, size = (256, 256), id=''):
     # TODO delete pre-save
     # TODO set height of preview region
 
+def find_local_geonodes_resources():
+    ids = dict()
+    for ob in bpy.data.objects:
+        if ob.library:
+            continue
+        if not is_brushstrokes_object(ob):
+            continue
+        for mod in ob.modifiers:
+            if mod.type != 'NODES':
+                continue
+            if fnmatch.filter(ng_list, split_id_name(mod.node_group.name)[0]):
+                if mod.node_group not in ids.keys():
+                    ids[mod.node_group] = [ob]
+                else:
+                    ids[mod.node_group] += [ob]
+    return ids
+
+def find_local_material_resources():
+    ids = dict()
+    for mat in bpy.data.materials:
+        if mat.library:
+            continue
+        if 'BSBST' in mat.keys():
+            ids[mat] = []
+
+    for ob in bpy.data.objects:
+        if ob.library:
+            continue
+        if not is_brushstrokes_object(ob):
+            continue
+        for m_slot in ob.material_slots:
+            if not m_slot.material:
+                continue
+            mat = m_slot.material
+            if mat in ids.keys():
+                ids[mat] += [ob]
+    return ids
+
+def find_local_brush_style_resources():
+    ids = dict()
+    for ng in bpy.data.node_groups:
+        if ng.library:
+            continue
+        if ng.name.startswith('BSBST-BS'):
+            ids[ng] = []
+
+    for mat in bpy.data.materials:
+        if mat.library:
+            continue
+        if not mat.node_tree:
+            continue
+        node = mat.node_tree.nodes.get('Brush Style')
+        if node is None:
+            continue
+        ng = node.node_tree
+        if not ng:
+            continue
+        if ng in ids.keys():
+            ids[ng] += [mat]
+    return ids
+
+def blend_data_from_id(id):
+    for attr in dir(bpy.data):
+        data = getattr(bpy.data, attr)
+        if not data:
+            continue
+        if not type(data) == type(bpy.data.scenes):
+            continue
+        if id.id_type == data[0].id_type:
+            return data
+    return None
+
+def force_cleanup_ids_recursive(ids):
+    flag = False
+    for id in list(ids)[:]:
+        if id.users == id.use_fake_user:
+            ids.remove(id)
+            blend_data_from_id(id).remove(id)
+            flag = True
+    if flag:
+        force_cleanup_ids_recursive(ids)
+
+def version_modifiers(object):
+
+    version_prev = object['BSBST_version']
+
+    for mod in object.modifiers:
+        if not mod.type == 'NODES':
+            continue
+    
+        ng = mod.node_group
+        if not ng:
+            continue
+
+    object['BSBST_version'] = addon_version
+
+    return
+
+def upgrade_geonodes_from_library():
+    del_id = set()
+    
+    data_pre = set()
+    for attr in dir(bpy.data):
+        if not type(getattr(bpy.data, attr)) == type(bpy.data.scenes):
+            continue
+        data_pre |= set(getattr(bpy.data, attr))
+
+    id_new = import_resources()
+
+    for id in id_new:
+        id_name, id_extension = split_id_name(id.name)
+        if id_name not in ng_list:
+            continue
+        for id_local in blend_data_from_id(id):
+            if id_local == id:
+                continue
+            ng_local_name, ng_local_extension = split_id_name(id_local.name)
+            if not ng_local_name == id_name:
+                continue
+            id_local.user_remap(id)
+            # check and remove old id
+            if id_local.users == id_local.use_fake_user:
+                del_id.add(id_local)
+
+    while del_id:
+        for id in del_id:
+            if id in id_new:
+                id_new.remove(id)
+            blend_data_from_id(id).remove(id)
+        del_id = set([id for id in id_new if id.users == id.use_fake_user])
+
+    # rename new ids
+    for id in id_new:
+        if id.library:
+            continue
+        id_name, id_extension = split_id_name(id.name)
+        if id_extension:
+            id.name = id_name
+
+    data_post = set()
+    for attr in dir(bpy.data):
+        if not type(getattr(bpy.data, attr)) == type(bpy.data.scenes):
+            continue
+        data_post |= set(getattr(bpy.data, attr))
+
+    new_ids = data_post - data_pre
+
+    force_cleanup_ids_recursive(new_ids)
+
+    for ob in bpy.data.objects:
+        if not is_brushstrokes_object(ob):
+            continue
+        version_modifiers(ob)
+
+    return
+
+def copy_curve_mapping(tgt_mapping, src_mapping):
+    for tgt_curve, src_curve in zip(tgt_mapping.curves, src_mapping.curves):
+        for i in range(len(tgt_curve.points)-2):
+            tgt_curve.points.remove(tgt_curve.points[0])
+        
+        for i in range(len(src_curve.points)-2):
+            tgt_p = tgt_curve.points.new(0,0)
+        
+        for i in range(len(src_curve.points)):
+            src_p = src_curve.points[i]
+            tgt_p = tgt_curve.points[i]
+            for el in dir(src_p):
+                try:
+                    setattr(tgt_p, el, getattr(src_p, el))
+                except:
+                    pass
+    tgt_mapping.update()
+    return
+
+def match_mat(tgt_mat, src_mat):
+    """ Retain settings of brushstroke material to upgrade node-tree version.
+    """
+    path_list = [
+        "brush_style",
+        "diffuse_color",
+        "node_tree.nodes['Color Attribute'].mute",
+        "node_tree.nodes['Color Texture'].mute",
+        "node_tree.nodes['Color'].outputs[0].default_value",
+        "node_tree.nodes['Image Texture'].image",
+        "node_tree.nodes['UV Map'].uv_map",
+        "node_tree.nodes['Color Variation'].inputs[0].default_value",
+        "node_tree.nodes['Variation Scale'].outputs[0].default_value",
+        "node_tree.nodes['Variation Hue'].inputs[0].default_value",
+        "node_tree.nodes['Variation Saturation'].inputs[0].default_value",
+        "node_tree.nodes['Variation Luminance'].inputs[0].default_value",
+        "node_tree.nodes['Use Strength'].mute",
+        "node_tree.nodes['Opacity'].inputs[0].default_value",
+        "node_tree.nodes['Backface Culling'].mute",
+        "node_tree.nodes['Principled BSDF'].inputs[1].default_value",
+        "node_tree.nodes['Principled BSDF'].inputs[2].default_value",
+        "node_tree.nodes['Bump'].mute",
+        "node_tree.nodes['Bump'].inputs[0].default_value",
+        "node_tree.nodes['Translucency Add'].mute",
+        "node_tree.nodes['Translucency Strength'].inputs[0].default_value",
+        "node_tree.nodes['Translucency Tint'].inputs[7].default_value",
+        "node_tree.nodes['Brush Style'].node_group",
+    ]
+
+    for attr_path in path_list:
+        try:
+            exec(f'tgt_mat.{attr_path} = src_mat.{attr_path}')
+        except:
+            pass
+    
+    tgt_curve_node = tgt_mat.node_tree.nodes.get('Brush Curve')
+    src_curve_node = src_mat.node_tree.nodes.get('Brush Curve')
+
+    copy_curve_mapping(tgt_curve_node.mapping, src_curve_node.mapping)
+    
+    tgt_bs_node = tgt_mat.node_tree.nodes.get('Brush Style')
+    src_bs_node = src_mat.node_tree.nodes.get('Brush Style')
+
+    if not tgt_bs_node or not src_bs_node:
+        print("ERROR: Could not find Brush Style node in material!")
+        return
+
+    for i, input in enumerate(src_bs_node.inputs):
+        tgt_bs_node.inputs[i].default_value = input.default_value
+
+    return
+
+def clear_FX_nodes(nt):
+    # clear target FX nodes
+    del_nodes = []
+    node = nt.nodes.get('Effects In')
+    while True:
+        if not node.outputs:
+            break
+        s = node.outputs.get('Value')
+        if not s:
+            s = node.outputs[0]
+        if not s.links:
+            break
+        node = s.links[0].to_node
+        if not node:
+            break
+        if node.name == 'Effects Out':
+            break
+        del_nodes += [node]
+    for n in del_nodes:
+        nt.nodes.remove(n)
+
+def transfer_FX_nodes(new_mat, old_mat):
+
+    tgt_nt = new_mat.node_tree
+    src_nt = old_mat.node_tree
+
+    clear_FX_nodes(tgt_nt)
+
+    # insert new nodes
+    src_FX_nodes = []
+    node = src_nt.nodes.get('Effects In')
+    while True:
+        if not node.outputs:
+            break
+        s = node.outputs.get('Value')
+        if not s:
+            s = node.outputs[0]
+        if not s.links:
+            break
+        node = s.links[0].to_node
+        if not node:
+            break
+        if node.name == 'Effects Out':
+            break
+        src_FX_nodes += [node]
+
+    attr_list = [
+        'name',
+        'label',
+        'node_tree',
+        'location',
+        'mute',
+    ]
+
+    tgt_FX_nodes = []
+    for n in src_FX_nodes:
+        n_new = tgt_nt.nodes.new(n.bl_idname)
+        tgt_FX_nodes += [n_new]
+
+        for attr in attr_list:
+            if not attr in dir(n):
+                continue
+            setattr(n_new, attr, getattr(n, attr))
+        
+        if n.parent:
+            new_parent = tgt_nt.nodes.get(n.parent.name)
+            if new_parent:
+                n_new.parent = new_parent
+                n_new.location = Vector(n_new.location) + Vector(new_parent.location)
+
+        # link inputs
+        for tgt_in, src_in in zip(n_new.inputs, n.inputs):
+            for l in src_in.links:
+                n_out = tgt_nt.nodes.get(l.from_node.name)
+                if not n_out:
+                    continue
+                s_out = n_out.outputs.get(l.from_socket.name)
+                if not s_out:
+                    continue
+                l_new = tgt_nt.links.new(s_out, tgt_in)
+
+        # link outputs
+        for tgt_out, src_out in zip(n_new.outputs, n.outputs):
+            for l in src_out.links:
+                n_in = tgt_nt.nodes.get(l.to_node.name)
+                if not n_in:
+                    continue
+                s_in = n_in.inputs.get(l.to_socket.name)
+                if not s_in:
+                    continue
+                l_new = tgt_nt.links.new(tgt_out, s_in)
+        
+        # copy values
+        for tgt_in, src_in in zip(n_new.inputs, n.inputs):
+            tgt_in.default_value = src_in.default_value
+
+    # offset location by effects in
+    offset = Vector(src_nt.nodes.get('Effects In').location - tgt_nt.nodes.get('Effects In').location)
+    for tgt_n in tgt_FX_nodes:
+        tgt_n.location = Vector(tgt_n.location) + offset
+
+    return
+
+def upgrade_materials_from_library():
+
+    mats = find_local_material_resources().keys()
+    
+    data_pre = set()
+    for attr in dir(bpy.data):
+        if not type(getattr(bpy.data, attr)) == type(bpy.data.scenes):
+            continue
+        data_pre |= set(getattr(bpy.data, attr))
+
+    base_mat = import_brushstroke_material()
+
+    for old_mat in mats:
+        new_mat = base_mat.copy()
+        match_mat(new_mat, old_mat)
+        old_mat.user_remap(new_mat)
+        transfer_FX_nodes(new_mat, old_mat)
+        name = old_mat.name
+        bpy.data.materials.remove(old_mat)
+        new_mat.name = name
+
+    bpy.data.materials.remove(base_mat)
+
+    data_post = set()
+    for attr in dir(bpy.data):
+        if not type(getattr(bpy.data, attr)) == type(bpy.data.scenes):
+            continue
+        data_post |= set(getattr(bpy.data, attr))
+
+    new_ids = data_post - data_pre
+
+    force_cleanup_ids_recursive(new_ids)
+
+    return
+
+def upgrade_brush_styles_from_library():
+    
+    refresh_brushstroke_styles()
+
+    for mat in bpy.data.materials:
+        if 'BSBST' not in mat.keys():
+            continue
+        if not mat.brush_style:
+            continue
+
+        brush_style = find_brush_style_by_name(mat.brush_style)
+        if not brush_style.filepath:
+            continue
+
+        ng_old = bpy.data.node_groups.get(brush_style.id_name)
+        if not ng_old:
+            continue
+
+        ng_new = import_node_group(brush_style.id_name, brush_style.filepath)
+        if not ng_new:
+            continue
+
+        ng_old.user_remap(ng_new)
+        bpy.data.node_groups.remove(ng_old)
+        ng_new.name = brush_style.id_name
+
+    return
+
+def open_in_file_manager(path):
+    if platform.system() == "Windows":
+        os.startfile(path)
+    elif platform.system() == "Darwin":
+        subprocess.Popen(["open", path])
+    else:
+        subprocess.Popen(["xdg-open", path])
+
+class BSBST_brush_style(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(default='')
+    id_name: bpy.props.StringProperty(default='')
+    filepath: bpy.props.StringProperty(default='')
+    category: bpy.props.StringProperty(default='')
+    type: bpy.props.StringProperty(default='')
+
+classes = [
+    BSBST_brush_style,
+]
+
 def register():
+    for c in classes:
+        bpy.utils.register_class(c)
     bpy.app.handlers.depsgraph_update_post.append(refresh_preset)
 
 def unregister():
+    for c in classes:
+        bpy.utils.unregister_class(c)
     bpy.app.handlers.depsgraph_update_post.remove(refresh_preset)

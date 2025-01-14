@@ -88,7 +88,7 @@ class MV_OT_load_media_movie(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         frame_start = context.scene.frame_start
-        imported_strips: List[bpy.types.Sequence] = []
+        imported_strips: List[bpy.types.Strip] = []
 
         # print([f.name for f in self.files])
 

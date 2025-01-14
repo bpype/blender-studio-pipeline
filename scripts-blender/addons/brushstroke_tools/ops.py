@@ -1,5 +1,5 @@
 import bpy
-import random
+import random, fnmatch
 from . import utils, settings
 import mathutils
 
@@ -1166,7 +1166,195 @@ class BSBST_OT_view_all(bpy.types.Operator):
             else:
                 ob.hide_viewport = self.disable
         return {"FINISHED"}
+
+def brush_style_category_items(self, context):
+    addon_prefs = context.preferences.addons[__package__].preferences
+
+    items = [
+        ('ALL', 'All', '', '', 0),
+    ]
+    available_categories = set(bs.category for bs in addon_prefs.brush_styles)
+    for category_name in available_categories:
+        if not category_name:
+            continue
+        items.append((category_name.upper(), category_name, '', '', len(items)))
+    return items
+
+def brush_style_type_items(self, context):
+    addon_prefs = context.preferences.addons[__package__].preferences
+
+    items = [
+        ('ALL', 'All', '', '', 0),
+    ]
+    available_types = set(bs.type for bs in addon_prefs.brush_styles)
+    for type_name in available_types:
+        if not type_name:
+            continue
+        items.append((type_name.upper(), type_name, '', '', len(items)))
+    return items
+
+
+class BSBST_UL_brush_styles_filtered(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        resource_dir = utils.get_resource_directory()
+        if self.layout_type in {'DEFAULT', 'COMPACT'}:
+            split = layout.split(factor=0.5)
+            if not item.filepath:
+                split.label(text=item.name, icon='FILE_BLEND')
+            else:
+                split.label(text=item.name, icon='BRUSHES_ALL')
+
+            row = split.row()
+            row.label(text=item.category)
+
+            row = split.row()
+            row.label(text=item.type)
+        elif self.layout_type == 'GRID':
+            layout.label(text=item.name)
+
+    def draw_filter(self, context, layout):
+        return
+class BSBST_OT_select_brush_style(bpy.types.Operator):
+    """
+    Select Brush Style for context material. 
+    """
+    bl_idname = "brushstroke_tools.select_brush_style"
+    bl_label = "Select Brush Style"
+    bl_description = "Select Brush Style"
+    bl_options = {"REGISTER", "UNDO"}
+
+    name_filter: bpy.props.StringProperty(name='Name Filter', default='', update=utils.update_filtered_brush_styles)
+
+    brush_category: bpy.props.EnumProperty(name='Category', items=brush_style_category_items, update=utils.update_filtered_brush_styles)
+    brush_type: bpy.props.EnumProperty(name='Type', items=brush_style_type_items, update=utils.update_filtered_brush_styles)
+
+    brush_styles_filtered: bpy.props.CollectionProperty(type=utils.BSBST_brush_style)
+    brush_styles_filtered_active_index: bpy.props.IntProperty()
+
+    @classmethod
+    def poll(cls, context):
+        settings = context.scene.BSBST_settings
+        if not settings.context_material:
+            return False
+        if settings.context_material.library:
+            return False
+        return True
+
+    def draw(self, context):
+        settings = context.scene.BSBST_settings
+
+        layout = self.layout
+
+        row = layout.row()
+        split = row.split(factor=.45)
+        split.label(text='Name')
+        split = split.split(factor=.45)
+        split.label(text='Category')
+        split.label(text='Type')
+
+        row = layout.row(align=True)
+        split = row.split(factor=.45)
+        split.prop(self, 'name_filter', text='', icon='FILTER')
+        split = split.split(factor=.45)
+        split.prop(self, 'brush_category', text='')
+        split.prop(self, 'brush_type', text='')
+
+        layout.template_list("BSBST_UL_brush_styles_filtered", "", self, "brush_styles_filtered",
+                        self, "brush_styles_filtered_active_index", rows=3, maxrows=5, sort_lock=True)
+
+    def execute(self, context):
+        settings = context.scene.BSBST_settings
+        if len(self.brush_styles_filtered) == 0:
+            return {"CANCELLED"}
+        settings.context_material.brush_style = self.brush_styles_filtered[self.brush_styles_filtered_active_index].name
+        return {"FINISHED"}
+
+    def invoke(self, context, event):
+        settings = context.scene.BSBST_settings
+
+        utils.update_filtered_brush_styles(self, context)
+        for i, bs in enumerate(self.brush_styles_filtered):
+            if bs.name == settings.context_material.brush_style:
+                self.brush_styles_filtered_active_index = i
+                break
+        
+        self.name_filter = ''
+
+        return context.window_manager.invoke_props_dialog(self, width=450)
     
+class BSBST_OT_upgrade_resources(bpy.types.Operator):
+    """ Upgrade all local BST assets to available addon resources.
+    """
+    bl_idname = "brushstroke_tools.upgrade_resources"
+    bl_label = "Upgrade Resources"
+    bl_description = "Upgrade local BST assets to available addon resources."
+    bl_options = {"REGISTER", "UNDO"}
+
+    upgrade_shape_modifiers: bpy.props.BoolProperty(name='Shape Modifiers', default=True)
+    upgrade_materials: bpy.props.BoolProperty(name='Materials', default=True)
+    upgrade_brush_styles: bpy.props.BoolProperty(name='Brush Styles', default=True)
+
+    modifier_id_count = 0
+    modifier_user_count = 0
+
+    material_id_count = 0
+    material_user_count = 0
+
+    brush_style_id_count = 0
+    brush_style_user_count = 0
+
+    def draw(self, context):
+        settings = context.scene.BSBST_settings
+
+        layout = self.layout
+
+        split = layout.split(factor=.6)
+        
+        col = split.column()
+        col.prop(self, 'upgrade_shape_modifiers', icon='MODIFIER')
+        col.prop(self, 'upgrade_materials', icon='MATERIAL')
+        col.prop(self, 'upgrade_brush_styles', icon='BRUSHES_ALL')
+        
+        col = split.column()
+        row = col.row()
+        row.active = self.upgrade_shape_modifiers
+        row.label(text=f'({self.modifier_id_count} IDs, {self.modifier_user_count} users)')
+        row = col.row()
+        row.active = self.upgrade_materials
+        row.label(text=f'({self.material_id_count} IDs, {self.material_user_count} users)')
+        row = col.row()
+        row.active = self.upgrade_brush_styles
+        row.label(text=f'({self.brush_style_id_count} IDs, {self.brush_style_user_count} users)')
+
+    def execute(self, context):
+        settings = context.scene.BSBST_settings
+
+        if self.upgrade_shape_modifiers and self.modifier_id_count:
+            utils.upgrade_geonodes_from_library()
+        if self.upgrade_materials and self.material_id_count:
+            utils.upgrade_materials_from_library()
+        if self.upgrade_brush_styles and self.brush_style_id_count:
+            utils.upgrade_brush_styles_from_library()
+
+        return {"FINISHED"}
+
+    def invoke(self, context, event):
+        settings = context.scene.BSBST_settings
+
+        mod_map = utils.find_local_geonodes_resources()
+        self.modifier_id_count = len(mod_map)
+        self.modifier_user_count = sum([len(v) for k,v in mod_map.items()])
+
+        mat_map = utils.find_local_material_resources()
+        self.material_id_count = len(mat_map)
+        self.material_user_count = sum([len(v) for k,v in mat_map.items()])
+
+        bs_map = utils.find_local_brush_style_resources()
+        self.brush_style_id_count = len(bs_map)
+        self.brush_style_user_count = sum([len(v) for k,v in bs_map.items()])
+
+        return context.window_manager.invoke_props_dialog(self)
+
 class BSBST_OT_new_material(bpy.types.Operator):
     """
     """
@@ -1204,6 +1392,9 @@ classes = [
     BSBST_OT_brushstrokes_toggle_attribute,
     BSBST_OT_view_all,
     BSBST_OT_render_setup,
+    BSBST_UL_brush_styles_filtered,
+    BSBST_OT_select_brush_style,
+    BSBST_OT_upgrade_resources,
     BSBST_OT_new_material,
     ]
 

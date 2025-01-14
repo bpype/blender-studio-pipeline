@@ -67,7 +67,7 @@ def fit_frame_range_to_strips(
     Fits frame range of active scene to exactly encapsulate all strips in the Sequence Editor.
     """
 
-    def get_sort_tuple(strip: bpy.types.Sequence) -> Tuple[int, int]:
+    def get_sort_tuple(strip: bpy.types.Strip) -> Tuple[int, int]:
         return (strip.frame_final_start, strip.frame_final_duration)
 
     strips = context.scene.sequence_editor.sequences_all
@@ -332,7 +332,7 @@ def get_frame_counter(filepath: Path) -> Optional[str]:
 
 def get_movie_strips(
     context: bpy.types.Context,
-) -> List[bpy.types.Sequence]:
+) -> List[bpy.types.Strip]:
     strips = [
         s for s in context.scene.sequence_editor.sequences_all if s.type == "MOVIE"
     ]

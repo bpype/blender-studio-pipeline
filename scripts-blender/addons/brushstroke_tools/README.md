@@ -5,6 +5,8 @@ Set of tools for a painterly brushstroke stylization workflow of 3D assets devel
 You can find a guided workshop on how to use the tools to create a painterly scene go here:
 https://studio.blender.org/training/stylized-rendering-with-brushstrokes/
 
+![Screenshot with UI](/media/addons/brushstroke_tools/painterly_fishing_hut-UI.jpg)
+
 # Fundamental Concept
 
 The Brushstroke Tools add-on provides a convenient interface, as well as different operators to create, manage and modify 3D brushstroke geometry that is based on the procedural generation of textured mesh strips based on curve geometry using Geometry Nodes.
@@ -75,7 +77,15 @@ Controls the shadow visibility of the brushstrokes layer.
 # User Preferences
 
 In the user preferences for the Brushstroke Tools addon you can modify the way resource assets are loaded into the file. Be catious of linking to the default directory though, since links can easily break when moving the file, or sharing it with others.  
-When changing the resource directory path, you need to provide the resource files in the directory. Use the operator to do so and copy the resource files from the add-on directory to your custom directory.
+When changing the resource directory path (`{LIB}`), you need to provide the resource files in the directory. Use the operator to do so and copy the resource files from the add-on directory to your custom directory.  
+
+The default resource directory is relative to the user home directory:  
+- WINDOWS: `%USERPROFILE%\AppData\Roaming\Blender Studio Tools\Brushstroke Tools\`
+- MAC: `/Users/$USER/Library/Application Support/Blender Studio Tools/Brushstroke Tools`
+- LINUX: `$HOME/.config/blender_studio_tools/brushstroke_tools`
+
+Assets that are provided with the add-on will be automatically overwritten with updates in the default directory when the resource directory is not specified differently.
+When making changes to these files, specify a custom resource directory to preserve the changes. Additional files that are not part ofthe default add-on files will be kept in place (e.g. installed brush styles).
 
 ## Brush Styles
 
@@ -87,8 +97,50 @@ When choosing an external path for the add-on resources in the user preferences 
 
 ## Additional Brush Styles
 
-There will be more brush style packs available to achieve different styles in the future. Adding more brush styles is a matter of duplicating the node-group asset that defines one in the resource directory and changing its referenced texture and parameters.  
-Brush styles can be spread out over multiple files in the resource directory. They are identified via the node-group name.
+### Installation
+
+Adding existing brush styles to the available ones in the user preferences can be done by simply dropping resources including the `.blend` file containing the brush styles in the `{LIB}/styles/` directory of the addon resources.  
+Brush styles can be spread out over multiple files in the resource directory. They are identified via the node-group name.  
+
+For easy installation you can also use the `Install Brush Style Pack` operator from the user preferences.  
+
+Additional brush styles by the Blender Studio team can for example be found here: https://studio.blender.org/blog/new-custom-brushstroke-styles/
+
+### Creation
+
+Brush styles are defined by individual node-groups that use attribute information of the brushstroke geometry and additional inputs to map an atlas texture to the geometry with a mask as ouput.
+Creating new brush styles is done by duplicating an existing node-group asset that defines a brush style from a template and changing its referenced brush atlas texture and mapping parameters.
+
+#### Atlas Mapping  
+
+The template can be taken from the bundled [brushstroke_tools-oil_brushes.blend](https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/brushstroke_tools/assets/styles/brushstroke_tools-oil_brushes.blend). 
+![Node-Group Setup](/media/addons/brushstroke_tools/custom_brush_styles/node_group-setup.png) 
+The node-group parameters need to be matched with the brushstroke atlas grid like in the example figure.
+![Brush Atlas Layout](/media/addons/brushstroke_tools/custom_brush_styles/brush_atlas_layout.jpg)
+Alternatively the mapping node-group can be replaced with another one (e.g. provided `.BSBST-brush_mapping` for the `Patches` brush style type as a generic grid).
+
+Additional information about our process in production for this step can be found in this [blog post](https://studio.blender.org/blog/oil-painting-brushes-for-project-gold/).
+
+#### Node-Group Customization
+
+Everything in the node-group can be customized if necessary. Node-group inputs to the brush style will show up automatically as parameters in the brush style user interface of the addon (e.g. the provided `Blend` and `Seed` parameters).  
+
+#### Name
+
+Brush styles are identified by their name, so the naming of the node-group defining a brush style has to follow a certain shape:  
+`BSBST-BS.{Category}.{Type}.{Name}` ( Example: `BSBST-BS.Oil Paint.Brushstrokes.Dry (Loaded)` )  
+Category, type and name can be any string, but cannot contain a '.' (period) character, as this is used as a delimiter. This may change in the future as the asset system in Blender is extended with an API.  
+Avoid name collisions between brush styles for proper behavior.
+
+#### Preview Image
+
+To add a preview for the brushstroke the node-group datablock needs to be marked as an asset and the preview image can be assigned as a thumbnail in the asset browser. Resolution and aspect ratio can be chosen freely, but it is recommended to use 2:1 / 512px:256px.  
+
+#### Pack Resources
+
+The image file should either be packed as a resource into the `.blend` file or stored on disk in a `maps` directory next to the `.blend` file containing the node-group. This is not strictly necessary but recommended.  
+
+To pack the brush styles as an installable bundle the resources can simply be zipped or packed into a single `.blend` file. Be sure to include all necessary resources in the pack.  
 
 # FAQ
 - Why does the fill layer not react to me drawing the flow curves?

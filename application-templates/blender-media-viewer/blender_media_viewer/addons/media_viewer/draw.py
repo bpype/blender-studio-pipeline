@@ -460,7 +460,8 @@ class MV_OT_toggle_header(bpy.types.Operator):
     bl_label = "Toggle Header"
     # bl_options = {"REGISTER", "INTERNAL"}
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._area_draw_handle_dict: Dict[str : List[Callable]] = {
             "IMAGE_EDITOR": [],
             "SEQUENCE_EDITOR": [],
