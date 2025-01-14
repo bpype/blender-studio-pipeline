@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.1.0 - 2025-01-14
 
 ### ADDED
 - subpanel compatibility in preparation for Blender 4.4 ([#347](https://projects.blender.org/studio/blender-studio-tools/pulls/347))
