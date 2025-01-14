@@ -17,8 +17,8 @@ def register():
 	# Add addon asset library
 	utils.register_asset_lib()
 
-	# Get available brush styles
-	#utils.refresh_brushstroke_styles()
+	# Copy resource files to config directory
+	utils.unpack_resources()
 
 def unregister():
 	# un-register modules

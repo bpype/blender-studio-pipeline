@@ -20,6 +20,7 @@
 - fix error when appending brush style that contains already packed images ([#348](https://projects.blender.org/studio/blender-studio-tools/pulls/348))
 - fix issue with property type mismatch by implicit type casting ([#361](https://projects.blender.org/studio/blender-studio-tools/pulls/361))
 - fix incorrect length matching behavior ([#362](https://projects.blender.org/studio/blender-studio-tools/pulls/362))
+- fix registry error when un- and reregistering add-on ([#363](https://projects.blender.org/studio/blender-studio-tools/pulls/363))
 
 ## 1.0.4 - 2024-11-11
 
