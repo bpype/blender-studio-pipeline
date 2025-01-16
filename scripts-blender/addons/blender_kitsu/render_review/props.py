@@ -73,8 +73,8 @@ def register():
         description="Metadata that is required for render_review",
     )
 
-    # Sequence Properties.
-    bpy.types.Sequence.rr = bpy.props.PointerProperty(
+    # Strip Properties.
+    bpy.types.Strip.rr = bpy.props.PointerProperty(
         name="Render Review",
         type=RR_property_group_sequence,
         description="Metadata that is required for render_review",

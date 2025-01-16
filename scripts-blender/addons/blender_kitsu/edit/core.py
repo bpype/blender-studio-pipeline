@@ -45,7 +45,7 @@ def edit_export_is_valid_name(file_pattern: str, filename: str) -> bool:
 
 def edit_export_import_latest(
     context: bpy.types.Context, shot
-) -> list[bpy.types.Sequence]:  # TODO add info to shot
+) -> list[bpy.types.Strip]:  # TODO add info to shot
     """Loads latest export from editorial department"""
     addon_prefs = prefs.addon_prefs_get(context)
     strip_channel = 1

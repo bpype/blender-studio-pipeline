@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 import bpy
-from bpy.types import Sequence, Context
+from bpy.types import Strip, Context
 import os
 from typing import Set, List
 from pathlib import Path
@@ -238,11 +238,11 @@ class KITSU_OT_edit_export_import_latest(bpy.types.Operator):
         if hasattr(strip, "sound"):
             return strip.sound.filepath
 
-    def compare_strip_to_path(self, strip: Sequence, compare_path: Path) -> bool:
+    def compare_strip_to_path(self, strip: Strip, compare_path: Path) -> bool:
         strip_path = Path(bpy.path.abspath(self.get_filepath(strip)))
         return bool(compare_path.absolute() == strip_path.absolute())
 
-    def compare_strip_to_paths(self, strip: Sequence, compare_paths: List[Path]) -> bool:
+    def compare_strip_to_paths(self, strip: Strip, compare_paths: List[Path]) -> bool:
         for compare_path in compare_paths:
             if self.compare_strip_to_path(strip, compare_path):
                 return True
@@ -250,7 +250,7 @@ class KITSU_OT_edit_export_import_latest(bpy.types.Operator):
 
     def get_existing_edit_exports(
         self, context: Context, all_edit_export_paths: List[Path]
-    ) -> List[Sequence]:
+    ) -> List[Strip]:
         sequences = context.scene.sequence_editor.sequences
 
         # Collect Existing Edit Export

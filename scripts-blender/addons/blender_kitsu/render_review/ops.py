@@ -17,7 +17,7 @@ from .. import prefs, cache
 from ..sqe import opsdata as seq_opsdata
 from ..logger import LoggerFactory
 
-from .exception import NoImageSequenceAvailableException
+from .exception import NoImageStripAvailableException
 
 logger = LoggerFactory.getLogger()
 
@@ -56,7 +56,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
             # Get best preview files sequence.
             image_sequence = opsdata.get_best_preview_sequence(directory)
 
-        except NoImageSequenceAvailableException:
+        except NoImageStripAvailableException:
             # if no preview files available create an empty image strip
             # this assumes that when a folder is there exr sequences are available to inspect
             logger.warning("%s found no preview sequence", directory.name)
@@ -202,7 +202,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
         self.report(
             {"INFO"},
-            f"Imported {len(imported_strips)} Render Sequences",
+            f"Imported {len(imported_strips)} Render Strips",
         )
 
         return {"FINISHED"}
@@ -251,9 +251,9 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         shot_version_folders: List[Path],
         frame_start: int,
         shot_name: str,
-    ) -> List[bpy.types.Sequence]:
+    ) -> List[bpy.types.Strip]:
         addon_prefs = prefs.addon_prefs_get(context)
-        imported_strips: bpy.types.Sequence = []
+        imported_strips: bpy.types.Strip = []
 
         shots_folder_to_add = []
 
@@ -291,7 +291,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         shot_folder: Path,
         shot_name: str,
         use_video=False,
-    ) -> bpy.types.Sequence:
+    ) -> bpy.types.Strip:
         context.scene.timeline_markers.new(shot_name, frame=frame_start)
 
         # Init sequencer
@@ -846,7 +846,7 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
         # Trying to get render_mp4_path will throw error if no jpg files are available.
         try:
             mp4_path = Path(opsdata.get_farm_output_mp4_path(active_strip))
-        except NoImageSequenceAvailableException:
+        except NoImageStripAvailableException:
             # No jpeg files available.
             self.report({"ERROR"}, f"No preview files available in {render_dir.as_posix()}")
             return {"CANCELLED"}
@@ -909,7 +909,7 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
 
         try:
             mp4_path = Path(opsdata.get_farm_output_mp4_path(active_strip))
-        except NoImageSequenceAvailableException:
+        except NoImageStripAvailableException:
             layout.separator()
             layout.row(align=True).label(text="No preview files available", icon="ERROR")
             return
@@ -933,13 +933,13 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
         active_strip = context.scene.sequence_editor.active_strip
         try:
             mp4_path = Path(opsdata.get_farm_output_mp4_path(active_strip))
-        except NoImageSequenceAvailableException:
+        except NoImageStripAvailableException:
             width = 200
         else:
             width = 200 + len(mp4_path.as_posix()) * 5
         return context.window_manager.invoke_props_dialog(self, width=width)
 
-    def get_edit_filepath(self, strip: bpy.types.Sequence) -> Path:
+    def get_edit_filepath(self, strip: bpy.types.Strip) -> Path:
         delimiter = vars.DELIMITER
         render_dir = opsdata.get_strip_folder(strip)
         shot_previews_dir = opsdata.get_shot_previews_path(strip)
