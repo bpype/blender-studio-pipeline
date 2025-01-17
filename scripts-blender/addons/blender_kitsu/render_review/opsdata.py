@@ -13,7 +13,7 @@ import bpy
 from . import vars, checksqe, util
 from .. import prefs, cache
 from ..sqe import opsdata as sqe_opsdata
-from .exception import NoImageSequenceAvailableException
+from .exception import NoImageStripAvailableException
 
 from ..logger import LoggerFactory
 
@@ -74,10 +74,10 @@ def _copytree_clear_progress_update():
 
 
 def get_valid_cs_sequences(
-    context: bpy.types.Context, sequence_list: List[bpy.types.Sequence] = []
-) -> List[bpy.types.Sequence]:
+    context: bpy.types.Context, sequence_list: List[bpy.types.Strip] = []
+) -> List[bpy.types.Strip]:
 
-    sequences: List[bpy.types.Sequence] = []
+    sequences: List[bpy.types.Strip] = []
 
     if sequence_list:
         sequences = sequence_list
@@ -97,7 +97,7 @@ def get_valid_cs_sequences(
     return valid_sequences
 
 
-def get_frames_root_dir(strip: bpy.types.Sequence) -> Path:
+def get_frames_root_dir(strip: bpy.types.Strip) -> Path:
     # sf = shot_frames | fo = farm_output.
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     fo_dir = get_strip_folder(strip)
@@ -106,14 +106,14 @@ def get_frames_root_dir(strip: bpy.types.Sequence) -> Path:
     return sf_dir
 
 
-def get_strip_folder(strip: bpy.types.Sequence) -> Path:
+def get_strip_folder(strip: bpy.types.Strip) -> Path:
     if hasattr(strip, 'directory'):
         return Path(strip.directory)
     else:
         return Path(strip.filepath).parent
 
 
-def get_shot_previews_path(strip: bpy.types.Sequence) -> Path:
+def get_shot_previews_path(strip: bpy.types.Strip) -> Path:
     # Fo > farm_output.
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     fo_dir = get_strip_folder(strip)
@@ -128,7 +128,7 @@ def get_shot_dot_task_type(path: Path):
     return path.parent.name
 
 
-def get_farm_output_mp4_path(strip: bpy.types.Sequence) -> Path:
+def get_farm_output_mp4_path(strip: bpy.types.Strip) -> Path:
     render_dir = get_strip_folder(strip)
     return get_farm_output_mp4_path_from_folder(render_dir)
 
@@ -153,7 +153,7 @@ def get_best_preview_sequence(dir: Path) -> List[Path]:
         dir, output=dict, search_suffixes=[".jpg", ".png"]
     )
     if not files:
-        raise NoImageSequenceAvailableException(f"No preview files found in: {dir.as_posix()}")
+        raise NoImageStripAvailableException(f"No preview files found in: {dir.as_posix()}")
 
     # Select the right images sequence.
     if len(files) == 1:
@@ -172,17 +172,17 @@ def get_best_preview_sequence(dir: Path) -> List[Path]:
     return preview_seq
 
 
-def get_shot_frames_backup_path(strip: bpy.types.Sequence) -> Path:
+def get_shot_frames_backup_path(strip: bpy.types.Strip) -> Path:
     fs_dir = get_frames_root_dir(strip)
     return fs_dir.parent / f"_backup.{fs_dir.name}"
 
 
-def get_shot_frames_metadata_path(strip: bpy.types.Sequence) -> Path:
+def get_shot_frames_metadata_path(strip: bpy.types.Strip) -> Path:
     fs_dir = get_frames_root_dir(strip)
     return fs_dir.parent / "metadata.json"
 
 
-def get_shot_previews_metadata_path(strip: bpy.types.Sequence) -> Path:
+def get_shot_previews_metadata_path(strip: bpy.types.Strip) -> Path:
     fs_dir = get_shot_previews_path(strip)
     return fs_dir / "metadata.json"
 
@@ -200,13 +200,13 @@ def save_to_json(obj: Any, path: Path) -> None:
 
 def update_sequence_statuses(
     context: bpy.types.Context,
-) -> List[bpy.types.Sequence]:
+) -> List[bpy.types.Strip]:
     return update_is_approved(context), update_is_pushed_to_edit(context)
 
 
 def update_is_approved(
     context: bpy.types.Context,
-) -> List[bpy.types.Sequence]:
+) -> List[bpy.types.Strip]:
     sequences = [s for s in context.scene.sequence_editor.sequences_all if s.rr.is_render]
 
     approved_strips = []
@@ -229,7 +229,7 @@ def update_is_approved(
 
 def update_is_pushed_to_edit(
     context: bpy.types.Context,
-) -> List[bpy.types.Sequence]:
+) -> List[bpy.types.Strip]:
     sequences = [s for s in context.scene.sequence_editor.sequences_all if s.rr.is_render]
 
     pushed_strips = []
@@ -352,9 +352,9 @@ def get_sqe_editor(context: bpy.types.Context) -> Optional[bpy.types.Area]:
 
 
 def fit_frame_range_to_strips(
-    context: bpy.types.Context, strips: Optional[List[bpy.types.Sequence]] = None
+    context: bpy.types.Context, strips: Optional[List[bpy.types.Strip]] = None
 ) -> Tuple[int, int]:
-    def get_sort_tuple(strip: bpy.types.Sequence) -> Tuple[int, int]:
+    def get_sort_tuple(strip: bpy.types.Strip) -> Tuple[int, int]:
         return (strip.frame_final_start, strip.frame_final_duration)
 
     if not strips:
@@ -374,14 +374,14 @@ def fit_frame_range_to_strips(
 
 def get_top_level_valid_strips_continious(
     context: bpy.types.Context,
-) -> List[bpy.types.Sequence]:
+) -> List[bpy.types.Strip]:
 
     sequences_tmp = get_valid_cs_sequences(
         context, sequence_list=list(context.scene.sequence_editor.sequences_all)
     )
 
     sequences_tmp.sort(key=lambda s: (s.channel, s.frame_final_start), reverse=True)
-    sequences: List[bpy.types.Sequence] = []
+    sequences: List[bpy.types.Strip] = []
 
     for strip in sequences_tmp:
 
@@ -406,7 +406,7 @@ def is_active_project() -> bool:
 
 def link_strip_by_name(
     context: bpy.types.Context,
-    strip: bpy.types.Sequence,
+    strip: bpy.types.Strip,
     shot_name: str,
     sequence_name: str,
 ) -> None:

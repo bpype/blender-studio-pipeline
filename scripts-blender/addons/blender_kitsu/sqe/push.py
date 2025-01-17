@@ -14,7 +14,7 @@ import gazu
 logger = LoggerFactory.getLogger()
 
 
-def shot_meta(strip: bpy.types.Sequence, shot: Shot) -> None:
+def shot_meta(strip: bpy.types.Strip, shot: Shot) -> None:
     # Update shot info.
 
     shot.name = strip.kitsu.shot_name
@@ -39,7 +39,7 @@ def shot_meta(strip: bpy.types.Sequence, shot: Shot) -> None:
 
 
 def new_shot(
-    strip: bpy.types.Sequence, sequence: Sequence, project: Project, add_tasks=False
+    strip: bpy.types.Strip, sequence: Sequence, project: Project, add_tasks=False
 ) -> Shot:
     frame_range = (strip.frame_final_start, strip.frame_final_end)
     shot = project.create_shot(
@@ -65,7 +65,7 @@ def new_shot(
     return shot
 
 
-def new_sequence(strip: bpy.types.Sequence, project: Project) -> Sequence:
+def new_sequence(strip: bpy.types.Strip, project: Project) -> Sequence:
     sequence = project.create_sequence(
         strip.kitsu.sequence_name,
         strip.kitsu.episode_id
@@ -76,7 +76,7 @@ def new_sequence(strip: bpy.types.Sequence, project: Project) -> Sequence:
     return sequence
 
 
-def delete_shot(strip: bpy.types.Sequence, shot: Shot) -> str:
+def delete_shot(strip: bpy.types.Strip, shot: Shot) -> str:
     result = shot.remove()
     logger.info(
         "Pushed delete shot: %s for project: %s",

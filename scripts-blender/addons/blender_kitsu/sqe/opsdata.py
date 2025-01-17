@@ -178,7 +178,7 @@ def upload_preview(
     logger.info(f"Uploaded preview for shot: {shot.name} under: {task_type.name}")
 
 
-def init_start_frame_offset(strip: bpy.types.Sequence) -> None:
+def init_start_frame_offset(strip: bpy.types.Strip) -> None:
     # Frame start offset.
     offset_start = strip.frame_final_start - strip.frame_start
     # Cast offset start to int, since after Blender 3.3 strip values are floats
@@ -231,7 +231,7 @@ def push_sequence_color(context: bpy.types.Context, sequence: Sequence) -> None:
 
 def create_metadata_strip(
     scene: bpy.types.Scene, name: str, channel, frame_start: int, frame_end: int
-) -> bpy.types.MovieSequence:
+) -> bpy.types.MovieStrip:
 
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     strip = scene.sequence_editor.sequences.new_movie(
@@ -252,8 +252,8 @@ def create_metadata_strip(
 
 
 def link_metadata_strip(
-    context, shot: Shot, seq: Sequence, strip: bpy.types.MovieSequence
-) -> bpy.types.MovieSequence:
+    context, shot: Shot, seq: Sequence, strip: bpy.types.MovieStrip
+) -> bpy.types.MovieStrip:
     # Pull shot meta.
     pull.shot_meta(strip, shot)
 

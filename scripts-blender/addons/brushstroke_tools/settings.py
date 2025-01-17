@@ -10,7 +10,9 @@ def update_active_brushstrokes(self, context):
         is_active = i == settings.active_context_brushstrokes_index
         ob['BSBST_active'] = is_active
         if 'BSBST_material' in ob.keys() and is_active:
+            settings.silent_switch = True
             settings.context_material = ob['BSBST_material']
+            settings.silent_switch = False
 
 def update_brushstroke_method(self, context):
     settings = context.scene.BSBST_settings
@@ -23,16 +25,23 @@ def update_brushstroke_method(self, context):
     if not style_object:
         style_object = preset_object
 
+    settings.silent_switch = True
     if not style_object:
         settings.context_material = None
+        settings.silent_switch = False
         return
     if 'BSBST_material' in style_object.keys():
         settings.context_material = style_object['BSBST_material']
     else:
         settings.context_material = None
+    settings.silent_switch = False
 
 def update_context_material(self, context):
     settings = context.scene.BSBST_settings
+    if settings.silent_switch:
+        return
+
+    print(f'Context material set to {settings.context_material}')
 
     style_object = utils.get_active_context_brushstrokes_object(context)
     if not style_object:
@@ -113,7 +122,9 @@ def set_active_context_brushstrokes_index(self, value):
         if not settings.preset_object:
             return
         if 'BSBST_material' in settings.preset_object.keys():
+            settings.silent_switch = True
             settings.context_material = settings.preset_object['BSBST_material']
+            settings.silent_switch = False
     prev = self.get('active_context_brushstrokes_index')
     if prev == abs(value):
         return

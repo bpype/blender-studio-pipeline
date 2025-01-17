@@ -11,7 +11,7 @@ from ..logger import LoggerFactory
 logger = LoggerFactory.getLogger()
 
 
-def shot_meta(strip: bpy.types.Sequence, shot: Shot, clear_cache: bool = True) -> None:
+def shot_meta(strip: bpy.types.Strip, shot: Shot, clear_cache: bool = True) -> None:
     if clear_cache:
         # Clear cache before pulling.
         Cache.clear_all()

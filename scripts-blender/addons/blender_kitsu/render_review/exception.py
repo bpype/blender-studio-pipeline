@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 
-class NoImageSequenceAvailableException(Exception):
+class NoImageStripAvailableException(Exception):
     """
     Error raised when trying to gather image sequence in folder but no files are existent
     """

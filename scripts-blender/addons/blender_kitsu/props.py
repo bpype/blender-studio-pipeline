@@ -885,27 +885,27 @@ def register():
     # FRAME RANGE PROPERTIES
     # because we cant acess strip properties from a sequence group we need to create this properties
     # directly on the strip, as we need strip properties to calculate
-    bpy.types.Sequence.kitsu_3d_start = bpy.props.IntProperty(
+    bpy.types.Strip.kitsu_3d_start = bpy.props.IntProperty(
         name="3D In",
         get=_calc_kitsu_3d_start,
     )
 
-    bpy.types.Sequence.kitsu_frame_end = bpy.props.IntProperty(
+    bpy.types.Strip.kitsu_frame_end = bpy.props.IntProperty(
         name="3D Out",
         get=_calc_kitsu_frame_end,
     )
-    bpy.types.Sequence.kitsu_frame_duration = bpy.props.IntProperty(
+    bpy.types.Strip.kitsu_frame_duration = bpy.props.IntProperty(
         name="Duration",
         get=_get_frame_final_duration,
     )
 
     # Used in general tools panel next to sqe_change_strip_source operator.
-    bpy.types.MovieSequence.filepath_display = bpy.props.StringProperty(
+    bpy.types.MovieStrip.filepath_display = bpy.props.StringProperty(
         name="Filepath Display", get=_get_strip_filepath
     )
 
     # Sequence Properties.
-    bpy.types.Sequence.kitsu = bpy.props.PointerProperty(
+    bpy.types.Strip.kitsu = bpy.props.PointerProperty(
         name="Kitsu",
         type=KITSU_property_group_sequence,
         description="Metadata that is required for blender_kitsu",

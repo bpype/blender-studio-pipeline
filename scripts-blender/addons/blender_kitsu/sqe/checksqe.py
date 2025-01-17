@@ -75,7 +75,7 @@ def is_range_occupied(range_to_check: range, occupied_ranges: List[range]) -> bo
     return False
 
 
-def get_shot_strips(context: bpy.types.Context) -> List[bpy.types.Sequence]:
+def get_shot_strips(context: bpy.types.Context) -> List[bpy.types.Strip]:
     shot_strips = []
     shot_strips.extend(
         [

@@ -834,8 +834,8 @@ class KITSU_OT_sqe_uninit_strip(bpy.types.Operator):
         return bool(context.selected_sequences)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        failed: List[bpy.types.Sequence] = []
-        succeeded: List[bpy.types.Sequence] = []
+        failed: List[bpy.types.Strip] = []
+        succeeded: List[bpy.types.Strip] = []
         logger.info("-START- Uninitializing strips")
 
         for strip in context.selected_sequences:
@@ -886,8 +886,8 @@ class KITSU_OT_sqe_unlink_shot(bpy.types.Operator):
         return bool(context.selected_sequences)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        failed: List[bpy.types.Sequence] = []
-        succeeded: List[bpy.types.Sequence] = []
+        failed: List[bpy.types.Strip] = []
+        succeeded: List[bpy.types.Strip] = []
         logger.info("-START- Unlinking shots")
 
         for strip in context.selected_sequences:
@@ -1190,7 +1190,7 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
         logger.info("-END- Pushing shot thumbnails")
         return {"FINISHED"}
 
-    def make_thumbnail(self, context: bpy.types.Context, strip: bpy.types.Sequence) -> Path:
+    def make_thumbnail(self, context: bpy.types.Context, strip: bpy.types.Strip) -> Path:
         bpy.ops.render.render()
         file_name = f"{strip.kitsu.shot_id}_{str(context.scene.frame_current)}.jpg"
         path = self._save_render(bpy.data.images["Render Result"], file_name)
@@ -1254,7 +1254,7 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
     @staticmethod
     def set_middle_frame(
         context: bpy.types.Context,
-        strip: bpy.types.Sequence,
+        strip: bpy.types.Strip,
     ) -> int:
         """Sets the current frame to the middle frame of the strip"""
 
@@ -1370,7 +1370,7 @@ class KITSU_OT_sqe_push_render(bpy.types.Operator):
         logger.info("-END- Pushing Sequence Editor Render")
         return {"FINISHED"}
 
-    def _gen_output_path(self, strip: bpy.types.Sequence, task_type: TaskType) -> Path:
+    def _gen_output_path(self, strip: bpy.types.Strip, task_type: TaskType) -> Path:
         addon_prefs = prefs.addon_prefs_get(bpy.context)
         folder_name = addon_prefs.sqe_render_dir
         file_name = f"{strip.kitsu.shot_id}_{strip.kitsu.shot_name}.{(task_type.name).lower()}.mp4"
@@ -1810,8 +1810,8 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
         row.prop(context.scene.kitsu, "pull_edit_channel")
 
     def _find_shot_strip(
-        self, shot_strips: List[bpy.types.Sequence], shot_id: str
-    ) -> Optional[bpy.types.Sequence]:
+        self, shot_strips: List[bpy.types.Strip], shot_id: str
+    ) -> Optional[bpy.types.Strip]:
         for strip in shot_strips:
             if strip.kitsu.shot_id == shot_id:
                 return strip
@@ -1829,7 +1829,7 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
         return (color[0], color[1], color[2])
 
     def _apply_strip_slip_from_shot(
-        self, context: bpy.types.Context, strip: bpy.types.Sequence, shot: Shot
+        self, context: bpy.types.Context, strip: bpy.types.Strip, shot: Shot
     ) -> None:
         # get offset
         offset = strip.kitsu_3d_start - int(shot.get_3d_start())
@@ -2067,12 +2067,12 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         addon_prefs = prefs.addon_prefs_get(context)
-        outdated: List[bpy.types.Sequence] = []
-        invalid: List[bpy.types.Sequence] = []
-        no_version: List[bpy.types.Sequence] = []
-        up_to_date: List[bpy.types.Sequence] = []
-        checked: List[bpy.types.Sequence] = []
-        excluded: List[bpy.types.Sequence] = []
+        outdated: List[bpy.types.Strip] = []
+        invalid: List[bpy.types.Strip] = []
+        no_version: List[bpy.types.Strip] = []
+        up_to_date: List[bpy.types.Strip] = []
+        checked: List[bpy.types.Strip] = []
+        excluded: List[bpy.types.Strip] = []
 
         sequences = context.selected_sequences
         if not sequences:
@@ -2518,7 +2518,7 @@ class KITSU_OT_sqe_clear_update_indicators(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         addon_prefs = prefs.addon_prefs_get(context)
-        reset: List[bpy.types.Sequence] = []
+        reset: List[bpy.types.Strip] = []
 
         sequences = context.selected_sequences
         if not sequences:

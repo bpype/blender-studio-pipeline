@@ -934,7 +934,9 @@ class BSBST_OT_init_preset(bpy.types.Operator):
         mat = bpy.data.materials.get('Brush Material')
         if not mat:
             mat = utils.import_brushstroke_material()
+        settings.silent_switch = True
         settings.context_material = mat
+        settings.silent_switch = False
         preset_object['BSBST_material'] = settings.context_material
 
         return {"FINISHED"}
