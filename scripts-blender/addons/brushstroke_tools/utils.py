@@ -497,7 +497,10 @@ def add_brush_styles_from_names(bs_list, ng_names, filepath, name_filter = []):
     names = [name for name in ng_names if name.startswith('BSBST-BS')]
 
     for ng_name in names:
-        name_elements = ng_name.split('.')
+        name, extension = split_id_name(ng_name)
+        name_elements = name.split('.')
+        if extension:
+            name_elements = name_elements[:-1]+[f'{name_elements[-1]}.{extension}']
         if name_elements[-1] in name_filter:
             continue
         b_style = bs_list.add()
@@ -903,6 +906,28 @@ def force_cleanup_ids_recursive(ids):
     if flag:
         force_cleanup_ids_recursive(ids)
 
+def force_remove_id_and_dependencies(id_remove):
+    data = set()
+    for attr in dir(bpy.data):
+        if not type(getattr(bpy.data, attr)) == type(bpy.data.scenes):
+            continue
+        data |= set(getattr(bpy.data, attr))
+        
+    for id in list(data)[:]:
+        if id == id_remove:
+            continue
+        if id.users == id.use_fake_user:
+            data.remove(id)
+    
+    if id_remove not in data:
+        blend_data_from_id(id_remove).remove(id_remove)
+        return
+    else:
+        data.remove(id_remove)
+        blend_data_from_id(id_remove).remove(id_remove)
+    
+    force_cleanup_ids_recursive(data)
+
 def version_modifiers(object):
 
     version_prev = object['BSBST_version']
@@ -945,12 +970,8 @@ def upgrade_geonodes_from_library():
             if id_local.users == id_local.use_fake_user:
                 del_id.add(id_local)
 
-    while del_id:
-        for id in del_id:
-            if id in id_new:
-                id_new.remove(id)
-            blend_data_from_id(id).remove(id)
-        del_id = set([id for id in id_new if id.users == id.use_fake_user])
+    for id in del_id:
+        force_remove_id_and_dependencies(id)
 
     # rename new ids
     for id in id_new:
