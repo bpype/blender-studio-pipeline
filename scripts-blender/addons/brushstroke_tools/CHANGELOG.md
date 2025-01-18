@@ -1,8 +1,10 @@
-## 1.1.1
+## 1.1.1 - 2025-01-17
 
 ### FIXED
 
 - fix losing brushstroke context material on new preset initialization ([#365](https://projects.blender.org/studio/blender-studio-tools/pulls/365))
+- fix accumulation of default brush style datablocks ([#366](https://projects.blender.org/studio/blender-studio-tools/pulls/366))
+- fix handling of incremental suffix on brush style datablocks ([#366](https://projects.blender.org/studio/blender-studio-tools/pulls/366))
 
 ## 1.1.0 - 2025-01-14
 

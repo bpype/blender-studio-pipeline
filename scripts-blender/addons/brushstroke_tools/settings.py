@@ -41,8 +41,6 @@ def update_context_material(self, context):
     if settings.silent_switch:
         return
 
-    print(f'Context material set to {settings.context_material}')
-
     style_object = utils.get_active_context_brushstrokes_object(context)
     if not style_object:
         style_object = settings.preset_object
@@ -158,7 +156,14 @@ def get_brush_style(self):
     if node is None:
         return ''
     name = node.node_tree.name
-    return name.split('.')[-1]
+
+    name, extension = utils.split_id_name(name)
+    name = name.split('.')[-1]
+
+    if extension:
+        name = f'{name}.{extension}'
+    
+    return name
 
 def set_brush_style(self, value):
     addon_prefs = bpy.context.preferences.addons[__package__].preferences

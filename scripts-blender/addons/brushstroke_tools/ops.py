@@ -1274,6 +1274,8 @@ class BSBST_OT_select_brush_style(bpy.types.Operator):
     def invoke(self, context, event):
         settings = context.scene.BSBST_settings
 
+        utils.refresh_brushstroke_styles()
+
         utils.update_filtered_brush_styles(self, context)
         for i, bs in enumerate(self.brush_styles_filtered):
             if bs.name == settings.context_material.brush_style:
