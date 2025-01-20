@@ -23,7 +23,7 @@ bl_info = {
     "description": "Operators to make weight painting easier.",
     "category": "Rigging",
     "doc_url": "https://studio.blender.org/pipeline/addons/easy_weight",
-    "tracker_url": "https://projects.blender.org/studio/blender-studio-pipeline",
+    "tracker_url": "https://projects.blender.org/studio/blender-studio-tools",
 }
 
 

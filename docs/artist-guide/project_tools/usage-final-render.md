@@ -11,7 +11,7 @@ Once the approved image sequences have been loaded into the main edit you are re
 	2. In the Side Panel select Container `.wav`
 	3. Set the output directory to `your_project_name/shared/editorial/deliver/audio/`
 4. Run Deliver script
-	1. Copy the `delivery.py` from `your_project_name/blender-studio-pipeline/film-delivery/` to the directory `your_project_name/shared/editorial/deliver/`
+	1. Copy the `delivery.py` from `your_project_name/blender-studio-tools/film-delivery/` to the directory `your_project_name/shared/editorial/deliver/`
 	2. Enter delivery directory `cd /your_project_name/shared/editorial/deliver/ 
 	3. Encode audio with `./deliver.py --encode_audio audio/{name_of_audio}.wav`
 	4. Encode video with `.deliver.py --encode_video frames/`

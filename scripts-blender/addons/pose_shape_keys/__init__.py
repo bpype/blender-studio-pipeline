@@ -7,7 +7,7 @@ bl_info = {
     "description": "Create shape keys that blend deformed meshes into a desired shape",
     "category": "Rigging",
     "doc_url": "https://studio.blender.org/pipeline/addons/pose_shape_keys",
-    "tracker_url": "https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/pose_shape_keys",
+    "tracker_url": "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/pose_shape_keys",
 }
 
 import importlib

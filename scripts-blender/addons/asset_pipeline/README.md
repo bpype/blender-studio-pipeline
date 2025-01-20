@@ -3,7 +3,7 @@
 ## Introduction
 This Add-On was designed to allow multiple artists to collaborate while contributing to a common Asset. It enables simultaneous work on the same asset by multiple artists. The add-on works by tracking what data each artist contributes to the asset and merges the assets together into a final "Published" asset. This published asset is marked to be discovered by Blender's asset manager. 
 
-Checkout the [Asset Pipeline Demo](https://projects.blender.org/studio/blender-studio-pipeline/pulls/145)
+Checkout the [Asset Pipeline Demo](https://projects.blender.org/studio/blender-studio-tools/pulls/145)
 <!-- TOC -->
 
 - [Asset Pipeline](#asset-pipeline)

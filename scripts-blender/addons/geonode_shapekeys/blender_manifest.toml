@@ -6,7 +6,7 @@ name = "GeoNode Shape Keys"
 tagline = "Sculpt on linked animated characters"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
 type = "add-on"
-website = "https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/geonode_shapekeys"
+website = "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/geonode_shapekeys"
 tags = ["Rigging"]
 
 blender_version_min = "4.2.0"

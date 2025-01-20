@@ -587,7 +587,7 @@ def update_filtered_brush_styles(self, context):
 
 def transfer_modifier(modifier_name, target_obj, source_obj):
     """
-    Core taken from https://projects.blender.org/studio/blender-studio-pipeline
+    Core taken from https://projects.blender.org/studio/blender-studio-tools
     """
 
     # create target mod
