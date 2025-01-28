@@ -1,5 +1,5 @@
 [project]
-name = "blender-studio-pipeline"
+name = "blender-studio-tools"
 version = "0.0.2"
 description = """
     The complete collection of documents, add-ons, scripts and tools that

@@ -4,7 +4,7 @@
 To setup the environment to work on Blender Studio Tools Docs.
 
 * Make sure you have NodeJS installed
-* `cd blender-studio-pipeline/docs/`
+* `cd blender-studio-tools/docs/`
 * `npm install`
 
 ## Review Changes

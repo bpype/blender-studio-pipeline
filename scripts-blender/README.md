@@ -1,11 +1,11 @@
 # Blender Studio Add-ons
 
-This is a list of all add-ons developed in-house by the Blender Studio. You can report issues [here](https://projects.blender.org/studio/blender-studio-pipeline/issues).
+This is a list of all add-ons developed in-house by the Blender Studio. You can report issues [here](https://projects.blender.org/studio/blender-studio-tools/issues).
 
 ### Installation
 
 It is easiest to install all our add-ons at once rather than one at a time:
-1. Download the latest release from the [Releases Page](https://projects.blender.org/studio/blender-studio-pipeline/releases).
+1. Download the latest release from the [Releases Page](https://projects.blender.org/studio/blender-studio-tools/releases).
 2. Create this folder structure: `Blender Studio/addons/`.
 3. Unzip what you downloaded into the `addons` folder.
 4. In Blender, navigate to Preferences->File Paths->Script Directories.

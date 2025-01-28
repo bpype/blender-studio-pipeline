@@ -15,7 +15,7 @@ import json
 from requests import Response
 
 BASE_PATH = "https://projects.blender.org/api/v1"
-REPO_PATH = '/studio/blender-studio-pipeline'
+REPO_PATH = '/studio/blender-studio-tools'
 RELEASE_PATH = BASE_PATH + f'/repos{REPO_PATH}/releases'
 TAG_PATH = BASE_PATH + f'/repos{REPO_PATH}/tags'
 API_TOKEN = None

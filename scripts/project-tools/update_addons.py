@@ -22,8 +22,8 @@ def update_blender_studio_addons(download_folder_path: Path):
     sha_file = download_folder_path.joinpath("blender_studio_add-ons_latest.zip.sha256")
     zip_file = download_folder_path.joinpath("blender_studio_add-ons_latest.zip")
 
-    url_sha = "https://projects.blender.org/studio/blender-studio-pipeline/releases/download/latest/blender_studio_add-ons_latest.zip.sha256"
-    url_zip = "https://projects.blender.org/studio/blender-studio-pipeline/releases/download/latest/blender_studio_add-ons_latest.zip"
+    url_sha = "https://projects.blender.org/studio/blender-studio-tools/releases/download/latest/blender_studio_add-ons_latest.zip.sha256"
+    url_zip = "https://projects.blender.org/studio/blender-studio-tools/releases/download/latest/blender_studio_add-ons_latest.zip"
 
     # Check current sha and early return if match
     web_sha = requests.get(url_sha).text.strip().lower()
@@ -93,7 +93,7 @@ update_blender_studio_addons(download_folder_path)
 
 # Customize this script to download add-ons from other sources
 # download_file(
-#    "https://projects.blender.org/studio/blender-studio-pipeline/archive/main.zip",
+#    "https://projects.blender.org/studio/blender-studio-tools/archive/main.zip",
 #    download_folder_path,
-#    "blender-studio-pipeline-main.zip",
+#    "blender-studio-tools-main.zip",
 # )

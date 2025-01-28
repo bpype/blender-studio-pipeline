@@ -6,12 +6,12 @@ This is the folder that should be shared over the network. (By using Syncthing, 
 2. Use the following commands to generate the below folder structure.
     ```bash
     # Linux/Mac    
-    cd ~/data/blender-studio-pipeline/scripts/project-tools
+    cd ~/data/blender-studio-tools/scripts/project-tools
     ./init_project_folder_structure.py ~/data/your_project_name/shared --json_file folder_structure_shared.json
     ```
     ```bash
     # Windows
-    cd %HOMEPATH%\data\blender-studio-pipeline\scripts\project-tools
+    cd %HOMEPATH%\data\blender-studio-tools\scripts\project-tools
     python init_project_folder_structure.py %HOMEPATH%\data\your_project_name\shared --json_file folder_structure_shared.json
     ```
 

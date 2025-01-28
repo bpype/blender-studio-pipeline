@@ -13,10 +13,10 @@ mkdir %HOMEPATH%\data\your_project_name # Windows
 
 2. Navigate to the project-tools folder
 ```bash
-cd ~/data/blender-studio-pipeline/scripts/project-tools # Linux/Mac
+cd ~/data/blender-studio-tools/scripts/project-tools # Linux/Mac
 ```
 ```bash
-cd %HOMEPATH%\data\blender-studio-pipeline\scripts\project-tools # Windows
+cd %HOMEPATH%\data\blender-studio-tools\scripts\project-tools # Windows
 ```
 
 3. Create base folder structure using the `init_project_folder_structure` tool, followed by the path to your new project. 

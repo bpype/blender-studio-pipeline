@@ -35,7 +35,7 @@ You should now see the filepath and collection under the Asset's Metadata on the
 
 ![Kitsu Asset Metadata](/media/pipeline-overview/shot-production/kitsu_asset_metadata.jpg)
 ## Building your First Shot
-Before building your first shot, you will need to customize your production's Shot Builder hooks. Inside your production’s `assets/scripts/shot-builder` directory the Shot Builder hook file should be stored, based on the [example](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/hook_examples) included in the Add-On. This file can be automatically created at the correct directory using an operator in the **Blender Kitsu** Add-On preferences. Hooks are used to extend the functionality of the shot builder, and can be customized on a per project basis.
+Before building your first shot, you will need to customize your production's Shot Builder hooks. Inside your production’s `assets/scripts/shot-builder` directory the Shot Builder hook file should be stored, based on the [example](https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/blender_kitsu/shot_builder/hook_examples) included in the Add-On. This file can be automatically created at the correct directory using an operator in the **Blender Kitsu** Add-On preferences. Hooks are used to extend the functionality of the shot builder, and can be customized on a per project basis.
 
 
 1. Open `Edit>Preferences>Add-Ons`

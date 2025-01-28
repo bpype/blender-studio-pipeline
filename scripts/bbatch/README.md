@@ -11,8 +11,8 @@ In order to use this tool you need:
 
 ## Run 
 This folder contains a command line tool that doesn't require installation to use properly. This tool doesn't require installation to be run. To run `bbatch` without installation follow the steps below.
-1. Clone this repository with `git clone https://projects.blender.org/studio/blender-studio-pipeline.git`
-2. Run `cd blender-studio-pipeline/scripts/bbatch` to enter directory
+1. Clone this repository with `git clone https://projects.blender.org/studio/blender-studio-tools.git`
+2. Run `cd blender-studio-tools/scripts/bbatch` to enter directory
 3. Run program with `python bbatch /my-folder/` 
 
 
@@ -20,8 +20,8 @@ This folder contains a command line tool that doesn't require installation to us
 Download or clone this repository. This repository is a command line tool that can be installed with the python packaging manager. Installation is an optional step only intended for advanced users.
 This script does the following (follow this if you want to do this manually or on another platform):
 
-1. Clone this repository with `git clone https://projects.blender.org/studio/blender-studio-pipeline.git`
-2. Run `cd blender-studio-pipeline/scripts/bbatch` to enter directory
+1. Clone this repository with `git clone https://projects.blender.org/studio/blender-studio-tools.git`
+2. Run `cd blender-studio-tools/scripts/bbatch` to enter directory
 3. Install with `pip install .`
 4. Run with `bbatch /my-folder/`
 5. Get help with `bbatch -h`

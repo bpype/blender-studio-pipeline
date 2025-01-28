@@ -6,7 +6,7 @@ To learn how to update the core Blender Studio Add-Ons see [Update Blender Studi
 
 ## Modify Update Add-Ons Script
 
-*Users can modify the [`update_addons.py`](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts/project-tools/update_addons.py) script to include external add-ons not managed by the Blender Studio.* 
+*Users can modify the [`update_addons.py`](https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts/project-tools/update_addons.py) script to include external add-ons not managed by the Blender Studio.* 
 
 **Example**
 ```bash
@@ -31,15 +31,15 @@ To remove Add-Ons you are not using anymore, you remove both the Add-On zip file
 Next time you run the `run_blender.py` script, it will remove the addon locally.
 
 ## Package Blender Studio Add-Ons from Source
-Blender Add-ons can be packaged directly from the [Blender Studio Pipeline](https://projects.blender.org/studio/blender-studio-pipeline) repository. Personal Add-Ons can be installed [normally](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#installing-add-ons).
+Blender Add-ons can be packaged directly from the [Blender Studio Pipeline](https://projects.blender.org/studio/blender-studio-tools) repository. Personal Add-Ons can be installed [normally](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#installing-add-ons).
 
 1. Enter Directory
 
 ```bash
-cd ~/data/blender-studio-pipeline/scripts/pipeline-release # Linux/Mac
+cd ~/data/blender-studio-tools/scripts/pipeline-release # Linux/Mac
 ```
 ```bash
-cd %HOMEPATH%\data\blender-studio-pipeline\scripts\pipeline-release # Windows
+cd %HOMEPATH%\data\blender-studio-tools\scripts\pipeline-release # Windows
 ```
 
 2. Update Git 

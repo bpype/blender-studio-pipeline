@@ -26,7 +26,7 @@ On **Step 6** you will be provided with the Flamenco Add-On. You will need to di
 You will need to repeat this step for each project using this farm. Only update this add-on when [updating the farm's version](https://flamenco.blender.org/usage/upgrading/). **The Flamenco Add-On is farm-version-dependent, rather than per-project.**
 :::
 
-*Advanced users can modify the [`update_addons.py`](https://projects.blender.org/studio/blender-studio-pipeline/src/branch/main/scripts/project-tools/update_addons.py) script which automates the above process. [See Update Add-Ons](addon_setup#modify-update-add-ons-script) guide* 
+*Advanced users can modify the [`update_addons.py`](https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts/project-tools/update_addons.py) script which automates the above process. [See Update Add-Ons](addon_setup#modify-update-add-ons-script) guide* 
 
 ::: info Gentoo Users
 Flamenco is installed and updated by the package manager of your Gentoo workstation. To learn more see [Update Local Add-Ons](/gentoo/td/maintaince#update-local-add-ons) in the Gentoo section.

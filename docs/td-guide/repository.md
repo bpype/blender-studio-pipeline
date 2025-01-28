@@ -11,5 +11,5 @@ The Blender Studio Pipeline git repository contains many tools and resources use
 # Windows & Linux/Mac
 cd data # This directory is the root storage that will contain all projects
 git lfs install # Ensure git-lfs hooks are setup 
-git clone https://projects.blender.org/studio/blender-studio-pipeline.git
+git clone https://projects.blender.org/studio/blender-studio-tools.git
 ```
