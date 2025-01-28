@@ -71,12 +71,13 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         active_project = cache.project_active_get()
 
         kitsu_props = context.scene.kitsu
+        addon_prefs = context.preferences.addons['.'.join(__package__.split('.')[:-1])].preferences
 
         # TODO REFACTOR THIS WHOLE THING, BAD HACK
         # Path is different for tvshow
         if (
             active_project.production_type == bkglobals.KITSU_TV_PROJECT
-            and filepath.parents[3].name == bkglobals.SHOT_DIR_NAME
+            and filepath.parents[3].name == addon_prefs.shot_dir_name
         ):
             episode = active_project.get_episode_by_name(filepath.parents[2].name)
             category = filepath.parents[3].name
@@ -88,8 +89,8 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         item = filepath.parents[0].name
         item_task_type = filepath.stem.split(bkglobals.DELIMITER)[-1]
 
-        if category == bkglobals.SHOT_DIR_NAME or category == bkglobals.SEQ_DIR_NAME:
-            if category == bkglobals.SHOT_DIR_NAME:
+        if category == addon_prefs.shot_dir_name or category == addon_prefs.seq_dir_name:
+            if category == addon_prefs.shot_dir_name:
                 # TODO: check if frame range update gets triggered.
 
                 # Set category.
@@ -131,7 +132,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
                 kitsu_props.task_type_active_name = task_type.name
 
-            if category == bkglobals.SEQ_DIR_NAME:
+            if category == addon_prefs.seq_dir_name:
                 # Set category.
                 kitsu_props.category = "SEQ"
 
@@ -163,7 +164,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
                 kitsu_props.task_type_active_name = task_type.name
 
-        elif category == bkglobals.ASSET_DIR_NAME:
+        elif category == addon_prefs.asset_dir_name:
             # Set category.
             kitsu_props.category = "ASSET"
 
@@ -211,7 +212,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
             self.report(
                 {"ERROR"},
                 (
-                    f"Expected '{bkglobals.SHOT_DIR_NAME}' or '{bkglobals.ASSET_DIR_NAME}' 3 folders up. "
+                    f"Expected '{addon_prefs.shot_dir_name}' or '{addon_prefs.asset_dir_name}' 3 folders up. "
                     f"Got: '{filepath.parents[2].as_posix()}' instead. "
                     "Blend file might not be saved in project structure"
                 ),

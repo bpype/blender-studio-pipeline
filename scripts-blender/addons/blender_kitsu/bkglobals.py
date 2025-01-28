@@ -9,10 +9,6 @@ FPS = 24
 VERSION_PATTERN = r"v\d\d\d"
 FRAME_START = 101
 
-SHOT_DIR_NAME = "shots"
-SEQ_DIR_NAME = "sequences"
-ASSET_DIR_NAME = "assets"
-
 # Naming Conventions Set by https://studio.blender.org/pipeline/naming-conventions/introduction
 DELIMITER = "-"  # Seperates items (e.g."{shot_name}-{shot_task}"")
 SPACE_REPLACER = "_"  # Represents spaces in a single item (e.g. "my shot name" = "my_shot_name")
