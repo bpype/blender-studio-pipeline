@@ -475,6 +475,24 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         set=set_farm_dir,
     )
 
+    shot_dir_name: bpy.props.StringProperty(
+        name="Shot Directory Name",
+        description="Name of the shot directory",
+        default="shots"
+    )
+
+    seq_dir_name: bpy.props.StringProperty(
+        name="Sequence Directory Name",
+        description="Name of the sequence directory",
+        default="sequences"
+    )
+
+    asset_dir_name: bpy.props.StringProperty(
+        name="Asset Directory Name",
+        description="Name of the asset directory",
+        default="assets"
+    )
+
     shot_name_filter: bpy.props.StringProperty(  # type: ignore
         name="Shot Name Filter",
         description="Shot name must include this string, otherwise it will be ignored",
@@ -545,6 +563,9 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             icon="DOWNARROW_HLT",
         )
         box.row().prop(self, "project_root_dir")
+        box.prop(self, 'shot_dir_name')
+        box.prop(self, 'seq_dir_name')
+        box.prop(self, 'asset_dir_name')
 
         # Previews
         box = col.box()

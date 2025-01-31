@@ -1,3 +1,8 @@
+## 0.1.7
+
+### ADDED
+- Expose shot/sequence/assets directory names as add-on preferences ([#371](https://projects.blender.org/studio/blender-studio-tools/pulls/371))
+
 ## 0.1.6 - 2024-02-28 
  
 ### FIXED 
