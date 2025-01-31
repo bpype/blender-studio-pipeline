@@ -101,6 +101,7 @@ def transfer_shape_key(
         sk_target = target_obj.shape_key_add()
 
     sk_target.name = sk_source.name
+    sk_target.value = 0
     sk_target.vertex_group = sk_source.vertex_group
     if sk_source.relative_key != sk_source:
         relative_key = None

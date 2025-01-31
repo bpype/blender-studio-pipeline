@@ -862,6 +862,7 @@ def transfer_shapekeys_proximity(obj_source, obj_target) -> None:
             if sk_target:
                 continue
         sk_target = obj_target.shape_key_add()
+        sk_target.value = 0
         sk_target.name = sk_source.name
     for sk_target in obj_target.data.shape_keys.key_blocks:
         sk_source = obj_source.data.shape_keys.key_blocks[sk_target.name]
