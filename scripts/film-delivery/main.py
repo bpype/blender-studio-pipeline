@@ -28,6 +28,7 @@ Expect a directory layout like this
 import argparse
 import os
 import subprocess
+from datetime import datetime
 from pathlib import Path
 
 
@@ -81,6 +82,31 @@ def concatenate_videos(output_file=Path("video.mov"), file_list="file_list.txt")
         print("FFmpeg is not installed or not in your PATH.")
 
 
+def mux_audio_video():
+    """Given a video.mov and audio.mov, create a mux.
+
+    The mux is named with a timestamp and placed in the mux directory.
+    No re-encoding is needed here.
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    output_dir = "mux"
+    output_file = os.path.join(output_dir, f"mux-{timestamp}.mov")
+
+    # Create the output directory
+    os.makedirs(output_dir, exist_ok=True)
+
+    # FFmpeg command to mux audio and video
+    command = [
+        "ffmpeg",
+        "-i", "video.mov",  # Input video
+        "-i", "audio.wav",  # Input audio
+        "-c:v", "copy",     # Copy video codec
+        "-c:a", "copy",     # Encode audio to AAC
+        output_file
+    ]
+    subprocess.run(command, check=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Process video files for delivery.")
 
@@ -91,6 +117,8 @@ def main():
     os.chdir(args.path)
     create_file_list()
     concatenate_videos()
+    if Path("audio.wav").exists():
+        mux_audio_video()
 
 
 if __name__ == "__main__":
