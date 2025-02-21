@@ -14,7 +14,7 @@ bl_info = {
 	'author': "Demeter Dzadik",
     "version": (0, 0, 3),
 	'blender' : (3, 0, 0),
-	'description' : "Bone Gizmos for better armature interaction",
+	'description' : "Mesh-based armature interaction system",
 	'location': "Properties->Bone->Viewport Display->Custom Gizmo",
 	'category': 'Rigging',
 	# 'doc_url' : "https://gitlab.com/blender/CloudRig/",

@@ -13,7 +13,7 @@ bl_info = {
     'author': "Demeter Dzadik",
     "version": (0, 0, 6),
     'blender': (3, 2, 0),
-    'description': "Tools to improve animation workflows",
+    'description': "Small random tools for Blender Studio animators",
     'location': "Various",
     'category': 'Animation',
     # 'doc_url' : "https://gitlab.com/blender/CloudRig/",

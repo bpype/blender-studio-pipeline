@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "anim_cupboard"
+version = "0.0.6"
+name = "Animation Cupboard"
+tagline = "Small random tools for Blender Studio animators"
+maintainer = "Demeter Dzadik <demeter@blender.org>"
+type = "add-on"
+website = "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/anim_cupboard"
+tags = ["Animation"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2024-25 Demeter Dzadik & Blender Studio"
+]

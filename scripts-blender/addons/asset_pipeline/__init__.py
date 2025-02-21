@@ -5,13 +5,13 @@ from . import ui, ops, props, prefs
 bl_info = {
     "name": "Asset Pipeline",
     "author": "Nick Alberelli",
-    "description": "Blender Studio Asset Pipeline Add-on",
+    "description": "Asset data merger for studio collaboration",
     "blender": (4, 0, 0),
     "version": (0, 2, 1),
     "location": "View3D",
     "warning": "",
     "doc_url": "",
-    "tracker_url": "",
+    "tracker_url": "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/asset_pipeline",
     "category": "Generic",
 }
 

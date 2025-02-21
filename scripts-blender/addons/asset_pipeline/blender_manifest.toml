@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "blender_studio_asset_pipeline"
+version = "0.2.1"
+name = "Blender Studio Asset Pipeline"
+tagline = "Asset data merger for studio collaboration"
+maintainer = "Demeter Dzadik <demeter@blender.org>"
+type = "add-on"
+website = "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/asset_pipeline"
+tags = ["Pipeline"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2024-25 Nick Alberelli & Blender Studio"
+]
