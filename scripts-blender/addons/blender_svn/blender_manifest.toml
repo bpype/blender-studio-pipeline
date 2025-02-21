@@ -1,0 +1,21 @@
+schema_version = "1.0.0"
+
+id = "blender_svn"
+version = "1.0.3"
+name = "Blender SVN"
+tagline = "An SVN (Subversion) interface built directly into Blender"
+maintainer = "Demeter Dzadik <demeter@blender.org>"
+type = "add-on"
+website = "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/blender_svn"
+tags = ["Pipeline"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2019-2025 Demeter Dzadik & Blender Studio",
+]
+[permissions]
+files = "To update files in the local SVN repository checkout"

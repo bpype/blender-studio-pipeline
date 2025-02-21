@@ -18,13 +18,13 @@ from . import (
 bl_info = {
     "name": "Blender SVN",
     "author": "Demeter Dzadik, Paul Golter",
-    "description": "Blender Add-on to interact with Subversion.",
+    "description": "An SVN (Subversion) interface built directly into Blender",
     "blender": (3, 1, 0),
     "version": (1, 0, 3),
     "location": "View3D",
     "warning": "",
     "doc_url": "",
-    "tracker_url": "",
+    "tracker_url": "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/blender_svn",
     "category": "Generic",
 }
 

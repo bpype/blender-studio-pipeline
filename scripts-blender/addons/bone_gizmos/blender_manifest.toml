@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "bone_gizmos"
+version = "0.0.3"
+name = "Bone Gizmos"
+tagline = "Mesh-based armature interaction system"
+maintainer = "Demeter Dzadik <demeter@blender.org>"
+type = "add-on"
+website = "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/bone_gizmos"
+tags = ["Rigging"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2019-2025 Demeter Dzadik & Blender Studio",
+]

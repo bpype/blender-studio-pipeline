@@ -23,7 +23,7 @@ bl_info = {
     "description": "A dedicated place for other add-ons to report, organize, and fix issues",
     "category": "System",
     "doc_url": "",
-    "tracker_url": "",
+    "tracker_url": "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/blender_log",
 }
 
 import importlib

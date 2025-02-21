@@ -1,10 +1,8 @@
-import bpy, os, sys, traceback, addon_utils
-from bpy import types
+import bpy, sys, traceback, addon_utils
 from bpy.types import Object
-from typing import Dict, List, Tuple
+from . import __package__ as base_package
 
 # NOTE: This file should not import anything from this add-on!
-
 
 def get_pretty_stack() -> str:
     """Make a pretty looking string out of the current execution stack,
@@ -131,4 +129,8 @@ def check_addon(context, addon_name: str) -> bool:
 def get_addon_prefs(context=None):
     if not context:
         context = bpy.context
-    return context.preferences.addons[__package__.split(".")[0]].preferences
+    if base_package.startswith('bl_ext'):
+        # 4.2
+        return context.preferences.addons[base_package].preferences
+    else:
+        return context.preferences.addons[base_package.split(".")[0]].preferences
