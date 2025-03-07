@@ -223,7 +223,7 @@ def generate_checksum(archive_path: Path) -> str:
 def send_delete_request(url) -> Response:
     response = requests.delete(url=f"{url}?token={API_TOKEN}")
     if response.status_code != 204:
-        print(f"Error: {response.status_code}: '{response.reason}'")
+        print(f"Delete request for url: {url}\nFailed with error: {response.status_code}: '{response.reason}'")
         sys.exit(1)
     return response
 
@@ -231,7 +231,7 @@ def send_delete_request(url) -> Response:
 def send_get_request(url: str) -> Response:
     response = requests.get(url=f"{url}?token={API_TOKEN}")
     if not (response.status_code == 200 or response.status_code == 404):
-        print(f"Error: {response.status_code}: '{response.reason}'")
+        print(f"Send request for: {url}\nFailed with error: {response.status_code}: '{response.reason}'")
         sys.exit(1)
     return response
 
