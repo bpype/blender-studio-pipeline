@@ -37,6 +37,7 @@ parser.add_argument(
 PATH_BASE = Path(__file__).resolve().parent.parent.parent
 PATH_ARTIFACTS = PATH_BASE / 'shared' / 'artifacts'
 PATH_LOCAL = PATH_BASE / 'local'
+PATH_CUSTOM_SPLASH = Path(__file__).resolve().parent / "custom_splash.png"
 
 
 def setup_logger():
@@ -273,6 +274,9 @@ def run_blender(blender_path):
 
     os.environ['BLENDER_USER_CONFIG'] = str(config_path)
     os.environ['BLENDER_USER_SCRIPTS'] = str(script_path)
+    if PATH_CUSTOM_SPLASH.exists():
+        os.environ['BLENDER_CUSTOM_SPLASH'] = str(PATH_CUSTOM_SPLASH)
+
     proc = subprocess.run([blender_path])
     if proc.returncode != 0:
         print("--- Blender seems to have crashed ---")
