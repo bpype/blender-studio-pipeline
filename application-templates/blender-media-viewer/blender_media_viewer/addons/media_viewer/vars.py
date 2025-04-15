@@ -63,6 +63,7 @@ EXT_IMG = [
     ".psd",
     ".pdd",
     ".psb",
+    ".webp",
 ]
 
 EXT_TEXT = [
