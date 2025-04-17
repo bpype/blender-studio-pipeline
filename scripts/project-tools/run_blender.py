@@ -241,6 +241,8 @@ def update_blender(artifacts_path = PATH_ARTIFACTS / 'blender', local_blender_pa
         if filecmp.cmp(local_checksum, blender_build_checksum):
             logger.debug("Blender is already up to date")
             return
+        else:
+            os.remove(local_checksum)
 
     src = artifacts_path / blender_build_archive
     dst = local_blender_path / system_name
