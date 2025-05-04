@@ -320,6 +320,11 @@ class GNSK_remove_shape(Operator):
     @classmethod
     def poll(cls, context):
         obj = context.object
+
+        if not obj:
+            cls.poll_message_set("No active object.")
+            return False
+
         if len(obj.geonode_shapekeys) == 0:
             cls.poll_message_set("Nothing to remove.")
             return False
@@ -420,6 +425,9 @@ class GNSK_toggle_object(Operator):
     def poll(cls, context):
 
         obj = context.object
+        if not obj:
+            cls.poll_message_set("No active object.")
+            return False
 
         if obj.geonode_shapekey_targets:
             return True

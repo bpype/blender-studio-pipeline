@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "geonode_shapekeys"
-version = "1.0.0"
+version = "1.0.1"
 name = "GeoNode Shape Keys"
 tagline = "Sculpt on linked animated characters"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
