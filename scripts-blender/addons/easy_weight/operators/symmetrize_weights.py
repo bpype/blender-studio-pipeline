@@ -9,14 +9,14 @@ from ..utils import poll_deformed_mesh_with_vgroups
 
 
 class EASYWEIGHT_OT_symmetrize_groups(Operator):
-    """Symmetrize weights of vertex groups on a near-symmetrical mesh.\nWill have poor results on assymetrical meshes"""
+    """Symmetrize weights of vertex groups on a near-symmetrical mesh.\May have poor results on assymetrical meshes"""
 
     bl_idname = "object.symmetrize_vertex_weights"
     bl_label = "Symmetrize Vertex Weights"
     bl_options = {'REGISTER', 'UNDO'}
 
     groups: EnumProperty(
-        name="Subset",
+        name="Groups",
         description="Subset of vertex groups that should be symmetrized",
         items=[
             ('ACTIVE', 'Active', 'Active'),
@@ -27,9 +27,9 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
 
     direction: EnumProperty(
         name="Direction",
-        description="Whether to symmetrize left to right or vice versa",
+        description="Whether to symmetrize from left to right or from right to left",
         items=[
-            ('AUTOMATIC', "Automatic", "Figure out the symmetrizing direction based on the name of the given vertex groups"),
+            ('AUTOMATIC', "Automatic", "Determine symmetrizing direction by the names of source vertex groups"),
             ('LEFT_TO_RIGHT', "Left to Right", "Left to Right"),
             ('RIGHT_TO_LEFT', "Right to Left", "Right to Left"),
         ],
@@ -39,6 +39,17 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
     @classmethod
     def poll(cls, context):
         return poll_deformed_mesh_with_vgroups(cls, context, must_deform=False)
+
+    def invoke(self, context, _event):
+        return context.window_manager.invoke_props_dialog(self, width=400)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.prop(self, 'groups')
+        layout.prop(self, 'direction')
 
     def execute(self, context):
         obj = context.active_object
