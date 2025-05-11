@@ -30,8 +30,8 @@ logger = LoggerFactory.getLogger(name=__name__)
 
 
 def get_valid_cs_sequences(
-    sequence_list: List[bpy.types.Sequence],
-) -> List[bpy.types.Sequence]:
+    sequence_list: List["bpy.types.Strip"],
+) -> List["bpy.types.Strip"]:
     """
     Returns list of valid sequences out of input sequence list
     """
@@ -52,9 +52,9 @@ def get_sqe_editor(context: bpy.types.Context) -> Optional[bpy.types.Area]:
 
 
 def fit_frame_range_to_strips(
-    context: bpy.types.Context, strips: Optional[List[bpy.types.Sequence]] = None
+    context: bpy.types.Context, strips: Optional[List["bpy.types.Strip"]] = None
 ) -> Tuple[int, int]:
-    def get_sort_tuple(strip: bpy.types.Sequence) -> Tuple[int, int]:
+    def get_sort_tuple(strip: "bpy.types.Strip") -> Tuple[int, int]:
         return (strip.frame_final_start, strip.frame_final_duration)
 
     if not strips:
@@ -74,14 +74,14 @@ def fit_frame_range_to_strips(
 
 def get_top_level_valid_strips_continuous(
     context: bpy.types.Context,
-) -> List[bpy.types.Sequence]:
+) -> List["bpy.types.Strip"]:
 
     sequences_tmp = get_valid_cs_sequences(
         list(context.scene.sequence_editor.sequences_all)
     )
 
     sequences_tmp.sort(key=lambda s: (s.channel, s.frame_final_start), reverse=True)
-    sequences: List[bpy.types.Sequence] = []
+    sequences: List["bpy.types.Strip"] = []
 
     for strip in sequences_tmp:
 

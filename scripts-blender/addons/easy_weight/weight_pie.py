@@ -60,7 +60,6 @@ class EASYWEIGHT_MT_PIE_easy_weight_operators(Menu):
 
     def draw(self, context):
         layout = self.layout
-        prefs = get_addon_prefs(context)
 
         pie = layout.menu_pie()
 
@@ -77,23 +76,25 @@ class EASYWEIGHT_MT_PIE_easy_weight_operators(Menu):
         # 3) V Symmetrize Weights.
         pie.operator(
             'object.symmetrize_vertex_weights',
-            text="Symmetrize Weights of Selected",
+            text="Symmetrize Vertex Groups",
             icon='MOD_MIRROR',
-        ).groups = 'SELECTED'
+        )
 
         # 4) ^ Smooth Weights.
         op = pie.operator(
             'object.vertex_group_smooth',
             icon='MOD_SMOOTH'
         )
-        op.group_select_mode='BONE_DEFORM'
+        if context.pose_object:
+            op.group_select_mode='BONE_DEFORM'
         op.factor=1
 
         # 5) <^ Normalize Deforming Groups.
         op = pie.operator(
             'object.vertex_group_normalize_all', text="Normalize Deform Groups", icon='IPO_SINE'
         )
-        op.group_select_mode = 'BONE_DEFORM'
+        if context.pose_object:
+            op.group_select_mode = 'BONE_DEFORM'
         op.lock_active = False
 
         # 6) ^> Transfer Weights

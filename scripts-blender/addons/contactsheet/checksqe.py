@@ -70,7 +70,7 @@ def get_occupied_ranges(context: bpy.types.Context) -> Dict[str, List[range]]:
     return ranges
 
 
-def get_occupied_ranges_for_strips(sequences: List[bpy.types.Sequence]) -> List[range]:
+def get_occupied_ranges_for_strips(sequences: List["bpy.types.Strip"]) -> List[range]:
     """
     Scans input list of sequences and returns a list of ranges that represent the occupied frame ranges.
     """

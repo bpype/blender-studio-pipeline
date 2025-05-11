@@ -36,19 +36,19 @@ class SequenceRect(Rectangle):
 
     valid_types: List[str] = ["MOVIE", "IMAGE"]
 
-    def __init__(self, sequence: bpy.types.Sequence):
+    def __init__(self, sequence: "bpy.types.Strip"):
 
         if sequence.type not in self.valid_types:
             raise ValueError(
                 f"SequenceRect can only hold sequences of type {str(self.valid_types)}"
             )
 
-        self._sequence: bpy.types.Sequence = sequence
+        self._sequence: "bpy.types.Strip" = sequence
         self._orig_x: int = sequence.transform.offset_x
         self._orig_y: int = sequence.transform.offset_y
 
     @property
-    def sequence(self) -> bpy.types.Sequence:
+    def sequence(self) -> "bpy.types.Strip":
         return self._sequence
 
     def _get_orig_width(self) -> int:

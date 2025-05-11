@@ -93,7 +93,7 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
         )
 
         # Remove sequences in new scene that are not selected.
-        seq_rm: List[bpy.types.Sequence] = [
+        seq_rm: List["bpy.types.Strip"] = [
             s for s in scene_tmp.sequence_editor.sequences_all if not s.select
         ]
         for s in seq_rm:
@@ -111,7 +111,7 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
 
         # Create required number of Metadata Strips to workaround the limit of 32 channels.
         nr_of_metadata_strips = math.ceil(len(sequences) / 32)
-        metadata_strips: List[bpy.types.Sequence] = []
+        metadata_strips: List["bpy.types.Strip"] = []
         for i in range(nr_of_metadata_strips):
             channel = i + 2
             metadata_strip = context.scene.sequence_editor.sequences.new_meta(

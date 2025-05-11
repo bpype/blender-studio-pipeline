@@ -1,33 +1,37 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-import bpy, json
+import bpy
 from bpy.props import BoolProperty
 from bpy.app.handlers import persistent
 
 from .weight_cleaner import start_cleaner, stop_cleaner
 from .utils import get_addon_prefs
+from .prefs_to_disk import PrefsFileSaveLoadMixin, update_prefs_on_file
 
-class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
+class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPreferences):
     bl_idname = __package__
-    easyweight_keymap_items = {}
 
     always_show_zero_weights: BoolProperty(
         name="Always Show Zero Weights",
         description="A lack of weights will always be indicated with black color to differentiate it from a weight of 0.0 being assigned",
         default=True,
+        update=update_prefs_on_file,
     )
     always_auto_normalize: BoolProperty(
         name="Always Auto Normalize",
         description="Weight auto-normalization will always be turned on, so the sum of all deforming weights on a vertex always add up to 1",
         default=True,
+        update=update_prefs_on_file,
     )
     always_multipaint: BoolProperty(
         name="Always Multi-Paint",
         description="Multi-paint will always be turned on, allowing you to select more than one deforming bone while weight painting",
         default=True,
+        update=update_prefs_on_file,
     )
 
     def update_auto_clean(self, context):
+        update_prefs_on_file()
         if self.auto_clean_weights:
             start_cleaner()
         else:
@@ -40,18 +44,21 @@ class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
     )
 
     def update_front_faces(self, context):
+        update_prefs_on_file()
         for brush in bpy.data.brushes:
             if not brush.use_paint_weight:
                 continue
             brush.use_frontface = self.global_front_faces_only
 
     def update_accumulate(self, context):
+        update_prefs_on_file()
         for brush in bpy.data.brushes:
             if not brush.use_paint_weight:
                 continue
             brush.use_accumulate = self.global_accumulate
 
     def update_falloff_shape(self, context):
+        update_prefs_on_file()
         for brush in bpy.data.brushes:
             if not brush.use_paint_weight:
                 continue
@@ -98,7 +105,7 @@ class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
         if self.show_hotkeys:
             type(self).draw_hotkey_list(hotkey_col, context)
 
-    # NOTE: This function is copied from CloudRig's prefs.py.
+    # NOTE: This function is copied from CloudRig's prefs.py. TODO: No longer needed since like 4.2 or so, could just use layout.panel(), but then bump the minimum blender version.
     def draw_fake_dropdown(self, layout, prop_owner, prop_name, dropdown_text):
         row = layout.row()
         split = row.split(factor=0.20)
@@ -116,57 +123,37 @@ class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
 
         return dropdown_col
 
-    # NOTE: This function is copied from CloudRig's prefs.py.
     @classmethod
     def draw_hotkey_list(cls, layout, context):
         hotkey_class = cls
         user_kc = context.window_manager.keyconfigs.user
 
-        keymap_data = list(hotkey_class.easyweight_keymap_items.items())
-        keymap_data = sorted(keymap_data, key=lambda tup: tup[1][2].name)
+        global EASYWEIGHT_KEYMAPS
 
         prev_kmi = None
-        for kmi_hash, kmi_tup in keymap_data:
-            addon_kc, addon_km, addon_kmi = kmi_tup
-
+        for addon_km, addon_kmi in EASYWEIGHT_KEYMAPS:
             user_km = user_kc.keymaps.get(addon_km.name)
             if not user_km:
                 # This really shouldn't happen.
                 continue
-            user_kmi = hotkey_class.find_kmi_in_km_by_hash(user_km, kmi_hash)
+            for user_kmi in user_km.keymap_items:
+                if user_kmi.idname != addon_kmi.idname:
+                    continue
+                if user_kmi.idname == 'wm.call_menu_pie' and user_kmi.properties.name != addon_kmi.properties.name:
+                    continue
+                col = layout.column()
+                col.context_pointer_set("keymap", user_km)
+                if user_kmi and prev_kmi and prev_kmi.name != user_kmi.name:
+                    col.separator()
+                user_row = col.row()
 
-            col = layout.column()
-            col.context_pointer_set("keymap", user_km)
-            if user_kmi and prev_kmi and prev_kmi.name != user_kmi.name:
-                col.separator()
-            user_row = col.row()
-
-            if False:
-                # Debug code: Draw add-on and user KeyMapItems side-by-side.
-                split = user_row.split(factor=0.5)
-                addon_row = split.row()
-                user_row = split.row()
-                hotkey_class.draw_kmi(addon_km, addon_kmi, addon_row)
-            if not user_kmi:
-                # This should only happen for one frame during Reload Scripts.
-                print(
-                    "EasyWeight: Can't find this hotkey to draw: ",
-                    addon_kmi.name,
-                    addon_kmi.to_string(),
-                    kmi_hash,
-                )
-                continue
-
-            hotkey_class.draw_kmi(user_km, user_kmi, user_row)
-            prev_kmi = user_kmi
+                hotkey_class.draw_kmi(user_km, user_kmi, user_row)
+                break
 
     # NOTE: This function is copied from CloudRig's cloudrig.py.
     @staticmethod
     def draw_kmi(km, kmi, layout):
         """A simplified version of draw_kmi from rna_keymap_ui.py."""
-
-        map_type = kmi.map_type
-
         col = layout.column()
 
         split = col.split(factor=0.7)
@@ -208,6 +195,7 @@ class EASYWEIGHT_addon_preferences(bpy.types.AddonPreferences):
             if kmi.properties['hash'] == kmi_hash:
                 return kmi
 
+EASYWEIGHT_KEYMAPS = []
 
 @persistent
 def set_brush_prefs_on_file_load(scene):
@@ -217,7 +205,6 @@ def set_brush_prefs_on_file_load(scene):
     prefs.global_falloff_shape_sphere = prefs.global_falloff_shape_sphere
 
 
-# NOTE: This function is copied from CloudRig's cloudrig.py.
 def register_hotkey(
     bl_idname, hotkey_kwargs, *, key_cat='Window', space_type='EMPTY', op_kwargs={}
 ):
@@ -225,36 +212,10 @@ def register_hotkey(
     so they can be compared to each other, and duplicates can be avoided."""
 
     wm = bpy.context.window_manager
-    prefs_class = bpy.types.AddonPreferences.bl_rna_get_subclass_py('EASYWEIGHT_addon_preferences')
-
     addon_keyconfig = wm.keyconfigs.addon
     if not addon_keyconfig:
         # This happens when running Blender in background mode.
         return
-
-    # We limit the hash to a few digits, otherwise it errors when trying to store it.
-    kmi_hash = (
-        hash(json.dumps([bl_idname, hotkey_kwargs, key_cat, space_type, op_kwargs])) % 1000000
-    )
-
-    # If it already exists, don't create it again.
-    for (
-        existing_kmi_hash,
-        existing_kmi_tup,
-    ) in prefs_class.easyweight_keymap_items.items():
-        existing_addon_kc, existing_addon_km, existing_kmi = existing_kmi_tup
-        if kmi_hash == existing_kmi_hash:
-            # The hash we just calculated matches one that is in storage.
-            user_kc = wm.keyconfigs.user
-            user_km = user_kc.keymaps.get(existing_addon_km.name)
-            # NOTE: It's possible on Reload Scripts that some KeyMapItems remain in storage,
-            # but are unregistered by Blender for no reason.
-            # I noticed this particularly in the Weight Paint keymap.
-            # So it's not enough to check if a KMI with a hash is in storage, we also need to check if a corresponding user KMI exists.
-            user_kmi = prefs_class.find_kmi_in_km_by_hash(user_km, kmi_hash)
-            if user_kmi:
-                # print("Hotkey already exists, skipping: ", existing_kmi.name, existing_kmi.to_string(), kmi_hash)
-                return
 
     addon_keymaps = addon_keyconfig.keymaps
     addon_km = addon_keymaps.get(key_cat)
@@ -266,13 +227,8 @@ def register_hotkey(
         value = op_kwargs[key]
         setattr(addon_kmi.properties, key, value)
 
-    addon_kmi.properties['hash'] = kmi_hash
-
-    prefs_class.easyweight_keymap_items[kmi_hash] = (
-        addon_keyconfig,
-        addon_km,
-        addon_kmi,
-    )
+    global EASYWEIGHT_KEYMAPS
+    EASYWEIGHT_KEYMAPS.append((addon_km, addon_kmi))
 
 
 registry = [EASYWEIGHT_addon_preferences]
@@ -285,21 +241,15 @@ def register():
         key_cat='Weight Paint',
         op_kwargs={'name': 'EASYWEIGHT_MT_PIE_easy_weight'},
     )
-
     bpy.app.handlers.load_post.append(set_brush_prefs_on_file_load)
+    EASYWEIGHT_addon_preferences.register_autoload_from_file()
 
 
 def unregister_hotkeys():
-    prefs_class = bpy.types.AddonPreferences.bl_rna_get_subclass_py('EASYWEIGHT_addon_preferences')
-    if not prefs_class:
-        return
-    for kmi_hash, kmi_tup in prefs_class.easyweight_keymap_items.items():
-        kc, km, kmi = kmi_tup
+    for km, kmi in EASYWEIGHT_KEYMAPS:
         km.keymap_items.remove(kmi)
-    prefs_class.easyweight_keymap_items = {}
 
 
 def unregister():
     unregister_hotkeys()
-
     bpy.app.handlers.load_post.remove(set_brush_prefs_on_file_load)

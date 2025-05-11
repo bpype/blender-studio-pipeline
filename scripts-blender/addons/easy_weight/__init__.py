@@ -8,6 +8,7 @@ from . import (
     weight_pie,
     vertex_group_menu,
     rogue_weights,
+    prefs_to_disk,
     prefs,
     utils,
 )
@@ -35,6 +36,7 @@ modules = [
     weight_pie,
     vertex_group_menu,
     rogue_weights,
+    prefs_to_disk,
     prefs,
     utils,
 ]

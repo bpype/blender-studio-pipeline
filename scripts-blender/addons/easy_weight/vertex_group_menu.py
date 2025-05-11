@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 import bpy
-from bpy.types import Menu
+from bpy.types import Menu, MESH_MT_vertex_group_context_menu
+VG_CONTEXT_MENU = MESH_MT_vertex_group_context_menu
 
 
 class MESH_MT_vertex_group_batch_delete(Menu):
@@ -43,24 +44,7 @@ class MESH_MT_vertex_group_symmetry(Menu):
 
         layout.separator()
 
-        layout.operator(
-            "object.symmetrize_vertex_weights", text="Symmetrize Active Group", icon='MOD_MIRROR'
-        ).groups = 'ACTIVE'
-        layout.operator(
-            "object.symmetrize_vertex_weights",
-            text="Symmetrize Weights of Selected Bones",
-            icon='MOD_MIRROR',
-        ).groups = 'SELECTED'
-        op = layout.operator(
-            "object.symmetrize_vertex_weights", text="Symmetrize All Left->Right", icon='MOD_MIRROR'
-        )
-        op.groups = 'ALL'
-        op.direction = 'LEFT_TO_RIGHT'
-        op = layout.operator(
-            "object.symmetrize_vertex_weights", text="Symmetrize All Right->Left", icon='MOD_MIRROR'
-        )
-        op.groups = 'ALL'
-        op.direction = 'RIGHT_TO_LEFT'
+        layout.operator("object.symmetrize_vertex_weights", text="Symmetrize Groups", icon='MOD_MIRROR')
 
 
 class MESH_MT_vertex_group_sort(Menu):
@@ -178,22 +162,16 @@ registry = [
 
 
 def register():
-    bpy.types.MESH_MT_vertex_group_context_menu.old_draw = (
-        bpy.types.MESH_MT_vertex_group_context_menu.draw
-    )
-    bpy.types.MESH_MT_vertex_group_context_menu.remove(
-        bpy.types.MESH_MT_vertex_group_context_menu.draw
-    )
+    VG_CONTEXT_MENU.old_draw = VG_CONTEXT_MENU.draw
+    VG_CONTEXT_MENU.remove(VG_CONTEXT_MENU.draw)
 
-    bpy.types.MESH_MT_vertex_group_context_menu.append(draw_vertex_group_menu)
-    bpy.types.MESH_MT_vertex_group_context_menu.append(draw_misc)
+    VG_CONTEXT_MENU.append(draw_vertex_group_menu)
+    VG_CONTEXT_MENU.append(draw_misc)
 
 
 def unregister():
-    bpy.types.MESH_MT_vertex_group_context_menu.draw = (
-        bpy.types.MESH_MT_vertex_group_context_menu.old_draw
-    )
-    del bpy.types.MESH_MT_vertex_group_context_menu.old_draw
+    VG_CONTEXT_MENU.draw = VG_CONTEXT_MENU.old_draw
+    del VG_CONTEXT_MENU.old_draw
 
-    bpy.types.MESH_MT_vertex_group_context_menu.remove(draw_vertex_group_menu)
-    bpy.types.MESH_MT_vertex_group_context_menu.remove(draw_misc)
+    VG_CONTEXT_MENU.remove(draw_vertex_group_menu)
+    VG_CONTEXT_MENU.remove(draw_misc)
