@@ -1,1 +1,0 @@
-<!--@include: ../../scripts-blender/addons/render_review/README.md-->

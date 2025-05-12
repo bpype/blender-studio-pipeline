@@ -1,6 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
 # SPDX-License-Identifier: GPL-3.0-or-later
-# (c) 2021, Blender Foundation - Paul Golter
-# (c) 2022, Blender Foundation - Demeter Dzadik
 
 from typing import Optional, Any, Set, Tuple, List
 import platform

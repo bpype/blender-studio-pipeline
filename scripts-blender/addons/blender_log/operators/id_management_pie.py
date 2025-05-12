@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # TODO: This pie menu was moved to the 3D Viewport Pie Menus add-on, could be considered for removal here.

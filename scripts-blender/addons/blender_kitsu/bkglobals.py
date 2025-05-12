@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
 #
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import os
 from pathlib import Path
@@ -9,7 +9,7 @@ FPS = 24
 VERSION_PATTERN = r"v\d\d\d"
 FRAME_START = 101
 
-# Naming Conventions Set by https://studio.blender.org/pipeline/naming-conventions/introduction
+# Naming Conventions Set by https://studio.blender.org/tools/naming-conventions/introduction
 DELIMITER = "-"  # Seperates items (e.g."{shot_name}-{shot_task}"")
 SPACE_REPLACER = "_"  # Represents spaces in a single item (e.g. "my shot name" = "my_shot_name")
 

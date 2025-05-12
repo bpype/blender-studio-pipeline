@@ -1,5 +1,8 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from . import categories
-from .categories import *
 from . import utils
 from .import json_io
 import bpy
@@ -7,6 +10,7 @@ import inspect
 from bpy.app.handlers import persistent
 
 from . import lighting_overrider_execution
+from .lighting_overrider_execution import force_reload_external, settings_from_datablock
 
 @persistent
 def write_execution_script_on_save(dummy):
@@ -43,10 +47,8 @@ def load_settings(context, name, path=None):
     return settings_from_datablock(settings_db)
 
 def apply_settings(data):
-    
-    category_modules = [globals()[mod] for mod in categories.__all__]
-    
-    for cat, cat_name in zip(category_modules, categories.__all__):
+    for cat in categories.modules:
+        cat_name = cat.__name__.split(".")[-1]
         cat.apply_settings(data[cat_name])
     return
 

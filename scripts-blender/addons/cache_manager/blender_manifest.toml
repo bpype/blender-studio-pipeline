@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "cache_manager"
+version = "0.1.2"
+name = "Cache Manager"
+tagline = "Streamline working with alembic caches"
+maintainer = "Blender Studio"
+type = "add-on"
+website = "https://studio.blender.org/tools/addons/cache_manager"
+tags = ["Bake"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2019-2025 Paul Golter & Blender Studio",
+]

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.types import Collection
 from .transfer_data.transfer_functions.shape_keys import shape_key_set_active

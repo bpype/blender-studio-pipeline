@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Inspired by https://animplay.wordpress.com/2015/11/18/smear-frame-script-maya/.

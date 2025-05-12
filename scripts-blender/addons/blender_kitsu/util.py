@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
 #
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import re
 from typing import Union
@@ -28,3 +28,15 @@ def get_version(str_value: str, format: type = str) -> Union[str, int, None]:
         if format == int:
             return int(version.replace("v", ""))
     return None
+
+
+def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
+    # NOTE: This was moved out of prefs.py to resolve a circular dependency with cache.py.
+    if not context:
+        context = bpy.context
+    base_package = __package__
+    if base_package.startswith('bl_ext'):
+        # 4.2
+        return context.preferences.addons[base_package].preferences
+    else:
+        return context.preferences.addons[base_package.split(".")[0]].preferences

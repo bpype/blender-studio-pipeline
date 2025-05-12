@@ -1,10 +1,12 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from pathlib import Path
 import json
 from . import constants
 
-
-# TODO could refactor this into a class, but only one instance of that class will be needed
 
 TASK_LAYER_TYPES = {}
 TRANSFER_DATA_DEFAULTS = {}

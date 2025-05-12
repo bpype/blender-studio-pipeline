@@ -1,8 +1,12 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from ..transfer_util import check_transfer_data_entry
 from ...task_layer import get_transfer_data_owner
 
-from .... import constants, logging
+from .... import constants
 
 
 def transfer_custom_prop(prop_name, target_obj, source_obj):

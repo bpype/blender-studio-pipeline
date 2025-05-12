@@ -1,7 +1,10 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
 from bpy.types import GizmoGroup, Gizmo, PoseBone, Operator
+from .utils import get_addon_prefs
 
 ### MSGBUS FUNCTIONS ###
 # The Gizmo API doesn't provide the necessary callbacks to do careful partial
@@ -35,7 +38,6 @@ def mb_ensure_gizmos_on_active_armature(gizmo_group):
 def mb_refresh_all_gizmo_colors(gizmo_group):
 	"""Keep Gizmo colors in sync with addon preferences."""
 	context = bpy.context
-	addon_prefs = context.preferences.addons[__package__].preferences
 
 	try:
 		for bone_name, gizmo in gizmo_group.widgets.items():
@@ -117,7 +119,7 @@ class BoneGizmoGroup(GizmoGroup):
 
 		# Hook up the addon preferences to color refresh function
 		# using msgbus system.
-		addon_prefs = context.preferences.addons[__package__]
+		addon_prefs = get_addon_prefs(context)
 		global gizmo_msgbus
 		bpy.msgbus.subscribe_rna(
 			key		= addon_prefs.path_resolve('preferences', False)

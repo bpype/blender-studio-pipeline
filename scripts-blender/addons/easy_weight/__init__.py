@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from . import (
@@ -23,7 +25,7 @@ bl_info = {
     "location": "3D View -> Sidebar -> Easy Weight",
     "description": "Operators to make weight painting easier.",
     "category": "Rigging",
-    "doc_url": "https://studio.blender.org/pipeline/addons/easy_weight",
+    "doc_url": "https://studio.blender.org/tools/addons/easy_weight",
     "tracker_url": "https://projects.blender.org/studio/blender-studio-tools",
 }
 

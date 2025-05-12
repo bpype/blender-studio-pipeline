@@ -68,4 +68,4 @@ If you're rigging a character with specific needs, you will most likely end up n
 ## Efficient Workflow
 If you enjoy an efficient workflow that lets you focus on the actual work rather than searching for buttons and objects, I highly recommend reading through the [Workflow Boosters](workflow-enhancements) page. CloudRig comes with a bunch of built-in hotkeys and pie menus to let you work faster.  
 
-Additionally, I recommend checking out my other rigging-related extensions, [Easy Weight](../easy_weight) and [Pose Shape Keys](../pose_shape_keys).
+Additionally, I recommend checking out our other rigging-related extensions, [Easy Weight](../easy_weight) and [Pose Shape Keys](../pose_shape_keys).

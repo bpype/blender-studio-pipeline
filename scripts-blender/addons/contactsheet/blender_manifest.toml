@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "contactsheet"
+version = "0.1.2"
+name = "Contact Sheet"
+tagline = "Create a contact sheet from sequence editor strips"
+maintainer = "Blender Studio"
+type = "add-on"
+website = "https://studio.blender.org/tools/addons/contactsheet"
+tags = ["Sequencer"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2019-2025 Paul Golter & Blender Studio",
+]

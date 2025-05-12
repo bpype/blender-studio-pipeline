@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from .. import utils
-from ..templates import *
+from ..templates import LOR_subsetting, LOR_UL_settings_list
 import bpy
 
 def settings_as_dict(settings):
@@ -237,9 +241,8 @@ class LOR_PT_variable_settings_panel(bpy.types.Panel):
         col.operator('lighting_overrider.variable_settings_apply', icon='PLAY')
         return
 
-panel_class = LOR_PT_variable_settings_panel
-
 classes = (
+    LOR_PT_variable_settings_panel,
     LOR_variable_setting,
     LOR_UL_variable_settings_list,
     LOR_OT_variable_setting_add,

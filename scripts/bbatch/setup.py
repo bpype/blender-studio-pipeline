@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
 #
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 """The setup script for bbatch."""
 

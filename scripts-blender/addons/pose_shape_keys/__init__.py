@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 bl_info = {
@@ -8,7 +10,7 @@ bl_info = {
     "location": "Properties -> Mesh Data -> Shape Keys -> Pose Keys",
     "description": "Create shape keys that blend deformed meshes into a desired shape",
     "category": "Rigging",
-    "doc_url": "https://studio.blender.org/pipeline/addons/pose_shape_keys",
+    "doc_url": "https://studio.blender.org/tools/addons/pose_shape_keys",
     "tracker_url": "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/pose_shape_keys",
 }
 

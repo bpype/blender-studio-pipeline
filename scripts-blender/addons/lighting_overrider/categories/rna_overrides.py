@@ -1,9 +1,11 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from .. import utils
-from ..templates import *
+from ..templates import LOR_subsetting, LOR_UL_settings_list
 import bpy
 import idprop
-
-import inspect
 
 def settings_as_dict(settings):
     data = {}
@@ -255,9 +257,8 @@ class LOR_PT_rna_overrides_panel(bpy.types.Panel):
         col.operator('lighting_overrider.rna_overrides_apply', icon='PLAY')
         return
 
-panel_class = LOR_PT_rna_overrides_panel
-
 classes = (
+    LOR_PT_rna_overrides_panel,
     LOR_rna_override,
     LOR_UL_rna_overrides_list,
     LOR_OT_rna_override_add,

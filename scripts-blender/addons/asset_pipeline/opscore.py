@@ -1,10 +1,11 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 import time
 from pathlib import Path
-from .merge.publish import (
-    find_sync_target,
-    find_all_published,
-)
+from .merge.publish import find_sync_target
 from .merge.shared_ids import init_shared_ids
 from .merge.core import (
     ownership_get,
@@ -15,7 +16,7 @@ from .merge.core import (
 from .merge.transfer_data.transfer_ui import draw_transfer_data
 from .merge.shared_ids import get_shared_id_icon
 from .merge.preserve import Perserve
-from . import constants, config, logging
+from . import config, logging
 from .hooks import Hooks
 from .merge.task_layer import draw_task_layer_selection
 from .asset_catalog import get_asset_id

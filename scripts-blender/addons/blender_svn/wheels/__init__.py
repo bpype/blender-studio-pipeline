@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # NOTE: The original author of this file is Sybren Stüvel. This file is copied from the

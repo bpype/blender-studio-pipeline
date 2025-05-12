@@ -1,10 +1,13 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import sys
 import pathlib
 from typing import *
 import bpy
 import typing
 import types
-from collections.abc import Iterable
 import importlib
 from . import prefs, logging
 from pathlib import Path

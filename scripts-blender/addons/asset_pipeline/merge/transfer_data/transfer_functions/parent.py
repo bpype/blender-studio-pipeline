@@ -1,4 +1,7 @@
-import bpy
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ..transfer_util import check_transfer_data_entry
 from ...task_layer import get_transfer_data_owner
 from ...naming import merge_get_basename
