@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from bpy.types import AddonPreferences
 from bpy.props import BoolProperty
 from . import __package__ as base_package

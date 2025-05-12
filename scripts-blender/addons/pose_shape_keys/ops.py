@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.types import Object, Operator
 from bpy.props import StringProperty, BoolProperty

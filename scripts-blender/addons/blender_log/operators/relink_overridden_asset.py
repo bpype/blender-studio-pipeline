@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from typing import List, Dict, Set, Optional, Tuple
 from bpy.types import Collection, Object, Operator

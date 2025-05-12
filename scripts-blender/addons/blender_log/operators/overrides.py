@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.props import StringProperty
 from .names import get_blender_number_suffix

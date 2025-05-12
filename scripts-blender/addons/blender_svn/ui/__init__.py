@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from . import (
     ui_file_list,
     ui_sidebar,

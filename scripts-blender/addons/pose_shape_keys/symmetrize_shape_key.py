@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from bpy.types import Operator
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """
 This script is meant to be executed by Blender Crawl on every single shot file,
 hopefully removing any useless data, fixing some names, reporting missing links,

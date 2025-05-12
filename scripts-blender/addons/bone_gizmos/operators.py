@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.utils import flip_name
 from bpy.props import BoolProperty

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.types import Operator, UILayout
 from bpy.props import EnumProperty, StringProperty

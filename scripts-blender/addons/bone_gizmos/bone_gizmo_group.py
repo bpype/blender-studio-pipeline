@@ -1,7 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
-from typing import Dict, Tuple, List
-from bpy.types import GizmoGroup, Gizmo, Object, PoseBone, Operator
-from bpy.app.handlers import persistent
+from bpy.types import GizmoGroup, Gizmo, PoseBone, Operator
 
 ### MSGBUS FUNCTIONS ###
 # The Gizmo API doesn't provide the necessary callbacks to do careful partial
@@ -129,7 +129,7 @@ class BoneGizmoGroup(GizmoGroup):
 		# Hook up Custom Gizmo checkbox to a function that will ensure that 
 		# a Gizmo instance actually exists for each bone that needs one.
 		bpy.msgbus.subscribe_rna(
-			key		= (bpy.types.PoseBone, "enable_bone_gizmo")
+			key		= (PoseBone, "enable_bone_gizmo")
 			,owner	= gizmo_msgbus
 			,args	= (self,)
 			,notify	= mb_ensure_gizmos_on_active_armature

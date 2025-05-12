@@ -1,7 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.types import Object, Scene, PropertyGroup
 from bpy.props import (
-	IntProperty, PointerProperty, BoolProperty,
+	PointerProperty, BoolProperty,
 	FloatVectorProperty, StringProperty, EnumProperty,
 	BoolVectorProperty
 )

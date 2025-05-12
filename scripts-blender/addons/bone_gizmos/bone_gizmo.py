@@ -1,6 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
-from mathutils import Matrix, Vector, Euler
-from bpy.types import Gizmo, Object
+from mathutils import Matrix, Euler
+from bpy.types import Gizmo
 import numpy as np
 import gpu
 

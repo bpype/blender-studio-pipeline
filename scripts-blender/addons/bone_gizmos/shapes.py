@@ -1,10 +1,10 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 
 from math import pi, cos, sin, sqrt
-
 from copy import deepcopy
 import numpy as np
-
 from enum import Enum
 
 class Axis(Enum):

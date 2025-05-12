@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.props import StringProperty, CollectionProperty
 from ..id_types import get_id, get_id_storage_by_type_str, get_datablock_icon, get_library_icon
@@ -70,6 +72,7 @@ class RemapTarget(bpy.types.PropertyGroup):
     pass
 
 
+# TODO: This code also exists in the 3D Viewport Pie Menus add-on. Keep code in sync at least?
 class BLENLOG_OT_remap_users_ui(bpy.types.Operator):
     """Remap users of a selected ID to any other ID of the same type"""
 

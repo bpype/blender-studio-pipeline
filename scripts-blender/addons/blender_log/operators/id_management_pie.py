@@ -1,5 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# TODO: This pie menu was moved to the 3D Viewport Pie Menus add-on, could be considered for removal here.
+
 import bpy
-from bpy import types
 from typing import List, Optional
 from bpy.props import StringProperty
 from bpy_extras import id_map_utils

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 bl_info = {
     "name": "Pose Shape Keys",
     "author": "Demeter Dzadik",
