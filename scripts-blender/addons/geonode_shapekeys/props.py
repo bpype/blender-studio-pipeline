@@ -1,9 +1,7 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
 from bpy.types import Modifier, Object, PropertyGroup
 from bpy.props import StringProperty, CollectionProperty, IntProperty, PointerProperty
-from typing import List
 from .operators import geomod_get_identifier
 
 
@@ -36,7 +34,7 @@ class GeoNodeShapeKey(PropertyGroup):
                     return m
 
     @property
-    def other_affected_objects(self) -> List[Object]:
+    def other_affected_objects(self) -> list[Object]:
         if not self.storage_object:
             return []
 
