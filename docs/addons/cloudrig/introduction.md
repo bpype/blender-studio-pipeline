@@ -1,6 +1,6 @@
 # CloudRig
 
-This page aims to give you an introduction to CloudRig, the Blender Studio's rig generation and rigging workflow enhancement add-on. You can find [CloudRig on the Extensions platform](https://extensions.blender.org/add-ons/cloudrig/), which also means you can install it from directly within Blender.
+This page aims to give you an introduction to CloudRig, the Blender Studio's rig generation and rigging workflow enhancement add-on. You can find [CloudRig on the Extensions platform](https://extensions.blender.org/add-ons/cloudrig/), which also means you can install it from directly within Blender. You can also report bugs [here](https://projects.blender.org/Mets/CloudRig).
 
 ## Learning Resources
 Older pieces of documentation may still be useful, but CloudRig has changed a lot over the years, so things might look quite different now.
@@ -60,7 +60,7 @@ If you don't like the collections that CloudRig assigns the generated bones to b
 
 ## Making Tweaks
 If you're rigging a character with specific needs, you will most likely end up needing a fine level of control over the rig. There are three primary ways to do this:
-- The [Bone Copy](cloudrig-types#bone-copy) component lets you copy bones to the metarig with all their constraints, bone shape, and other settings.
+- The [Bone Copy](cloudrig-types#bone-copy) component lets you copy bones to the generated rig with all their constraints, bone shape, and other settings.
 - The [Bone Tweak](cloudrig-types#bone-tweak) component lets you tweak individual aspects of a bone that CloudRig generates for you, as long as the bone name matches.
 - The [Post-Generation Script](generator-parameters#post-generation-script) feature lets you run a script whenever you generate the rig, allowing you to make completely arbitrary procedural changes, but this does require familiarity with Python.
 
