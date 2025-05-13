@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.types import Operator
 from ..fcurve_utils import get_fcurves_of_bones

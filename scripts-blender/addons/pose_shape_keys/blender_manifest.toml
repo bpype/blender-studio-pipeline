@@ -6,7 +6,7 @@ name = "Pose Shape Keys"
 tagline = "Preserve your shape keys through weight changes, and much more"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
 type = "add-on"
-website = "https://studio.blender.org/pipeline/addons/pose_shape_keys"
+website = "https://studio.blender.org/tools/addons/pose_shape_keys"
 tags = ["Rigging"]
 
 blender_version_min = "4.2.0"

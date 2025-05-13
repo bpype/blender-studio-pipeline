@@ -1,22 +1,6 @@
-# ***** BEGIN GPL LICENSE BLOCK *****
+# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-#
-# ***** END GPL LICENCE BLOCK *****
-#
-# (c) 2021, Blender Foundation
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import os
 from pathlib import Path
@@ -36,7 +20,7 @@ class CM_AddonPreferences(bpy.types.AddonPreferences):
         options={"HIDDEN", "SKIP_SAVE"},
         subtype="DIR_PATH",
         description="Root directory in which the caches will be exported. Will create subfolders during export",
-        update=propsdata.category_upate_version_model,
+        update=propsdata.category_update_version_model,
     )
 
     def draw(self, context: bpy.types.Context) -> None:
@@ -72,13 +56,6 @@ class CM_AddonPreferences(bpy.types.AddonPreferences):
             return False
 
         return True
-
-
-def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
-    """
-    shortcut to get cache_manager addon preferences
-    """
-    return context.preferences.addons["cache_manager"].preferences
 
 
 # ---------REGISTER ----------.

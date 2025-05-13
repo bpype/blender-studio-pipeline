@@ -1,5 +1,6 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
-# (c) 2023, Blender Foundation - Demeter Dzadik
+# SPDX-FileCopyrightText: 2023 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from bpy.props import IntProperty, BoolProperty
 from bpy.types import UIList, Panel, Operator

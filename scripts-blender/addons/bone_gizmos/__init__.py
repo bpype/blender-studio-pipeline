@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import importlib
 from bpy.utils import register_class, unregister_class
 from . import bone_gizmo_properties

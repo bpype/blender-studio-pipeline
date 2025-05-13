@@ -1,9 +1,13 @@
-from . import categories
-from .categories import *
-from . import utils
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+from pathlib import Path
+
 import bpy
 from bpy.app.handlers import persistent
-from pathlib import Path
+
+from . import utils
 
 @persistent
 def init_on_load(dummy):
@@ -83,41 +87,6 @@ class LOR_OT_text_db_add(bpy.types.Operator):
         settings.text_datablock = text_db
 
         return {'FINISHED'}
-
-class LOR_SettingsGroup(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty()
-    text_datablock: bpy.props.PointerProperty(
-        type = bpy.types.Text,
-        name = "Settings JSON",
-        description = "Text datablock that contains the full settings information"
-    )
-    is_dirty: bpy.props.BoolProperty(default=False)
-
-    variable_settings: bpy.props.CollectionProperty(type=variable_settings.LOR_variable_setting)
-    variable_settings_index: bpy.props.IntProperty()
-    motion_blur_settings: bpy.props.CollectionProperty(type=variable_settings.LOR_variable_setting)
-    motion_blur_settings_index: bpy.props.IntProperty()
-    shader_settings: bpy.props.CollectionProperty(type=shader_settings.LOR_shader_setting)
-    shader_settings_index: bpy.props.IntProperty()
-    rig_settings: bpy.props.CollectionProperty(type=rig_settings.LOR_rig_setting)
-    rig_settings_index: bpy.props.IntProperty()
-    rna_overrides: bpy.props.CollectionProperty(type=rna_overrides.LOR_rna_override)
-    rna_overrides_index: bpy.props.IntProperty()
-
-class LOR_MetaSettings(bpy.types.PropertyGroup):
-    enabled: bpy.props.BoolProperty(default=False)
-    shot_settings: bpy.props.PointerProperty(type=LOR_SettingsGroup)
-    sequence_settings: bpy.props.PointerProperty(type=LOR_SettingsGroup)
-    settings_toggle: bpy.props.EnumProperty(default='SHOT',
-        items= [('SEQUENCE', 'Sequence Settings', 'Manage override settings for the current sequence', '', 0),
-                ('SHOT', 'Shot Settings', 'Manage override settings for the current shot', '', 1),]
-    )
-    execution_script: bpy.props.PointerProperty(
-        type = bpy.types.Text,
-        name = "Execution Script",
-        description = "Text datablock with script that automatically applies the saved settings on file-load"
-    )
-    execution_script_source: bpy.props.StringProperty(default='//../../../lib/scripts/load_settings.blend')#TODO expose in addon settings
 
 class LOR_PT_lighting_overrider_panel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
@@ -216,28 +185,20 @@ class LOR_PT_lighting_overrider_panel(bpy.types.Panel):
         return
 
 classes = [
-    LOR_SettingsGroup,
-    LOR_MetaSettings,
     LOR_OT_text_db_add,
     LOR_OT_toggle_enabled,
     LOR_PT_lighting_overrider_panel,
 ]
 
-category_modules = [globals()[mod] for mod in categories.__all__]
-for cat in category_modules:
-    classes += [cat.panel_class]
-
 def register():
     for c in classes:
         bpy.utils.register_class(c)
-    bpy.types.Scene.LOR_Settings = bpy.props.PointerProperty(type=LOR_MetaSettings)
     bpy.app.handlers.load_post.append(init_on_load)
     bpy.app.handlers.save_pre.append(store_ref_on_save)
 
 def unregister():
     for c in classes:
         bpy.utils.unregister_class(c)
-    del bpy.types.Scene.LOR_Settings
     bpy.app.handlers.load_post.remove(init_on_load)
     bpy.app.handlers.save_pre.remove(store_ref_on_save)
 

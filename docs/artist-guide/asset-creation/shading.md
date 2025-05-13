@@ -37,7 +37,7 @@ Besides texture maps, data that the shader can use can be written directly onto 
 
 #### UV Maps
 
-There are [certain requirements for UV maps](https://studio.blender.org/pipeline/pipeline-overview/asset-creation/modeling#uv-unwrapping) that are used for image texture painting and baking. At the same time UV maps can be used as a way to align generic patterns (procedural or not) to the surface in a way that takes advantage of the topology.
+There are [certain requirements for UV maps](https://studio.blender.org/tools/pipeline-overview/asset-creation/modeling#uv-unwrapping) that are used for image texture painting and baking. At the same time UV maps can be used as a way to align generic patterns (procedural or not) to the surface in a way that takes advantage of the topology.
 
 #### Color Attributes
 

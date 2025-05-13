@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.utils import flip_name
 from bpy.props import BoolProperty

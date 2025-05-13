@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from .. import utils
-from ..templates import *
+from ..templates import LOR_setting, LOR_UL_settings_list
 import bpy
 
 def settings_as_dict(settings):
@@ -374,9 +378,8 @@ class LOR_PT_shader_settings_panel(bpy.types.Panel):
         col.operator('lighting_overrider.shader_settings_apply', icon='PLAY')
         return
 
-panel_class = LOR_PT_shader_settings_panel
-
 classes = (
+    LOR_PT_shader_settings_panel,
     LOR_shader_setting,
     LOR_UL_shader_settings_list,
     LOR_OT_shader_setting_add,

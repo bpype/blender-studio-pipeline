@@ -1,9 +1,9 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
-# (c) 2022, Blender Foundation - Demeter Dzadik
+# SPDX-FileCopyrightText: 2022 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from bpy.types import Panel
 
-from ..util import get_addon_prefs
 from .ui_file_list import draw_file_list, draw_process_info
 
 

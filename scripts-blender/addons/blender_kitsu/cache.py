@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
 #
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from typing import Any, List, Union, Dict, Tuple
 
@@ -25,6 +25,8 @@ from .types import (
 )
 from .logger import LoggerFactory
 import gazu
+
+from .util import addon_prefs_get
 
 logger = LoggerFactory.getLogger()
 
@@ -68,13 +70,6 @@ _asset_cache_asset_type_id: str = ''
 _all_edits_cache_proj_id: str = ""
 
 
-def _addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
-    """
-    shortcut to get blender_kitsu addon preferences
-    """
-    return context.preferences.addons[__package__].preferences
-
-
 def user_active_get() -> User:
     global _user_active
 
@@ -91,14 +86,14 @@ def project_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None
     global _project_active
 
     _project_active = Project.by_id(entity_id)
-    _addon_prefs_get(context).project_active_id = entity_id
+    addon_prefs_get(context).project_active_id = entity_id
     logger.debug("Set active project to %s", _project_active.name)
 
 
 def project_active_reset(context: bpy.types.Context) -> None:
     global _project_active
     _project_active = Project()
-    _addon_prefs_get(context).project_active_id = ""
+    addon_prefs_get(context).project_active_id = ""
     logger.debug("Reset active project")
 
 
@@ -112,7 +107,7 @@ def episode_active_set_by_id(context: bpy.types.Context, entity_id: str) -> None
     global _episode_active
 
     _episode_active = Episode.by_id(entity_id)
-    _addon_prefs_get(context).episode_active_id = entity_id
+    addon_prefs_get(context).episode_active_id = entity_id
     logger.debug("Set active episode to %s", _episode_active.name)
 
 
@@ -297,7 +292,7 @@ def get_projects_enum_list(
 ) -> List[Tuple[str, str, str]]:
     global _projects_enum_list
 
-    if not _addon_prefs_get(context).session.is_auth():
+    if not addon_prefs_get(context).session.is_auth():
         return []
 
     projectlist = ProjectList()
@@ -312,7 +307,7 @@ def get_episodes_enum_list(
     global _episodes_enum_list
     global _episode_cache_proj_id
 
-    if not _addon_prefs_get(context).session.is_auth():
+    if not addon_prefs_get(context).session.is_auth():
         return []
 
     project_active = project_active_get()
@@ -605,7 +600,7 @@ def load_user_all_tasks(context: bpy.types.Context) -> List[Task]:
 
 def _update_tasks_collection_prop(context: bpy.types.Context) -> None:
     global _user_all_tasks
-    addon_prefs = _addon_prefs_get(bpy.context)
+    addon_prefs = addon_prefs_get(bpy.context)
     tasks_coll_prop = addon_prefs.tasks
 
     # Get current index.
@@ -666,7 +661,7 @@ def _init_cache_entity(
 
 
 def init_startup_variables(context: bpy.types.Context) -> None:
-    addon_prefs = _addon_prefs_get(context)
+    addon_prefs = addon_prefs_get(context)
     global _cache_startup_initialized
     global _user_active
     global _user_all_tasks
@@ -714,7 +709,7 @@ def init_cache_variables() -> None:
     global _asset_type_active
     global _task_type_active
     global _cache_initialized
-    addon_prefs = _addon_prefs_get(bpy.context)
+    addon_prefs = addon_prefs_get(bpy.context)
 
     if not addon_prefs.session.is_auth():
         logger.debug("Skip initiating cache. Session not authorized")

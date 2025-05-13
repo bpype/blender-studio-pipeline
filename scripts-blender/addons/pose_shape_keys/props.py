@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from bpy.types import PropertyGroup, Object, Action, ShapeKey
 from bpy.props import PointerProperty, IntProperty, CollectionProperty, StringProperty, BoolProperty

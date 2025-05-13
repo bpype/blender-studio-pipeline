@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023 Blender Studio Tools Authors
 #
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from ..anim import opsdata
 from ..context import core as context_core

@@ -1,9 +1,11 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
 from bpy.types import Modifier, Context, Collection, NodeTree, Operator, Object
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 from bpy.props import IntProperty, StringProperty, BoolProperty, FloatProperty
 from .prefs import get_addon_prefs
 
@@ -49,9 +51,10 @@ def geomod_set_param_attribute(modifier: Modifier, param_name: str, attrib_name:
     modifier[input_id + "_attribute_name"] = attrib_name
 
 
-def get_resource_blend_path(context) -> Tuple[str, bool]:
+def get_resource_blend_path(context) -> tuple[str, bool]:
     """Return the desired filepath to the .blend file containing the node set-up.
-    Also return a boolean which indicates whether it should be linked or not. (Appended instead)"""
+    Also return a boolean which indicates whether it should be linked or appended.
+    """
     addon_prefs = get_addon_prefs(context)
 
     filepath = Path(addon_prefs.blend_path)
@@ -103,7 +106,7 @@ def get_active_gnsk_targets(obj):
     return get_gnsk_targets(active_gnsk)
 
 
-class GNSK_add_shape(Operator):
+class OBJECT_OT_gnsk_add_shape(Operator):
     """Create a GeoNode modifier set-up and a duplicate object"""
 
     bl_idname = "object.add_geonode_shape_key"
@@ -122,6 +125,8 @@ class GNSK_add_shape(Operator):
 
     def invoke(self, context, _event):
         for o in context.selected_objects:
+            if o.type != 'MESH':
+                continue
             uvs = o.data.uv_layers
             if len(uvs) == 0:
                 self.report({'ERROR'}, 'All selected mesh objects must have a UV Map!')
@@ -196,7 +201,7 @@ class GNSK_add_shape(Operator):
         return {'FINISHED'}
 
     def make_combined_sculpt_mesh(
-        self, context, mesh_objs: List[Object]
+        self, context, mesh_objs: list[Object]
     ) -> Object:
         # Save evaluated objects into a new, combined object.
         for obj in mesh_objs:
@@ -228,7 +233,7 @@ class GNSK_add_shape(Operator):
         return -1
 
     @staticmethod
-    def disable_modifiers_after_subsurf(obj: Object) -> Dict[str, Dict[str, Any]]:
+    def disable_modifiers_after_subsurf(obj: Object) -> dict[str, dict[str, Any]]:
         """Disable modifiers that might cause the propagation of the sculpted shape to fail.
         This includes the Subsurf modifier and any subsequent modifiers.
         Possibly more in future.
@@ -254,7 +259,7 @@ class GNSK_add_shape(Operator):
         return modifier_states
 
     @staticmethod
-    def restore_modifiers(obj: Object, modifier_states: Dict[str, Dict[str, Any]]):
+    def restore_modifiers(obj: Object, modifier_states: dict[str, dict[str, Any]]):
         """Reset SubSurf and subsequent modifiers."""
         for mod_name, prop_dict in modifier_states.items():
             for key, value in prop_dict.items():
@@ -304,7 +309,7 @@ class GNSK_add_shape(Operator):
         return sk_ob
 
 
-class GNSK_remove_shape(Operator):
+class OBJECT_OT_gnsk_remove_shape(Operator):
     """Create a GeoNode modifier set-up and a duplicate object"""
 
     bl_idname = "object.remove_geonode_shape_key"
@@ -412,7 +417,7 @@ class GNSK_remove_shape(Operator):
         return {'FINISHED'}
 
 
-class GNSK_toggle_object(Operator):
+class OBJECT_OT_gnsk_toggle_object(Operator):
     """Swap between the sculpt and overridden objects"""
 
     bl_idname = "object.geonode_shapekey_switch_focus"
@@ -498,7 +503,7 @@ class GNSK_toggle_object(Operator):
         return {'FINISHED'}
 
 
-class GNSK_influence_slider(Operator):
+class OBJECT_OT_gnsk_influence_slider(Operator):
     """Change the influence on all affected meshes"""
 
     bl_idname = "object.geonode_shapekey_influence_slider"
@@ -563,7 +568,7 @@ class GNSK_influence_slider(Operator):
         return {'FINISHED'}
 
 
-class GNSK_select_objects(Operator):
+class OBJECT_OT_gnsk_select_objects(Operator):
     """Select objects that share a sculpt object with this GeoNode ShapeKey"""
 
     bl_idname = "object.geonode_shapekey_select_objects"
@@ -594,7 +599,7 @@ class GNSK_select_objects(Operator):
         return {'FINISHED'}
 
 
-class GNSK_setup_uvs(Operator):
+class OBJECT_OT_gnsk_setup_uvs(Operator):
     """Ensure a set of non-overlapping UVs in a UVMap across all selected meshes"""
 
     bl_idname = "object.geonode_shapekey_ensure_uvmap"
@@ -626,10 +631,10 @@ class GNSK_setup_uvs(Operator):
 
 
 registry = [
-    GNSK_add_shape,
-    GNSK_remove_shape,
-    GNSK_toggle_object,
-    GNSK_influence_slider,
-    GNSK_select_objects,
-    GNSK_setup_uvs,
+    OBJECT_OT_gnsk_add_shape,
+    OBJECT_OT_gnsk_remove_shape,
+    OBJECT_OT_gnsk_toggle_object,
+    OBJECT_OT_gnsk_influence_slider,
+    OBJECT_OT_gnsk_select_objects,
+    OBJECT_OT_gnsk_setup_uvs,
 ]

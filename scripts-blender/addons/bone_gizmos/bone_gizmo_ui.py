@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from bpy.types import Panel, VIEW3D_PT_gizmo_display
 
 class BONEGIZMO_PT_bone_gizmo_settings(Panel):

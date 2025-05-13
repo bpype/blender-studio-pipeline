@@ -1,7 +1,8 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
-# (c) 2022, Blender Foundation - Demeter Dzadik
+# SPDX-FileCopyrightText: 2022 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import List, Dict, Union, Any, Set, Optional, Tuple
+from typing import Set
 
 import bpy
 from bpy.types import Operator, Context

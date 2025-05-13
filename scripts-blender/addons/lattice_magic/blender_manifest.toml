@@ -6,7 +6,7 @@ name = "Lattice Magic"
 tagline = "Lattice-based deforming tools"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
 type = "add-on"
-website = "https://studio.blender.org/pipeline/addons/lattice_magic"
+website = "https://studio.blender.org/tools/addons/lattice_magic"
 tags = ["Rigging", "Animation"]
 
 blender_version_min = "4.2.0"

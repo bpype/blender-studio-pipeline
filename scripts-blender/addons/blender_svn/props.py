@@ -1,12 +1,12 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
-# (c) 2021, Blender Foundation - Paul Golter
-# (c) 2022, Blender Foundation - Demeter Dzadik
+# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from .util import get_addon_prefs
 from bpy.props import StringProperty, PointerProperty, BoolProperty
 from bpy.types import PropertyGroup
 import bpy
-from typing import Optional, Dict, Any, List, Tuple, Set
+from typing import Optional
 from . import wheels
 # This will load the dateutil and BAT wheel files.
 wheels.preload_dependencies()

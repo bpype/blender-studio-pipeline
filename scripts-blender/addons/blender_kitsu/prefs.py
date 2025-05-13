@@ -1,13 +1,12 @@
 # SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
 #
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import hashlib
 import sys
 import os
-import re
 
-from typing import Optional, Any, Set, Tuple, List
+from typing import Optional, Set
 from pathlib import Path
 
 import bpy
@@ -25,8 +24,7 @@ from .auth.ops import (
 )
 from .context.ops import KITSU_OT_con_productions_load
 from .lookdev.prefs import LOOKDEV_preferences
-from .edit.core import edit_export_get_latest
-
+from .util import addon_prefs_get
 
 logger = LoggerFactory.getLogger()
 
@@ -756,13 +754,6 @@ def session_get(context: bpy.types.Context) -> Session:
     """
     prefs = context.preferences.addons[__package__].preferences
     return prefs.session  # type: ignore
-
-
-def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
-    """
-    Shortcut to get blender_kitsu addon preferences
-    """
-    return context.preferences.addons[__package__].preferences
 
 
 def project_root_dir_get(context: bpy.types.Context):

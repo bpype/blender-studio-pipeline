@@ -1,23 +1,6 @@
-# ***** BEGIN GPL LICENSE BLOCK *****
+# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-#
-# ***** END GPL LICENCE BLOCK *****
-#
-# (c) 2021, Blender Foundation
-
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
 from cache_manager import (
@@ -80,6 +63,20 @@ def unregister():
     propsdata.unregister()
     props.unregister()
     prefs.unregister()
+
+
+def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
+    """
+    shortcut to get cache_manager addon preferences
+    """
+    if not context:
+        context = bpy.context
+    from .. import __package__ as base_package
+    if base_package.startswith('bl_ext'):
+        # 4.2
+        return context.preferences.addons[base_package].preferences
+    else:
+        return context.preferences.addons[base_package.split(".")[0]].preferences
 
 
 if __name__ == "__main__":

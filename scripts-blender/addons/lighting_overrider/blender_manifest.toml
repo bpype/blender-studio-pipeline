@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "lighting_overrider"
+version = "0.1.3"
+name = "Lighting Overrider"
+tagline = "Create, manage and store local python overrides of linked data on a shot and sequence level"
+maintainer = "Simon Thommes <simon@blender.org>"
+type = "add-on"
+website = "https://studio.blender.org/tools/addons/lighting_overrider"
+tags = ["Lighting"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2019-2025 Simon Thommes & Blender Studio",
+]

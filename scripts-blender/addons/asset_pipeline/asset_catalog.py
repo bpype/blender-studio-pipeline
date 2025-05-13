@@ -1,8 +1,11 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import os
 from pathlib import Path
 import bpy
 from typing import List
-from .config import verify_task_layer_json_data
 
 asset_file_cache = None
 cat_data_cache = None

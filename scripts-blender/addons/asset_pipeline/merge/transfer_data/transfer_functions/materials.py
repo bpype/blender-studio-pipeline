@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from .attributes import transfer_attribute
 from ..transfer_util import check_transfer_data_entry

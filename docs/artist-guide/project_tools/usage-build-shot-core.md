@@ -4,7 +4,7 @@ The next step is to create an asset and store that information into the Kitsu Se
 
 1. Launch Blender via [Project Blender](/artist-guide/project_tools/project-blender.md) Guide
 2. Under `Edit>Preferences>Add-Ons` ensure `Asset Pipeline` is enabled
-3. Follow the [asset pipeline guide](https://studio.blender.org/pipeline/addons/asset_pipeline) to create a new asset collection, ensure these assets are marked as an [Asset in Blender](https://docs.blender.org/manual/en/latest/files/asset_libraries/introduction.html#creating-an-asset).
+3. Follow the [asset pipeline guide](https://studio.blender.org/tools/addons/asset_pipeline) to create a new asset collection, ensure these assets are marked as an [Asset in Blender](https://docs.blender.org/manual/en/latest/files/asset_libraries/introduction.html#creating-an-asset).
 4. Save the above asset within the directory `your_project_name/svn/pro/assets/char` (or similar depending on type)
 
 ## Kitsu Casting

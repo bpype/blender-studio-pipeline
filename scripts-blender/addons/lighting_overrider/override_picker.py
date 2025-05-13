@@ -1,10 +1,12 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 import re
 import idprop
 from . import utils
 from .categories import rna_overrides
-
-from rna_prop_ui import rna_idprop_ui_create
 
 
 def struct_from_rna_path(rna_path):

@@ -1,22 +1,6 @@
-# ***** BEGIN GPL LICENSE BLOCK *****
+# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-#
-# ***** END GPL LICENCE BLOCK *****
-#
-# (c) 2021, Blender Foundation
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import os
 from pathlib import Path
@@ -27,7 +11,7 @@ from bpy.app.handlers import persistent
 
 from cache_manager import opsdata
 from cache_manager.logger import LoggerFactory
-
+from . import addon_prefs_get
 
 logger = LoggerFactory.getLogger(__name__)
 
@@ -49,16 +33,9 @@ def update_cache_version_property(context: bpy.types.Context) -> None:
         context.scene.cm.cache_version = items[0]
 
 
-def category_upate_version_model(self: Any, context: bpy.types.Context) -> None:
+def category_update_version_model(self: Any, context: bpy.types.Context) -> None:
     opsdata.init_version_dir_model(context)
     update_cache_version_property(context)
-
-
-def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
-    """
-    shortcut to get cache_manager addon preferences
-    """
-    return context.preferences.addons["cache_manager"].preferences
 
 
 def _get_scene_name() -> str:
@@ -83,7 +60,7 @@ def _gen_cacheconfig_filename() -> str:
 
 def gen_cachedir_path_str(self: Any) -> str:
 
-    addon_prefs = addon_prefs_get(bpy.context)
+    addon_prefs = addon_prefs_get()
 
     if not addon_prefs.is_cachedir_root_valid:
         return ""
@@ -129,7 +106,7 @@ def gen_cachepath_collection(
 
 
 def get_cache_version_dir_path_str(self: Any) -> str:
-    addon_prefs = addon_prefs_get(bpy.context)
+    addon_prefs = addon_prefs_get()
 
     if not addon_prefs.is_cachedir_root_valid:
         return ""
@@ -174,7 +151,7 @@ def rm_deleted_colls_from_list(context: bpy.types.Context) -> None:
 
 @persistent
 def load_post_handler_init_model_cache_version(dummy: Any) -> None:
-    category_upate_version_model(None, bpy.context)
+    category_update_version_model(None, bpy.context)
 
 
 # ---------REGISTER ----------.

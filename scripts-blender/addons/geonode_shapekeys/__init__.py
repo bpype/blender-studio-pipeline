@@ -1,4 +1,6 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy, importlib
 
@@ -12,7 +14,7 @@ bl_info = {
     'description': "Sculpt on linked meshes",
     'location': "Properties->Mesh->Shape Keys->GeoNode ShapeKeys, only on overridden meshes",
     'category': 'Animation',
-    'doc_url': "https://studio.blender.org/pipeline/addons/geonode_shapekeys",
+    'doc_url': "https://studio.blender.org/tools/addons/geonode_shapekeys",
     'tracker_url': "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/geonode_shapekeys",
     'support': 'COMMUNITY',
 }

@@ -6,7 +6,7 @@ name = "Blender Log"
 tagline = "A dedicated place for other add-ons to report, organize, and fix issues"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
 type = "add-on"
-website = "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/blender_log"
+website = "https://studio.blender.org/tools/addons/blender_log"
 tags = ["System", "User Interface"]
 
 blender_version_min = "4.2.0"

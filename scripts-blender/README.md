@@ -4,13 +4,13 @@ This is a list of all add-ons developed in-house by the Blender Studio. You can 
 
 ### Installation
 
-It is easiest to install all our add-ons at once rather than one at a time:
-1. Download the latest release from the [Releases Page](https://projects.blender.org/studio/blender-studio-tools/releases).
-2. Create this folder structure: `Blender Studio/addons/`.
-3. Unzip what you downloaded into the `addons` folder.
-4. In Blender, navigate to Preferences->File Paths->Script Directories.
-5. Add an entry, and browse the `Blender Studio` folder. (Not the `addons` folder!)
-6. Done, you can now enable any of our add-ons.
+Some of the add-ons [can be found on the Extensions Platform](https://extensions.blender.org/team/blender-studio/) already, others will arrive over time. For these add-ons, you can simply search for them inside Blender, under "Get Extensions" in the user preferences.
+
+To install add-ons which are not there, follow these steps:
+1. Download and unzip this repository from [this link](https://projects.blender.org/studio/blender-studio-tools/archive/main.zip).
+2. In Blender, navigate to Preferences->File Paths->Script Directories.
+3. Add an entry, and browse the `scripts-blender` folder. (Not the `addons` folder!)
+4. Done, you can now enable any of our add-ons.
 
 ### List of add-ons
 
@@ -21,12 +21,13 @@ It is easiest to install all our add-ons at once rather than one at a time:
 |Blender Kitsu |Enforce conventions, build shots, manage production files and update data on kitsu server.
 |Blender Log |A place for add-ons to report issues to the user in a persistent UI element.
 |Blender SVN |UI for the SVN (Subversion) file versioning system.  
-|Blender Gizmos |Attempt to prototype a system for using meshes for the manipulation of armatures.  
+|Blender Gizmos |Prototype of a system for using meshes for the manipulation of armatures.  
+|Brushstroke Tools |Achieve a highly controllable painterly style easily and procedurally.  
 |Cache Manager |Streamline the Alembic cache workflow of assets. 
+|CloudRig |Rig generation and workflow tools. CloudRig lives in a [separate repository](https://projects.blender.org/Mets/CloudRig). 
 |Contact Sheet |Create a contactsheet from sequence editor strips.  
-|Easy Weights |Quality of life improvements for weight painting.  
+|Easy Weight |Quality of life improvements for weight painting.  
 |Geonode Shapekeys |Enable animators to sculpt on linked and overridden meshes.  
-|Grease Converter |Convert annotations to Grease Pencil objects and vise versa.  
 |Lattice Magic |Lattice-based utilities.  
 |Lighting Overrider |Create, manage and apply python overrides in a flexible and reliable way.  
 |Pose Shape Keys |Manage and maintain shapekeys for rigging.  

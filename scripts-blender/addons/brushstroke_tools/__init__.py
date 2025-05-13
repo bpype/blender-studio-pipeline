@@ -1,6 +1,9 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from . import utils, icons, settings, preferences, ui, draw_tool, ops
 import tomllib as toml
-import bpy
 
 modules = [utils, icons, settings, preferences, ui, draw_tool, ops]
 

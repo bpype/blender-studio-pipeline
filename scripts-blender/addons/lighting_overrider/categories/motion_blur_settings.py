@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from .. import utils
-from ..templates import *
+from ..templates import LOR_UL_settings_list, LOR_subsetting
 import bpy
 
 def settings_as_dict(settings):
@@ -233,9 +237,8 @@ class LOR_PT_motion_blur_settings_panel(bpy.types.Panel):
         col.operator('lighting_overrider.motion_blur_settings_apply', icon='PLAY')
         return
 
-panel_class = LOR_PT_motion_blur_settings_panel
-
 classes = (
+    LOR_PT_motion_blur_settings_panel,
     LOR_motion_blur_setting,
     LOR_UL_motion_blur_settings_list,
     LOR_OT_motion_blur_setting_add,

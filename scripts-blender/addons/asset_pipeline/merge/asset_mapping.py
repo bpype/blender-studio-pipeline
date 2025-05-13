@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from typing import Dict, Set
 from .naming import (
@@ -5,7 +9,6 @@ from .naming import (
     task_layer_prefix_basename_get,
 )
 from .util import get_storage_of_id
-from .transfer_data.transfer_util import transfer_data_add_entry
 from .shared_ids import get_shared_ids
 from .. import constants, logging
 

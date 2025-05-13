@@ -1,7 +1,10 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 import json
 from . import categories
-from .categories import *
 from . import utils
 
 class LOR_OT_find_settings(bpy.types.Operator):
@@ -100,21 +103,17 @@ class LOR_OT_write_settings(bpy.types.Operator):
         return {'FINISHED'}
 
 def pack_settings_data(settings) -> dict:
-    
     data = {}
-    
-    category_modules = [globals()[mod] for mod in categories.__all__]
-    
-    for cat, cat_name in zip(category_modules, categories.__all__):
+
+    for cat in categories.modules:
+        cat_name = cat.__name__.split(".")[-1]
         data[cat_name] = cat.settings_as_dict(settings)
     
     return data
 
 def unpack_settings_data(settings, data):
-    
-    category_modules = [globals()[mod] for mod in categories.__all__]
-    
-    for cat, cat_name in zip(category_modules, categories.__all__):
+    for cat in categories.modules:
+        cat_name = cat.__name__.split(".")[-1]
         if not cat_name in data.keys():
             continue
         cat.load_settings(settings, data[cat_name])

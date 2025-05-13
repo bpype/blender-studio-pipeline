@@ -1,6 +1,16 @@
-from . import categories
-from .categories import *
-from . import templates, json_io, execution, ui, override_picker
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+from . import (
+    categories, 
+	props,
+    templates, 
+    json_io, 
+    execution, 
+    ui, 
+    override_picker,
+)
 
 
 bl_info = {
@@ -13,9 +23,15 @@ bl_info = {
 	"category": "Workflow",
 }
 
-modules = [templates]
-modules += [globals()[mod] for mod in categories.__all__]
-modules += [json_io, execution, ui, override_picker]
+modules = [
+	ui,
+	templates,
+	categories,
+	props,
+	json_io,
+	execution,
+	override_picker,
+]
 
 def register():
 	for m in modules:

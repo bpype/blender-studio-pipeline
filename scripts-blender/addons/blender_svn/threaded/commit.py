@@ -1,14 +1,11 @@
-# SPDX-License-Identifier: GPL-2.0-or-later
-# (c) 2023, Blender Foundation - Demeter Dzadik
+# SPDX-FileCopyrightText: 2023 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
-from typing import List, Dict, Union, Any, Set, Optional, Tuple
-
-import subprocess
+from typing import List
 
 from .background_process import Processes, BackgroundProcess
 from .execute_subprocess import execute_svn_command
-from ..util import get_addon_prefs
 
 
 class BGP_SVN_Commit(BackgroundProcess):

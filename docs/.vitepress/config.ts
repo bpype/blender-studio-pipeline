@@ -183,8 +183,9 @@ export default defineConfig({
           { text: 'Anim Cupboard', link: '/addons/anim_cupboard'},
           { text: 'Asset Pipeline', link: '/addons/asset_pipeline'},
           { text: 'Blender Kitsu', link: '/addons/blender_kitsu'},
+          { text: 'Blender Log', link: '/addons/blender_log'},
           { text: 'Blender SVN', link: '/addons/blender_svn'},
-          { text: 'Blender Gizmos', link: '/addons/bone_gizmos'},
+          { text: 'Bone Gizmos', link: '/addons/bone_gizmos'},
           { text: 'Brushstroke Tools', link: '/addons/brushstroke_tools'},
           { text: 'Cache Manager', link: '/addons/cache_manager'},
           {
@@ -206,7 +207,6 @@ export default defineConfig({
           { text: 'Contact Sheet', link: '/addons/contactsheet'},
           { text: 'Easy Weight', link: '/addons/easy_weight'},
           { text: 'Geonode Shapekeys', link: '/addons/geonode_shapekeys'},
-          { text: 'Grease Converter', link: '/addons/grease_converter'},
           { text: 'Lattice Magic', link: '/addons/lattice_magic'},
           { text: 'Lighting Overrider', link: '/addons/lighting_overrider'},
           { text: 'Pose Shape Keys', link: '/addons/pose_shape_keys'},

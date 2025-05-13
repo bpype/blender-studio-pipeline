@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
 from .transfer_function_util.visibility import override_obj_visability

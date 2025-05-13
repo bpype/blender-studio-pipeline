@@ -6,7 +6,7 @@ name = "Blender SVN"
 tagline = "An SVN (Subversion) interface built directly into Blender"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
 type = "add-on"
-website = "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/blender_svn"
+website = "https://studio.blender.org/tools/addons/blender_svn"
 tags = ["Pipeline"]
 
 blender_version_min = "4.2.0"

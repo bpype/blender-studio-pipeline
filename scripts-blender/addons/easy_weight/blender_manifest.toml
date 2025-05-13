@@ -6,7 +6,7 @@ name = "EasyWeight"
 tagline = "Weight Painting Workflow Boosters"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
 type = "add-on"
-website = "https://studio.blender.org/pipeline/addons/easy_weight"
+website = "https://studio.blender.org/tools/addons/easy_weight"
 tags = ["Rigging"]
 
 blender_version_min = "4.2.0"

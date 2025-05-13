@@ -160,7 +160,7 @@ Entry points are of course `__init__()` and `create_bone_infos()`.
 <summary> utils </summary>
 
 - **curve.py**: Utility functions used by curve-based components, particularly to help with curve symmetry.
-- **lattice.py**: Some utilities used by cloud_lattice, taken from my Lattice Magic addon.
+- **lattice.py**: Some utilities used by cloud_lattice, taken from our Lattice Magic addon.
 - **maths.py**: Any pure math, even if it is only used in one place, goes here. That means this module should never import anything from any other part of CloudRig.
 - **misc.py**: Code that hasn't been organized yet. Ideally this module shouldn't exist, since it's not clear what is in it.
 - **post_gen.py**: Code that could be useful to run from post-generation scripts. Not actually used anywhere in the add-on.

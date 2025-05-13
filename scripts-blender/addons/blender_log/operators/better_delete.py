@@ -1,7 +1,6 @@
-"""
-This is currently intended to be used with the Pie Menu Editor add-on.
-In future, we could create our own pie menu and hotkey UI.
-"""
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
 from typing import List

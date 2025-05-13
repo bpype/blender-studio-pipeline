@@ -1,10 +1,15 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
-from mathutils import Matrix, Vector, Euler
-from bpy.types import Gizmo, Object
+from mathutils import Matrix, Euler
+from bpy.types import Gizmo
 import numpy as np
 import gpu
 
 from .shapes import MeshShape3D
+from .utils import get_addon_prefs
 
 # Let's fucking do it.
 is_interacting = False
@@ -70,11 +75,10 @@ class MoveBoneGizmo(Gizmo):
 			self.load_shape_entire_object(context)
 
 	def init_properties(self, context):
-		props = self.get_props(context)
 		self.refresh_colors(context)
 
 	def refresh_colors(self, context):
-		prefs = context.preferences.addons[__package__].preferences
+		prefs = get_addon_prefs(context)
 
 		self.line_width = prefs.line_width
 
@@ -195,7 +199,7 @@ class MoveBoneGizmo(Gizmo):
 		return the opacity value that is expected to be used for drawing this gizmo.
 		"""
 
-		prefs = context.preferences.addons[__package__].preferences
+		prefs = get_addon_prefs(context)
 		is_selected = self.get_pose_bone(context).bone.select
 		opacity = prefs.widget_alpha
 		if self.is_using_facemap(context) or self.is_using_vgroup(context):

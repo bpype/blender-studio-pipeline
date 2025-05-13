@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import bpy
 from ..merge.naming import task_layer_prefix_transfer_data_update
 from .asset_mapping import AssetTransferMapping
@@ -19,7 +23,6 @@ from .transfer_data.transfer_functions.transfer_function_util.active_indexes imp
     transfer_active_color_attribute_index,
 )
 from pathlib import Path
-from typing import Dict
 from .. import constants, logging
 import time
 
