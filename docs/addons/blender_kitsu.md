@@ -186,13 +186,13 @@ A collection of operators to Import media based on the Shot associated with the 
 With a metadata strip selected `Import Playblast` Operator will find an image sequence of a given task type located in the Frames Root directory.
 ![Import Playblast](/media/addons/blender_kitsu/import_playblast.jpg)
 
-Use this operator to import image sequences that have been approved via the [Render Review Add-On](/addons/render_review) Image Sequences can be loaded as either `EXR` or `JPG` sequences.
+Use this operator to import image sequences that have been approved via the Render Review system. Image Sequences can be loaded as either `EXR` or `JPG` sequences.
 
 ##### Import Image Sequence
 With a metadata strip selected `Import Image Sequence` Operator will find an image sequence of a given task type located in the Frames Root directory.
 ![Import Image Sequence](/media/addons/blender_kitsu/shot_image_sequence.jpg)
 
-Use this operator to import image sequences that have been approved via the [Render Review Add-On](/addons/render_review) Image Sequences can be loaded as either `EXR` or `JPG` sequences.
+Use this operator to import image sequences that have been approved via the Render Review system. Image Sequences can be loaded as either `EXR` or `JPG` sequences.
 
 ##### General Sequence Editor Tools
 In the general tab you can find some tools that don't directly relate to Kitsu but are useful for editing.
