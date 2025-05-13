@@ -1,7 +1,6 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
-# (c) 2021, Blender Foundation - Paul Golter
 
 import logging
 from . import prefs, constants

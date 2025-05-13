@@ -1,10 +1,6 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2021 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-# This file is copied from the blender-cloud-addon https://developer.blender.org/diffusion/BCA/
-# Author of this file is: Sybren A. Stuevel
-# Modified by: Paul Golter
 
 import typing
 
