@@ -4,6 +4,10 @@
 
 - link brushstrokes to same collections as surface object rather than the active collection [#390](https://projects.blender.org/studio/blender-studio-tools/pulls/390)
 
+### FIXED
+
+- fix color sampling from curves under deformation [#391](https://projects.blender.org/studio/blender-studio-tools/pulls/391)
+
 ## 1.1.1 - 2025-01-17
 
 ### FIXED
