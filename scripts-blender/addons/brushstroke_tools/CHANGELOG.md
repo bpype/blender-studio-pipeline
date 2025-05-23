@@ -1,3 +1,9 @@
+## 1.1.2
+
+### CHANGED
+
+- link brushstrokes to same collections as surface object rather than the active collection [#390](https://projects.blender.org/studio/blender-studio-tools/pulls/390)
+
 ## 1.1.1 - 2025-01-17
 
 ### FIXED

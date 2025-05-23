@@ -540,6 +540,22 @@ def find_brush_style_by_name(name: str):
             return brush_style
     return None
 
+def link_to_collections_by_ref(obj, ref_obj):
+        col_list = []
+        for col in ref_obj.users_collection:
+            if col.library:
+                continue
+            col_list += [col]
+        
+        if col_list:
+            for col in col_list:
+                col.objects.link(obj)
+        else:
+            if bpy.context.collection.library:
+                bpy.context.scene.collection.objects.link(obj)
+            else:
+                bpy.context.collection.objects.link(obj)
+
 def copy_collection_property(col_target, col_source):
 
     for i in range(len(col_target)):
