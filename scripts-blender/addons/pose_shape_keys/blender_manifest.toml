@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "pose_shape_keys"
-version = "0.0.2"
+version = "0.0.3"
 name = "Pose Shape Keys"
 tagline = "Preserve your shape keys through weight changes, and much more"
 maintainer = "Demeter Dzadik <demeter@blender.org>"

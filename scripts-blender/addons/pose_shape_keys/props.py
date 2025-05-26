@@ -45,6 +45,10 @@ class PoseShapeKeyTarget(PropertyGroup):
     )
 
     @property
+    def has_error(self):
+        return self.key_block == None
+
+    @property
     def key_block(self) -> list[ShapeKey]:
         mesh = self.id_data
         if not mesh.shape_keys:
@@ -82,8 +86,12 @@ class PoseShapeKey(PropertyGroup):
     def active_target(self):
         return self.target_shapes[self.active_target_shape_index]
 
+    @property
+    def has_error(self):
+        return self.name.strip() == "" or any([target.has_error for target in self.target_shapes])
+
     def update_name(self, context):
-        if self.name == "":
+        if self.name.strip() == "":
             self.name = "Pose Key"
 
     name: StringProperty(name="Name", update=update_name)

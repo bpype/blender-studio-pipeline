@@ -19,15 +19,16 @@ import bpy
 
 from . import (
     props, 
+    prefs,
     ui,
     ops,
     ui_list,
     symmetrize_shape_key,
-    prefs,
+    naming,
 )
 
 # Each module can have register() and unregister() functions and a list of classes to register called "registry".
-modules = [props, prefs, ui, ops, ui_list, symmetrize_shape_key]
+modules = [props, prefs, ui, ops, ui_list, symmetrize_shape_key, naming]
 
 
 def register_unregister_modules(modules, register: bool):

@@ -2,16 +2,17 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
+import bpy, re
 from bpy.types import Object, Operator
 from bpy.props import StringProperty, BoolProperty
-from mathutils import Vector, Euler, Quaternion
+from mathutils import Vector, Quaternion
 from math import sqrt
 from collections import OrderedDict
 
 from .symmetrize_shape_key import mirror_mesh
 from .prefs import get_addon_prefs
 from .ui_list import UILIST_OT_Entry_Add, UILIST_OT_Entry_Remove
+from .naming import side_is_left
 
 # When saving or pushing shapes, disable any modifier NOT in this list.
 DEFORM_MODIFIERS = [
@@ -56,12 +57,12 @@ class OBJECT_OT_pose_key_add(UILIST_OT_Entry_Add, Operator):
         layout.use_property_split = True
 
         layout.prop(self, 'pose_key_name')
-        if not self.pose_key_name:
+        if self.pose_key_name.strip() == "":
             layout.alert = True
             layout.label(text="Name cannot be empty.", icon='ERROR')
 
     def execute(self, context):
-        if not self.pose_key_name:
+        if self.pose_key_name.strip() == "":
             self.report({'ERROR'}, "Must specify a name.")
             return {'CANCELLED'}
 
@@ -698,7 +699,6 @@ class OBJECT_OT_pose_key_shape_add(UILIST_OT_Entry_Add, Operator):
                 self.vg_name = vg.name
                 return vg
 
-        obj = context.object
         vg = set_vg(self.sk_name)
         if not vg and self.sk_name.endswith(".L"):
             vg = set_vg("Side.L")
@@ -711,10 +711,23 @@ class OBJECT_OT_pose_key_shape_add(UILIST_OT_Entry_Add, Operator):
         default="Key",
         update=update_sk_name,
     )
+    def update_create_sk(self, context):
+        obj = context.object
+        if not self.create_sk and not obj.data.shape_keys:
+            # If there are no shape keys, force enable creation of new shape key.
+            self.create_sk = True
+            return
+        pose_key = get_active_pose_key(obj)
+        if self.create_sk:
+            self.sk_name = pose_key.name
+        elif self.sk_name not in context.object.data.shape_keys.key_blocks:
+            self.sk_name = ""
+
     create_sk: BoolProperty(
         name="Create New Shape Key",
-        description="Create a new blank Shape Key to push this pose into",
+        description="Create a new blank Shape Key to push this pose into, instead of using an existing one",
         default=True,
+        update=update_create_sk
     )
     vg_name: StringProperty(
         name="Vertex Group",
@@ -725,10 +738,12 @@ class OBJECT_OT_pose_key_shape_add(UILIST_OT_Entry_Add, Operator):
     def update_create_vg(self, context):
         if self.create_vg:
             self.vg_name = self.sk_name
+        elif self.vg_name not in context.object.vertex_groups:
+            self.vg_name = ""
 
     create_vg: BoolProperty(
         name="Create New Vertex Group",
-        description="Create a new blank Vertex Group as a mask for this shape key. This means the shape key won't work until this mask is authored",
+        description="Create a new blank Vertex Group as a mask for this shape key, as opposed to using an existing vertex group for masking",
         default=False,
         update=update_create_vg,
     )
@@ -745,6 +760,7 @@ class OBJECT_OT_pose_key_shape_add(UILIST_OT_Entry_Add, Operator):
             self.sk_name = f"Key {len(obj.data.shape_keys.key_blocks)}"
         else:
             self.sk_name = "Key"
+            self.create_sk = True
 
         pose_key = get_active_pose_key(obj)
         if pose_key.name:
@@ -767,21 +783,29 @@ class OBJECT_OT_pose_key_shape_add(UILIST_OT_Entry_Add, Operator):
             row.prop_search(
                 self, 'sk_name', obj.data.shape_keys, 'key_blocks', icon='SHAPEKEY_DATA'
             )
-        row.prop(self, 'create_sk', text="", icon='ADD')
 
-        row = layout.row(align=True)
-        if self.create_vg:
-            if obj.vertex_groups.get(self.vg_name):
-                row.alert = True
-                layout.label(
-                    text="Cannot create that vertex group because it already exists!", icon='ERROR'
-                )
-            row.prop(self, 'vg_name', icon='GROUP_VERTEX')
-        else:
-            row.prop_search(self, 'vg_name', obj, "vertex_groups")
-        row.prop(self, 'create_vg', text="", icon='ADD')
+        if obj.data.shape_keys:
+            # We don't want to draw this option if there are no shape keys. (Since it would have to be True.)
+            row.prop(self, 'create_sk', text="", icon='ADD')
+
+        if (self.create_sk and self.sk_name) or obj.data.shape_keys.key_blocks.get(self.sk_name):
+            row = layout.row(align=True)
+            if self.create_vg:
+                if obj.vertex_groups.get(self.vg_name):
+                    row.alert = True
+                    layout.label(
+                        text="Cannot create that vertex group because it already exists!", icon='ERROR'
+                    )
+                row.prop(self, 'vg_name', icon='GROUP_VERTEX')
+            else:
+                row.prop_search(self, 'vg_name', obj, "vertex_groups")
+
+            row.prop(self, 'create_vg', text="", icon='ADD')
 
     def execute(self, context):
+        if self.sk_name.strip() == "":
+            self.report({'ERROR'}, "Must provide shape key name.")
+            return {'CANCELLED'}
         obj = context.object
 
         if self.create_vg and obj.vertex_groups.get(self.vg_name):
@@ -795,28 +819,32 @@ class OBJECT_OT_pose_key_shape_add(UILIST_OT_Entry_Add, Operator):
             obj.data.update()
 
         if self.create_sk:
-            # Add new shape key
+            # Add new shape key.
             key_block = obj.shape_key_add()
             key_block.name = self.sk_name
             key_block.value = 1
         else:
             key_block = obj.data.shape_keys.key_blocks.get(self.sk_name)
 
-        if self.create_vg:
-            obj.vertex_groups.new(name=self.vg_name)
+        if key_block:
+            if self.create_vg:
+                obj.vertex_groups.new(name=self.vg_name)
 
-        if self.vg_name:
-            key_block.vertex_group = self.vg_name
+            if self.vg_name:
+                key_block.vertex_group = self.vg_name
 
-        pose_key = get_active_pose_key(obj)
+            pose_key = get_active_pose_key(obj)
 
         if self.create_slot:
             super().execute(context)
 
-        target_slot = pose_key.active_target
-        target_slot.name = key_block.name
+        if key_block:
+            target_slot = pose_key.active_target
+            target_slot.name = key_block.name
+            self.report({'INFO'}, f"Added shape key {key_block.name}.")
+        else:
+            self.report({'ERROR'}, "Failed to add shape key.")
 
-        self.report({'INFO'}, f"Added shape key {key_block.name}.")
         return {'FINISHED'}
 
 
@@ -889,25 +917,30 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
         return poll_correct_pose_key_pose(cls, context)
 
     @staticmethod
-    def get_posed_channels(context) -> OrderedDict[str, tuple[str, float]]:
+    def get_posed_channels(context, side=None) -> OrderedDict[str, tuple[str, float]]:
         obj = context.object
         arm_ob = get_deforming_armature(obj)
 
         channels = OrderedDict()
 
+        EPSILON = 0.0001
+
         for pb in arm_ob.pose.bones:
+            is_left = side_is_left(pb.name)
+            if is_left != None and ((is_left and side!='LEFT') or (is_left==False and side=='LEFT')):
+                continue
             bone_channels = OrderedDict({'loc' : [], 'rot': [], 'scale': []})
 
             for axis in "xyz":
                 value = getattr(pb.location, axis)
-                if value != 0.0:
+                if abs(value) > EPSILON:
                     bone_channels['loc'].append((axis.upper(), value))
                     channels[pb.name] = bone_channels
 
                 if len(pb.rotation_mode) == 3:
                     # Euler rotation: Check each axis.
                     value = getattr(pb.rotation_euler, axis)
-                    if value != 0.0:
+                    if abs(value) > EPSILON:
                         bone_channels['rot'].append((axis.upper(), value))
                         channels[pb.name] = bone_channels
                 else:
@@ -917,21 +950,36 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
                         quat = Quaternion(Vector(pb.rotation_axis_angle).yzw, pb.rotation_axis_angle[0])
                         euler_rot = quat.to_euler()
 
-                    if euler_rot != Euler((0, 0, 0)):
-                        value = getattr(euler_rot, axis)
-                        if abs(value) > 0.00001:
-                            bone_channels['rot'].append((axis.upper(), value))
-                            channels[pb.name] = bone_channels
+                    value = getattr(euler_rot, axis)
+                    if abs(value) > EPSILON:
+                        bone_channels['rot'].append((axis.upper(), value))
+                        channels[pb.name] = bone_channels
 
                 value = getattr(pb.scale, axis)
-                if value != 1.0:
+                if abs(value-1) > EPSILON:
                     bone_channels['scale'].append((axis.upper(), value))
                     channels[pb.name] = bone_channels
 
         return channels
 
+    @staticmethod
+    def sanitize_variable_name(name):
+        # Replace all non-word characters with underscores
+        sanitized = re.sub(r'\W', '_', name)
+        # Prepend underscore if the first character is a digit
+        if sanitized and sanitized[0].isdigit():
+            sanitized = '_' + sanitized
+        return sanitized
+
     def invoke(self, context, event):
-        self.posed_channels = self.get_posed_channels(context)
+        is_left = side_is_left(self.key_name)
+        if is_left == None:
+            side = None
+        elif is_left == False:
+            side = 'RIGHT'
+        else:
+            side = 'LEFT'
+        self.posed_channels = self.get_posed_channels(context, side=side)
         return context.window_manager.invoke_props_dialog(self, width=300)
 
     def draw(self, context):
@@ -947,7 +995,7 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
             bone_box = col.box()
             bone_box.prop(pb, 'name', icon='BONE_DATA', text="", emboss=False)
             for transform, trans_inf in transforms.items():
-                axes = [inf[0] for inf, val in trans_inf]
+                axes = [f"{inf[0]} ({val:.2f})" for inf, val in trans_inf]
                 if not axes:
                     continue
 
@@ -975,7 +1023,7 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
                 for axis, value in trans_inf:
                     transf_type = transform.upper()+"_"+axis
                     var = drv.variables.new()
-                    var.name = bone_name.replace(" ", "_") + "_" + transf_type.lower()
+                    var.name = self.sanitize_variable_name(bone_name) + "_" + transf_type.lower()
                     var.type = 'TRANSFORMS'
                     var.targets[0].id = arm_ob
                     var.targets[0].bone_target = bone_name
@@ -983,9 +1031,9 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
                     var.targets[0].rotation_mode = 'SWING_TWIST_Y'
                     var.targets[0].transform_space = 'LOCAL_SPACE'
                     if transf_type.startswith("SCALE"):
-                        expressions.append(f"((1-{var.name})/{value})")
+                        expressions.append(f"((1-{var.name})/{value:.4f})")
                     else:
-                        expressions.append(f"({var.name}/{value})")
+                        expressions.append(f"({var.name}/{value:.4f})")
 
         drv.expression = " * ".join(expressions)
 

@@ -104,11 +104,13 @@ class POSEKEYS_UL_pose_keys(UIList):
 
         icon = 'SURFACE_NCIRCLE' if pose_key.storage_object else 'CURVE_NCIRCLE'
         name_row = split.row()
-        if not pose_key.name:
-            name_row.alert = True
-            split = name_row.split()
-            name_row = split.row()
-            split.label(text="Unnamed!", icon='ERROR')
+        if pose_key.has_error:
+            # name_row.alert = True
+            icon = 'ERROR'
+            if not pose_key.name:
+                split = name_row.split()
+                name_row = split.row()
+                split.label(text="Unnamed!", icon='ERROR')
         name_row.prop(pose_key, 'name', text="", emboss=False, icon=icon)
 
 
@@ -170,19 +172,24 @@ class MESH_PT_shape_key_subpanel(Panel):
             return
 
         active_target = active_posekey.active_target
-        row = layout.row()
+        selector_row = layout.row()
         if not mesh.shape_keys:
             return
-        row.prop_search(active_target, 'shape_key_name', mesh.shape_keys, 'key_blocks')
+        icon = 'SHAPEKEY_DATA'
+        key_block = context.object.data.shape_keys.key_blocks.get(active_target.shape_key_name)
+        if not key_block:
+            # selector_row.alert = True
+            icon = 'ERROR'
+        selector_row.prop_search(active_target, 'shape_key_name', mesh.shape_keys, 'key_blocks', icon=icon)
         if not active_target.key_block:
-            add_shape_op = row.operator('object.posekey_shape_add', icon='ADD', text="")
+            add_shape_op = selector_row.operator('object.posekey_shape_add', icon='ADD', text="")
             add_shape_op.create_slot=False
         sk = active_target.key_block
         if not sk:
             return
         addon_prefs = get_addon_prefs(context)
         icon = 'HIDE_OFF' if addon_prefs.show_shape_key_info else 'HIDE_ON'
-        row.prop(addon_prefs, 'show_shape_key_info', text="", icon=icon)
+        selector_row.prop(addon_prefs, 'show_shape_key_info', text="", icon=icon)
         if addon_prefs.show_shape_key_info:
             layout.prop(active_target, 'mirror_x')
             split = layout.split(factor=0.1)
@@ -209,7 +216,10 @@ class POSEKEYS_UL_target_shape_keys(UIList):
         split = layout.row().split(factor=0.7, align=True)
 
         name_row = split.row()
-        name_row.prop(pose_key_target, 'name', text="", emboss=False, icon='SHAPEKEY_DATA')
+        icon = 'SHAPEKEY_DATA'
+        if pose_key_target.has_error:
+            icon = 'ERROR'
+        name_row.prop(pose_key_target, 'name', text="", emboss=False, icon=icon)
 
         value_row = split.row(align=True)
         value_row.emboss = 'NONE_OR_STATUS'
