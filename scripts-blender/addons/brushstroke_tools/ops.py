@@ -25,7 +25,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
         surface_object = utils.get_active_context_surface_object(context)
         return bool(surface_object)
 
-    def new_brushstrokes_object(self, context, name):
+    def new_brushstrokes_object(self, context, name, surface_object):
         settings = context.scene.BSBST_settings
         settings.brushstroke_method = self.method
 
@@ -34,6 +34,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             context.object.name = name
             context.object.data.name = name
             brushstrokes_object = context.object
+            context.collection.objects.unlink(brushstrokes_object)
         else:
             if settings.curve_mode == 'CURVE':
                 brushstrokes_data = bpy.data.curves.new(name, type='CURVE')
@@ -41,7 +42,10 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             elif settings.curve_mode == 'CURVES':
                 brushstrokes_data = bpy.data.hair_curves.new(name)
             brushstrokes_object = bpy.data.objects.new(name, brushstrokes_data)
-            context.collection.objects.link(brushstrokes_object)
+
+        # link to surface object's collections (fall back to active collection if all are linked data)
+        utils.link_to_collections_by_ref(brushstrokes_object, surface_object)
+
         brushstrokes_object.visible_shadow = False
         brushstrokes_object['BSBST_version'] = utils.addon_version
         utils.set_deformable(brushstrokes_object, settings.deforming_surface)
@@ -55,6 +59,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             context.object.name = name
             context.object.data.name = name
             flow_object = context.object
+            context.collection.objects.unlink(flow_object)
         else:
             if settings.curve_mode == 'CURVE':
                 flow_data = bpy.data.curves.new(name, type='CURVE')
@@ -62,7 +67,9 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             elif settings.curve_mode == 'CURVES':
                 flow_data = bpy.data.hair_curves.new(name)
             flow_object = bpy.data.objects.new(name, flow_data)
-            context.collection.objects.link(flow_object)
+
+        # link to surface object's collections (fall back to active collection if all are linked data)
+        utils.link_to_collections_by_ref(flow_object, surface_object)
         
         visibility_options = [
             'visible_camera',
@@ -106,7 +113,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             return {"CANCELLED"}
 
         name = f'{surface_object.name} - Brushstrokes'
-        brushstrokes_object = self.new_brushstrokes_object(context, name)
+        brushstrokes_object = self.new_brushstrokes_object(context, name, surface_object)
         flow_is_required = settings.brushstroke_method == 'SURFACE_FILL'
         if flow_is_required:
             flow_object = None
