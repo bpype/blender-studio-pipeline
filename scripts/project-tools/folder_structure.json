@@ -14,17 +14,18 @@
                 "rollback_blender.py": "file",
                 "run_blender.py": "file",
                 "run_blender_previous.py": "file",
-                "update_addons.py": "file",
+                "update_extensions.py": "file",
                 "update_blender.py": "file"
             }
         },
         "local": {
-            "artifacts": {
-                "addons": {}
-            },
+            "artifacts": {},
             "blender": {},
             "scripts": {},
-            "config": {}
+            "config": {},
+            "extensions": {
+                "system": {}
+            }
         }
     }
 }

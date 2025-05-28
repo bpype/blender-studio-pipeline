@@ -29,7 +29,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '--only-update',
-    help="Only update the local install of Blender/Addons, don't launch Blender.",
+    help="Only update the local install of Blender/extensions, don't launch Blender.",
     action='store_true'
 )
 
@@ -128,17 +128,17 @@ def extract_zip(file_path: Path, dst_path: Path):
     shutil.rmtree(temp_dir)
 
 
-def update_addon(addon_zip_name, folder_name='addons'):
-    addon_zip_sha = addon_zip_name + '.sha256'
-    # This is the file that records all toplevel folders/files installed by this addon
-    # It is used to cleanup old files and folders when updating or removing addons
-    addon_zip_files = addon_zip_name + '.files'
+def update_extension(extension_zip_name, src_folder_name='extensions', dst_path_base=PATH_LOCAL / 'extensions' / 'system'):
+    extension_zip_sha = extension_zip_name + '.sha256'
+    # This is the file that records all toplevel folders/files installed by this extension
+    # It is used to cleanup old files and folders when updating or removing extensions
+    extension_zip_files = extension_zip_name + '.files'
 
-    # Check if we have the latest add-ons from shared
-    addon_artifacts_folder = PATH_ARTIFACTS / folder_name
-    artifact_archive = addon_artifacts_folder / addon_zip_name
-    artifact_checksum = addon_artifacts_folder / addon_zip_sha
-    local_artifact_dir = PATH_LOCAL / 'artifacts' / folder_name
+    # Check if we have the latest extensions from shared
+    extension_artifacts_folder = PATH_ARTIFACTS / src_folder_name
+    artifact_archive = extension_artifacts_folder / extension_zip_name
+    artifact_checksum = extension_artifacts_folder / extension_zip_sha
+    local_artifact_dir = PATH_LOCAL / 'artifacts' / src_folder_name
 
     # Sanity check
     if not local_artifact_dir.exists():
@@ -146,34 +146,32 @@ def update_addon(addon_zip_name, folder_name='addons'):
 
     if not artifact_checksum.exists():
         logger.error("Missing file %s" % artifact_checksum)
-        logger.error("Could not update add-ons")
+        logger.error("Could not update extension")
         return
 
-    local_checksum = local_artifact_dir / addon_zip_sha
+    local_checksum = local_artifact_dir / extension_zip_sha
 
     if local_checksum.exists():
         if filecmp.cmp(local_checksum, artifact_checksum):
-            logger.debug("Addon is up to date: " + addon_zip_name)
+            logger.debug("Extension is up to date: " + extension_zip_name)
             return
 
     if not artifact_archive.exists():
         logger.error("Shasum exists but the archive file %s does not!" % artifact_archive)
-        logger.error("Could not update add-ons")
+        logger.error("Could not update extensions")
         return
 
-    logger.info("Updating addon from: " + addon_zip_name)
+    logger.info("Updating extension from: " + extension_zip_name)
 
-    # Extract the archive in a temp location and move the addons content to local
+    # Extract the archive in a temp location and move the extensions content to local
     src_path_base = Path(tempfile.mkdtemp())
 
     # Extract the zip file to the temporary directory
     with zipfile.ZipFile(artifact_archive, 'r') as zip_ref:
         zip_ref.extractall(src_path_base)
 
-    dst_path_base = PATH_LOCAL / 'scripts' / folder_name
-
     # Remove all files previously installed by the archive
-    local_installed_files = local_artifact_dir / addon_zip_files
+    local_installed_files = local_artifact_dir / extension_zip_files
     if local_installed_files.exists():
         with open(local_installed_files) as file:
             lines = [line.rstrip() for line in file]
@@ -182,18 +180,18 @@ def update_addon(addon_zip_name, folder_name='addons'):
             if old_file.exists():
                 shutil.rmtree(old_file)
 
-    # Get a list of the top level content of the addon in case it doesn't just contain one folder
-    addon_top_level_files = [entry.name for entry in src_path_base.iterdir()]
+    # Get a list of the top level content of the extension in case it doesn't just contain one folder
+    extension_top_level_files = [entry.name for entry in src_path_base.iterdir()]
 
     with open(local_installed_files, 'w') as f:
-        for addon_file in addon_top_level_files:
-            f.write("%s\n" % addon_file)
+        for extension_file in extension_top_level_files:
+            f.write("%s\n" % extension_file)
 
-    for addon_file in addon_top_level_files:
-        logger.debug("Moving %s" % addon_file)
-        src_dir_addon = src_path_base / addon_file
-        dst_dir_addon = dst_path_base / addon_file
-        shutil.move(src_dir_addon, dst_dir_addon)
+    for extension_file in extension_top_level_files:
+        logger.debug("Moving %s" % extension_file)
+        src_dir_extension = src_path_base / extension_file
+        dst_dir_extension = dst_path_base / extension_file
+        shutil.move(src_dir_extension, dst_dir_extension)
 
     # Clean up the temporary directory
     shutil.rmtree(src_path_base)
@@ -267,6 +265,7 @@ def update_blender(artifacts_path = PATH_ARTIFACTS / 'blender', local_blender_pa
 def run_blender(blender_path):
     config_path = PATH_LOCAL / 'config'
     script_path = PATH_LOCAL / 'scripts'
+    extensions_path = PATH_LOCAL / 'extensions'
 
     # Sanity check
     if not config_path.exists():
@@ -276,6 +275,7 @@ def run_blender(blender_path):
 
     os.environ['BLENDER_USER_CONFIG'] = str(config_path)
     os.environ['BLENDER_USER_SCRIPTS'] = str(script_path)
+    os.environ['BLENDER_SYSTEM_EXTENSIONS'] = str(extensions_path)
     if PATH_CUSTOM_SPLASH.exists():
         os.environ['BLENDER_CUSTOM_SPLASH'] = str(PATH_CUSTOM_SPLASH)
 
@@ -305,34 +305,34 @@ def launch_blender(local_blender_path = PATH_LOCAL / 'blender'):
     run_blender(blender_path)
 
 
-def update_addons():
-    addon_artifacts_folder = PATH_ARTIFACTS / 'addons'
-    if not addon_artifacts_folder.exists():
-        logger.info("Addon artifacts folder not found at: " + str(addon_artifacts_folder))
-        logger.info("Skipping addon updates.")
+def update_extensions():
+    extension_artifacts_folder = PATH_ARTIFACTS / 'extensions'
+    if not extension_artifacts_folder.exists():
+        logger.info("Extension artifacts folder not found at: " + str(extension_artifacts_folder))
+        logger.info("Skipping extension updates.")
         return
-    addons_list = [entry.name for entry in addon_artifacts_folder.iterdir() if entry.suffix == ".zip" and entry.name[0] != "."]
-    local_artifact_dir = PATH_LOCAL / 'artifacts' / 'addons'
-    # Remove addons that doesn't exist in the artifact directory anymore.
+    extensions_list = [entry.name for entry in extension_artifacts_folder.iterdir() if entry.suffix == ".zip" and entry.name[0] != "."]
+    local_artifact_dir = PATH_LOCAL / 'artifacts' / 'extensions'
+    # Remove extensions that doesn't exist in the artifact directory anymore.
     if local_artifact_dir.exists():
-        local_addon_list = [entry.stem for entry in local_artifact_dir.iterdir() if entry.suffix == ".files"]
-        addons_to_remove = set(local_addon_list) - set(addons_list)
-        for addon in addons_to_remove:
-            logger.info("Removing addon: " + addon)
-            addon_files = local_artifact_dir / (addon + ".files")
-            addon_checksum = local_artifact_dir / (addon + ".sha256")
-            with open(addon_files) as file:
+        local_extension_list = [entry.stem for entry in local_artifact_dir.iterdir() if entry.suffix == ".files"]
+        extensions_to_remove = set(local_extension_list) - set(extensions_list)
+        for extension in extensions_to_remove:
+            logger.info("Removing extension: " + extension)
+            extension_files = local_artifact_dir / (extension + ".files")
+            extension_checksum = local_artifact_dir / (extension + ".sha256")
+            with open(extension_files) as file:
                 lines = [line.rstrip() for line in file]
             for file in lines:
-                old_file = PATH_LOCAL / 'scripts' / 'addons' / file
+                old_file = PATH_LOCAL / 'extensions' / file
                 if old_file.exists():
                     shutil.rmtree(old_file)
-            addon_files.unlink()
-            if addon_checksum.exists():
-                addon_checksum.unlink()
+            extension_files.unlink()
+            if extension_checksum.exists():
+                extension_checksum.unlink()
 
-    for zip_name in addons_list:
-        update_addon(zip_name)
+    for zip_name in extensions_list:
+        update_extension(zip_name)
 
 
 def update_presets():
@@ -343,7 +343,7 @@ def update_presets():
         return
     presets_list = [entry.name for entry in preset_artifacts_folder.iterdir() if entry.suffix == ".zip" and entry.name[0] != "."]
     for zip_name in presets_list:
-        update_addon(zip_name, 'presets')
+        update_extension(zip_name, 'presets', PATH_LOCAL / 'scripts' / 'presets')
 
 if __name__ == '__main__':
 
@@ -356,8 +356,8 @@ if __name__ == '__main__':
             sys.exit(1)
         run_blender(blender_path)
 
-    logger.info('Updating Add-ons')
-    update_addons()
+    logger.info('Updating Extensions')
+    update_extensions()
     logger.info('Updating Presets')
     update_presets()
     logger.info('Updating Blender')
