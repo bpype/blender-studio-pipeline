@@ -6,18 +6,14 @@
 import hashlib
 from pathlib import Path
 from urllib.request import urlretrieve
-import sys
 import requests
 import glob
 import os
 
 
-def update_blender_studio_addons(download_folder_path: Path):
-    if not download_folder_path.exists():
-        print(
-            f"Ensure script is run out of Project Tools directory {str(download_folder_path)} does not exist"
-        )
-        sys.exit(1)
+def update_blender_studio_extensions(download_folder_path: Path):
+    # Ensure that the download folder exists
+    os.makedirs(download_folder_path, exist_ok=True)
 
     sha_file = download_folder_path.joinpath("blender_studio_add-ons_latest.zip.sha256")
     zip_file = download_folder_path.joinpath("blender_studio_add-ons_latest.zip")
@@ -49,9 +45,9 @@ def update_blender_studio_addons(download_folder_path: Path):
         print(f"Downloaded file {zip_file.name} does not match its shasum, exiting!")
         exit(1)
 
-    print("Blender Studio Add-Ons Successfully Updated for Current Project")
+    print("Blender Studio Extensions Successfully Updated for Current Project")
     print(
-        "Blender Studio Add-Ons will be copied to your local directory next time you launch Blender via Projet Tools"
+        "Blender Studio Extensions will be copied to your local directory next time you launch Blender via Project Tools"
     )
 
 
@@ -88,10 +84,10 @@ def download_file(url, out_folder, filename):
 
 
 current_file_folder_path = Path(__file__).parent
-download_folder_path = (current_file_folder_path / "../../shared/artifacts/addons/").resolve()
-update_blender_studio_addons(download_folder_path)
+download_folder_path = (current_file_folder_path / "../../shared/artifacts/extensions/").resolve()
+update_blender_studio_extensions(download_folder_path)
 
-# Customize this script to download add-ons from other sources
+# Customize this script to download extensions from other sources
 # download_file(
 #    "https://projects.blender.org/studio/blender-studio-tools/archive/main.zip",
 #    download_folder_path,
