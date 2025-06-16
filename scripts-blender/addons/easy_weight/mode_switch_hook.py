@@ -13,7 +13,7 @@ def on_weight_paint_enter():
     viewports = []
     for window in wm.windows:
         for area in window.workspace.screens[0].areas:
-            if area.spaces.active.type == 'VIEW_3D':
+            if area.spaces.active and area.spaces.active.type == 'VIEW_3D':
                 viewports.append(area.spaces.active)
 
     prefs = get_addon_prefs(context)
@@ -70,7 +70,7 @@ def on_weight_paint_leave():
     viewports = []
     for window in wm.windows:
         for area in window.workspace.screens[0].areas:
-            if area.spaces.active.type == 'VIEW_3D':
+            if area.spaces.active and area.spaces.active.type == 'VIEW_3D':
                 viewports.append(area.spaces.active)
 
     if 'weight_paint_toggle' not in wm:
