@@ -5,10 +5,16 @@
 import bpy
 from . import constants
 from .logging import get_logger
+from . import __package__ as base_package
 
-def get_addon_prefs():
-    return bpy.context.preferences.addons[constants.ADDON_NAME].preferences
-
+def get_addon_prefs(context=None):
+    if not context:
+        context = bpy.context
+    if base_package.startswith('bl_ext'):
+        # 4.2
+        return context.preferences.addons[base_package].preferences
+    else:
+        return context.preferences.addons[base_package.split(".")[0]].preferences
 
 def project_root_dir_get():
     prefs = get_addon_prefs()
@@ -21,7 +27,7 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
     project_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Project Root Directory",
         description="Root Directory of the Project, this should be the root directory `your_project_name/ that contains the SVN, Shared and Local folders`",
-        default="/data/gold/",
+        default="/data/our_project/",
         subtype="DIR_PATH",
     )
 

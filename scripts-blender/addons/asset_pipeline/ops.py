@@ -181,7 +181,7 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
             first_file_name = Path(bpy.data.filepath).name
         else:
             first_file_name = (
-                self._name + constants.FILE_DELIMITER + local_tls[0].lower() + ".blend"
+                self._name + constants.FILE_DELIMITER + local_tls[0].lower().replace(" ", "_") + ".blend"
             )
 
         first_file = os.path.join(asset_directory, first_file_name)
@@ -192,7 +192,7 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         return first_file
 
     def _task_layer_file_create(self, context, task_layer_key, asset_directory):
-        name = self._name + constants.FILE_DELIMITER + task_layer_key.lower() + ".blend"
+        name = self._name + constants.FILE_DELIMITER + task_layer_key.lower().replace(" ", "_") + ".blend"
         self._asset_pipe.set_local_task_layers([task_layer_key])
         self._task_layer_collections_set(
             context, self._asset_pipe.asset_collection, [task_layer_key]
