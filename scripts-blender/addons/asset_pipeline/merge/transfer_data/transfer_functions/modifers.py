@@ -14,6 +14,12 @@ from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
 from ...task_layer import get_transfer_data_owner
 from .... import constants, logging
 
+BIND_OPS = {
+    'SURFACE_DEFORM': bpy.ops.object.surfacedeform_bind,
+    'MESH_DEFORM': bpy.ops.object.meshdeform_bind,
+    'CORRECTIVE_SMOOTH': bpy.ops.object.correctivesmooth_bind,
+}
+
 
 def modifiers_clean(obj):
     cleaned_names = transfer_data_clean(
@@ -125,26 +131,17 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
 
     # rebind modifiers (corr. smooth, surf. deform, mesh deform)
     for source_mod in target_obj.modifiers:
-        if source_mod.type == 'SURFACE_DEFORM':
-            if not source_mod.is_bound:
-                continue
-            for i in range(2):
-                with override_obj_visability(obj=target_obj, scene=scene):
-                    with context.temp_override(object=target_obj, active_object=target_obj):
-                        bpy.ops.object.surfacedeform_bind(modifier=source_mod.name)
-        elif source_mod.type == 'MESH_DEFORM':
-            if not source_mod.is_bound:
-                continue
-            for i in range(2):
-                with override_obj_visability(obj=target_obj, scene=scene):
-                    with context.temp_override(object=target_obj, active_object=target_obj):
-                        bpy.ops.object.meshdeform_bind(modifier=source_mod.name)
-        elif source_mod.type == 'CORRECTIVE_SMOOTH':
-            if not source_mod.is_bind:
-                continue
-            for i in range(2):
-                with override_obj_visability(obj=target_obj, scene=scene):
-                    with context.temp_override(object=target_obj, active_object=target_obj):
-                        bpy.ops.object.correctivesmooth_bind(modifier=source_mod.name)
+        bind_op = BIND_OPS.get(source_mod.type)
+        if not bind_op or not is_modifier_bound(source_mod):
+            continue
+        with override_obj_visability(obj=target_obj, scene=scene):
+            with context.temp_override(object=target_obj, active_object=target_obj):
+                bind_op(modifier=source_mod.name)
 
         transfer_drivers(source_obj, target_obj, 'modifiers', modifier_name)
+
+def is_modifier_bound(modifier) -> bool | None:
+    if modifier.type in ('SURFACE_DEFORM', 'MESH_DEFORM'):
+        return modifier.is_bound
+    elif modifier.type in ('CORRECTIVE_SMOOTH'):
+        return modifier.is_bind
