@@ -1,3 +1,5 @@
+# This is ancient code from Project Heist a.k.a. Charge. Maybe still useful somehow, but can probably be removed any time.
+
 from typing import Any, Dict, List, Set, Union, Optional
 
 import bpy
@@ -36,9 +38,6 @@ class RiggingTaskLayer(TaskLayer):
     ) -> None:
         print(f"\n\033[1mProcessing data from {cls.__name__}...\033[0m")
 
-        settings = transfer_settings
-
-        depsgraph = context.evaluated_depsgraph_get()
         transfer_mapping.generate_mapping()
 
         # add prefixes to existing modifiers
@@ -65,9 +64,6 @@ class ModelingTaskLayer(TaskLayer):
     ) -> None:
         print(f"\n\033[1mProcessing data from {cls.__name__}...\033[0m")
 
-        settings = transfer_settings
-
-        depsgraph = context.evaluated_depsgraph_get()
         transfer_mapping.generate_mapping()
 
         # identify geometry collections in source and target
@@ -116,7 +112,6 @@ class ModelingTaskLayer(TaskLayer):
                 con.enabled = False
             for con in obj_source.constraints:
                 con.enabled = False
-            depsgraph = context.evaluated_depsgraph_get()
 
             obj_target.matrix_world = obj_source.matrix_world
             for con, vis in zip(obj_target.constraints, con_vis):
@@ -225,83 +220,11 @@ class ModelingTaskLayer(TaskLayer):
                 bpy.data.objects.remove(obj_target_original)
 
             # sync modifier stack (those without prefix on the source are added and prefixed, those with matching/other prefix are synced/ignored based on their prefix)
-            # add prefix to existing modifiers
             prefix_modifiers(obj_source, 1)
-            # remove old and sync existing modifiers TODO: Stack position and parameters
-            for mod in obj_target.modifiers:
-                if mod.name.split('-')[0] not in ['GEO', 'APL']:
-                    continue
-                if mod.name not in [m.name for m in obj_source.modifiers]:
-                    print(info_text(f"Removing modifier {mod.name}"))
-                    obj_target.modifiers.remove(mod)
-
-            # transfer new modifiers
-            for i, mod in enumerate(obj_source.modifiers):
-                if mod.name.split('-')[0] not in ['GEO', 'APL']:
-                    continue
-                if mod.name in [m.name for m in obj_target.modifiers]:
-                    continue
-                mod_new = obj_target.modifiers.new(mod.name, mod.type)
-                # sort new modifier at correct index (default to beginning of the stack)
-                idx = 0
-                if i > 0:
-                    name_prev = obj_source.modifiers[i - 1].name
-                    for target_mod_i, target_mod in enumerate(obj_target.modifiers):
-                        if target_mod.name == name_prev:
-                            idx = target_mod_i + 1
-                bpy.ops.object.modifier_move_to_index(
-                    {'object': obj_target}, modifier=mod_new.name, index=idx
-                )
-
-            # sync modifier settings
-            for i, mod_source in enumerate(obj_source.modifiers):
-                mod_target = obj_target.modifiers.get(mod_source.name)
-                if not mod_target:
-                    continue
-                if mod_source.name.split('-')[0] not in ['GEO', 'APL']:
-                    continue
-                for prop in [
-                    p.identifier
-                    for p in mod_source.bl_rna.properties
-                    if not p.is_readonly
-                ]:
-                    value = getattr(mod_source, prop)
-                    if (
-                        type(value) == bpy.types.Object
-                        and value in transfer_mapping.object_map
-                    ):
-                        # If a modifier is referencing a .TASK object,
-                        # remap that reference to a .TARGET object.
-                        # (Eg. modeling Mirror modifier with a mirror object)
-                        value = transfer_mapping.object_map[value]
-                    setattr(mod_target, prop, value)
-
-            # rebind modifiers (corr. smooth, surf. deform, mesh deform)
-            for mod in obj_target.modifiers:
-                if mod.type == 'SURFACE_DEFORM':
-                    if not mod.is_bound:
-                        continue
-                    for i in range(2):
-                        bpy.ops.object.surfacedeform_bind(
-                            {"object": obj_target, "active_object": obj_target},
-                            modifier=mod.name,
-                        )
-                elif mod.type == 'MESH_DEFORM':
-                    if not mod.is_bound:
-                        continue
-                    for i in range(2):
-                        bpy.ops.object.meshdeform_bind(
-                            {"object": obj_target, "active_object": obj_target},
-                            modifier=mod.name,
-                        )
-                elif mod.type == 'CORRECTIVE_SMOOTH':
-                    if not mod.is_bind:
-                        continue
-                    for i in range(2):
-                        bpy.ops.object.correctivesmooth_bind(
-                            {"object": obj_target, "active_object": obj_target},
-                            modifier=mod.name,
-                        )
+            remove_removed_modifiers(obj_source, obj_target)
+            transfer_new_modifiers(obj_source, obj_target)
+            sync_modifier_settings(obj_source, obj_target, transfer_mapping)
+            rebind_modifiers(obj_target)
 
         # restore multiusers
         if not (
@@ -323,6 +246,75 @@ class ModelingTaskLayer(TaskLayer):
                 main_mesh = transfer_mapping.object_map[objects[0]].data
                 for ob in objects:
                     transfer_mapping.object_map[ob].data = main_mesh
+
+
+def remove_removed_modifiers(obj_source, obj_target):
+    for mod in obj_target.modifiers:
+        if mod.name.split('-')[0] not in ['GEO', 'APL']:
+            continue
+        if mod.name not in [m.name for m in obj_source.modifiers]:
+            print(info_text(f"Removing modifier {mod.name}"))
+            obj_target.modifiers.remove(mod)
+
+
+def transfer_new_modifiers(obj_source, obj_target):
+    for i, mod in enumerate(obj_source.modifiers):
+        if mod.name.split('-')[0] not in ['GEO', 'APL']:
+            continue
+        if mod.name in [m.name for m in obj_target.modifiers]:
+            continue
+        mod_new = obj_target.modifiers.new(mod.name, mod.type)
+        # sort new modifier at correct index (default to beginning of the stack)
+        idx = 0
+        if i > 0:
+            name_prev = obj_source.modifiers[i - 1].name
+            for target_mod_i, target_mod in enumerate(obj_target.modifiers):
+                if target_mod.name == name_prev:
+                    idx = target_mod_i + 1
+        bpy.ops.object.modifier_move_to_index(
+            {'object': obj_target}, modifier=mod_new.name, index=idx
+        )
+
+
+def sync_modifier_settings(obj_source, obj_target, transfer_mapping):
+    for i, mod_source in enumerate(obj_source.modifiers):
+        mod_target = obj_target.modifiers.get(mod_source.name)
+        if not mod_target:
+            continue
+        if mod_source.name.split('-')[0] not in ['GEO', 'APL']:
+            continue
+        for prop in [
+            p.identifier
+            for p in mod_source.bl_rna.properties
+            if not p.is_readonly
+        ]:
+            value = getattr(mod_source, prop)
+            if (
+                type(value) == bpy.types.Object
+                and value in transfer_mapping.object_map
+            ):
+                # If a modifier is referencing a .TASK object,
+                # remap that reference to a .TARGET object.
+                # (Eg. modeling Mirror modifier with a mirror object)
+                value = transfer_mapping.object_map[value]
+            setattr(mod_target, prop, value)
+
+
+def rebind_modifiers(obj):
+    op_map = {
+        'SURFACE_DEFORM': bpy.ops.object.surfacedeform_bind,
+        'MESH_DEFORM': bpy.ops.object.meshdeform_bind,
+        'CORRECTIVE_SMOOTH': bpy.ops.object.correctivesmooth_bind,
+    }
+    for mod in obj.modifiers:
+        op_func = op_map.get(mod.type)
+        if not op_func or not mod.is_bound:
+            continue
+        for i in range(2):
+            op_func(
+                {"object": obj, "active_object": obj},
+                modifier=mod.name,
+            )
 
 
 def prefix_modifiers(obj: bpy.types.Object, idx: int, delimiter='-') -> None:

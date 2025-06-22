@@ -150,6 +150,7 @@ def proximity_transfer_single_attribute(
     # target_attribute = tgt_dat.attributes.new(
     #     source_attribute.name, source_attribute.data_type, source_attribute.domain
     # )
+    logger = logging.get_logger()
 
     data_sfx = {
         'INT8': 'value',
