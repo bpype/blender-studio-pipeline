@@ -138,9 +138,9 @@ def transfer_data_item_init(
 
 
 @contextlib.contextmanager
-def isolate_collection(iso_col: bpy.types.Collection):
+def isolate_collection(context, iso_col: bpy.types.Collection):
     col_exclude = {}
-    view_layer_col = bpy.context.view_layer.layer_collection
+    view_layer_col = context.view_layer.layer_collection
     view_layer_col.collection.children.link(iso_col)
     for col in view_layer_col.children:
         col_exclude[col.name] = col.exclude
@@ -159,7 +159,6 @@ def isolate_collection(iso_col: bpy.types.Collection):
 
 @contextlib.contextmanager
 def link_objs_to_collection(objs: set, col: bpy.types.Collection):
-    ...
     try:
         for obj in objs:
             col.objects.link(obj)
@@ -168,3 +167,38 @@ def link_objs_to_collection(objs: set, col: bpy.types.Collection):
     finally:
         for obj in objs:
             col.objects.unlink(obj)
+
+
+@contextlib.contextmanager
+def activate_shapekey(objs: set, sk_name: str):
+    old_values = {}
+    try:
+        for obj in objs:
+            if not obj.data.shape_keys:
+                continue
+            sk = obj.data.shape_keys.key_blocks.get(sk_name)
+            if not sk:
+                continue
+            old_values[obj] = sk.value
+            sk.value = 1
+        yield
+
+    finally:
+        for obj, val in old_values.items():
+            obj.data.shape_keys.key_blocks[sk_name].value = val
+
+@contextlib.contextmanager
+def disable_modifiers(objs: set, mod_types: set[str]):
+    mods_to_enable = {obj: [] for obj in objs}
+    try:
+        for obj in objs:
+            for mod in obj.modifiers:
+                if mod.type in mod_types and mod.show_viewport:
+                    mods_to_enable[obj].append(mod.name)
+                    mod.show_viewport = False
+        yield
+
+    finally:
+        for obj, mod_names in mods_to_enable.items():
+            for mod_name in mod_names:
+                obj.modifiers[mod_name].show_viewport = True
