@@ -143,6 +143,7 @@ def apply_transfer_data_items(
                 f"Transferring Modifier {transfer_data_dict['name']} from {source_obj.name} to {target_obj.name}."
             )
             modifers.transfer_modifier(
+                context,
                 modifier_name=transfer_data_dict["name"],
                 target_obj=target_obj,
                 source_obj=source_obj,
@@ -220,7 +221,7 @@ def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
     # Create/isolate tmp collection to reduce depsgraph update time
     profiler = logging.get_profiler()
     td_col = bpy.data.collections.new("ISO_COL_TEMP")
-    with isolate_collection(td_col):
+    with isolate_collection(context, td_col):
         # Loop over objects in Transfer data map
         for source_obj in transfer_data_map:
             target_obj = transfer_data_map[source_obj]["target_obj"]

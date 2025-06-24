@@ -9,6 +9,8 @@ from ..transfer_util import (
     transfer_data_clean,
     transfer_data_item_is_missing,
     check_transfer_data_entry,
+    activate_shapekey,
+    disable_modifiers,
 )
 from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
 from ...task_layer import get_transfer_data_owner
@@ -62,50 +64,63 @@ def init_modifiers(scene, obj):
             )
 
 
-def transfer_modifier(modifier_name, target_obj, source_obj):
+def transfer_modifier(context, modifier_name, target_obj, source_obj):
+    """Transfer a single modifier from source_obj to target_obj.
+    For example, when pulling into rigging and transferring a rigging modifier,
+    then source_obj will be the local object, and target_obj will be the external object.
+    """
     logger = logging.get_logger()
 
-    # remove old and sync existing modifiers
-    context = bpy.context
-    scene = context.scene
-    old_mod = target_obj.modifiers.get(modifier_name)
-    if old_mod:
-        target_obj.modifiers.remove(old_mod)
-
-    # get modifier index
-    source_index = 0
-    source_mod = None
-    for i, source_mod in enumerate(source_obj.modifiers):
-        if source_mod.name == modifier_name:
-            source_index = i
-            break
+    # get modifier & index
+    source_mod = source_obj.modifiers.get(modifier_name)
 
     if not source_mod:
         logger.debug(
             f"Modifer Transfer cancelled, '{modifier_name}' not found on '{source_obj.name}'"
         )
+        target_obj.modifiers.remove(target_mod)
         # This happens if a modifier's transfer data is still around, but the modifier
         # itself was removed.
         return
 
-    # create target mod
-    mod_new = target_obj.modifiers.new(source_mod.name, source_mod.type)
+    # remove old and sync existing modifiers
+    target_mod = target_obj.modifiers.get(modifier_name)
+    if not target_mod:
+        target_mod = target_obj.modifiers.new(source_mod.name, source_mod.type)
 
-    # move new modifier at correct index (default to beginning of the stack)
-    idx = 0
-    if source_index > 0:
-        name_prev = source_obj.modifiers[i - 1].name
-        for target_mod_i, target_mod in enumerate(target_obj.modifiers):
-            if task_layer_prefix_basename_get(target_mod.name) == task_layer_prefix_basename_get(
-                name_prev
-            ):
-                idx = target_mod_i + 1
+    place_modifier_in_stack(source_obj, target_obj, modifier_name)
+    transfer_modifier_props(context, source_mod, target_mod)
+    transfer_drivers(source_obj, target_obj, 'modifiers', modifier_name)
+    rebind_modifier(context, target_obj, modifier_name)
 
-    with override_obj_visability(obj=target_obj, scene=scene):
-        with context.temp_override(object=target_obj):
-            bpy.ops.object.modifier_move_to_index(modifier=mod_new.name, index=idx)
+def place_modifier_in_stack(source_obj, target_obj, modifier_name):
+    """Modifiers will try to be placed abelow the modifier they were below on the source object.
+    This is not very foolproof, since re-ordering multiple modifiers or renaming plus re-ordering, 
+    or removing plus re-ordering, all in one step, could make it hard to determine the ideal order.
+    In such cases, user may need to fix the order and sync a 2nd time.
+    """
 
-    target_mod = target_obj.modifiers.get(source_mod.name)
+    logger = logging.get_logger()
+    idx_tgt = target_obj.modifiers.find(modifier_name)
+    idx_src = source_obj.modifiers.find(modifier_name)
+
+    idx_new = 0
+    # Order modifier based on previous modifier in source obj.
+    if idx_src > 0:
+        mod_anchor = source_obj.modifiers[idx_src - 1]
+        name_anchor = task_layer_prefix_basename_get(mod_anchor.name)
+
+        for idx, mod_of_tgt in enumerate(target_obj.modifiers):
+            if name_anchor == task_layer_prefix_basename_get(mod_of_tgt.name):
+                idx_new = min(len(target_obj.modifiers)-1, idx+1)
+                break
+
+    if idx_tgt != idx_new:
+        target_obj.modifiers.move(idx_tgt, idx_new)
+        logger.debug(f"  Moved {modifier_name.name} to index {idx_new} (after {name_anchor}).")
+
+
+def transfer_modifier_props(context, source_mod, target_mod):
     props = [p.identifier for p in source_mod.bl_rna.properties if not p.is_readonly]
     for prop in props:
         value = getattr(source_mod, prop)
@@ -129,19 +144,33 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
         if target_mod.node_group:
             target_mod.node_group.interface_update(context)
 
-    # rebind modifiers (corr. smooth, surf. deform, mesh deform)
-    for source_mod in target_obj.modifiers:
-        bind_op = BIND_OPS.get(source_mod.type)
-        if not bind_op or not is_modifier_bound(source_mod):
-            continue
-        with override_obj_visability(obj=target_obj, scene=scene):
-            with context.temp_override(object=target_obj, active_object=target_obj):
-                bind_op(modifier=source_mod.name)
 
-        transfer_drivers(source_obj, target_obj, 'modifiers', modifier_name)
+def rebind_modifier(context, obj, modifier_name):
+    """Binding data cannot be transferred. Instead, modifiers that require binding will have the bind operator executed.
+    Sometimes binding is meant to be done in a bind pose other than the default. For this, shape keys can be added
+    to the deforming and/or the deformed mesh, named "BIND-<name_of_modifier_with_prefix>". Such shape keys will be enabled
+    during binding. Other deforming modifiers will be disabled during binding.
+    """
+    modifier = obj.modifiers.get(modifier_name)
+    assert modifier
+    bind_op = BIND_OPS.get(modifier.type)
+    if (
+        not bind_op or 
+        (hasattr(modifier, 'target') and not modifier.target) or 
+        (modifier.type=='CORRECTIVE_SMOOTH' and modifier.rest_source=='ORCO')
+    ):
+        return
 
-def is_modifier_bound(modifier) -> bool | None:
-    if modifier.type in ('SURFACE_DEFORM', 'MESH_DEFORM'):
-        return modifier.is_bound
-    elif modifier.type in ('CORRECTIVE_SMOOTH'):
-        return modifier.is_bind
+    objs = [obj]
+    if hasattr(modifier, 'target') and modifier.target:
+        objs.append(modifier.target)
+    with activate_shapekey(objs, "BIND-"+modifier_name):
+        modifiers_to_disable = ['LATTICE', 'ARMATURE', 'SHRINKWRAP', 'SMOOTH']
+        if modifier.type != 'CORRECTIVE_SMOOTH':
+            modifiers_to_disable.append('CORRECTIVE_SMOOTH')
+        with disable_modifiers((obj, ), modifiers_to_disable):
+            for i in range(2):
+                context.view_layer.update()
+                with override_obj_visability(obj=obj, scene=context.scene):
+                    with context.temp_override(object=obj, active_object=obj):
+                        bind_op(modifier=modifier.name)
