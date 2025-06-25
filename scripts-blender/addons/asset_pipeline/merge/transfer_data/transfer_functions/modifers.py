@@ -117,7 +117,7 @@ def place_modifier_in_stack(source_obj, target_obj, modifier_name):
 
     if idx_tgt != idx_new:
         target_obj.modifiers.move(idx_tgt, idx_new)
-        logger.debug(f"  Moved {modifier_name.name} to index {idx_new} (after {name_anchor}).")
+        logger.debug(f"  Moved {modifier_name} to index {idx_new} (after {name_anchor}).")
 
 
 def transfer_modifier_props(context, source_mod, target_mod):

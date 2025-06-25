@@ -165,7 +165,7 @@ export default defineConfig({
             collapsed: true,
             items: [
               {text: 'Blender Setup', link: '/td-guide/blender_setup'},
-              {text: 'Add-Ons Setup', link: '/td-guide/addon_setup'},
+              {text: 'Extensions Setup', link: '/td-guide/extensions_setup'},
               {text: 'Add-Ons Preferences', link: '/td-guide/addon_preferences'},
             ],
           },

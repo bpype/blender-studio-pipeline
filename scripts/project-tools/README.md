@@ -46,17 +46,17 @@ It will keep up to 10 previous downloaded versions for backup.
 It is also possible to manually download Blender with their shasums and put then into this folder.
 Note that only one version for each platform should exist at the same this in this folder if you do so.
 
-## update_addons.py
+## update_extensions.py
 
-This is a script to fetch add-on .zip files and put them into `shared/artifacts/addons` folder.
+This is a script to fetch add-on .zip files and put them into `shared/artifacts/extensions` folder.
 
-As with the `update_blender.py` script, it is possible to manually download the zip files and their shasums and put them in the `addons` folder.
+As with the `update_blender.py` script, it is possible to manually download the zip files and their shasums and put them in the `extensions` folder.
 
 To specify which add-ons to download, edit the script file and use the `download_file` function.
 
 ## run_blender.py
 
-This script will take the correct blender version for your operating system from `shared/artifacts/blender` and extract it to the `local` directory. Along with any add-ons in the `shared/artifacts/addons` folder.
+This script will take the correct blender version for your operating system from `shared/artifacts/blender` and extract it to the `local` directory. Along with any add-ons in the `shared/artifacts/extensions` folder.
 
 It will finally launch the extracted Blender.
 
