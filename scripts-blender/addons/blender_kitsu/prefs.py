@@ -198,24 +198,19 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         description="Metadata that is required for lookdev",
     )
 
-    def get_shot_playblast_root_dir(self) -> str:
-        frames_dir = self.project_root_path.joinpath("shared/editorial/footage/pro/")
-        if frames_dir.exists():
-            return frames_dir.as_posix()
-        return ""
-
     def set_shot_playblast_root_dir(self, input):
-        self['shot_playblast_root_dir'] = input
+        self.bl_system_properties_get(do_create=True)['shot_playblast_root_dir'] = input
         return
 
     def get_shot_playblast_root_dir(
         self,
     ) -> str:
-        if get_safely_string_prop(self, 'shot_playblast_root_dir') == "" and self.project_root_path:
+        path = get_safely_string_prop(self.bl_system_properties_get(), 'shot_playblast_root_dir')
+        if path == "" and self.project_root_path:
             dir = self.project_root_path.joinpath("shared/editorial/footage/pro/")
             if dir.exists():
                 return dir.as_posix()
-        return get_safely_string_prop(self, 'shot_playblast_root_dir')
+        return path
 
     shot_playblast_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Shot Playblasts",
@@ -228,17 +223,18 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     )
 
     def set_seq_playblast_root_dir(self, input):
-        self['seq_playblast_root_dir'] = input
+        self.bl_system_properties_get(do_create=True)['seq_playblast_root_dir'] = input
         return
 
     def get_seq_playblast_root_dir(
         self,
     ) -> str:
-        if get_safely_string_prop(self, 'seq_playblast_root_dir') == "" and self.project_root_path:
+        path = get_safely_string_prop(self.bl_system_properties_get(), 'seq_playblast_root_dir')
+        if path == "" and self.project_root_path:
             dir = self.project_root_path.joinpath("shared/editorial/footage/pre/")
             if dir.exists():
                 return dir.as_posix()
-        return get_safely_string_prop(self, 'seq_playblast_root_dir')
+        return path
 
     seq_playblast_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Sequence Playblasts",
@@ -251,17 +247,18 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     )
 
     def set_frames_root_dir(self, input):
-        self['frames_root_dir'] = input
+        self.bl_system_properties_get(do_create=True)['frames_root_dir'] = input
         return
 
     def get_frames_root_dir(
         self,
     ) -> str:
-        if get_safely_string_prop(self, 'frames_root_dir') == "" and self.project_root_path:
+        path = get_safely_string_prop(self.bl_system_properties_get(), 'frames_root_dir')
+        if path == "" and self.project_root_path:
             dir = self.project_root_path.joinpath("shared/editorial/footage/post/")
             if dir.exists():
                 return dir.as_posix()
-        return get_safely_string_prop(self, 'frames_root_dir')
+        return path
 
     frames_root_dir: bpy.props.StringProperty(  # type: ignore
         name="Rendered Frames",
@@ -313,18 +310,19 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     )
 
     def set_shot_pattern(self, input):
-        self['shot_pattern'] = input
+        self.bl_system_properties_get(do_create=True)['shot_pattern'] = input
         return
 
     def get_shot_pattern(
         self,
     ) -> str:
         active_project = cache.project_active_get()
-        if get_safely_string_prop(self, 'shot_pattern') == "":
+        pattern = get_safely_string_prop(self.bl_system_properties_get(), 'shot_pattern')
+        if pattern == "":
             if active_project.production_type == bkglobals.KITSU_TV_PROJECT:
                 return "<Episode>_<Sequence>_<Counter>"
             return "<Sequence>_<Counter>"
-        return get_safely_string_prop(self, 'shot_pattern')
+        return pattern
 
     shot_pattern: bpy.props.StringProperty(  # type: ignore
         name="Shot Pattern",
@@ -381,17 +379,18 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     )
 
     def set_edit_export_dir(self, input):
-        self['edit_export_dir'] = input
+        self.bl_system_properties_get(do_create=True)['edit_export_dir'] = input
         return
 
     def get_edit_export_dir(
         self,
     ) -> str:
-        if get_safely_string_prop(self, 'edit_export_dir') == "" and self.project_root_path:
+        path = get_safely_string_prop(self.bl_system_properties_get(), 'edit_export_dir')
+        if path == "" and self.project_root_path:
             dir = self.project_root_path.joinpath("shared/editorial/export/")
             if dir.exists():
                 return dir.as_posix()
-        return get_safely_string_prop(self, 'edit_export_dir')
+        return path
 
     edit_export_dir: bpy.props.StringProperty(  # type: ignore
         name="Edit Export Directory",
@@ -403,20 +402,21 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     )
 
     def set_edit_export_file_pattern(self, input):
-        self['edit_export_file_pattern'] = input
+        self.bl_system_properties_get(do_create=True)['edit_export_file_pattern'] = input
         return
 
     def get_edit_export_file_pattern(
         self,
     ) -> str:
         active_project = cache.project_active_get()
-        if get_safely_string_prop(self, 'edit_export_file_pattern') == "" and active_project:
+        pattern = get_safely_string_prop(self.bl_system_properties_get(), 'edit_export_file_pattern')
+        if pattern == "" and active_project:
             proj_name = active_project.name.replace(' ', bkglobals.SPACE_REPLACER).lower()
             # HACK for Project Gold at Blender Studio
             if proj_name == "project_gold":
                 return f"gold-edit-v###.mp4"
             return f"{proj_name}-edit-v###.mp4"
-        return get_safely_string_prop(self, 'edit_export_file_pattern')
+        return pattern
 
     edit_export_file_pattern: bpy.props.StringProperty(  # type: ignore
         name="Edit Export File Pattern",
@@ -452,17 +452,18 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     ####################
 
     def set_farm_dir(self, input):
-        self['farm_output_dir'] = input
+        self.bl_system_properties_get(do_create=True)['farm_output_dir'] = input
         return
 
     def get_farm_dir(
         self,
     ) -> str:
-        if get_safely_string_prop(self, 'farm_output_dir') == "" and self.project_root_path:
+        path = get_safely_string_prop(self.bl_system_properties_get(), 'farm_output_dir')
+        if path == "" and self.project_root_path:
             dir = self.project_root_path.joinpath("render/")
             if dir.exists():
                 return dir.as_posix()
-        return get_safely_string_prop(self, 'farm_output_dir')
+        return path
 
     farm_output_dir: bpy.props.StringProperty(  # type: ignore
         name="Farm Output Directory",

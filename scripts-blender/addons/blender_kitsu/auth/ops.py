@@ -117,7 +117,7 @@ class KITSU_OT_session_end(bpy.types.Operator):
 def auto_login_on_file_open():
     context = bpy.context
     session = prefs.session_get(context)
-    if not session.is_auth():
+    if not session.is_auth() and prefs.addon_prefs_get(context).host:
         bpy.ops.kitsu.session_start()
 
 
