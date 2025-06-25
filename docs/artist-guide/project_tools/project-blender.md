@@ -1,6 +1,6 @@
 # Project Blender
 
-Project Tools will store a version of Blender within the `shared` directory. This version of Blender is internal to that project. This allows for multiple Blenders to be installed on your system, each with their own preferences tailored specifically to that project. The main advantage to running/managing Blender using the Project Tools scripts is that it will synchronize the Blender version and Shared Add-Ons across for all users contributing the the project. Project Tools also allows you to run a custom build of Blender with the Add-Ons and preferences set for your project.
+Project Tools will store a version of Blender within the `shared` directory. This version of Blender is internal to that project. This allows for multiple Blenders to be installed on your system, each with their own preferences tailored specifically to that project. The main advantage to running/managing Blender using the Project Tools scripts is that it will synchronize the Blender version and Shared Extensions across for all users contributing the the project. Project Tools also allows you to run a custom build of Blender with the Extensions and preferences set for your project.
 
 <!---
 TODO Note from Julien:
@@ -58,7 +58,7 @@ Note that the file names doesn't have to match exactly with the examples above a
 
 ## Create Shortcut
 
-Once your project has been setup using the "Project Tools" scripts Blender should be available inside your application's native application launcher. The run Blender script will take the correct blender version for your operating system from `your_project_name/shared/artifacts/blender` and extract it to the local directory. Along with any add-ons in the `your_project_name/shared/artifacts/addons` folder. Your Blender preferences are stored on a per project basis in `{directory-path}`
+Once your project has been setup using the "Project Tools" scripts Blender should be available inside your application's native application launcher. The run Blender script will take the correct blender version for your operating system from `your_project_name/shared/artifacts/blender` and extract it to the local directory. Along with any extensions in the `your_project_name/shared/artifacts/extensions` folder. Your Blender preferences are stored on a per project basis in `{directory-path}`
 
 ### Create Linux Shortcut
 ```bash
@@ -70,7 +70,7 @@ To learn more about running the Blender if you are on a Gentoo system please see
 :::
 
 #### Launch with Custom Build on Linux
-You must run the Create Linux Shortcut step before running a custom build. This will launch blender using your custom binary, but with the Add-Ons and preferences of your project.
+You must run the Create Linux Shortcut step before running a custom build. This will launch blender using your custom binary, but with the Extensions and preferences of your project.
 
 1. Navigate to your custom Blender binary
 2. Right Click the binary
@@ -163,21 +163,21 @@ cd %HOMEPATH%\your_project_name\svn\tools
 python rollback_blender_local.py
 ```
 
-## Update Blender Studio Add-Ons
-All Add-Ons in the Blender Studio Pipeline repository can be quickly downloaded using the `update_addons.py` script.
+## Update Blender Studio Extensions
+All Extensions in the Blender Studio Pipeline repository can be quickly downloaded using the `update_extensions.py` script.
 
 ```bash
 # Linux/Mac
 cd ~/data/your_project_name/svn/tools
-./update_addons.py
+./update_extensions.py
 ```
 ```bash
 # Windows
 cd %HOMEPATH%\data\your_project_name\svn\tools
-python update_addons.py
+python update_extensions.py
 ```
 
-*To learn more see [Add-On Setup page](/td-guide/addon_setup.md)*
+*To learn more see [Extensions Setup page](/td-guide/extensions_setup.md)*
 
 
 ::: info Gentoo Users
