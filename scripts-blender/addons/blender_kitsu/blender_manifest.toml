@@ -17,3 +17,10 @@ license = [
 copyright = [
   "2019-2025 Paul Golter & Blender Studio",
 ]
+
+wheels = [
+ "./wheels/bidict-0.22.1-py3-none-any.whl",
+ "./wheels/gazu-0.9.4-py2.py3-none-any.whl",
+ "./wheels/python_engineio-4.5.1-py3-none-any.whl",
+ "./wheels/python_socketio-5.8.0-py3-none-any.whl",
+]
