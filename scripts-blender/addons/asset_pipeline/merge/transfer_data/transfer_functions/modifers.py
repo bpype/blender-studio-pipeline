@@ -91,10 +91,11 @@ def transfer_modifier(context, modifier_name, target_obj, source_obj):
     place_modifier_in_stack(source_obj, target_obj, modifier_name)
     transfer_modifier_props(context, source_mod, target_mod)
     transfer_drivers(source_obj, target_obj, 'modifiers', modifier_name)
-    rebind_modifier(context, target_obj, modifier_name)
+    if is_modifier_bound(source_mod):
+        bind_modifier(context, target_obj, modifier_name)
 
 def place_modifier_in_stack(source_obj, target_obj, modifier_name):
-    """Modifiers will try to be placed abelow the modifier they were below on the source object.
+    """Modifiers will try to be placed below the modifier they were below on the source object.
     This is not very foolproof, since re-ordering multiple modifiers or renaming plus re-ordering, 
     or removing plus re-ordering, all in one step, could make it hard to determine the ideal order.
     In such cases, user may need to fix the order and sync a 2nd time.
@@ -105,6 +106,7 @@ def place_modifier_in_stack(source_obj, target_obj, modifier_name):
     idx_src = source_obj.modifiers.find(modifier_name)
 
     idx_new = 0
+    name_anchor = ""
     # Order modifier based on previous modifier in source obj.
     if idx_src > 0:
         mod_anchor = source_obj.modifiers[idx_src - 1]
@@ -117,7 +119,10 @@ def place_modifier_in_stack(source_obj, target_obj, modifier_name):
 
     if idx_tgt != idx_new:
         target_obj.modifiers.move(idx_tgt, idx_new)
-        logger.debug(f"  Moved {modifier_name} to index {idx_new} (after {name_anchor}).")
+        msg = f"  Moved {modifier_name} to index {idx_new}"
+        if name_anchor:
+            msg +=  f"(after {name_anchor})"
+        logger.debug(msg)
 
 
 def transfer_modifier_props(context, source_mod, target_mod):
@@ -145,18 +150,26 @@ def transfer_modifier_props(context, source_mod, target_mod):
             target_mod.node_group.interface_update(context)
 
 
-def rebind_modifier(context, obj, modifier_name):
+def bind_modifier(context, obj, modifier_name):
     """Binding data cannot be transferred. Instead, modifiers that require binding will have the bind operator executed.
+
     Sometimes binding is meant to be done in a bind pose other than the default. For this, shape keys can be added
     to the deforming and/or the deformed mesh, named "BIND-<name_of_modifier_with_prefix>". Such shape keys will be enabled
     during binding. Other deforming modifiers will be disabled during binding.
     """
+
+    # NOTE: This could be optimized by not re-binding unnecessarily, but Blender doesn't allow checking
+    # if the binding is broken or not. https://projects.blender.org/blender/blender/issues/140550
+    # Another way to get around this is to let the rigging task layer own the object base.
+
+    logger = logging.get_logger()
     modifier = obj.modifiers.get(modifier_name)
     assert modifier
     bind_op = BIND_OPS.get(modifier.type)
     if (
         not bind_op or 
         (hasattr(modifier, 'target') and not modifier.target) or 
+        not modifier.show_viewport or 
         (modifier.type=='CORRECTIVE_SMOOTH' and modifier.rest_source=='ORCO')
     ):
         return
@@ -174,3 +187,13 @@ def rebind_modifier(context, obj, modifier_name):
                 with override_obj_visability(obj=obj, scene=context.scene):
                     with context.temp_override(object=obj, active_object=obj):
                         bind_op(modifier=modifier.name)
+                        word = "Bound" if is_modifier_bound(modifier) else "Un-bound"
+                        logger.debug(f"{word} {modifier_name} on {obj.name}")
+                        if is_modifier_bound(modifier):
+                            return
+
+def is_modifier_bound(modifier) -> bool | None:
+    if modifier.type == 'CORRECTIVE_SMOOTH':
+        return modifier.is_bind
+    elif hasattr(modifier, 'is_bound'):
+        return modifier.is_bound
