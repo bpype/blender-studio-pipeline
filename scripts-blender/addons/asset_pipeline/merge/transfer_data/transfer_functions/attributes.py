@@ -98,6 +98,11 @@ def transfer_attribute(
     source_attribute = source_attributes.get(attribute_name)
     target_attribute = target_attributes.get(attribute_name)
 
+    logger = logging.get_logger()
+    if not source_attribute:
+        logger.debug(f"Failed to find attribute to transfer: {attribute_name}")
+        return
+
     if target_attribute:
         target_attributes.remove(target_attribute)
 

@@ -192,13 +192,13 @@ def merge_task_layer(
     external_suffix = constants.EXTERNAL_SUFFIX
     merge_add_suffix_to_hierarchy(local_col, local_suffix)
 
-    appended_col = import_data_from_lib(external_file, "collections", col_base_name)
-    merge_add_suffix_to_hierarchy(appended_col, external_suffix)
+    external_col = import_data_from_lib(external_file, "collections", col_base_name)
+    assert external_col, f"Failed to append collection {col_base_name} from {external_file}"
+    merge_add_suffix_to_hierarchy(external_col, external_suffix)
     imported_time = time.time()
     profiles.add((imported_time - start_time), "IMPORT")
 
     local_col = bpy.data.collections[f"{col_base_name}.{local_suffix}"]
-    external_col = bpy.data.collections[f"{col_base_name}.{external_suffix}"]
 
     # External col may come from publish, ensure it is not marked as asset so it purges correctly
     external_col.asset_clear()

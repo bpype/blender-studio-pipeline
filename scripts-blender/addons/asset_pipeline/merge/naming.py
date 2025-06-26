@@ -60,13 +60,17 @@ def merge_remove_suffix_from_hierarchy(collection: bpy.types.Collection) -> None
     Args:
         collection (bpy.types.Collection): Collection that as been suffixed
     """
-
     ref_map = get_id_reference_map()
     datablocks = get_all_referenced_ids(collection, ref_map)
     datablocks.add(collection)
     for action in bpy.data.actions:
         datablocks.add(action)
     for db in datablocks:
+        if db == None:
+            # Not sure why this would happen.
+            raise Exception(
+                f"None value in datablock list"
+            )
         if db.library:
             # Don't rename linked datablocks.
             continue
@@ -93,11 +97,13 @@ def merge_add_suffix_to_hierarchy(
     datablocks = get_all_referenced_ids(collection, ref_map)
     datablocks.add(collection)
     for db in datablocks:
+        if db == None:
+            # Not sure why this would happen.
+            continue
         if len(db.name) > 59:
             raise Exception(
                 f"Datablock name too long, must be max 59 characters: {db.name}"
             )
-
         if db.library:
             # Don't rename linked datablocks.
             continue
