@@ -1,7 +1,9 @@
 import bpy
 
-from blender_kitsu.shot_builder.hooks import hook
-from blender_kitsu.types import Shot, Asset
+# The import paths here are relative to the "blender_kitsu/shot_builder/hooks.py" file.
+# The example imports here imports the "blender_kitsu/shot_builder/hooks.py" and "blender_kistsu/types.py" file.
+from .hooks import hook
+from ..types import Shot, Asset
 
 import logging
 

@@ -9,7 +9,7 @@ from typing import *
 import typing
 import types
 from collections.abc import Iterable
-import importlib
+import importlib.util
 from .. import prefs
 import logging
 from .core import get_shot_builder_config_dir
@@ -108,15 +108,17 @@ class Hooks:
         if not shot_builder_config_dir.exists():
             print("Shot Builder Hooks directory does not exist. See add-on preferences")
             return
-        paths = [shot_builder_config_dir.resolve().__str__()]
-        with SystemPathInclude(paths) as _include:
-            try:
-                import hooks as production_hooks
+        hook_file_path = shot_builder_config_dir.resolve() / "hooks.py"
+        module_name = __package__ + ".production_hooks"
+        try:
+            spec = importlib.util.spec_from_file_location(module_name, hook_file_path)
+            hooks_module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = hooks_module
+            spec.loader.exec_module(hooks_module)
 
-                importlib.reload(production_hooks)
-                self.register_hooks(production_hooks)
-            except ModuleNotFoundError:
-                raise Exception("Production has no `hooks.py` configuration file")
+            self.register_hooks(hooks_module)
+        except FileNotFoundError:
+            raise Exception("Production has no `hooks.py` configuration file")
 
         return False
 
@@ -158,41 +160,3 @@ def hook(
         return func
 
     return wrapper
-
-
-class SystemPathInclude:
-    """
-    Resource class to temporary include system paths to `sys.paths`.
-
-    Usage:
-        ```
-        paths = [pathlib.Path("/home/guest/my_python_scripts")]
-        with SystemPathInclude(paths) as t:
-            import my_module
-            reload(my_module)
-        ```
-
-    It is possible to nest multiple SystemPathIncludes.
-    """
-
-    def __init__(self, paths_to_add: List[pathlib.Path]):
-        # TODO: Check if all paths exist and are absolute.
-        self.__paths = paths_to_add
-        self.__original_sys_path: List[str] = []
-
-    def __enter__(self):
-        self.__original_sys_path = sys.path
-        new_sys_path = []
-        for path_to_add in self.__paths:
-            # Do not add paths that are already in the sys path.
-            # Report this to the logger as this might indicate wrong usage.
-            path_to_add_str = str(path_to_add)
-            if path_to_add_str in self.__original_sys_path:
-                logger.warn(f"{path_to_add_str} already added to `sys.path`")
-                continue
-            new_sys_path.append(path_to_add_str)
-        new_sys_path.extend(self.__original_sys_path)
-        sys.path = new_sys_path
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        sys.path = self.__original_sys_path
