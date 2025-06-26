@@ -17,5 +17,13 @@ license = [
 copyright = [
   "2019-2025 Demeter Dzadik & Blender Studio",
 ]
+
+wheels = [
+  "./wheels/python_dateutil-2.8.2-py2.py3-none-any.whl",
+  "./wheels/Send2Trash-1.8.0-py3-none-any.whl",
+  "./wheels/six-1.16.0-py2.py3-none-any.whl",
+  "./wheels/xmltodict-0.12.0-py2.py3-none-any.whl",
+]
+
 [permissions]
-files = "To update files in the local SVN repository checkout"
+files = "To update files in the local SVN repository checkout, or move them to system trash"

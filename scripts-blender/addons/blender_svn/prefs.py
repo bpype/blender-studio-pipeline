@@ -120,11 +120,11 @@ class SVN_addon_preferences(AddonPreferences):
         saved_props = {'url', 'directory', 'name',
                        'username', 'password', 'display_name'}
         repo_data = {}
-        for repo in self['repositories']:
+        for repo in self.repositories:
             directory = repo.get('directory', '')
 
             repo_data[directory] = {
-                key: value for key, value in repo.to_dict().items() if key in saved_props}
+                key: value for key, value in repo.items() if key in saved_props}
 
         filepath = Path(bpy.utils.user_resource('CONFIG')) / \
             Path("blender_svn.txt")
