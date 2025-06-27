@@ -147,6 +147,12 @@ def sequence_active_reset(context: bpy.types.Context) -> None:
     logger.debug("Reset active sequence")
 
 
+def output_collection_name_get() -> str:
+    active_shot = shot_active_get()
+    task_type = task_type_active_get()
+    output_col_name = active_shot.get_output_collection_name(task_type.get_short_name())
+    return output_col_name
+
 def shot_active_get() -> Shot:
     global _shot_active
 

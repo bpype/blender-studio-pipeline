@@ -63,10 +63,6 @@ def create_collection_instance(
     return instance_obj
 
 
-def get_output_coll_name(shot: Shot) -> str:
-    return f"{shot.name}.anim.output"
-
-
 def find_rig(coll: bpy.types.Collection, log: bool = True) -> Optional[bpy.types.Armature]:
     valid_rigs = []
 
