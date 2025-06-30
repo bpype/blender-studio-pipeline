@@ -6,7 +6,7 @@ from typing import List, Set, Tuple
 
 import bpy
 
-from .. import cache, util, prefs
+from .. import cache, util
 from ..logger import LoggerFactory
 
 from . import opsdata
@@ -34,7 +34,6 @@ class KITSU_OT_anim_quick_duplicate(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         act_coll = context.view_layer.active_layer_collection.collection
-        shot_active = cache.shot_active_get()
         amount = context.window_manager.kitsu.quick_duplicate_amount
 
         if not act_coll:
@@ -42,15 +41,14 @@ class KITSU_OT_anim_quick_duplicate(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Check if output colletion exists in scene.
+        output_coll_name = cache.output_collection_name_get()
         try:
-            output_coll = bpy.data.collections[
-                opsdata.get_output_coll_name(shot_active)
-            ]
+            output_coll = bpy.data.collections[output_coll_name]
 
         except KeyError:
             self.report(
                 {"ERROR"},
-                f"Missing output collection: {opsdata.get_output_coll_name(shot_active)}",
+                f"Missing output collection: {output_coll_name}",
             )
             return {"CANCELLED"}
 
@@ -119,9 +117,6 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
             return new_action
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        active_shot = cache.shot_active_get()
-        addon_prefs = prefs.addon_prefs_get(context)
-
         existing_action_names = [a.name for a in bpy.data.actions]
         failed = []
         succeeded = []
@@ -185,9 +180,7 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
         opsdata.action_names_cache.clear()
         opsdata.action_names_cache.extend([a.name for a in bpy.data.actions])
 
-        active_shot = cache.shot_active_get()
-        task_type = cache.task_type_active_get()
-        output_col_name = active_shot.get_output_collection_name(task_type.get_short_name())
+        output_col_name = cache.output_collection_name_get()
         output_col = context.scene.collection.children.get(output_col_name)
 
         if not output_col:
@@ -420,18 +413,16 @@ class KITSU_OT_anim_update_output_coll(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        active_shot = cache.shot_active_get()
-        output_coll_name = opsdata.get_output_coll_name(active_shot)
+        output_coll_name = cache.output_collection_name_get()
         try:
             output_coll = bpy.data.collections[output_coll_name]
         except KeyError:
             output_coll = None
 
-        return bool(active_shot and output_coll)
+        return bool(output_coll)
 
     def invoke(self, context, event):
-        active_shot = cache.shot_active_get()
-        output_coll_name = opsdata.get_output_coll_name(active_shot)
+        output_coll_name = cache.output_collection_name_get()
         self.output_coll = bpy.data.collections[output_coll_name]
         return context.window_manager.invoke_props_dialog(self, width=500)
 
