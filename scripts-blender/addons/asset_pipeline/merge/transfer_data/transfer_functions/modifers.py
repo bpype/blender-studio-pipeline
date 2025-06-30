@@ -192,6 +192,7 @@ def bind_modifier(context, obj, modifier_name):
                         if is_modifier_bound(modifier):
                             return
 
+
 def is_modifier_bound(modifier) -> bool | None:
     if modifier.type == 'CORRECTIVE_SMOOTH':
         return modifier.is_bind

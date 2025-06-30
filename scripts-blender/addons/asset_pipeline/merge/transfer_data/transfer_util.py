@@ -202,3 +202,19 @@ def disable_modifiers(objs: set, mod_types: set[str]):
         for obj, mod_names in mods_to_enable.items():
             for mod_name in mod_names:
                 obj.modifiers[mod_name].show_viewport = True
+
+@contextlib.contextmanager
+def simplify(scene):
+    """Disable subdivision surface modifiers globally using the scene's Simplify setting.
+    Important for binding modifiers, but also probably doesn't hurt for general performance.
+    """
+    orig_simplify = scene.render.use_simplify
+    levels = scene.render.simplify_subdivision
+    
+    scene.render.use_simplify = True
+    scene.render.simplify_subdivision = 0
+
+    yield
+
+    scene.render.use_simplify = orig_simplify
+    scene.render.simplify_subdivision = levels
