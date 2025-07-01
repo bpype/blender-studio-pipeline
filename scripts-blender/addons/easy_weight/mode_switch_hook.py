@@ -35,19 +35,21 @@ def on_weight_paint_enter():
     armature = get_armature_of_meshob(obj)
     if not armature:
         return
+    print("Entering WP mode: ", context.active_object.name, armature.name)
     # Save all object visibility related info so it can be restored later.
     wp_toggle['arm_disabled'] = armature.hide_viewport
     wp_toggle['arm_hide'] = armature.hide_get()
-    wp_toggle['arm_in_front'] = armature.show_in_front
     wp_toggle['arm_coll_assigned'] = False
     armature.hide_viewport = False
     armature.hide_set(False)
-    armature.show_in_front = True
 
     for viewport in viewports:
         if viewport.local_view:
             wp_toggle['arm_local_view'] = armature.local_view_get(viewport)
             armature.local_view_set(viewport, True)
+        if prefs.always_xray:
+            wp_toggle['bone_xray'] = viewport.overlay.show_xray_bone
+            viewport.overlay.show_xray_bone = True
 
     # If the armature is still not visible, add it to the scene root collection.
     if not armature.visible_get() and not armature.name in context.scene.collection.objects:
@@ -55,9 +57,11 @@ def on_weight_paint_enter():
         wp_toggle['arm_coll_assigned'] = True
 
     if armature.visible_get():
+        bpy.ops.object.mode_set(mode='OBJECT')
         context.view_layer.objects.active = armature
-        bpy.ops.object.mode_set(mode='POSE')
+        armature.select_set(True)
         context.view_layer.objects.active = obj
+        bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
 
     return armature.visible_get()
 
@@ -95,12 +99,13 @@ def on_weight_paint_leave():
     # If an armature was un-hidden, hide it again.
     armature.hide_viewport = wp_toggle_as_dict['arm_disabled']
     armature.hide_set(wp_toggle_as_dict['arm_hide'])
-    armature.show_in_front = wp_toggle_as_dict['arm_in_front']
 
     # Restore whether the armature is in local view or not.
     for viewport in viewports:
         if 'arm_local_view' in wp_toggle_as_dict and viewport.local_view:
             armature.local_view_set(viewport, wp_toggle_as_dict['arm_local_view'])
+        if 'bone_xray' in wp_toggle_as_dict:
+            viewport.overlay.show_xray_bone = wp_toggle_as_dict['bone_xray']
 
     # Remove armature from scene root collection if it was moved there.
     if wp_toggle_as_dict['arm_coll_assigned']:
