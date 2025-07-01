@@ -1030,10 +1030,14 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
                     var.targets[0].transform_type = transf_type
                     var.targets[0].rotation_mode = 'SWING_TWIST_Y'
                     var.targets[0].transform_space = 'LOCAL_SPACE'
-                    if transf_type.startswith("SCALE"):
-                        expressions.append(f"((1-{var.name})/{value:.4f})")
+                    if value < 0:
+                        clamped_var = f"min(0, {var.name})"
                     else:
-                        expressions.append(f"({var.name}/{value:.4f})")
+                        clamped_var = f"max(0, {var.name})"
+                    if transf_type.startswith("SCALE"):
+                        expressions.append(f"((1-{clamped_var})/{value:.4f})")
+                    else:
+                        expressions.append(f"({clamped_var}/{value:.4f})")
 
         drv.expression = " * ".join(expressions)
 
