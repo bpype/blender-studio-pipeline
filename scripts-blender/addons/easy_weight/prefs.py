@@ -31,6 +31,12 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         default=True,
         update=update_prefs_on_file,
     )
+    always_xray: BoolProperty(
+        name="Always X-Ray",
+        description="Always enable bone x-ray when entering weight paint mode",
+        default=True,
+        update=update_prefs_on_file,
+    )
 
     def update_auto_clean(self, context):
         update_prefs_on_file()
@@ -101,6 +107,7 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         col.prop(self, 'always_show_zero_weights')
         col.prop(self, 'always_auto_normalize')
         col.prop(self, 'always_multipaint')
+        col.prop(self, 'always_xray')
 
         main_col = layout.column(align=True)
         hotkey_col = self.draw_fake_dropdown(main_col, self, 'show_hotkeys', "Hotkeys")

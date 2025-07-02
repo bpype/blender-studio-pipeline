@@ -111,6 +111,9 @@ def transfer_attribute(
         type=source_attribute.data_type,
         domain=source_attribute.domain,
     )
+    if not target_attribute:
+        logger.debug(f"Failed to create attribute: {target_obj.name} -> {attribute_name}")
+        return
 
     if not is_obdata_identical(source_obj, target_obj):
         proximity_transfer_single_attribute(

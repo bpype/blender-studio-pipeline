@@ -181,7 +181,7 @@ def bind_modifier(context, obj, modifier_name):
         modifiers_to_disable = ['LATTICE', 'ARMATURE', 'SHRINKWRAP', 'SMOOTH']
         if modifier.type != 'CORRECTIVE_SMOOTH':
             modifiers_to_disable.append('CORRECTIVE_SMOOTH')
-        with disable_modifiers((obj, ), modifiers_to_disable):
+        with disable_modifiers(objs, modifiers_to_disable):
             for i in range(2):
                 context.view_layer.update()
                 with override_obj_visability(obj=obj, scene=context.scene):
@@ -191,6 +191,7 @@ def bind_modifier(context, obj, modifier_name):
                         logger.debug(f"{word} {modifier_name} on {obj.name}")
                         if is_modifier_bound(modifier):
                             return
+
 
 def is_modifier_bound(modifier) -> bool | None:
     if modifier.type == 'CORRECTIVE_SMOOTH':

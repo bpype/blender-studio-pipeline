@@ -38,7 +38,7 @@ def update_prefs_on_file(self=None, context=None) -> tuple[str, dict]:
 class PrefsFileSaveLoadMixin:
     """Mix-in class that can be used by any add-on to store their preferences in a file,
     so that they don't get lost when the add-on is disabled.
-    To use it, copy this class and the two functions above it, and do this in your code:
+    To use it, copy this class and the function above it, and do this in your code:
 
     ```
     import bpy, json
@@ -50,8 +50,15 @@ class PrefsFileSaveLoadMixin:
     def register():
         bpy.utils.register_class(MyAddonPrefs)
         MyAddonPrefs.register_autoload_from_file()
+
+    def unregister():
+        update_prefs_on_file()
     ```
+
     """
+
+    # List of property names to not write to disk.
+    omit_from_disk: list[str] = []
 
     loading = False
 
@@ -72,16 +79,22 @@ class PrefsFileSaveLoadMixin:
 
         ret = {}
 
-        if hasattr(propgroup, 'bl_rna'):
-            rna_class = propgroup.bl_rna
+        rna_class = None
+        if isinstance(propgroup, bpy.types.AddonPreferences):
+            prop_dict = {key:getattr(propgroup, key) for key in propgroup.bl_rna.properties.keys() if key not in ('rna_type', 'bl_idname')}
         else:
             property_group_class_name = type(propgroup).__name__
             rna_class = bpy.types.PropertyGroup.bl_rna_get_subclass_py(
                 property_group_class_name
             )
+            if not hasattr(rna_class, 'properties'):
+                rna_class = None
+            prop_dict = {key:getattr(propgroup, key) for key in propgroup.bl_rna.properties.keys() if key not in ('rna_type')}
 
-        for key, value in propgroup.items():
-            if type(value) == list:
+        for key, value in prop_dict.items():
+            if key in type(self).omit_from_disk:
+                continue
+            if type(value) in (list, bpy.types.bpy_prop_collection_idprop):
                 ret[key] = [self.prefs_to_dict_recursive(elem) for elem in value]
             elif type(value) == IDPropertyGroup:
                 ret[key] = self.prefs_to_dict_recursive(value)

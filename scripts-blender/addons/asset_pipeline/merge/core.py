@@ -11,8 +11,10 @@ from .transfer_data.transfer_core import (
     apply_transfer_data,
     transfer_data_clean,
 )
-from .transfer_data.transfer_util import transfer_data_add_entry
-
+from .transfer_data.transfer_util import (
+    transfer_data_add_entry,
+    simplify,
+)
 from .naming import (
     merge_add_suffix_to_hierarchy,
     merge_remove_suffix_from_hierarchy,
@@ -223,7 +225,8 @@ def merge_task_layer(
         target_obj = map.object_map[source_obj]
         target_obj.transfer_data_ownership.clear()
 
-    apply_transfer_data(context, map.transfer_data_map)
+    with simplify(context.scene):
+        apply_transfer_data(context, map.transfer_data_map)
     apply_td_time = time.time()
     profiles.add((apply_td_time - mapped_time), "TRANSFER_DATA")
 
