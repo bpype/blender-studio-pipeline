@@ -73,6 +73,13 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         kitsu_props = context.scene.kitsu
         addon_prefs = context.preferences.addons['.'.join(__package__.split('.')[:-1])].preferences
 
+        is_edit_type = str(filepath.resolve()).startswith(str(prefs.project_root_dir_get(context) / addon_prefs.edit_dir_name))
+
+        if is_edit_type:
+            kitsu_props.category = "EDIT"
+            util.ui_redraw()
+            return {"FINISHED"}
+
         # TODO REFACTOR THIS WHOLE THING, BAD HACK
         # Path is different for tvshow
         if (
@@ -89,24 +96,45 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         item = filepath.parents[0].name
         item_task_type = filepath.stem.split(bkglobals.DELIMITER)[-1]
 
-        if category == addon_prefs.shot_dir_name or category == addon_prefs.seq_dir_name:
-            if category == addon_prefs.shot_dir_name:
-                # TODO: check if frame range update gets triggered.
+        # Sanity check that the folder struture is correct depending on the type.
+        is_shot_type = category == addon_prefs.shot_dir_name
+        is_seq_type = category == addon_prefs.seq_dir_name
+        is_asset_type = category == addon_prefs.asset_dir_name
 
-                # Set category.
+        if not is_shot_type and not is_seq_type and not is_asset_type:
+            self.report(
+                {"ERROR"},
+                (
+                    f"Expected '{addon_prefs.shot_dir_name}' or '{addon_prefs.asset_dir_name}' 3 folders up. "
+                    f"Got: '{filepath.parents[2].as_posix()}' instead. "
+                    "Blend file might not be saved in project structure"
+                ),
+            )
+            return {"CANCELLED"}
+
+        if is_shot_type or is_seq_type:
+            # TODO: check if frame range update gets triggered.
+
+            # Set category.
+            if is_shot_type:
                 kitsu_props.category = "SHOT"
+                task_mapping = bkglobals.SHOT_TASK_MAPPING
+            else:
+                kitsu_props.category = "SEQ"
+                task_mapping = bkglobals.SEQ_TASK_MAPPING
 
-                if episode:
-                    kitsu_props.episode_active_name = episode.name
+            if episode:
+                kitsu_props.episode_active_name = episode.name
 
-                # Detect ad load sequence.
-                sequence = active_project.get_sequence_by_name(item_group, episode)
-                if not sequence:
-                    self.report({"ERROR"}, f"Failed to find sequence: '{item_group}' on server")
-                    return {"CANCELLED"}
+            # Detect and load sequence.
+            sequence = active_project.get_sequence_by_name(item_group, episode)
+            if not sequence:
+                self.report({"ERROR"}, f"Failed to find sequence: '{item_group}' on server")
+                return {"CANCELLED"}
 
-                kitsu_props.sequence_active_name = sequence.name
+            kitsu_props.sequence_active_name = sequence.name
 
+            if is_shot_type:
                 # Detect and load shot.
                 shot = active_project.get_shot_by_name(sequence, item)
                 if not shot:
@@ -115,56 +143,24 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
                 kitsu_props.shot_active_name = shot.name
 
-                # Detect and load shot task type.
-                kitsu_task_type_name = self._find_in_mapping(
-                    item_task_type, bkglobals.SHOT_TASK_MAPPING, "shot task type"
+            # Detect and load shot task type.
+            kitsu_task_type_name = self._find_in_mapping(
+                item_task_type, task_mapping, "shot task type"
+            )
+            if not kitsu_task_type_name:
+                return {"CANCELLED"}
+
+            task_type = TaskType.by_name(kitsu_task_type_name)
+            if not task_type:
+                self.report(
+                    {"ERROR"},
+                    f"Failed to find task type: '{kitsu_task_type_name}' on server",
                 )
-                if not kitsu_task_type_name:
-                    return {"CANCELLED"}
+                return {"CANCELLED"}
 
-                task_type = TaskType.by_name(kitsu_task_type_name)
-                if not task_type:
-                    self.report(
-                        {"ERROR"},
-                        f"Failed to find task type: '{kitsu_task_type_name}' on server",
-                    )
-                    return {"CANCELLED"}
+            kitsu_props.task_type_active_name = task_type.name
 
-                kitsu_props.task_type_active_name = task_type.name
-
-            if category == addon_prefs.seq_dir_name:
-                # Set category.
-                kitsu_props.category = "SEQ"
-
-                if episode:
-                    kitsu_props.episode_active_name = episode.name
-
-                # Detect and load seqeunce.
-                sequence = active_project.get_sequence_by_name(item_group, episode)
-                if not sequence:
-                    self.report({"ERROR"}, f"Failed to find sequence: '{item_group}' on server")
-                    return {"CANCELLED"}
-
-                kitsu_props.sequence_active_name = sequence.name
-
-                # Detect and load shot task type.
-                kitsu_task_type_name = self._find_in_mapping(
-                    item_task_type, bkglobals.SEQ_TASK_MAPPING, "seq task type"
-                )
-                if not kitsu_task_type_name:
-                    return {"CANCELLED"}
-
-                task_type = TaskType.by_name(kitsu_task_type_name)
-                if not task_type:
-                    self.report(
-                        {"ERROR"},
-                        f"Failed to find task type: '{kitsu_task_type_name}' on server",
-                    )
-                    return {"CANCELLED"}
-
-                kitsu_props.task_type_active_name = task_type.name
-
-        elif category == addon_prefs.asset_dir_name:
+        elif is_asset_type:
             # Set category.
             kitsu_props.category = "ASSET"
 
@@ -207,17 +203,6 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 return {"CANCELLED"}
 
             kitsu_props.task_type_active_name = task_type.name
-
-        else:
-            self.report(
-                {"ERROR"},
-                (
-                    f"Expected '{addon_prefs.shot_dir_name}' or '{addon_prefs.asset_dir_name}' 3 folders up. "
-                    f"Got: '{filepath.parents[2].as_posix()}' instead. "
-                    "Blend file might not be saved in project structure"
-                ),
-            )
-            return {"CANCELLED"}
 
         util.ui_redraw()
         return {"FINISHED"}
