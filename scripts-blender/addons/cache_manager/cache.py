@@ -12,8 +12,8 @@ from copy import deepcopy
 
 import bpy
 
-from cache_manager import propsdata, cmglobals, opsdata
-from cache_manager.logger import LoggerFactory, log_new_lines
+from . import propsdata, cmglobals, opsdata
+from .logger import LoggerFactory, log_new_lines
 
 logger = LoggerFactory.getLogger(__name__)
 

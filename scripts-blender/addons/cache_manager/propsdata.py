@@ -7,11 +7,9 @@ from pathlib import Path
 from typing import Any
 
 import bpy
-from bpy.app.handlers import persistent
 
-from cache_manager import opsdata
-from cache_manager.logger import LoggerFactory
-from . import addon_prefs_get
+from .prefs import addon_prefs_get
+from .logger import LoggerFactory
 
 logger = LoggerFactory.getLogger(__name__)
 
@@ -23,20 +21,6 @@ def ui_redraw() -> None:
     for screen in bpy.data.screens:
         for area in screen.areas:
             area.tag_redraw()
-
-
-def update_cache_version_property(context: bpy.types.Context) -> None:
-    items = opsdata.VERSION_DIR_MODEL.items
-    if not items:
-        context.scene.cm.cache_version = ""
-    else:
-        context.scene.cm.cache_version = items[0]
-
-
-def category_update_version_model(self: Any, context: bpy.types.Context) -> None:
-    opsdata.init_version_dir_model(context)
-    update_cache_version_property(context)
-
 
 def _get_scene_name() -> str:
     if not bpy.data.filepath:
@@ -59,7 +43,6 @@ def _gen_cacheconfig_filename() -> str:
 
 
 def gen_cachedir_path_str(self: Any) -> str:
-
     addon_prefs = addon_prefs_get()
 
     if not addon_prefs.is_cachedir_root_valid:
@@ -148,20 +131,3 @@ def rm_deleted_colls_from_list(context: bpy.types.Context) -> None:
                         context.scene.cm.colls_export_index = curr_index - 1
     ui_redraw()
 
-
-@persistent
-def load_post_handler_init_model_cache_version(dummy: Any) -> None:
-    category_update_version_model(None, bpy.context)
-
-
-# ---------REGISTER ----------.
-
-
-def register():
-    # Add handlers.
-    bpy.app.handlers.load_post.append(load_post_handler_init_model_cache_version)
-
-
-def unregister():
-    # Clear handlers.
-    bpy.app.handlers.load_post.remove(load_post_handler_init_model_cache_version)

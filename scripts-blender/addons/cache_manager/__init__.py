@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from cache_manager import (
+from . import (
     cmglobals,
     logger,
     cache,
@@ -51,7 +51,6 @@ if _need_reload:
 def register():
     prefs.register()
     props.register()
-    propsdata.register()
     ops.register()
     ui.register()
     logg.info("Registered cache-manager")
@@ -60,24 +59,5 @@ def register():
 def unregister():
     ui.unregister()
     ops.unregister()
-    propsdata.unregister()
     props.unregister()
     prefs.unregister()
-
-
-def addon_prefs_get(context: bpy.types.Context) -> bpy.types.AddonPreferences:
-    """
-    shortcut to get cache_manager addon preferences
-    """
-    if not context:
-        context = bpy.context
-    from .. import __package__ as base_package
-    if base_package.startswith('bl_ext'):
-        # 4.2
-        return context.preferences.addons[base_package].preferences
-    else:
-        return context.preferences.addons[base_package.split(".")[0]].preferences
-
-
-if __name__ == "__main__":
-    register()
