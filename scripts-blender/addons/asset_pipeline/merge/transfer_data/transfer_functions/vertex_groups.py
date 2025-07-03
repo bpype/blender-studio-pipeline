@@ -61,10 +61,7 @@ def transfer_vertex_groups(
 def transfer_single_vgroup_by_topology(source_obj, target_obj, vgroup_name):
     """Function to quickly transfer single vertex group between mesh objects in case of matching topology."""
 
-    # Remove group from the target obj if it already exists. TODO: de-duplicate
-    tgt_vg = target_obj.vertex_groups.get(vgroup_name)
-    if tgt_vg:
-        target_obj.vertex_groups.remove(tgt_vg)
+    remove_vgroups([target_obj], [vgroup_name])
 
     vgroup_src = source_obj.vertex_groups.get(vgroup_name)
     vgroup_tgt = target_obj.vertex_groups.new(name=vgroup_name)
@@ -74,21 +71,17 @@ def transfer_single_vgroup_by_topology(source_obj, target_obj, vgroup_name):
             vgroup_tgt.add([v.index], vgroup_src.weight(v.index), 'REPLACE')
 
 
-def precalc_and_transfer_multiple_groups(source_obj, target_obj, vgroup_names, expand=2):
-    """Convenience function to transfer a single group. For transferring multiple groups,
-    this is very inefficient and shouldn't be used.
-
-    Instead, you should:
-    - build_kd_tree ONCE per source mesh.
-    - build_vert_influence_map and transfer_vertex_groups ONCE per object pair.
-    """
-
-    # Remove group from the target obj if it already exists. TODO: de-duplicate
-    vgroups = [source_obj.vertex_groups[name] for name in vgroup_names]
+def remove_vgroups(obj, vgroup_names):
     for vgroup_name in vgroup_names:
-        target_vgroup = target_obj.vertex_groups.get(vgroup_name)
+        target_vgroup = obj.vertex_groups.get(vgroup_name)
         if target_vgroup:
-            target_obj.vertex_groups.remove(target_vgroup)
+            obj.vertex_groups.remove(target_vgroup)
+
+
+def precalc_and_transfer_multiple_groups(source_obj, target_obj, vgroup_names, expand=2):
+    """Convenience function to transfer multiple groups."""
+
+    remove_vgroups([target_obj], vgroup_names)
 
     kd_tree = build_kdtree(source_obj.data)
     vert_influence_map = build_vert_influence_map(source_obj, target_obj, kd_tree, expand)
@@ -96,23 +89,15 @@ def precalc_and_transfer_multiple_groups(source_obj, target_obj, vgroup_names, e
         source_obj,
         target_obj,
         vert_influence_map,
-        vgroups,
+        src_vgroups=[source_obj.vertex_groups[name] for name in vgroup_names],
     )
 
 
 def precalc_and_transfer_single_group(source_obj, target_obj, vgroup_name, expand=2):
     """Convenience function to transfer a single group. For transferring multiple groups,
-    this is very inefficient and shouldn't be used.
+    precalc_and_transfer_multiple_groups should be used as it is more efficient."""
 
-    Instead, you should:
-    - build_kd_tree ONCE per source mesh.
-    - build_vert_influence_map and transfer_vertex_groups ONCE per object pair.
-    """
-
-    # Remove group from the target obj if it already exists. TODO: de-duplicate
-    tgt_vg = target_obj.vertex_groups.get(vgroup_name)
-    if tgt_vg:
-        target_obj.vertex_groups.remove(tgt_vg)
+    remove_vgroups([target_obj], [vgroup_name])
 
     kd_tree = build_kdtree(source_obj.data)
     vert_influence_map = build_vert_influence_map(source_obj, target_obj, kd_tree, expand)
