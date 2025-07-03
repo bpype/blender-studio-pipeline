@@ -910,24 +910,29 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
     bl_label = "Auto-initialize Driver"
     bl_options = {'UNDO', 'REGISTER', 'INTERNAL'}
 
-    key_name: StringProperty()
+    shapekey_name: StringProperty()
+
+    only_selected: BoolProperty(name="Only Selected Bones", description="Only consider selected bones for the driver set-up", default=False)
 
     @classmethod
     def poll(cls, context):
         return poll_correct_pose_key_pose(cls, context)
 
-    @staticmethod
-    def get_posed_channels(context, side=None) -> OrderedDict[str, tuple[str, float]]:
+    def get_driving_channels(self, context) -> OrderedDict[str, tuple[str, float]]:
         obj = context.object
         arm_ob = get_deforming_armature(obj)
+
+        key_is_left = side_is_left(self.shapekey_name)
 
         channels = OrderedDict()
 
         EPSILON = 0.0001
 
         for pb in arm_ob.pose.bones:
-            is_left = side_is_left(pb.name)
-            if is_left != None and ((is_left and side!='LEFT') or (is_left==False and side=='LEFT')):
+            bone_is_left = side_is_left(pb.name)
+            if key_is_left != None and bone_is_left == key_is_left:
+                continue
+            if self.only_selected and not pb.bone.select:
                 continue
             bone_channels = OrderedDict({'loc' : [], 'rot': [], 'scale': []})
 
@@ -972,25 +977,20 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
         return sanitized
 
     def invoke(self, context, event):
-        is_left = side_is_left(self.key_name)
-        if is_left == None:
-            side = None
-        elif is_left == False:
-            side = 'RIGHT'
-        else:
-            side = 'LEFT'
-        self.posed_channels = self.get_posed_channels(context, side=side)
         return context.window_manager.invoke_props_dialog(self, width=300)
 
     def draw(self, context):
         layout = self.layout
         layout.label(text="Driver will be created based on these transforms:")
 
+        layout.prop(self, 'only_selected')
+        layout.label(text=f"Left Side: {side_is_left(self.shapekey_name)}")
+
         obj = context.object
         arm_ob = get_deforming_armature(obj)
 
         col = layout.column(align=True)
-        for bone_name, transforms in self.posed_channels.items():
+        for bone_name, transforms in self.get_driving_channels(context).items():
             pb = arm_ob.pose.bones.get(bone_name)
             bone_box = col.box()
             bone_box.prop(pb, 'name', icon='BONE_DATA', text="", emboss=False)
@@ -1010,7 +1010,7 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
     def execute(self, context):
         obj = context.object
         arm_ob = get_deforming_armature(obj)
-        key_block = obj.data.shape_keys.key_blocks.get(self.key_name)
+        key_block = obj.data.shape_keys.key_blocks.get(self.shapekey_name)
 
         key_block.driver_remove('value')
         fc = key_block.driver_add('value')
@@ -1018,7 +1018,7 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
 
         expressions = []
 
-        for bone_name, transforms in self.posed_channels.items():
+        for bone_name, transforms in self.get_driving_channels(context).items():
             for transform, trans_inf in transforms.items():
                 for axis, value in trans_inf:
                     transf_type = transform.upper()+"_"+axis
