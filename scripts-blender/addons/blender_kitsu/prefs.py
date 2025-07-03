@@ -492,6 +492,12 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         default="assets"
     )
 
+    edit_dir_name: bpy.props.StringProperty(
+        name="Edit Directory Name",
+        description="Name of the edit directory",
+        default="edit"
+    )
+
     shot_name_filter: bpy.props.StringProperty(  # type: ignore
         name="Shot Name Filter",
         description="Shot name must include this string, otherwise it will be ignored",
@@ -565,6 +571,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         box.prop(self, 'shot_dir_name')
         box.prop(self, 'seq_dir_name')
         box.prop(self, 'asset_dir_name')
+        box.prop(self, 'edit_dir_name')
 
         # Previews
         box = col.box()
@@ -764,7 +771,7 @@ def project_root_dir_get(context: bpy.types.Context):
 
 def session_auth(context: bpy.types.Context) -> bool:
     """
-    Shortcut to check if zession is authorized
+    Shortcut to check if session is authorized
     """
     return session_get(context).is_auth()
 
