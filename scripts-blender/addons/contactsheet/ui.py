@@ -4,11 +4,11 @@
 
 import bpy
 
-from contactsheet.ops import (
+from .ops import (
     CS_OT_make_contactsheet,
     CS_OT_exit_contactsheet,
 )
-from contactsheet import opsdata
+from . import opsdata
 
 
 class CS_PT_contactsheet(bpy.types.Panel):

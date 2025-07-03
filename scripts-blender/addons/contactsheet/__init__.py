@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from contactsheet import (
+from . import (
     prefs,
     props,
     opsdata,
@@ -11,7 +11,7 @@ from contactsheet import (
     geo,
     geo_seq,
 )
-from contactsheet.log import LoggerFactory
+from .log import LoggerFactory
 
 logger = LoggerFactory.getLogger(__name__)
 
