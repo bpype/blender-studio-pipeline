@@ -1057,17 +1057,24 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
 
         key_block.driver_remove('value')
         fc = key_block.driver_add('value')
-        fc.keyframe_points.insert(0, 0)
-        drv = fc.driver
 
-        if not self.setup_driver(drv, arm_ob, driving_channels):
+        if not self.setup_driver(fc, arm_ob, driving_channels):
             return {'CANCELLED'}
 
         self.report({'INFO'}, "Created shape key driver.")
         return {'FINISHED'}
 
-    def setup_driver(self, driver, target, driving_channels, short=False) -> str:
+    def setup_driver(self, fcurve, target, driving_channels, short=False) -> str:
         expressions = []
+
+        for m in fcurve.modifiers:
+            # Drivers created via Python are initialized with a modifier that does nothing,
+            # except it prevents the insertion of keyframes. Weird as hell.
+            fcurve.modifiers.remove(m)
+        fcurve.keyframe_points.insert(0, 0)
+        fcurve.keyframe_points.insert(1, 1)
+        fcurve.extrapolation = 'LINEAR'
+        driver = fcurve.driver
 
         for var in reversed(driver.variables):
             driver.variables.remove(var)
