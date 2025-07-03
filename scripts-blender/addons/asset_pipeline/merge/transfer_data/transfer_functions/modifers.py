@@ -134,7 +134,7 @@ def transfer_modifier_props(context, source_mod, target_mod):
     if source_mod.type == 'NODES':
         # Transfer geo node attributes
         for key, value in source_mod.items():
-            target_mod[key] = value
+            target_mod[key] = type(target_mod[key])(value)
 
         # Transfer geo node bake settings
         target_mod.bake_directory = source_mod.bake_directory
