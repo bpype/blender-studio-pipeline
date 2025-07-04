@@ -78,7 +78,7 @@ class BSBST_OT_copy_resources_to_path(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        layout.label(text='This will overwrite files in the target directory!', icon='ERROR')
+        layout.label(text='This will overwrite the resource files in the target directory! Additional data, like brush styles, will be kept.', icon='ERROR')
         layout.label(text=str(utils.get_resource_directory()))
 class BSBST_OT_open_resource_directory(bpy.types.Operator):
     """
@@ -167,12 +167,12 @@ class BSBST_preferences(bpy.types.AddonPreferences):
             version_comp = utils.compare_versions(lib_version, utils.addon_version)
             if bool(version_comp):
                 col.label(text=f"Version mismatch: Local Data ({'.'.join([str(i) for i in lib_version])}) {'>' if version_comp>0 else '<'} Addon ({'.'.join([str(i) for i in utils.addon_version])})", icon='ERROR')
-                if abs(version_comp) in [1,2]:
+                if abs(version_comp) in [1, 2, 3]:
                     split = col.split(factor=0.75)
                     if version_comp>0:
-                        split.label(text="Consider upgrading the addon or re-copying the data.")
+                        split.label(text="Consider upgrading the addon and re-copying the data.")
                     else:
-                        split.label(text="Consider upgrading re-copying the data.")
+                        split.label(text="Consider re-copying the data.")
                     op = split.operator('brushstroke_tools.copy_resources', icon='IMPORT')
                     op.update = False
 

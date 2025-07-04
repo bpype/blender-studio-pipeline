@@ -258,6 +258,9 @@ def unpack_resources():
         lib_version = read_lib_version()
         if compare_versions(addon_version, lib_version)<=0:
             return
+        addon_prefs = bpy.context.preferences.addons[__package__].preferences
+        if addon_prefs.resource_path != '': #TODO: more options for auto-update or popup
+            return
     copy_resources_to_dir()
     update_asset_lib_path()
 
@@ -297,29 +300,31 @@ def import_resources(ng_names = ng_list, filepath = ''):
     
     return data_post - data_pre
 
-def read_lib_version():
-    resource_dir = get_resource_directory()
-    with open(resource_dir.joinpath(".version"), "r") as file:
+def read_lib_version(dir: Path = None):
+    if not dir:
+        dir = get_resource_directory()
+    with open(dir.joinpath(".version"), "r") as file:
         version = ast.literal_eval(file.read())
         return version
 
-def write_lib_version():
-    resource_dir = get_resource_directory()
-    with open(resource_dir.joinpath(".version"), "w") as file:
+def write_lib_version(dir: Path = None):
+    if not dir:
+        dir = get_resource_directory()
+    with open(dir.joinpath(".version"), "w") as file:
         file.write(str(addon_version))
 
 def copy_resources_to_dir(tgt_dir = ''):
-    resource_dir = get_addon_directory().joinpath('assets')
+    source_dir = get_addon_directory().joinpath('assets')
     if not tgt_dir:
         tgt_dir = get_resource_directory()
 
     try:
-        shutil.copytree(resource_dir, tgt_dir, dirs_exist_ok=True)
+        shutil.copytree(source_dir, tgt_dir, dirs_exist_ok=True)
         write_lib_version()
     except OSError as err:
         # error caused if the source was not a directory
         if err.errno == errno.ENOTDIR:
-            shutil.copy2(resource_dir, tgt_dir)
+            shutil.copy2(source_dir, tgt_dir)
             write_lib_version()
         else:
             print("Error: % s" % err)

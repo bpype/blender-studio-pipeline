@@ -3,6 +3,8 @@
 ### CHANGED
 
 - link brushstrokes to same collections as surface object rather than the active collection [#390](https://projects.blender.org/studio/blender-studio-tools/pulls/390)
+- operator to copy over resources shows now also on minor version bumps [#405](https://projects.blender.org/studio/blender-studio-tools/pulls/405)
+- auto-updating the resources now only happens when no explicit resource directory is specified [#405](https://projects.blender.org/studio/blender-studio-tools/pulls/405)
 
 ### FIXED
 
