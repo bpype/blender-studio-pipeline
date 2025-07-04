@@ -57,37 +57,37 @@ def sync_draw(self, context):
     row = layout.row()
 
     if len(self._invalid_objs) != 0:
-        box = layout.box()
-        box.alert = True
-        box.label(text="Sync will clear Invalid Objects:", icon="ERROR")
-        for obj in self._invalid_objs:
-            box.label(text=obj.name, icon="OBJECT_DATA")
+        header, panel = layout.panel("Invalid Objects")
+        header.label(text="Sync will clear Invalid Objects", icon='TRASH')
+        if panel:
+            for obj in self._invalid_objs:
+                panel.label(text=obj.name, icon="OBJECT_DATA")
 
     if len(self._shared_ids) != 0:
-        box = layout.box()
-        box.label(text="New 'Shared IDs' found")
-        for id in self._shared_ids:
-            row = box.row()
-            row.label(text=id.name, icon=get_shared_id_icon(id))
-            draw_task_layer_selection(
-                layout=row,
-                data=id,
-            )
+        header, panel = layout.panel("Shared IDs")
+        header.label(text="New Shared IDs", icon='COLLAPSEMENU')
+        if panel:
+            for id in self._shared_ids:
+                row = panel.row()
+                row.label(text=id.name, icon=get_shared_id_icon(id))
+                draw_task_layer_selection(
+                    layout=row,
+                    data=id,
+                )
 
     if len(self._temp_transfer_data) == 0:
         layout.label(text="No new local Transferable Data found")
+        return
     else:
-        layout.label(text="New local Transferable Data will be Pushed to Publish")
-        row = layout.row()
-        row.prop(self, "expand", text="", icon="COLLAPSEMENU", toggle=False)
-        row.label(text="Show New Transferable Data")
+        header, panel = layout.panel("New Data")
+        header.label(text="New Data To Push", icon='COLLAPSEMENU')
+        if not panel:
+            return
+
     objs = [
         bpy.data.objects.get(transfer_data_item.obj_name)
         for transfer_data_item in self._temp_transfer_data
     ]
-
-    if not self.expand:
-        return
 
     for obj in set(objs):
         obj_ownership = [
@@ -96,8 +96,10 @@ def sync_draw(self, context):
             if bpy.data.objects.get(transfer_data_item.obj_name) == obj
         ]
         box = layout.box()
-        box.label(text=obj.name, icon="OBJECT_DATA")
-        draw_transfer_data(obj_ownership, box)
+        header, panel = box.panel(obj.name, default_closed=True)
+        header.label(text=obj.name, icon='OBJECT_DATA')
+        if panel:
+            draw_transfer_data(obj_ownership, panel)
 
 
 def sync_execute_update_ownership(self, context):

@@ -177,18 +177,6 @@ class AssetPipeline(bpy.types.PropertyGroup):
     def get_local_task_layers(self):
         return [task_layer.name for task_layer in self.local_task_layers]
 
-    # UI BOOLS: used to show/hide Transferable Data elements
-    # The names are also hard coded in constants.py under TRANSFER_DATA_TYPES
-    # any changes will need to be reflected both here and in that enum
-    group_vertex_ui_bool: bpy.props.BoolProperty(name="Show/Hide Vertex Groups", default=False)
-    modifier_ui_bool: bpy.props.BoolProperty(name="Show/Hide Modifiers", default=False)
-    constraint_ui_bool: bpy.props.BoolProperty(name="Show/Hide Constraints", default=False)
-    custom_prop_ui_bool: bpy.props.BoolProperty(name="Show/Hide Custom Properties", default=False)
-    material_ui_bool: bpy.props.BoolProperty(name="Show/Hide Materials", default=False)
-    shapekey_ui_bool: bpy.props.BoolProperty(name="Show/Hide Shape Keys", default=False)
-    attribute_ui_bool: bpy.props.BoolProperty(name="Show/Hide Attributes", default=False)
-    file_parent_ui_bool: bpy.props.BoolProperty(name="Show/Hide Parent", default=False)
-
     def set_asset_catalog_name(self, input):
         task_layer_dict = config.get_task_layer_dict()
         task_layer_dict["ASSET_CATALOG_ID"] = get_asset_id(input)
