@@ -57,9 +57,15 @@ def sync_draw(self, context):
     row = layout.row()
 
     if len(self._invalid_objs) != 0:
-        header, panel = layout.panel("Invalid Objects")
-        header.label(text="Sync will clear Invalid Objects", icon='TRASH')
+        main_col = layout.column(align=True)
+        main_col.alert = True
+        header, panel = main_col.panel("Invalid Objects")
+        header.label(text="Sync will delete Invalid Objects", icon='TRASH')
         if panel:
+            col = panel.column(align=True)
+            col.label(text="An object is considered invalid if it's not linked")
+            col.label(text="to the collection of its owning task layer.")
+            col.separator()
             for obj in self._invalid_objs:
                 panel.label(text=obj.name, icon="OBJECT_DATA")
 

@@ -10,7 +10,7 @@ from ..transfer_util import (
 )
 from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
 from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
-from .transfer_function_util.visibility import override_obj_visability
+from .transfer_function_util.visibility import override_obj_visibility
 from ...task_layer import get_transfer_data_owner
 from .... import constants, logging
 
@@ -90,7 +90,7 @@ def transfer_constraint(constraint_name, target_obj, source_obj):
             ) == task_layer_prefix_basename_get(name_prev):
                 idx = target_mod_i + 1
 
-    with override_obj_visability(obj=target_obj, scene=context.scene):
+    with override_obj_visibility(obj=target_obj, scene=context.scene):
         with context.temp_override(object=target_obj):
             bpy.ops.constraint.move_to_index(constraint=constraint_new.name, index=idx)
 

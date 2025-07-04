@@ -986,7 +986,7 @@ class GroomingTaskLayer(TaskLayer):
         # transfer_shading_data(context, transfer_dict)
         ShadingTaskLayer.transfer_data(context, transfer_mapping, transfer_settings)
 
-        # transfer modifers
+        # transfer modifiers
         for obj_source, obj_target in transfer_mapping.object_map.items():
             if not "PARTICLE_SYSTEM" in [m.type for m in obj_target.modifiers]:
                 bpy.ops.object.make_links_data(

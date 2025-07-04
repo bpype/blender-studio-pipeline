@@ -4,7 +4,7 @@
 
 import bpy
 from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
-from .transfer_function_util.visibility import override_obj_visability
+from .transfer_function_util.visibility import override_obj_visibility
 from ..transfer_util import (
     transfer_data_clean,
     transfer_data_item_is_missing,
@@ -184,7 +184,7 @@ def bind_modifier(context, obj, modifier_name):
         with disable_modifiers(objs, modifiers_to_disable):
             for i in range(2):
                 context.view_layer.update()
-                with override_obj_visability(obj=obj, scene=context.scene):
+                with override_obj_visibility(obj=obj, scene=context.scene):
                     with context.temp_override(object=obj, active_object=obj):
                         bind_op(modifier=modifier.name)
                         word = "Bound" if is_modifier_bound(modifier) else "Un-bound"

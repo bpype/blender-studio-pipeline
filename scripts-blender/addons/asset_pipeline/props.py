@@ -48,6 +48,10 @@ class AssetTransferData(bpy.types.PropertyGroup):
     )
     surrender: bpy.props.BoolProperty(name="Surrender Ownership", default=False)
 
+    @property
+    def obj_name(self):
+        return self.id_data.name
+
 
 class AssetTransferDataTemp(bpy.types.PropertyGroup):
     """Class used when finding new ownership data so it can be drawn

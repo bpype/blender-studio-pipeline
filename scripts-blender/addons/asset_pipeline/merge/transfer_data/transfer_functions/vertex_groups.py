@@ -71,11 +71,12 @@ def transfer_single_vgroup_by_topology(source_obj, target_obj, vgroup_name):
             vgroup_tgt.add([v.index], vgroup_src.weight(v.index), 'REPLACE')
 
 
-def remove_vgroups(obj, vgroup_names):
-    for vgroup_name in vgroup_names:
-        target_vgroup = obj.vertex_groups.get(vgroup_name)
-        if target_vgroup:
-            obj.vertex_groups.remove(target_vgroup)
+def remove_vgroups(objs, vgroup_names):
+    for obj in objs:
+        for vgroup_name in vgroup_names:
+            target_vgroup = obj.vertex_groups.get(vgroup_name)
+            if target_vgroup:
+                obj.vertex_groups.remove(target_vgroup)
 
 
 def precalc_and_transfer_multiple_groups(source_obj, target_obj, vgroup_names, expand=2):
