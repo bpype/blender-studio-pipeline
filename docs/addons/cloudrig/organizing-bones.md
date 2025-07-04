@@ -3,11 +3,11 @@
 In Blender, bones can be organized using [Bone Collections](https://docs.blender.org/manual/en/latest/animation/armatures/bones/bone_collections.html), or [Bone Selection Sets](https://docs.blender.org/manual/en/dev/addons/animation/bone_selection_sets.html), if you use that addon.
 
 ## Bone Collections
-If you generate the Cloud Basic Human metarig and select the generated rig, you should be able to find this panel under **Sidebar(N panel)->CloudRig->Bone Collections**:
+There are a couple of quick ways to access the Bone Collections UI in CloudRig; You can find them under **Sidebar(N panel)->CloudRig->Bone Collections**:
 
 <img src="/media/addons/cloudrig/sidebar_collections.png" width=500>
 
-You can also summon this collection list menu using Shift+M on a CloudRig armature.
+You can also summon them using Shift+M on a CloudRig armature.
 
 ## Organizing Bones
 If you want to customize which generated bones get placed in which bone collections, you can do this using Bone Sets.
@@ -25,12 +25,14 @@ You can also choose a color preset to assign. This preset will be converted to a
 Additionally, you can change Blender's default color presets to CloudRig's recommended ones in the preferences, using this button:  
 <img src="/media/addons/cloudrig/bone_color_preset.png" width=800>
 
-## Custom Collections
-If you want to create collections even more granularly, you can simply create them on the generated rig, and assign whatever bones you want. You just need to let CloudRig know that you want to preserve these collections when re-generating the rig. And to do that, you first need to enable the collection authoring UI:
+## Protected Collections
+You also have the ability to organize collections as you would with a normal armature, except you need to let CloudRig know which collections you don't want to be touched by the generation process. To do that, you first need to enable the collection authoring UI:
 
 <img src="/media/addons/cloudrig/collections_extras.png" width=400>
 
-Then you can create your collections, assign bones, and the important part: Mark the collection as preserved, using the shield icon. These collections will be fully preserved when you regenerate the rig.
+Then you can create your collections and assign bones as you would on any armature. Then you need to mark the collection as protected, using the shield icon. These collection, and which bones are assigned to them, will be fully preserved when you regenerate the rig.
+
+Note that this does **not** mean that you can now create arbitrary bones on the generated rig and expect them to stick around. The only way to do that is to add [Bone Copy](cloudrig-types#bone-copy) components in the MetaRig.
 
 <img src="/media/addons/cloudrig/pasted_sel_sets.png" width=400>
 
