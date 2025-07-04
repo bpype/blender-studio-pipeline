@@ -7,6 +7,7 @@
 ### FIXED
 
 - fix color sampling from curves under deformation [#391](https://projects.blender.org/studio/blender-studio-tools/pulls/391)
+- fix Eevee tile brushstroke sampling [#404](https://projects.blender.org/studio/blender-studio-tools/pulls/404)
 
 ## 1.1.1 - 2025-01-17
 
