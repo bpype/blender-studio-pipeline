@@ -6,8 +6,8 @@ from typing import Optional, List, Tuple
 
 import bpy
 
-from contactsheet import checksqe
-from contactsheet.log import LoggerFactory
+from . import checksqe
+from .log import LoggerFactory
 
 logger = LoggerFactory.getLogger(name=__name__)
 

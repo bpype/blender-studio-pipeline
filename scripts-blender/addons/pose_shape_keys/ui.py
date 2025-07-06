@@ -232,7 +232,7 @@ class POSEKEYS_UL_target_shape_keys(UIList):
         ):
             name_row.active = value_row.active = False
 
-        value_row.operator('object.posekey_magic_driver', text="", icon='DECORATE_DRIVER').key_name = key_block.name
+        value_row.operator('object.posekey_magic_driver', text="", icon='DECORATE_DRIVER').shapekey_name = key_block.name
         value_row.prop(key_block, "value", text="")
 
         mute_row = split.row()

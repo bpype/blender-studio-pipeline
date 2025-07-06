@@ -248,12 +248,6 @@ class ASSETPIPE_OT_prepare_sync(bpy.types.Operator):
     _invalid_objs = []
     _other_ids = []
 
-    expand: bpy.props.BoolProperty(
-        name="Show New Transferable Data",
-        default=False,
-        description="Show New Transferable Data",
-    )
-
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
         opscore.sync_invoke(self, context)
         return context.window_manager.invoke_props_dialog(self, width=400)
@@ -285,11 +279,6 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
     _task_layer_key: str = ""
     _sync_target: Path = None
 
-    expand: bpy.props.BoolProperty(
-        name="Show New Transferable Data",
-        default=False,
-        description="Show New Transferable Data",
-    )
     save: bpy.props.BoolProperty(
         name="Save File & Images",
         default=True,
@@ -346,11 +335,6 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
     _task_layer_key: str = ""
     _sync_target: Path = None
 
-    expand: bpy.props.BoolProperty(
-        name="Show New Transferable Data",
-        default=False,
-        description="Show New Transferable Data",
-    )
     pull: bpy.props.BoolProperty(
         name="Pull before Pushing",
         default=True,

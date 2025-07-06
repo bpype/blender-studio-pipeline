@@ -6,12 +6,12 @@ from pathlib import Path
 
 import bpy
 
-from cache_manager import (
+from . import (
     propsdata,
     props,
     cache
 )
-from cache_manager.ops import (
+from .ops import (
     CM_OT_cache_export,
     CM_OT_cacheconfig_export,
     CM_OT_import_cache,

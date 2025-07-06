@@ -46,17 +46,17 @@ CUSTOM_PROP_KEY = "CUSTOM_PROP"
 
 # Information about supported transferable data.
 # UI Bools are defined in props.py file
-# {Key string : ("UI Name", 'ICON', "UI_BOOL_KEY")}
+# {Key string : ("UI Name", 'ICON')}
 TRANSFER_DATA_TYPES = {
-    NONE_KEY: ("None", "BLANK1", 'none'),
-    VERTEX_GROUP_KEY: ("Vertex Groups", 'GROUP_VERTEX', 'group_vertex_ui_bool'),
-    MODIFIER_KEY: ("Modifiers", 'MODIFIER', 'modifier_ui_bool'),
-    CONSTRAINT_KEY: ("Constraints", 'CONSTRAINT', 'constraint_ui_bool'),
-    MATERIAL_SLOT_KEY: ("Materials", 'MATERIAL', 'material_ui_bool'),
-    SHAPE_KEY_KEY: ("Shape Keys", 'SHAPEKEY_DATA', 'shapekey_ui_bool'),
-    ATTRIBUTE_KEY: ("Attributes", 'EVENT_A', 'attribute_ui_bool'),
-    PARENT_KEY: ("Parent", 'FILE_PARENT', 'file_parent_ui_bool'),
-    CUSTOM_PROP_KEY: ("Custom Properties", 'PROPERTIES', 'custom_prop_ui_bool'),
+    NONE_KEY: ("None", "BLANK1"),
+    VERTEX_GROUP_KEY: ("Vertex Groups", 'GROUP_VERTEX'),
+    MODIFIER_KEY: ("Modifiers", 'MODIFIER'),
+    CONSTRAINT_KEY: ("Constraints", 'CONSTRAINT'),
+    MATERIAL_SLOT_KEY: ("Materials", 'MATERIAL'),
+    SHAPE_KEY_KEY: ("Shape Keys", 'SHAPEKEY_DATA'),
+    ATTRIBUTE_KEY: ("Attributes", 'MOD_DATA_TRANSFER'),
+    PARENT_KEY: ("Parent", 'FILE_PARENT'),
+    CUSTOM_PROP_KEY: ("Custom Properties", 'PROPERTIES'),
 }
 
 # Convert it to the format that EnumProperty.items wants:

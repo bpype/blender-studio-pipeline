@@ -8,10 +8,10 @@ from typing import Set, List
 
 import bpy
 
-from contactsheet import prefs, opsdata
-from contactsheet.log import LoggerFactory
-from contactsheet.geo_seq import SequenceRect
-from contactsheet.geo import Grid, NestedRectangle
+from . import prefs, opsdata
+from .log import LoggerFactory
+from .geo_seq import SequenceRect
+from .geo import Grid, NestedRectangle
 
 logger = LoggerFactory.getLogger(name=__name__)
 

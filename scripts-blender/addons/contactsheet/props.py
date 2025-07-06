@@ -4,7 +4,7 @@
 
 import bpy
 
-from contactsheet.log import LoggerFactory
+from .log import LoggerFactory
 
 logger = LoggerFactory.getLogger(name=__name__)
 

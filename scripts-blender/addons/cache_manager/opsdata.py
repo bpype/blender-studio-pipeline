@@ -9,9 +9,9 @@ from typing import List, Tuple, Generator, Dict, Union, Any, Optional
 
 import bpy
 
-from cache_manager import cmglobals
-from cache_manager.logger import LoggerFactory, log_new_lines
-from cache_manager.models import FolderListModel
+from . import cmglobals
+from .logger import LoggerFactory, log_new_lines
+from .models import FolderListModel
 
 logger = LoggerFactory.getLogger(__name__)
 

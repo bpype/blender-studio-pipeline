@@ -2,12 +2,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy, re
+import re
+from collections import OrderedDict
+
+import bpy
 from bpy.types import Object, Operator
-from bpy.props import StringProperty, BoolProperty
+from bpy.props import StringProperty, BoolProperty, EnumProperty
 from mathutils import Vector, Quaternion
 from math import sqrt
-from collections import OrderedDict
 
 from .symmetrize_shape_key import mirror_mesh
 from .prefs import get_addon_prefs
@@ -910,24 +912,43 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
     bl_label = "Auto-initialize Driver"
     bl_options = {'UNDO', 'REGISTER', 'INTERNAL'}
 
-    key_name: StringProperty()
+    shapekey_name: StringProperty()
+
+    side: EnumProperty(
+        name="Side", 
+        items=[
+            ('LEFT', "Left", "Exclude bones whose names indicate right-side."),
+            ('BOTH', "Both", "Consider the transformations of all bones, regardless of which side they're on."),
+            ('RIGHT', "Right", "Exclude bones whose names indicate left-side."),
+        ],
+        default='BOTH',
+    )
+
+    only_selected: BoolProperty(
+        name="Only Selected Bones", 
+        description="Only consider selected bones for the driver set-up", 
+        default=False
+    )
 
     @classmethod
     def poll(cls, context):
         return poll_correct_pose_key_pose(cls, context)
 
-    @staticmethod
-    def get_posed_channels(context, side=None) -> OrderedDict[str, tuple[str, float]]:
+    def get_driving_channels(self, context) -> OrderedDict[str, tuple[str, float]]:
         obj = context.object
         arm_ob = get_deforming_armature(obj)
+
 
         channels = OrderedDict()
 
         EPSILON = 0.0001
 
         for pb in arm_ob.pose.bones:
-            is_left = side_is_left(pb.name)
-            if is_left != None and ((is_left and side!='LEFT') or (is_left==False and side=='LEFT')):
+            bone_is_left = side_is_left(pb.name)
+            if self.side != 'BOTH':
+                if (bone_is_left and self.side=='RIGHT') or (bone_is_left==False and self.side=='LEFT'):
+                    continue
+            if self.only_selected and not pb.bone.select:
                 continue
             bone_channels = OrderedDict({'loc' : [], 'rot': [], 'scale': []})
 
@@ -972,25 +993,34 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
         return sanitized
 
     def invoke(self, context, event):
-        is_left = side_is_left(self.key_name)
-        if is_left == None:
-            side = None
-        elif is_left == False:
-            side = 'RIGHT'
+        key_is_left = side_is_left(self.shapekey_name)
+        if key_is_left:
+            self.side = 'LEFT'
+        elif key_is_left == False:
+            self.side = 'RIGHT'
         else:
-            side = 'LEFT'
-        self.posed_channels = self.get_posed_channels(context, side=side)
+            self.side = 'BOTH'
         return context.window_manager.invoke_props_dialog(self, width=300)
 
     def draw(self, context):
         layout = self.layout
-        layout.label(text="Driver will be created based on these transforms:")
+        layout.label(text="Driver will be created based on the current pose.")
+
+        layout.use_property_split = True
+        layout.prop(self, 'only_selected')
+        layout.prop(self, 'side', expand=True, text="Side")
+
+        driving_channels = self.get_driving_channels(context)
+
+        if not driving_channels:
+            layout.label(text="No driving channels found.")
+            return
 
         obj = context.object
         arm_ob = get_deforming_armature(obj)
 
         col = layout.column(align=True)
-        for bone_name, transforms in self.posed_channels.items():
+        for bone_name, transforms in driving_channels.items():
             pb = arm_ob.pose.bones.get(bone_name)
             bone_box = col.box()
             bone_box.prop(pb, 'name', icon='BONE_DATA', text="", emboss=False)
@@ -1008,24 +1038,59 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
                 bone_box.row().label(text=", ".join(axes), icon=icon)
 
     def execute(self, context):
+        driving_channels = self.get_driving_channels(context)
+        if not driving_channels:
+            self.report({'ERROR'}, "No transform channels found to drive the shape key.")
+            return {'CANCELLED'}
+        count = 0
+        for bone_name, transforms in driving_channels.items():
+            for transform, trans_inf in transforms.items():
+                for axis, value in trans_inf:
+                    count += 1
+        if count > 16:
+            self.report({'ERROR'}, f"Too many transform channels ({count}>16). Can't fit all in the driver expression.")
+            return {'CANCELLED'}
+
         obj = context.object
         arm_ob = get_deforming_armature(obj)
-        key_block = obj.data.shape_keys.key_blocks.get(self.key_name)
+        key_block = obj.data.shape_keys.key_blocks.get(self.shapekey_name)
 
         key_block.driver_remove('value')
         fc = key_block.driver_add('value')
-        drv = fc.driver
 
+        if not self.setup_driver(fc, arm_ob, driving_channels):
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, "Created shape key driver.")
+        return {'FINISHED'}
+
+    def setup_driver(self, fcurve, target, driving_channels, short=False) -> str:
         expressions = []
 
-        for bone_name, transforms in self.posed_channels.items():
+        for m in fcurve.modifiers:
+            # Drivers created via Python are initialized with a modifier that does nothing,
+            # except it prevents the insertion of keyframes. Weird as hell.
+            fcurve.modifiers.remove(m)
+        fcurve.keyframe_points.insert(0, 0)
+        fcurve.keyframe_points.insert(1, 1)
+        fcurve.extrapolation = 'LINEAR'
+        driver = fcurve.driver
+
+        for var in reversed(driver.variables):
+            driver.variables.remove(var)
+
+        for bone_name, transforms in driving_channels.items():
             for transform, trans_inf in transforms.items():
                 for axis, value in trans_inf:
                     transf_type = transform.upper()+"_"+axis
-                    var = drv.variables.new()
-                    var.name = self.sanitize_variable_name(bone_name) + "_" + transf_type.lower()
+                    var = driver.variables.new()
+                    if short:
+                        # Earlier code should early-exit before this gets to q.
+                        var.name = "abcdefghijklmnopqrstuvwxyz"[len(driver.variables)-1]
+                    else:
+                        var.name = self.sanitize_variable_name(bone_name) + "_" + transf_type.lower()
                     var.type = 'TRANSFORMS'
-                    var.targets[0].id = arm_ob
+                    var.targets[0].id = target
                     var.targets[0].bone_target = bone_name
                     var.targets[0].transform_type = transf_type
                     var.targets[0].rotation_mode = 'SWING_TWIST_Y'
@@ -1034,16 +1099,28 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
                         clamped_var = f"min(0, {var.name})"
                     else:
                         clamped_var = f"max(0, {var.name})"
-                    if transf_type.startswith("SCALE"):
-                        expressions.append(f"((1-{clamped_var})/{value:.4f})")
+                    if short:
+                        value = f"{value:.2f}"
                     else:
-                        expressions.append(f"({clamped_var}/{value:.4f})")
+                        value = f"{value:.4f}"
+                    base = f"{clamped_var}/{value}"
+                    if transf_type.startswith("SCALE"):
+                        expressions.append(f"((1-{base})")
+                    else:
+                        expressions.append(f"({base})")
 
-        drv.expression = " * ".join(expressions)
-
-        self.report({'INFO'}, "Created automatic driver.")
-        return {'FINISHED'}
-
+        final_exp = " * ".join(expressions)
+        if short:
+            final_exp = final_exp.replace(" ", "")
+        if len(final_exp) > 255:
+            # I can't believe the expression length is this limited. Just to save 4 bytes in memory... Was it worth it?
+            if not short:
+                final_exp = self.setup_driver(driver, target, driving_channels, short=True)
+            else:
+                self.report({'ERROR'}, f"Too many driving channels ({len(driving_channels)}) to fit into expression. Blame Blender. Try to reduce number of channels.")
+                return final_exp
+        driver.expression = final_exp
+        return final_exp
 
 def get_deforming_armature(mesh_ob: Object) -> Object | None:
     for mod in mesh_ob.modifiers:

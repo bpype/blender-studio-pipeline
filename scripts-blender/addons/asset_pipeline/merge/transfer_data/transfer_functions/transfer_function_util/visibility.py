@@ -12,9 +12,9 @@ def get_visibility_driver(obj) -> Optional[bpy.types.FCurve]:
 
 
 @contextlib.contextmanager
-def override_obj_visability(obj: bpy.types.Object, scene: bpy.types.Scene):
-    """Temporarily Change the Visability of an Object so an bpy.ops or other
-    function that requires the object to be visable can be called.
+def override_obj_visibility(obj: bpy.types.Object, scene: bpy.types.Scene):
+    """Temporarily Change the visibility of an Object so an bpy.ops or other
+    function that requires the object to be visible can be called.
 
     Args:
         obj (bpy.types.Object): Object to un-hide

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import bpy
 
-from contactsheet.geo import Rectangle
+from .geo import Rectangle
 
 
 class SequenceRect(Rectangle):

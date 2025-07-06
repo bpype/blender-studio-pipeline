@@ -9,7 +9,7 @@ from pathlib import Path
 
 import bpy
 
-from cache_manager import propsdata
+from . import prefs, propsdata
 
 
 class CM_collection_property(bpy.types.PropertyGroup):
@@ -60,7 +60,7 @@ class CM_property_group_scene(bpy.types.PropertyGroup):
             ("IMPORT", "Import", "Export Cache Collections", "IMPORT", 1),
         ),
         default="EXPORT",
-        update=propsdata.category_update_version_model,
+        update=prefs.category_update_version_model,
     )
 
     colls_export_index: bpy.props.IntProperty(name="Index", default=0)

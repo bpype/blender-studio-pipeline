@@ -14,19 +14,15 @@ def draw_transfer_data_type(
     asset_pipe = bpy.context.scene.asset_pipeline
     if transfer_data == []:
         return
-    name, icon, ui_bool = constants.TRANSFER_DATA_TYPES[transfer_data[0].type]
+    name, icon = constants.TRANSFER_DATA_TYPES[transfer_data[0].type]
+
     box = layout.box()
-    row = box.row()
-    row.prop(
-        asset_pipe,
-        ui_bool,
-        icon=icon,
-        text="",
-    )
-    row.label(text=name)
-    if not bool(asset_pipe.get(ui_bool)):
+    header, panel = box.panel(transfer_data[0].obj_name + name, default_closed=True)
+    header.label(text=name, icon=icon)
+    if not panel:
         return
 
+    box = panel.box()
     for transfer_data_item in transfer_data:
         row = box.row()
         row.label(text=f"{transfer_data_item.name}: ")

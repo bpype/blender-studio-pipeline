@@ -5,7 +5,7 @@
 from pathlib import Path
 from typing import Optional, List, Tuple
 
-from cache_manager.logger import LoggerFactory
+from .logger import LoggerFactory
 
 logger = LoggerFactory.getLogger(__name__)
 
