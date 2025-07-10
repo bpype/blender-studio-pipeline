@@ -28,12 +28,12 @@ def override_save_version():
         bpy.context.preferences.filepaths.save_version = save_version
 
 
-def paths_for_vse_strip(strip: bpy.types.Sequence) -> List[str]:
+def paths_for_vse_strip(strip: bpy.types.Strip) -> List[str]:
     """Returns all paths related to Movie, Image and Sound strips
     in Blender's Video Sequence Editor
 
     Args:
-        strip (bpy.types.Sequence): Movie, Image or Sounds Strip
+        strip (bpy.types.Strip): Movie, Image or Sounds Strip
 
     Returns:
         List[str]: List of all paths related to strip
@@ -167,7 +167,6 @@ def update_libs(file_map_dict: dict) -> None:
 def remap_all_blender_paths():
     """Remap all references to files from blender via dictionary"""
     start = time.time()
-    import sys
 
     argv = sys.argv
     argv = argv[argv.index("--") + 1 :]
