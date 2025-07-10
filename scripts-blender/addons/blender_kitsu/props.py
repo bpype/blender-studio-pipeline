@@ -837,32 +837,32 @@ def update_sequence_colors_coll_prop(dummy: Any) -> None:
     if not sqe:
         return
     strips = sqe.strips_all
-    sequence_colors = bpy.context.scene.kitsu.sequence_colors
-    existings_seq_ids: List[str] = []
+    strip_colors = bpy.context.scene.kitsu.sequence_colors
+    existing_strip_ids: List[str] = []
 
-    # Append missing strips to scene.kitsu.seqeuence_colors.
+    # Append missing sequences to scene.kitsu.seqeuence_colors.
     for seq in strips:
         if not seq.kitsu.sequence_id:
             continue
 
-        if seq.kitsu.sequence_id not in sequence_colors.keys():
+        if seq.kitsu.sequence_id not in strip_colors.keys():
             logger.info("Added %s to scene.kitsu.seqeuence_colors", seq.kitsu.sequence_name)
-            item = sequence_colors.add()
+            item = strip_colors.add()
             item.name = seq.kitsu.sequence_id
 
-        existings_seq_ids.append(seq.kitsu.sequence_id)
+        existing_strip_ids.append(seq.kitsu.sequence_id)
 
     # Delete sequence colors that are not in edit anymore.
-    existings_seq_ids = set(existings_seq_ids)
+    existing_strip_ids = set(existing_strip_ids)
 
-    to_be_removed = [seq_id for seq_id in sequence_colors.keys() if seq_id not in existings_seq_ids]
+    to_be_removed = [strip_id for strip_id in strip_colors.keys() if strip_id not in existing_strip_ids]
 
     for seq_id in to_be_removed:
-        idx = sequence_colors.find(seq_id)
+        idx = strip_colors.find(seq_id)
         if idx == -1:
             continue
 
-        sequence_colors.remove(idx)
+        strip_colors.remove(idx)
         logger.info(
             "Removed %s from scene.kitsu.seqeuence_colors. Is not used in the sequence editor anymore",
             seq_id,

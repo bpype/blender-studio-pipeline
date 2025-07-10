@@ -194,7 +194,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
         # scan for approved renders, will modify strip.rr.is_approved prop
         # which controls the custom gpu overlay
-        opsdata.update_sequence_statuses(context)
+        opsdata.update_strip_statuses(context)
 
         bpy.ops.sequencer.select_all(action='DESELECT')
 
@@ -634,7 +634,7 @@ class RR_OT_sqe_approve_render(bpy.types.Operator):
             opsdata.save_to_json(json_dict, metadata_path)
 
         # Scan for approved renders.
-        opsdata.update_sequence_statuses(context)
+        opsdata.update_strip_statuses(context)
         util.redraw_ui()
 
         # Log.
@@ -667,11 +667,11 @@ class RR_OT_sqe_approve_render(bpy.types.Operator):
         layout.row(align=True).label(text="Update Shot Frames?")
 
 
-class RR_OT_sqe_update_sequence_statuses(bpy.types.Operator):
-    bl_idname = "rr.update_sequence_statuses"
-    bl_label = "Update Sequence Statuses"
+class RR_OT_sqe_update_strip_statuses(bpy.types.Operator):
+    bl_idname = "rr.update_strip_statuses"
+    bl_label = "Update Strip Statuses"
     bl_description = (
-        "Scans sequence editor and updates flags for which ones are pushed "
+        "Scans sequence editor and updates flags for which strips are pushed "
         "to the edit and which one is the currently approved version "
         "by reading the metadata.json files"
     )
@@ -682,7 +682,7 @@ class RR_OT_sqe_update_sequence_statuses(bpy.types.Operator):
         return bool(context.scene.sequence_editor.strips_all)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        approved_strips = opsdata.update_sequence_statuses(context)[0]
+        approved_strips = opsdata.update_strip_statuses(context)[0]
 
         if approved_strips:
             self.report(
@@ -783,16 +783,16 @@ class RR_OT_sqe_isolate_strip_enter(bpy.types.Operator):
             bpy.ops.rr.sqe_isolate_strip_exit()
 
         # Mute all and save state to restore later.
-        for s in strips:
+        for strip in strips:
             # Save this state to restore it later.
             item = context.scene.rr.isolate_view.add()
-            item.name = s.name
-            item.mute = s.mute
-            s.mute = True
+            item.name = strip.name
+            item.mute = strip.mute
+            strip.mute = True
 
         # Unmute selected.
-        for s in context.selected_strips:
-            s.mute = False
+        for strip in context.selected_strips:
+            strip.mute = False
 
         return {"FINISHED"}
 
@@ -893,7 +893,7 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
         logger.info("Updated metadata in: %s", metadata_path.as_posix())
 
         # Scan for approved renders.
-        opsdata.update_sequence_statuses(context)
+        opsdata.update_strip_statuses(context)
 
         # Log.
         self.report(
@@ -989,7 +989,7 @@ classes = [
     RR_OT_sqe_inspect_exr_sequence,
     RR_OT_sqe_clear_exr_inspect,
     RR_OT_sqe_approve_render,
-    RR_OT_sqe_update_sequence_statuses,
+    RR_OT_sqe_update_strip_statuses,
     RR_OT_open_path,
     RR_OT_sqe_isolate_strip_enter,
     RR_OT_sqe_isolate_strip_exit,

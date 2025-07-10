@@ -14,7 +14,7 @@ from .ops import (
     RR_OT_sqe_inspect_exr_sequence,
     RR_OT_sqe_clear_exr_inspect,
     RR_OT_sqe_approve_render,
-    RR_OT_sqe_update_sequence_statuses,
+    RR_OT_sqe_update_strip_statuses,
     RR_OT_open_path,
     RR_OT_sqe_push_to_edit,
 )
@@ -118,7 +118,7 @@ class RR_PT_render_review(bpy.types.Panel):
             if active_strip.rr.is_pushed_to_edit:
                 text = "Approve Render"
             row.operator(RR_OT_sqe_approve_render.bl_idname, icon="CHECKMARK", text=text)
-            row.operator(RR_OT_sqe_update_sequence_statuses.bl_idname, text="", icon="FILE_REFRESH")
+            row.operator(RR_OT_sqe_update_strip_statuses.bl_idname, text="", icon="FILE_REFRESH")
 
             # Push to edit.
             if not addon_prefs.shot_playblast_root_dir:
