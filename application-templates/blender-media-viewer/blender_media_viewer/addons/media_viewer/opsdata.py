@@ -44,9 +44,9 @@ def is_script(filepath: Path) -> bool:
 
 
 def del_all_strips(context: bpy.types.Context) -> None:
-    for seq_name in [s.name for s in context.scene.sequence_editor.strips_all]:
+    for strip_name in [s.name for s in context.scene.sequence_editor.strips_all]:
         context.scene.sequence_editor.strips.remove(
-            context.scene.sequence_editor.strips[seq_name]
+            context.scene.sequence_editor.strips[strip_name]
         )
 
 

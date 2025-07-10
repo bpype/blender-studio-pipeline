@@ -1071,11 +1071,11 @@ class MV_OT_toggle_mute_audio(bpy.types.Operator):
     def execute(self, context: bpy.types.Context) -> Set[str]:
         global is_muted
 
-        strips = [
+        sound_strips = [
             s for s in context.scene.sequence_editor.strips_all if s.type == "SOUND"
         ]
 
-        for strip in strips:
+        for strip in sound_strips:
             strip.mute = not is_muted
 
         is_muted = not is_muted
