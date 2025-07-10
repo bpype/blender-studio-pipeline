@@ -38,7 +38,7 @@ bl_info = {
     "name": "Blender Kitsu",
     "author": "Paul Golter",
     "description": "Blender addon to interact with Kitsu",
-    "blender": (2, 93, 0),
+    "blender": (5, 0, 0),
     "version": (0, 1, 6),
     "location": "View3D",
     "warning": "",

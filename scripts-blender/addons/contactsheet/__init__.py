@@ -19,7 +19,7 @@ bl_info = {
     "name": "Contactsheet",
     "author": "Paul Golter",
     "description": "Blender addon to create a contactsheet from sequence editor strips",
-    "blender": (3, 0, 0),
+    "blender": (5, 0, 0),
     "version": (0, 1, 2),
     "location": "Sequence Editor",
     "category": "Sequencer",
