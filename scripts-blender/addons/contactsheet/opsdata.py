@@ -64,7 +64,7 @@ def get_top_level_valid_strips_continuous(
     )
 
     strips_tmp.sort(key=lambda s: (s.channel, s.frame_final_start), reverse=True)
-    strips: List["bpy.types.Strip"] = []
+    strips: List[bpy.types.Strip] = []
 
     for strip in strips_tmp:
 

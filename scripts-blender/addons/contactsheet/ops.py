@@ -47,8 +47,8 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
 
         # Select strips, will remove strips later that are not selected.
         bpy.ops.sequencer.select_all(action="DESELECT")
-        for s in strips:
-            s.select = True
+        for strip in strips:
+            strip.select = True
 
         row_count = None
         start_frame = 1
@@ -77,13 +77,13 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
         )
 
         # Remove strips in new scene that are not selected.
-        seq_rm: List["bpy.types.Strip"] = [
+        strips_rm: List["bpy.types.Strip"] = [
             s for s in scene_tmp.sequence_editor.strips_all if not s.select
         ]
-        for s in seq_rm:
-            scene_tmp.sequence_editor.strips.remove(s)
+        for strip in strips_rm:
+            scene_tmp.sequence_editor.strips.remove(strip)
 
-        # Get all strips in new scene and sort them.
+        # Get all sequences in new scene and sort them.
         strips = list(scene_tmp.sequence_editor.strips_all)
         strips.sort(key=lambda strip: (strip.frame_final_start, strip.channel))
 
