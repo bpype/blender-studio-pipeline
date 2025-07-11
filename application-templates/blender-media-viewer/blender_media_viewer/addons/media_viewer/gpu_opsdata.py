@@ -18,7 +18,6 @@ Float2 = Tuple[float, float]
 Float3 = Tuple[float, float, float]
 Float4 = Tuple[float, float, float, float]
 
-line_shader = gpu.shader.from_builtin('UNIFORM_COLOR')
 
 def get_gpframe_coords(
     gpframe: bpy.types.GPencilFrame, do_3_dimensions=False
@@ -88,7 +87,7 @@ class GPDrawerCustomShader:
 
         if not coords:
             return
-
+        line_shader = gpu.shader.from_builtin('UNIFORM_COLOR')
         gpu.state.blend_set('ALPHA')
         gpu.state.line_width_set(line_widht)
         line_shader.uniform_float("color", color)

@@ -11,7 +11,6 @@ from gpu_extras.batch import batch_for_shader
 APPROVED_COLOR = (0.24, 1, 0.139, 0.7)
 PUSHED_TO_EDIT_COLOR = (0.8, .8, 0.1, 0.5)
 
-line_shader = gpu.shader.from_builtin('FLAT_COLOR')
 
 Float2 = typing.Tuple[float, float]
 Float3 = typing.Tuple[float, float, float]
@@ -20,7 +19,9 @@ LINE_WIDTH = 6
 
 
 class LineDrawer:
+
     def draw(self, coords: typing.List[Float2], colors: typing.List[Float4]):
+        line_shader = gpu.shader.from_builtin('FLAT_COLOR')
         global LINE_WIDTH
 
         if not coords:
