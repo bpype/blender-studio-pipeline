@@ -95,7 +95,7 @@ def sync_draw(self, context):
         for transfer_data_item in self._temp_transfer_data
     ]
 
-    for obj in set(objs):
+    for obj in sorted(set(objs), key=lambda o: o.name):
         obj_ownership = [
             transfer_data_item
             for transfer_data_item in self._temp_transfer_data
