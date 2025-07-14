@@ -8,7 +8,9 @@ from ..task_layer import draw_task_layer_selection
 
 
 def draw_transfer_data_type(
-    layout: bpy.types.UILayout, transfer_data: bpy.types.CollectionProperty
+    context: bpy.types.Context,
+    layout: bpy.types.UILayout,
+    transfer_data: bpy.types.CollectionProperty,
 ) -> None:
     """Draw UI Element for items of a Transferable Data type"""
     asset_pipe = bpy.context.scene.asset_pipeline
@@ -58,7 +60,9 @@ def draw_transfer_data_type(
 
 
 def draw_transfer_data(
-    transfer_data: bpy.types.CollectionProperty, layout: bpy.types.UILayout
+    context: bpy.types.Context,
+    transfer_data: bpy.types.CollectionProperty,
+    layout: bpy.types.UILayout,
 ) -> None:
     """Draw UI List of Transferable Data"""
     vertex_groups = []
@@ -88,11 +92,11 @@ def draw_transfer_data(
         if transfer_data_item.type == constants.PARENT_KEY:
             parent.append(transfer_data_item)
 
-    draw_transfer_data_type(layout, vertex_groups)
-    draw_transfer_data_type(layout, modifiers)
-    draw_transfer_data_type(layout, material_slots)
-    draw_transfer_data_type(layout, constraints)
-    draw_transfer_data_type(layout, custom_props)
-    draw_transfer_data_type(layout, shape_keys)
-    draw_transfer_data_type(layout, attributes)
-    draw_transfer_data_type(layout, parent)
+    draw_transfer_data_type(context, layout, vertex_groups)
+    draw_transfer_data_type(context, layout, modifiers)
+    draw_transfer_data_type(context, layout, material_slots)
+    draw_transfer_data_type(context, layout, constraints)
+    draw_transfer_data_type(context, layout, custom_props)
+    draw_transfer_data_type(context, layout, shape_keys)
+    draw_transfer_data_type(context, layout, attributes)
+    draw_transfer_data_type(context, layout, parent)

@@ -178,7 +178,7 @@ class AssetPipeline(bpy.types.PropertyGroup):
                 new_local_task_layer = self.local_task_layers.add()
                 new_local_task_layer.name = task_layer.name
 
-    def get_local_task_layers(self):
+    def get_local_task_layers(self) -> list[str]:
         return [task_layer.name for task_layer in self.local_task_layers]
 
     def set_asset_catalog_name(self, input):

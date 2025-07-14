@@ -77,6 +77,7 @@ def sync_draw(self, context):
                 row = panel.row()
                 row.label(text=id.name, icon=get_shared_id_icon(id))
                 draw_task_layer_selection(
+                    context,
                     layout=row,
                     data=id,
                 )
@@ -105,7 +106,7 @@ def sync_draw(self, context):
         header, panel = box.panel(obj.name, default_closed=True)
         header.label(text=obj.name, icon='OBJECT_DATA')
         if panel:
-            draw_transfer_data(obj_ownership, panel)
+            draw_transfer_data(context, obj_ownership, panel)
 
 
 def sync_execute_update_ownership(self, context):
