@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "blender_studio_asset_pipeline"
-version = "0.2.2"
+version = "0.3.0"
 name = "Blender Studio Asset Pipeline"
 tagline = "Asset data merger for studio collaboration"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
@@ -9,7 +9,7 @@ type = "add-on"
 website = "https://studio.blender.org/tools/addons/asset_pipeline"
 tags = ["Pipeline"]
 
-blender_version_min = "4.2.0"
+blender_version_min = "5.0.0"
 
 license = [
   "SPDX:GPL-3.0-or-later",
