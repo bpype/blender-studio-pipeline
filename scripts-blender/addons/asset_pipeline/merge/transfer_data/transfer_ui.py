@@ -26,35 +26,24 @@ def draw_transfer_data_type(
 
     box = panel.box()
     for transfer_data_item in transfer_data:
-        row = box.row()
-        row.label(text=f"{transfer_data_item.name}: ")
+        main_row = box.row()
+        main_row.label(text=f"{transfer_data_item.name}: ")
 
-        if transfer_data_item.get("surrender"):
-            enabled = (
-                False
-                if transfer_data_item.owner in asset_pipe.get_local_task_layers()
-                else True
-            )
-            # Disable entire row if the item is surrender (prevents user from un-surrendering)
-            row.enabled = enabled
-            col = row.column()
-            col.operator(
+        if transfer_data_item.surrender:
+            # Disable entire row if the item is surrendered
+            main_row.operator(
                 "assetpipe.update_surrendered_transfer_data"
             ).transfer_data_item_name = transfer_data_item.name
 
-        # New Row inside a column because draw_task_layer_selection() will enable/disable the entire row
-        # Only need this to affect itself and the "surrender" property
-        col = row.column()
-        task_layer_row = col.row()
-
         draw_task_layer_selection(
-            layout=task_layer_row,
+            context,
+            layout=main_row.row(),
             data=transfer_data_item,
         )
-        surrender_icon = (
-            "ORPHAN_DATA" if transfer_data_item.get("surrender") else "HEART"
-        )
-        task_layer_row.prop(
+        surrender_icon = "ORPHAN_DATA" if transfer_data_item.surrender else "HEART"
+        surrender_row = main_row.row()
+        surrender_row.enabled = transfer_data_item.owner in asset_pipe.local_task_layers
+        surrender_row.prop(
             transfer_data_item, "surrender", text="", icon=surrender_icon
         )
 

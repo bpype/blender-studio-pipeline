@@ -199,46 +199,40 @@ class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
         asset_pipe = context.scene.asset_pipeline
-        scene = context.scene
         if not asset_pipe.is_asset_pipeline_file:
             layout.label(text="Open valid 'Asset Pipeline' file", icon="ERROR")
             return
 
-        if asset_pipe.asset_collection is not None and context.collection in list(
-            asset_pipe.asset_collection.children
+        if (
+            asset_pipe.asset_collection and
+            context.collection in list(asset_pipe.asset_collection.children)
         ):
             col = context.collection
-            row = layout.row()
-            row.label(
+            tl_row = layout.row()
+            tl_row.label(
                 text=f"{col.name}: ",
                 icon="OUTLINER_COLLECTION",
             )
-            draw_task_layer_selection(layout=row, data=col)
+            draw_task_layer_selection(context, layout=tl_row, data=col)
 
         if not context.active_object:
             layout.label(text="Set an Active Object to Inspect", icon="OBJECT_DATA")
             return
         obj = context.active_object
         transfer_data = obj.transfer_data_ownership
-        layout = layout.box()
-        row = layout.row()
-        row.label(text=f"{obj.name}: ", icon="OBJECT_DATA")
+        box = layout.box()
+        main_row = box.row()
+        name_row = main_row.row()
+        name_row.prop(obj, 'name', icon="OBJECT_DATA", text="", emboss=False)
 
-        if obj.get("asset_id_surrender"):
-            enabled = False if obj.asset_id_owner in asset_pipe.get_local_task_layers() else True
-            row.enabled = enabled
-            col = row.column()
-            col.operator("assetpipe.update_surrendered_object")
+        if obj.asset_id_surrender:
+            name_row.operator("assetpipe.update_surrendered_object")
 
-        # New Row inside a column because draw_task_layer_selection() will enable/disable the entire row
-        # Only need this to affect itself and the "surrender" property
-        col = row.column()
-        task_layer_row = col.row()
-
-        draw_task_layer_selection(layout=task_layer_row, data=obj)
-        surrender_icon = "ORPHAN_DATA" if obj.get("asset_id_surrender") else "HEART"
-        task_layer_row.prop(obj, "asset_id_surrender", text="", icon=surrender_icon)
-        draw_transfer_data(transfer_data, layout)
+        draw_task_layer_selection(context, layout=main_row.row(), data=obj)
+        surrender_row = main_row.row()
+        surrender_row.enabled = obj.asset_id_owner in asset_pipe.local_task_layers
+        surrender_row.prop(obj, "asset_id_surrender", text="", icon="ORPHAN_DATA" if obj.asset_id_surrender else "HEART")
+        draw_transfer_data(context, transfer_data, box)
 
 
 classes = (
