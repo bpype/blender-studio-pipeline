@@ -43,6 +43,10 @@ def shape_keys_clean(obj):
             cleaned_item_names.add(shape_key.name)
             obj.shape_key_remove(shape_key)
 
+    if not obj.data.shape_keys:
+        # It's possible there are no shape keys anymore.
+        return
+
     for name in cleaned_item_names:
         cleanup_drivers(obj.data.shape_keys, 'key_blocks', name)
 

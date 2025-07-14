@@ -43,21 +43,11 @@ def init_materials(scene, obj):
     name = constants.MATERIAL_TRANSFER_DATA_ITEM_NAME
     transfer_data = obj.transfer_data_ownership
 
-    material_objects = [
-        'CURVE',
-        'GPENCIL',
-        'META',
-        'MESH',
-        'SURFACE',
-        'FONT',
-        'VOLUME',
-    ]
-
-    # Only Execute if Material Slots exist on object
-    if obj.type not in material_objects:
+    if not (obj.data and hasattr(obj.data, 'materials')):
         return
+
     matches = check_transfer_data_entry(transfer_data, name, td_type_key)
-    # Only add new ownership transfer_data_item if vertex group doesn't have an owner
+    # Only add new ownership transfer_data_item if material doesn't have an owner
     if len(matches) == 0:
         task_layer_owner, auto_surrender = get_transfer_data_owner(
             asset_pipe,

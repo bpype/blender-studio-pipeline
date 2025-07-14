@@ -15,10 +15,10 @@ def copy_driver(
     Returns:
         bpy.types.FCurve: Fcurve containing copy of driver on target ID
     """
-    
+
     if not target.animation_data:
         target.animation_data_create()
-    
+
     new_fc = target.animation_data.drivers.from_existing(src_driver = from_fcurve)
 
     if data_path:
@@ -40,6 +40,10 @@ def find_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> list[b
     Returns:
         list[bpy.types.FCurve]: List of FCurves containing drivers that match type & name
     """
+
+    if not id.animation_data:
+        return []
+
     found_drivers = []
     if id.animation_data is None or id.animation_data.drivers is None:
         return found_drivers
