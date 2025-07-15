@@ -10,7 +10,7 @@ bl_info = {
     "name": "Asset Pipeline",
     "author": "Nick Alberelli",
     "description": "Asset data merger for studio collaboration",
-    "blender": (5, 0, 0),
+    "blender": (4, 1, 0),
     "version": (0, 3, 0),
     "location": "View3D",
     "warning": "",
