@@ -414,7 +414,7 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
 
         # Pre-fill render directory with farm output shots directory.
         addon_prefs = prefs.addon_prefs_get(bpy.context)
-        context.scene.rr.render_dir = addon_prefs.farm_output_dir + "/shots"
+        context.scene.rr.render_dir = str(Path(addon_prefs.farm_output_dir).joinpath(addon_prefs.shot_dir_name))
         if not Path(render_dir).exists():
             self.report(
                 {"ERROR"},
