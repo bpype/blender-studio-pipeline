@@ -453,7 +453,7 @@ class BSBST_OT_copy_brushstrokes(bpy.types.Operator):
                 utils.link_to_collections_by_ref(ob, surface_object)
 
                 # if it's still using the default name initialize names again
-                if ob.name.startswith(utils.bs_name(active_surface_object.name)):
+                if utils.split_id_name(ob.name)[0] == utils.bs_name(active_surface_object.name):
                     if utils.is_flow_object(ob):
                         ob.name = utils.flow_name(utils.bs_name(surface_object.name))
                     else:
