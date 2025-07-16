@@ -683,14 +683,11 @@ class ASSETPIPE_OT_update_surrendered_object(bpy.types.Operator):
     bl_label = "Claim Surrendered"
     bl_description = """Claim Surrended Object Owner"""
 
-    _obj = None
-    _old_onwer = ""
-
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
-        self._obj = context.active_object
-        self._old_onwer = self._obj.asset_id_owner
+        obj = context.active_object
+        self._old_owner = obj.asset_id_owner
         # Set Asset ID Owner to a local ID
-        self._obj.asset_id_owner = context.scene.asset_pipeline.get_local_task_layers()[0]
+        obj.asset_id_owner = context.scene.asset_pipeline.get_local_task_layers()[0]
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: bpy.types.Context):
@@ -698,20 +695,20 @@ class ASSETPIPE_OT_update_surrendered_object(bpy.types.Operator):
         row = layout.row()
 
         task_layer.draw_task_layer_selection(
+            context,
             layout=row,
-            data=self._obj,
-            show_all_task_layers=False,
-            show_local_task_layers=True,
+            data=context.active_object,
         )
 
     def execute(self, context: bpy.types.Context):
-        if self._obj.asset_id_owner == self._old_onwer:
+        obj = context.active_object
+        if obj.asset_id_owner == self._old_owner:
             self.report(
                 {'ERROR'},
                 f"Object Owner was not updated",
             )
             return {'CANCELLED'}
-        self._obj.asset_id_surrender = False
+        obj.asset_id_surrender = False
         return {'FINISHED'}
 
 
@@ -723,14 +720,14 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
     transfer_data_item_name: bpy.props.StringProperty(name="Transferable Data Item Name")
 
     _surrendered_transfer_data = None
-    _old_onwer = ""
+    _old_owner = ""
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
         obj = context.active_object
         for transfer_data_item in obj.transfer_data_ownership:
             if transfer_data_item.name == self.transfer_data_item_name:
                 self._surrendered_transfer_data = transfer_data_item
-                self._old_onwer = self._surrendered_transfer_data.owner
+                self._old_owner = self._surrendered_transfer_data.owner
         # Set Default Owner
         asset_pipe = context.scene.asset_pipeline
         owner, _ = task_layer.get_transfer_data_owner(
@@ -744,14 +741,14 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
         row = layout.row()
 
         task_layer.draw_task_layer_selection(
+            context,
             layout=row,
             data=self._surrendered_transfer_data,
-            show_local_task_layers=True,
         )
 
     def execute(self, context: bpy.types.Context):
         asset_pipe = context.scene.asset_pipeline
-        if self._surrendered_transfer_data.owner == self._old_onwer:
+        if self._surrendered_transfer_data.owner == self._old_owner:
             self.report(
                 {'ERROR'},
                 f"Transferable Data Owner was not updated",
@@ -959,26 +956,18 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         if self.data_type == "TRANSFER_DATA":
             layout.prop(self, "transfer_data_type")
         layout.prop(self, "name_filter", text="Name Filter")
-
-        if self.avaliable_owners == "LOCAL":
-            show_local = True
-            show_all_task_layers = False
-        else:
-            show_local = False
-            show_all_task_layers = True
-
         layout.separator()
 
         owner_row = layout.row(align=True)
         owner_row.enabled = grey_out
 
         task_layer.draw_task_layer_selection(
+            context,
             layout=owner_row,
             data=self,
             data_owner_name='owner_selection',
             current_data_owner=self.owner_selection,
-            show_all_task_layers=show_all_task_layers,
-            show_local_task_layers=show_local,
+            show_all_task_layers=self.avaliable_owners=='ALL',
             text="Set To",
         )
 

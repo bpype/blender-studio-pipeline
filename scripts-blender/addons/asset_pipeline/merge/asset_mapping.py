@@ -72,7 +72,7 @@ class AssetTransferMapping:
 
     def _check_id_conflict(self, external_id, local_id):
         if external_id.asset_id_owner != local_id.asset_id_owner and (
-            local_id.asset_id_surrender == external_id.asset_id_owner
+            local_id.asset_id_surrender == external_id.asset_id_surrender
         ):
             self.conflict_ids.append(local_id)
 

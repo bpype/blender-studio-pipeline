@@ -380,13 +380,22 @@ class EASYWEIGHT_OT_remove_island_data(Operator):
         if not context.active_object:
             cls.poll_message_set("No active object.")
             return False
-        if 'island_groups' not in context.active_object:
-            cls.poll_message_set("No island data to remove.")
-            return False
+        if bpy.app.version < (5, 0, 0):
+            if 'island_groups' not in context.active_object:
+                cls.poll_message_set("No island data to remove.")
+                return False
+        else:
+            return context.active_object.is_property_set('island_groups')
+
         return True
 
     def execute(self, context):
-        del context.active_object['island_groups']
+        if bpy.app.version < (5, 0, 0):
+            del context.active_object['island_groups']
+            del context.active_object['active_islands_index']
+        else:
+            context.active_object.property_unset('island_groups')
+            context.active_object.property_unset('active_islands_index')
         return {'FINISHED'}
 
 

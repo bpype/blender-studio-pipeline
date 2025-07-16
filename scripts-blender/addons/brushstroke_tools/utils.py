@@ -545,8 +545,21 @@ def find_brush_style_by_name(name: str):
             return brush_style
     return None
 
-def link_to_collections_by_ref(obj, ref_obj):
+def link_to_collections_by_ref(obj, ref_obj, unlink=True):
         col_list = []
+        
+        if unlink:
+            for col in obj.users_collection:
+                if col.library:
+                    continue
+            col_list += [col]
+        
+            if col_list:
+                for col in col_list:
+                    col.objects.unlink(obj)
+
+            col_list = []
+            
         for col in ref_obj.users_collection:
             if col.library:
                 continue
@@ -771,8 +784,11 @@ def get_active_context_surface_object(context):
     if context.object.type == 'MESH':
         return context.object
 
-def flow_name(name):
-    return f'{name}-FLOW'
+def bs_name(surf_name: str) -> str:
+    return f'{surf_name} - Brushstrokes'
+
+def flow_name(bs_name: str) -> str:
+    return f'{bs_name}-FLOW'
 
 def edit_active_brushstrokes(context):
     context.view_layer.depsgraph.update()

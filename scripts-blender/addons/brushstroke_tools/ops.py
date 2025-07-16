@@ -44,7 +44,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             brushstrokes_object = bpy.data.objects.new(name, brushstrokes_data)
 
         # link to surface object's collections (fall back to active collection if all are linked data)
-        utils.link_to_collections_by_ref(brushstrokes_object, surface_object)
+        utils.link_to_collections_by_ref(brushstrokes_object, surface_object, unlink=False)
 
         brushstrokes_object.visible_shadow = False
         brushstrokes_object['BSBST_version'] = utils.addon_version
@@ -69,7 +69,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             flow_object = bpy.data.objects.new(name, flow_data)
 
         # link to surface object's collections (fall back to active collection if all are linked data)
-        utils.link_to_collections_by_ref(flow_object, surface_object)
+        utils.link_to_collections_by_ref(flow_object, surface_object, unlink=False)
         
         visibility_options = [
             'visible_camera',
@@ -112,7 +112,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             self.report({"ERROR"}, "Surface Object needs an available UV Map")
             return {"CANCELLED"}
 
-        name = f'{surface_object.name} - Brushstrokes'
+        name = utils.bs_name(surface_object.name)
         brushstrokes_object = self.new_brushstrokes_object(context, name, surface_object)
         flow_is_required = settings.brushstroke_method == 'SURFACE_FILL'
         if flow_is_required:
@@ -450,6 +450,17 @@ class BSBST_OT_copy_brushstrokes(bpy.types.Operator):
 
             # remap surface pointers and context linked data TODO: refactor to deduplicate
             for ob in new_bs:
+                utils.link_to_collections_by_ref(ob, surface_object)
+
+                # if it's still using the default name initialize names again
+                if utils.split_id_name(ob.name)[0] == utils.bs_name(active_surface_object.name):
+                    if utils.is_flow_object(ob):
+                        ob.name = utils.flow_name(utils.bs_name(surface_object.name))
+                    else:
+                        ob.name = utils.bs_name(surface_object.name)
+                elif ob.name.startswith(active_surface_object.name):
+                    ob.name = f"{surface_object.name}{ob.name[len(active_surface_object.name):]}"
+
                 ob.parent = surface_object
                 utils.set_surface_object(ob, surface_object)
                 

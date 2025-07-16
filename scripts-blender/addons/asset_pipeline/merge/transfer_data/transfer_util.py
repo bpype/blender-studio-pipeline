@@ -34,8 +34,6 @@ def transfer_data_add_entry(
     td_type_key: str,
     task_layer_name: str,
     surrender: bool,
-    target_obj: bpy.types.Object = None,
-    obj: bpy.types.Object = None,
 ):
     """Add entry to Transferable Data ownership
 
@@ -44,16 +42,13 @@ def transfer_data_add_entry(
         name (str): Name of new Transferable Data item
         td_type_key (str): Type of Transferable Data
         task_layer_name (str): Name of current task layer
+        surrender (bool): Whether this data's ownership should be surrendered to begin with
     """
     transfer_data_item = transfer_data.add()
     transfer_data_item.name = name
     transfer_data_item.owner = task_layer_name
     transfer_data_item.type = td_type_key
     transfer_data_item.surrender = surrender
-    if target_obj:
-        transfer_data_item.target_obj = target_obj
-    if obj:
-        transfer_data_item.obj = obj
     return transfer_data_item
 
 

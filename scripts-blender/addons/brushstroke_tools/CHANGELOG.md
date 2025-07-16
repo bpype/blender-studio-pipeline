@@ -1,4 +1,10 @@
-## 1.1.2
+## 1.1.3
+
+## CHANGED
+
+- rename and relink brushstroke layer objects according to the new surface object when copying from one object to another [#416](https://projects.blender.org/studio/blender-studio-tools/pulls/416)
+
+## 1.1.2 - 2025-07-04
 
 ### CHANGED
 

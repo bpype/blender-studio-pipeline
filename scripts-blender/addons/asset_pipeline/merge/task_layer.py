@@ -43,10 +43,10 @@ def get_transfer_data_owner(
 
 
 def draw_task_layer_selection(
+    context: bpy.types.Context,
     layout: bpy.types.UILayout,
     data: bpy.types.CollectionProperty or bpy.types.ID,
     show_all_task_layers=False,
-    show_local_task_layers=False,
     text="",
     data_owner_name="",
     current_data_owner=None,
@@ -61,9 +61,8 @@ def draw_task_layer_selection(
     Args:
         layout (bpy.types.UILayout): Any UI Layout element like self.layout or row
         data (bpy.types.CollectionProperty or bpy.types.ID): Object, Collection or Transferable Data Item
-        show_all_task_layers (bool, optional): Used when user is overriding or default ownership is set. Defaults to False.
-        show_local_task_layers (bool, optional): Force Showing Local Task Layers Only. Defaults to False.
-        text (str, optional): Title of prop search. Defaults to "".
+        show_all_task_layers (bool, optional): Used when we want to list all task layers in the production as options.
+        text (str, optional): Title of prop search.
         data_owner_name(str, optional): Name of Data if it needs to be specified
         current_data_owner(str, optional): Property that is named by data_owner_name so it can be checked, property should return a string
     """
@@ -78,37 +77,23 @@ def draw_task_layer_selection(
 
     # Get the current data owner from OBJ/COL or Transferable Data Item if it hasn't been passed
     if current_data_owner is None:
-        current_data_owner = data.get(data_owner_name)
+        current_data_owner = getattr(data, data_owner_name)
 
-    asset_pipe = bpy.context.scene.asset_pipeline
+    asset_pipe = context.scene.asset_pipeline
 
-    if show_all_task_layers == True:
-        # Show All Task Layers
-        layout.prop_search(
+    row = layout.row()
+    if show_all_task_layers:
+        if current_data_owner not in asset_pipe.local_task_layers:
+            row.enabled = False
+        row.prop_search(
             data,
             data_owner_name,
             asset_pipe,
             'all_task_layers',
             text=text,
         )
-        return
-    if (
-        current_data_owner not in [tl.name for tl in asset_pipe.local_task_layers]
-        and not show_local_task_layers
-    ):
-        # Show All Task Layers Greyed Out
-        layout.enabled = False
-        layout.prop_search(
-            data,
-            data_owner_name,
-            asset_pipe,
-            'all_task_layers',
-            text=text,
-        )
-        return
     else:
-        # Only Show Local Task Layers
-        layout.prop_search(
+        row.prop_search(
             data,
             data_owner_name,
             asset_pipe,
