@@ -16,8 +16,6 @@ We use two shared drives
 * `/render` to store render farm output
 * `/shared` to store project and shared data
 
-**Link to setup guide**
-
 ## Version Control System
 We use SVN. While providing a higher barrier of entry, it provides a robust and efficient way to store and version large binary files during the course of a production.
 
