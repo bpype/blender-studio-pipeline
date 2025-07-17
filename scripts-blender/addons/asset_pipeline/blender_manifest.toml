@@ -9,7 +9,7 @@ type = "add-on"
 website = "https://studio.blender.org/tools/addons/asset_pipeline"
 tags = ["Pipeline"]
 
-blender_version_min = "5.0.0"
+blender_version_min = "4.1.0"
 
 license = [
   "SPDX:GPL-3.0-or-later",

@@ -82,9 +82,11 @@ def draw_task_layer_selection(
     asset_pipe = context.scene.asset_pipeline
 
     row = layout.row()
+    if current_data_owner not in asset_pipe.local_task_layers:
+        row.enabled = False
+        show_all_task_layers = True
+
     if show_all_task_layers:
-        if current_data_owner not in asset_pipe.local_task_layers:
-            row.enabled = False
         row.prop_search(
             data,
             data_owner_name,
