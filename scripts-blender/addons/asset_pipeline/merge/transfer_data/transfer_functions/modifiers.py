@@ -132,9 +132,15 @@ def transfer_modifier_props(context, source_mod, target_mod):
         setattr(target_mod, prop, value)
 
     if source_mod.type == 'NODES':
+        # NOTE: This matches inputs by their internal name, not their display name.
+        # That means you can rename sockets, but removing and adding new ones might cause trouble.
+
         # Transfer geo node attributes
         for key, value in source_mod.items():
-            target_mod[key] = type(target_mod[key])(value)
+            typ = type(getattr(target_mod, f'["{key}"]'))
+            if typ in (int, float, bool, str):
+                value = typ(value)
+            target_mod[key] = value
 
         # Transfer geo node bake settings
         target_mod.bake_directory = source_mod.bake_directory
