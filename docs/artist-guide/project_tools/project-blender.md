@@ -58,7 +58,7 @@ Note that the file names doesn't have to match exactly with the examples above a
 
 ## Create Shortcut
 
-Once your project has been setup using the "Project Tools" scripts Blender should be available inside your application's native application launcher. The run Blender script will take the correct blender version for your operating system from `your_project_name/shared/artifacts/blender` and extract it to the local directory. Along with any extensions in the `your_project_name/shared/artifacts/extensions` folder. Your Blender preferences are stored on a per project basis in `{directory-path}`
+Once your project has been setup using the "Project Tools" scripts the `run_blender.py` should be available inside `your_project_name/svn/tools`. Follow the below steps to create a shortcut to this script. This shortcut will call the `run_blender.py` script which will fetch the correct blender version for your operating system from `your_project_name/shared/artifacts/blender` directory and extract it to the `local` directory. It will also fetch extensions in the `your_project_name/shared/artifacts/extensions` folder. 
 
 ### Create Linux Shortcut
 ```bash
@@ -95,7 +95,7 @@ TODO Replace Image with Project-Tools version
 2. In finder, select the `launch_blender_mac.command` and press `ctrl+shift+command+t` to add it to the dock.
 
 
-## Launch via Terminal
+## Run Blender 
 
 To launch Blender from the terminal, open the tools directory within your project folder, and from the terminal use the run Blender script.
 

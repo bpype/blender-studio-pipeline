@@ -9,11 +9,11 @@ from .... import constants
 from .transfer_function_util.properties import (
     get_all_runtime_prop_names,
     remove_property,
-    copy_property,
+    copy_runtime_property,
 )
 
 def transfer_custom_prop(prop_name, target_obj, source_obj):
-    copy_property(source_obj, target_obj, prop_name)
+    copy_runtime_property(source_obj, target_obj, prop_name)
 
 
 def custom_prop_clean(obj):

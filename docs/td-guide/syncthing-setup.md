@@ -1,7 +1,7 @@
 # Syncthing Setup
 
 ## Install Syncthing
-The Blender Studio Pipeline relies on [syncthing](https://syncthing.net/) to sync large files like Renders and Playblasts used in production. This guide will show you how to install an Syncthing on a workstation, assuming you already have an Syncthing server setup. To learn more about how to setup an SVN server visit the [Syncthing Documentation](https://docs.syncthing.net/intro/getting-started.html)
+The Blender Studio Pipeline relies on [syncthing](https://syncthing.net/) to sync large files like Renders and Playblasts used in production. This guide will show you how to install an Syncthing on a workstation, assuming you already have an Syncthing server setup. To learn more about how to setup an Shared server visit the [Syncthing Documentation](https://docs.syncthing.net/intro/getting-started.html)
 ### Linux/Mac
 
 **Debian/Ubuntu**

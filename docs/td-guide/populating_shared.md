@@ -16,7 +16,7 @@ This is the folder that should be shared over the network. (By using Syncthing, 
     ```
 
 ## Add Existing Directory to User Workstation
-1. Clone your SVN Folder directly into the target directory `data/your_project_name/shared`.
+1. Clone your Shared Folder directly into the target directory `data/your_project_name/shared`.
 
 ```bash
 shared

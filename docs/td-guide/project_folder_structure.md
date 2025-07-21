@@ -24,7 +24,7 @@ cd %HOMEPATH%\data\blender-studio-tools\scripts\project-tools # Windows
 ./init_project_folder_structure.py ~/data/your_project_name # Linux/Mac
 ```
 ```bash
-python init_project_folder_structure.py %HOMEPATH%\data/your_project_name # Windows
+python init_project_folder_structure.py %HOMEPATH%\data\your_project_name # Windows
 ```
 
 
@@ -34,7 +34,7 @@ This will create the bones of your production's directories.
 - `svn` This the versioned controlled folder where the `.blend` production files will live.
 
 
-3. Create render directory (Optional)
+4. Create render directory (Optional)
 ```bash
 mkdir ~/data/your_project_name/render # Linux/Mac
 ```

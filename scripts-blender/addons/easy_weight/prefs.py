@@ -9,6 +9,30 @@ from bpy.app.handlers import persistent
 from .weight_cleaner import start_cleaner, stop_cleaner
 from .utils import get_addon_prefs
 from .prefs_to_disk import PrefsFileSaveLoadMixin, update_prefs_on_file
+from pathlib import Path
+
+def ensure_brush_assets():
+    # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file 
+    # until they are first accessed, so let's do that when needed. We also can't check 
+    # whether these brushes exist without looping over all of them.
+    for brush_name in 'Blur', 'Paint':
+        for brush in bpy.data.brushes:
+            if not brush.use_paint_weight:
+                continue
+        else:
+            # Link the brush from the `datafiles` folder.
+            blend_path = (Path(bpy.utils.resource_path('LOCAL')) / "datafiles/assets/brushes/essentials_brushes-mesh_weight.blend").as_posix()
+            with bpy.data.libraries.load(blend_path, link=True) as (data_from, data_to):
+                data_to.brushes = [brush_name]
+            if brush_name == 'Paint':
+                brush = bpy.data.brushes.get(('Paint', blend_path))
+                brush.blend = 'ADD'
+
+def get_available_wp_brushes():
+    for brush in bpy.data.brushes:
+        if brush.use_paint_weight:
+            yield brush
+
 
 class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -53,23 +77,17 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
 
     def update_front_faces(self, context):
         update_prefs_on_file()
-        for brush in bpy.data.brushes:
-            if not brush.use_paint_weight:
-                continue
+        for brush in get_available_wp_brushes():
             brush.use_frontface = self.global_front_faces_only
 
     def update_accumulate(self, context):
         update_prefs_on_file()
-        for brush in bpy.data.brushes:
-            if not brush.use_paint_weight:
-                continue
+        for brush in get_available_wp_brushes():
             brush.use_accumulate = self.global_accumulate
 
     def update_falloff_shape(self, context):
         update_prefs_on_file()
-        for brush in bpy.data.brushes:
-            if not brush.use_paint_weight:
-                continue
+        for brush in get_available_wp_brushes():
             brush.falloff_shape = 'SPHERE' if self.global_falloff_shape_sphere else 'PROJECTED'
             for i, val in enumerate(brush.cursor_color_add):
                 if val > 0:
@@ -208,6 +226,8 @@ EASYWEIGHT_KEYMAPS = []
 
 @persistent
 def set_brush_prefs_on_file_load(scene):
+    if bpy.app.version >= (4, 3, 0):
+        ensure_brush_assets()
     prefs = get_addon_prefs()
     prefs.global_front_faces_only = prefs.global_front_faces_only
     prefs.global_accumulate = prefs.global_accumulate
