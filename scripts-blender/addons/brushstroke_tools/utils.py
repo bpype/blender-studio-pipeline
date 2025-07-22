@@ -37,9 +37,8 @@ linkable_sockets = [
 asset_lib_name = 'Brushstroke Tools Library'
 
 @persistent
-def find_context_brushstrokes(dummy):
-    context = bpy.context
-    settings = context.scene.BSBST_settings
+def find_context_brushstrokes(scene, depsgraph):
+    settings = scene.BSBST_settings
 
     edit_toggle = settings.edit_toggle
     settings.edit_toggle = False
@@ -49,7 +48,7 @@ def find_context_brushstrokes(dummy):
     # identify context brushstrokes
     for el in range(len(settings.context_brushstrokes)):
         settings.context_brushstrokes.remove(0)
-    context_object = context.object
+    context_object = depsgraph.view_layer.objects.active
     if not is_brushstrokes_object(context_object):
         bs_ob = is_flow_object(context_object)
         if bs_ob:
@@ -97,12 +96,11 @@ def find_context_brushstrokes(dummy):
     settings.edit_toggle = edit_toggle
 
 @persistent
-def refresh_preset(dummy):
-    context = bpy.context
-    settings = context.scene.BSBST_settings
+def refresh_preset(scene, depsgraph):
+    settings = scene.BSBST_settings
     if not settings:
         return
-    for ob in [settings.preset_object, get_active_context_brushstrokes_object(context)]:
+    for ob in [settings.preset_object, get_active_context_brushstrokes_object(scene)]:
         if not ob:
             continue
         for mod in ob.modifiers:
@@ -767,8 +765,8 @@ def context_brushstrokes(context):
     settings = context.scene.BSBST_settings
     return settings.context_brushstrokes
 
-def get_active_context_brushstrokes_object(context):
-    settings = context.scene.BSBST_settings
+def get_active_context_brushstrokes_object(scene):
+    settings = scene.BSBST_settings
     if not settings.context_brushstrokes:
         return None
     bs = settings.context_brushstrokes[settings.active_context_brushstrokes_index]
@@ -778,7 +776,7 @@ def get_active_context_brushstrokes_object(context):
 def get_active_context_surface_object(context):
     if not context.object:
         return None
-    bs_ob = get_active_context_brushstrokes_object(context)
+    bs_ob = get_active_context_brushstrokes_object(context.scene)
     if bs_ob:
         return get_surface_object(bs_ob)
     if context.object.type == 'MESH':
@@ -793,7 +791,7 @@ def flow_name(bs_name: str) -> str:
 def edit_active_brushstrokes(context):
     context.view_layer.depsgraph.update()
 
-    bs_ob = get_active_context_brushstrokes_object(context)
+    bs_ob = get_active_context_brushstrokes_object(context.scene)
     if not bs_ob:
         return {"CANCELLED"}
     

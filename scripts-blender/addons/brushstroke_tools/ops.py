@@ -238,7 +238,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             mod.show_group_selector = False
 
         # update brushstroke context
-        utils.find_context_brushstrokes(None)
+        utils.find_context_brushstrokes(context.scene, context.view_layer.depsgraph)
         for i, name in enumerate([bs.name for bs in settings.context_brushstrokes]):
             if name == brushstrokes_object.name:
                 settings.active_context_brushstrokes_index = i
@@ -297,7 +297,7 @@ class BSBST_OT_delete_brushstrokes(bpy.types.Operator):
         edit_toggle = settings.edit_toggle
         settings.edit_toggle = False
 
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
             settings.edit_toggle = edit_toggle
             return {"CANCELLED"}
@@ -313,7 +313,7 @@ class BSBST_OT_delete_brushstrokes(bpy.types.Operator):
 
         if surface_object:
             context.view_layer.objects.active = surface_object
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if bs_ob:
             context.view_layer.objects.active = bs_ob
             bs_ob.select_set(True)
@@ -346,7 +346,7 @@ class BSBST_OT_duplicate_brushstrokes(bpy.types.Operator):
     def execute(self, context):
         settings = context.scene.BSBST_settings
 
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
             return {"CANCELLED"}
         
@@ -410,7 +410,7 @@ class BSBST_OT_copy_brushstrokes(bpy.types.Operator):
     def execute(self, context):
         settings = context.scene.BSBST_settings
 
-        active_surface_object = utils.get_surface_object(utils.get_active_context_brushstrokes_object(context))
+        active_surface_object = utils.get_surface_object(utils.get_active_context_brushstrokes_object(context.scene))
 
         surface_objects = [ob for ob in context.selected_objects
                             if ob.type=='MESH'
@@ -423,7 +423,7 @@ class BSBST_OT_copy_brushstrokes(bpy.types.Operator):
             bs_objects = [bpy.data.objects.get(bs.name) for bs in settings.context_brushstrokes]
             bs_objects = [bs for bs in bs_objects if bs]
         else:
-            bs_objects = [utils.get_active_context_brushstrokes_object(context)]
+            bs_objects = [utils.get_active_context_brushstrokes_object(context.scene)]
         if not bs_objects:
             return {"CANCELLED"}
 
@@ -515,7 +515,7 @@ class BSBST_OT_select_surface(bpy.types.Operator):
         return bool(settings.context_brushstrokes)
 
     def execute(self, context):
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
             return {"CANCELLED"}
         surface_object = getattr(bs_ob, '["BSBST_surface_object"]', None)
@@ -548,7 +548,7 @@ class BSBST_OT_assign_surface(bpy.types.Operator):
         return bool(settings.context_brushstrokes)
 
     def execute(self, context):
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
             return {"CANCELLED"}
         
@@ -566,7 +566,7 @@ class BSBST_OT_assign_surface(bpy.types.Operator):
         layout.prop_search(self, 'surface_object', bpy.data, 'objects')
 
     def invoke(self, context, event):
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         surf_ob = utils.get_surface_object(bs_ob)
         if surf_ob:
             self.surface_object = surf_ob.name
@@ -643,7 +643,7 @@ class BSBST_OT_copy_flow(bpy.types.Operator):
         return bool(settings.context_brushstrokes)
 
     def execute(self, context):
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         flow_ob_old = utils.get_flow_object(bs_ob)
         if not bs_ob:
             return {"CANCELLED"}
@@ -681,7 +681,7 @@ class BSBST_OT_copy_flow(bpy.types.Operator):
     def invoke(self, context, event):
         settings = context.scene.BSBST_settings
 
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
 
         for i in range(len(self.bs_list)):
             self.bs_list.remove(0)
@@ -732,7 +732,7 @@ class BSBST_OT_switch_deformable(bpy.types.Operator):
             bs_objects = [bpy.data.objects.get(bs.name) for bs in settings.context_brushstrokes]
             bs_objects = [bs for bs in bs_objects if bs]
         else:
-            bs_objects = [utils.get_active_context_brushstrokes_object(context)]
+            bs_objects = [utils.get_active_context_brushstrokes_object(context.scene)]
         if not bs_objects:
             return {"CANCELLED"}
 
@@ -773,7 +773,7 @@ class BSBST_OT_switch_animated(bpy.types.Operator):
             bs_objects = [bpy.data.objects.get(bs.name) for bs in settings.context_brushstrokes]
             bs_objects = [bs for bs in bs_objects if bs]
         else:
-            bs_objects = [utils.get_active_context_brushstrokes_object(context)]
+            bs_objects = [utils.get_active_context_brushstrokes_object(context.scene)]
         if not bs_objects:
             return {"CANCELLED"}
 
@@ -974,7 +974,7 @@ class BSBST_OT_make_preset(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return bool(utils.get_active_context_brushstrokes_object(context))
+        return bool(utils.get_active_context_brushstrokes_object(context.scene))
 
     def execute(self, context):
 
@@ -988,7 +988,7 @@ class BSBST_OT_make_preset(bpy.types.Operator):
                 settings.preset_object.modifiers.remove(mod)
             
         # transfer brushstrokes modifiers to preset
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
             return {"CANCELLED"}
         for mod in bs_ob.modifiers:
@@ -1109,7 +1109,7 @@ class BSBST_OT_brushstrokes_toggle_attribute(bpy.types.Operator):
         edit_toggle = settings.edit_toggle
         settings.edit_toggle = False
 
-        bs_ob = utils.get_active_context_brushstrokes_object(context)
+        bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
             settings.edit_toggle = edit_toggle
             return {"CANCELLED"}

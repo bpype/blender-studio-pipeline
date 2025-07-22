@@ -4,6 +4,10 @@
 
 - rename and relink brushstroke layer objects according to the new surface object when copying from one object to another [#416](https://projects.blender.org/studio/blender-studio-tools/pulls/416)
 
+## FIXED
+
+- Fix issue when multiple windows and scenes by getting rid of `bpy.context` in multiple places [#420](https://projects.blender.org/studio/blender-studio-tools/pulls/420)
+
 ## 1.1.2 - 2025-07-04
 
 ### CHANGED
