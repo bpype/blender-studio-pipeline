@@ -55,7 +55,7 @@ class Perserve:
                 indexes['vertex_group'] = obj.vertex_groups.active.name
 
             if getattr(obj.data, "color_attributes", None) and getattr(
-                obj.data.color_attributes, "active", None
+                obj.data.color_attributes, "active_color", None
             ):
                 indexes['color_attribute'] = obj.data.color_attributes.active_color_name
 
