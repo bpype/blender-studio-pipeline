@@ -30,7 +30,7 @@ apt install python-is-python3
 
 **Arch Linux**
 ```bash
-packman -S python
+pacman -S python
 ```
 
 After installation, open a command prompt/terminal window, enter `python --version`, if installation was successful the python version you installed should be printed in your command prompt/terminal window.
