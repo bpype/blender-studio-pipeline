@@ -9,6 +9,19 @@ from urllib.request import urlretrieve
 import requests
 import glob
 import os
+import json
+
+
+def is_4_5_or_lower_branch() -> bool:
+    blender_folder = Path(__file__).parents[2].joinpath("shared/artifacts/blender")
+    if not blender_folder.exists():
+        return False
+
+    for file in blender_folder.glob("*.zip*"):
+        if file.name.startswith("blender-4.5"):
+            return True
+
+    return False
 
 
 def update_blender_studio_extensions(download_folder_path: Path):
@@ -18,8 +31,12 @@ def update_blender_studio_extensions(download_folder_path: Path):
     sha_file = download_folder_path.joinpath("blender_studio_add-ons_latest.zip.sha256")
     zip_file = download_folder_path.joinpath("blender_studio_add-ons_latest.zip")
 
-    url_sha = "https://projects.blender.org/studio/blender-studio-tools/releases/download/latest/blender_studio_add-ons_latest.zip.sha256"
-    url_zip = "https://projects.blender.org/studio/blender-studio-tools/releases/download/latest/blender_studio_add-ons_latest.zip"
+    if is_4_5_or_lower_branch():
+        url_sha = "https://projects.blender.org/studio/blender-studio-tools/releases/download/blender-4.5/blender_studio_add-ons_4.5.zip.sha256"
+        url_zip = "https://projects.blender.org/studio/blender-studio-tools/releases/download/blender-4.5/blender_studio_add-ons_4.5.zip"
+    else:
+        url_sha = "https://projects.blender.org/studio/blender-studio-tools/releases/download/latest/blender_studio_add-ons_latest.zip.sha256"
+        url_zip = "https://projects.blender.org/studio/blender-studio-tools/releases/download/latest/blender_studio_add-ons_latest.zip"
 
     # Check current sha and early return if match
     web_sha = requests.get(url_sha).text.strip().lower()

@@ -15,7 +15,9 @@
                 "run_blender.py": "file",
                 "run_blender_previous.py": "file",
                 "update_extensions.py": "file",
-                "update_blender.py": "file"
+                "update_blender.py": "file",
+                "deployment_assistant.py": "file",
+                "set_blender_kitsu_prefs.py": "file"
             }
         },
         "local": {

@@ -33,6 +33,20 @@ parser.add_argument(
     action='store_true'
 )
 
+parser.add_argument(
+    "--python",
+    metavar="<python_script>",
+    help="Run the given Python script file.",
+    type=str,
+    nargs='?',
+)
+
+parser.add_argument(
+    "--background",
+    help="Run in background (often used for UI-less rendering).",
+    action='store_true',
+)
+
 # The project base path (where shared, local and svn are located)
 PATH_BASE = Path(__file__).resolve().parent.parent.parent
 PATH_ARTIFACTS = PATH_BASE / 'shared' / 'artifacts'
@@ -279,7 +293,17 @@ def run_blender(blender_path):
     if PATH_CUSTOM_SPLASH.exists():
         os.environ['BLENDER_CUSTOM_SPLASH'] = str(PATH_CUSTOM_SPLASH)
 
-    proc = subprocess.run([blender_path])
+    args = parser.parse_args()
+    subprocess_args = [blender_path]
+
+    if args.background:
+        subprocess_args.append('--background')
+
+    if args.python:
+        subprocess_args.append('--python')
+        subprocess_args.append(args.python)
+
+    proc = subprocess.run(subprocess_args)
     if proc.returncode != 0:
         print("--- Blender seems to have crashed ---")
     sys.exit(proc.returncode)

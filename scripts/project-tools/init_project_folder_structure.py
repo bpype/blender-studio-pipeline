@@ -22,23 +22,6 @@ def folder(path_string):
         return filepath
 
 
-parser = argparse.ArgumentParser(description="Generate project structure.")
-parser.add_argument(
-    'target_folder',
-    metavar='<target_folder>',
-    help="The target folder to initialize the project structure in.",
-    type=folder
-)
-parser.add_argument(
-    '--json_file',
-    help="The json file with the folder structure. Will default to folder_structure.json",
-    nargs='?',
-    metavar='<json file>',
-    default=Path(__file__).parent / "folder_structure.json",
-    type=str
-)
-
-
 def create_folder_structure(cur_path, path_dict, source_folder):
     for path in path_dict:
         # Get next path to check for consistency
@@ -59,10 +42,35 @@ def create_folder_structure(cur_path, path_dict, source_folder):
             create_folder_structure(next_path, nested_item, source_folder)
 
 
-args = parser.parse_args()
+def init_folder_structure(target_folder, json_file):
+    with open(json_file) as json_file:
+        path_dict = json.load(json_file)
+        first_key = list(path_dict.keys())[0]
+        create_folder_structure(Path(target_folder), path_dict[first_key], Path(__file__).parent)
+        print("Done!")
 
-with open(args.json_file) as json_file:
-    path_dict = json.load(json_file)
-    first_key = list(path_dict.keys())[0]
-    create_folder_structure(Path(args.target_folder), path_dict[first_key], Path(__file__).parent)
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate project structure.")
+    parser.add_argument(
+        'target_folder',
+        metavar='<target_folder>',
+        help="The target folder to initialize the project structure in.",
+        type=folder,
+    )
+    parser.add_argument(
+        '--json_file',
+        help="The json file with the folder structure. Will default to folder_structure.json",
+        nargs='?',
+        metavar='<json file>',
+        default=Path(__file__).parent / "folder_structure.json",
+        type=str,
+    )
+    args = parser.parse_args()
+
+    init_folder_structure(args.json_file, args.target_folder)
     print("Done!")
+
+
+if __name__ == "__main__":
+    main()
