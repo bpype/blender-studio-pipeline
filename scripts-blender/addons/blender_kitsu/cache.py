@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Any, List, Union, Dict, Tuple
+from typing import Any, List, Optional, Union, Dict, Tuple
 
 import bpy
 
@@ -283,6 +283,15 @@ def edit_active_reset_entity() -> None:
 def edit_active_get() -> Project:
     global _edit_active
 
+    return _edit_active
+
+
+def edit_default_get(create: bool = False, episode_id: Optional[str] = None) -> Edit:
+    global _edit_active
+    episode = Episode.by_id(episode_id) if episode_id else episode_active_get()
+    _edit_active = Edit.get_project_default_edit(
+        project_active_get(), create=create, episode=episode
+    )
     return _edit_active
 
 

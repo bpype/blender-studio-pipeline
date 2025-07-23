@@ -66,8 +66,16 @@ MULTI_ASSETS = [
     "briny_bears_bag",
 ]  # list of assets that gets duplicated and therefore follows another naming sheme
 
-ASSET_COLL_PREFIXES = ["CH-", "PR-", "SE-", "FX-"]
+ASSET_COLL_PREFIXES = ["CH-", "PR-", "SE-", "FX-", "EN-"]
 
+ASSET_FOLDER_MAPPING = {
+    "Character" : "chars",
+    "FX" : "fx",
+    "Library" : "lib",
+    "Lighting" : "lgt",
+    "Prop" : "props",
+    "Set" : "sets",
+}
 
 # Kitsu Constants
 KITSU_TV_PROJECT = 'tvshow'
@@ -83,3 +91,5 @@ PLAYBLAST_DEFAULT_STATUS = "Todo"
 
 BUILD_SETTINGS_FILENAME = "settings.json"
 BUILD_HOOKS_FILENAME = "hooks.py"
+
+EDIT_TASK_TYPE = "Edit"

@@ -4,10 +4,9 @@
 
 import bpy
 import shutil
-from .. import bkglobals
+from .. import bkglobals, prefs, cache
 from pathlib import Path
 from typing import List, Any, Tuple, Set, cast
-from .. import prefs, cache
 from . import core, config
 from ..context import core as context_core
 
@@ -17,12 +16,12 @@ from .template import replace_workspace_with_template
 from .assets import get_shot_assets
 from .hooks import Hooks
 
-active_project = None
+ACTIVE_PROJECT = None
 
 
 def get_shots_for_seq(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
     if self.seq_id != '':
-        seq = active_project.get_sequence(self.seq_id)
+        seq = ACTIVE_PROJECT.get_sequence(self.seq_id)
         shot_enum = cache.get_shots_enum_for_seq(self, context, seq)
         if shot_enum != []:
             return shot_enum
@@ -30,9 +29,9 @@ def get_shots_for_seq(self: Any, context: bpy.types.Context) -> List[Tuple[str, 
 
 
 def get_tasks_for_shot(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
-    global active_project
+    global ACTIVE_PROJECT
     if not (self.shot_id == '' or self.shot_id == 'NONE'):
-        shot = active_project.get_shot(self.shot_id)
+        shot = ACTIVE_PROJECT.get_shot(self.shot_id)
         task_enum = cache.get_shot_task_types_enum_for_shot(self, context, shot)
         if task_enum != []:
             return task_enum
@@ -138,58 +137,37 @@ class KITSU_OT_build_config_save_templates(KITSU_OT_build_config_base_class):
         return {'FINISHED'}
 
 
-class KITSU_OT_build_new_shot(bpy.types.Operator):
-    bl_idname = "kitsu.build_new_shot"
-    bl_label = "Build New Shot"
-    bl_description = "Build a New Shot file, based on infromation from KITSU Server"
+class KITSU_OT_build_new_file_baseclass(bpy.types.Operator):
+    bl_idname = "kitsu.build_new_file"
+    bl_label = "Build New File"
+    bl_description = "Build a new file based on the current context and save it"
     bl_options = {"REGISTER"}
 
-    _timer = None
-    _built_shot = False
-    _add_vse_area = False
-    _file_path = ''
+    _kitsu_context_type = ""  # Default context for this operator
     _current_kitsu_context = ""
+
     production_name: bpy.props.StringProperty(  # type: ignore
         name="Production",
         description="Name of the production to create a shot file for",
         options=set(),
     )
 
-    save_file: bpy.props.BoolProperty(
+    save_file: bpy.props.BoolProperty(  # type:ignore
         name="Save after building.",
         description="Automatically save build file after 'Shot Builder' is complete.",
         default=True,
     )
 
-    def draw(self, context: bpy.types.Context) -> None:
-        global active_project
-        layout = self.layout
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-        flow = layout.grid_flow(
-            row_major=True, columns=0, even_columns=True, even_rows=False, align=False
-        )
-        col = flow.column()
-        row = col.row()
-        row.enabled = False
-        row.prop(self, "production_name")
-        if active_project.production_type == bkglobals.KITSU_TV_PROJECT:
-            context_core.draw_episode_selector(context, col)
-        context_core.draw_sequence_selector(context, col)
-        context_core.draw_shot_selector(context, col)
-        context_core.draw_task_type_selector(context, col)
-        col.prop(self, "save_file")
-
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
-        global active_project
+        global ACTIVE_PROJECT
 
-        # Temporarily change kitsu context to shit
+        # Temporarily change kitsu context to asset
         self._current_kitsu_context = context.scene.kitsu.category
-        context.scene.kitsu.category = "SHOT"
+        context.scene.kitsu.category = self._kitsu_context_type
 
         addon_prefs = prefs.addon_prefs_get(bpy.context)
         project = cache.project_active_get()
-        active_project = project
+        ACTIVE_PROJECT = project
 
         if addon_prefs.session.is_auth() is False:
             self.report(
@@ -208,13 +186,121 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         if not addon_prefs.is_project_root_valid:
             self.report(
                 {'ERROR'},
-                "Operator is not able to determine the project root directory. \nCheck project root directiory is configured in 'Blender Kitsu' addon preferences.",
+                "Operator is not able to determine the project root directory. \nCheck project root directory is configured in 'Blender Kitsu' addon preferences.",
             )
             return {'CANCELLED'}
 
         self.production_name = project.name
 
         return cast(Set[str], context.window_manager.invoke_props_dialog(self, width=400))
+
+    def cancel(self, context: bpy.types.Context):
+        # Restore kitsu context if cancelled
+        context.scene.kitsu.category = self._current_kitsu_context
+
+
+class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
+    bl_idname = "kitsu.build_new_asset"
+    bl_label = "Build New Asset"
+    bl_description = "Build a New Asset file, based on information from KITSU Server"
+    bl_options = {"REGISTER"}
+
+    _kitsu_context_type = "ASSET"  # Default context for this operator
+
+    def draw(self, context: bpy.types.Context) -> None:
+        global ACTIVE_PROJECT
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        flow = layout.grid_flow(
+            row_major=True, columns=0, even_columns=True, even_rows=False, align=False
+        )
+        col = flow.column()
+        row = col.row()
+        row.enabled = False
+        row.prop(self, "production_name")
+
+        context_core.draw_asset_type_selector(context, col)
+        context_core.draw_asset_selector(context, col)
+        col.prop(self, "save_file")
+
+    def execute(self, context: bpy.types.Context):
+        # Get Properties
+        scene = context.scene
+        asset_type = cache.asset_type_active_get()
+        asset = cache.asset_active_get()
+
+        if asset_type.id == "" or asset.id == "":
+            self.report({'ERROR'}, "Please select a asset type and asset to build a shot file")
+            return {'CANCELLED'}
+
+        asset_file_path_str = asset.get_filepath(context)
+
+        replace_workspace_with_template(context, "Asset")
+
+        # Remove All Collections from Scene
+        for collection in context.scene.collection.children:
+            context.scene.collection.children.unlink(collection)
+            bpy.data.collections.remove(collection)
+
+        # Remove All Objects from Scene
+        for object in context.scene.objects:
+            context.scene.objects.unlink(object)
+            bpy.data.objects.remove(object)
+
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+
+        asset_collection = bpy.data.collections.new(asset.get_collection_name())
+        context.scene.collection.children.link(asset_collection)
+
+        # Set Kitsu Context
+        scene.kitsu.category = "ASSET"
+        scene.kitsu.asset_type_active_name = asset_type.name
+        scene.kitsu.asset_active_name = asset.name
+        scene.kitsu.asset_col = asset_collection
+
+        relative_path = Path(asset_file_path_str).relative_to(prefs.project_root_dir_get(context))
+        asset.set_asset_path(str(relative_path), asset_collection.name)
+
+        # Save File
+        if self.save_file:
+            if not save_shot_builder_file(file_path=asset_file_path_str):
+                self.report(
+                    {"WARNING"},
+                    f"Failed to save file at path `{asset_file_path_str}`",
+                )
+                return {"FINISHED"}
+
+        self.report({"INFO"}, f"Successfully Built Shot:`{asset.name}`")
+        return {"FINISHED"}
+
+
+class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
+    bl_idname = "kitsu.build_new_shot"
+    bl_label = "Build New Shot"
+    bl_description = "Build a New Shot file, based on infromation from KITSU Server"
+    bl_options = {"REGISTER"}
+
+    _kitsu_context_type = "SHOT"
+
+    def draw(self, context: bpy.types.Context) -> None:
+        global ACTIVE_PROJECT
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        flow = layout.grid_flow(
+            row_major=True, columns=0, even_columns=True, even_rows=False, align=False
+        )
+        col = flow.column()
+        row = col.row()
+        row.enabled = False
+        row.prop(self, "production_name")
+        if ACTIVE_PROJECT.production_type == bkglobals.KITSU_TV_PROJECT:
+            context_core.draw_episode_selector(context, col)
+        context_core.draw_sequence_selector(context, col)
+        context_core.draw_shot_selector(context, col)
+        context_core.draw_task_type_selector(context, col)
+        col.prop(self, "save_file")
 
     def _get_task_type_for_shot(self, context, shot):
         for task_type in shot.get_all_task_types():
@@ -229,10 +315,6 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
             shot.data.get("frame_in")
         except AttributeError:
             return True
-
-    def cancel(self, context: bpy.types.Context):
-        # Restore kitsu context if cancelled
-        context.scene.kitsu.category = self._current_kitsu_context
 
     def execute(self, context: bpy.types.Context):
         # Get Properties
@@ -316,11 +398,73 @@ class KITSU_OT_build_new_shot(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
+    bl_idname = "kitsu.create_edit_file"
+    bl_label = "Create Edit File"
+    bl_description = "Create a new .blend file for editing using Blender's Video Editing template"
+
+    _edit_entity = None
+    _production_name = None
+    _kitsu_context_type = "EDIT"
+
+    create_kitsu_edit: bpy.props.BoolProperty(  # type: ignore
+        name="Create Kitsu Edit if not exists.",
+        description="Automatically create a Kitsu edit for the edit.",
+        default=True,
+    )
+
+    def draw(self, context: bpy.types.Context) -> None:
+        global ACTIVE_PROJECT
+        layout = self.layout
+        if ACTIVE_PROJECT.production_type == bkglobals.KITSU_TV_PROJECT:
+            context_core.draw_episode_selector(context, layout)
+        layout.prop(self, "crete_kitsu_edit")
+        layout.prop(self, "save_file")
+
+    def execute(self, context):
+        scene = context.scene
+        self._edit_entity = cache.edit_default_get(
+            create=self.create_kitsu_edit, episode_id=context.scene.kitsu.episode_active_id
+        )
+        self._edit_entity.set_edit_task()
+        task_type = self._edit_entity.get_task_type()
+
+        if not self._edit_entity:
+            self.report({'ERROR'}, "Failed to create Kitsu edit entity.")
+            return {'CANCELLED'}
+
+        edit_file_path_str = self._edit_entity.get_filepath(context)
+
+        # Create a new file using the Video Editing template
+        replace_workspace_with_template(context, task_type.name)
+
+        scene.kitsu.category = "EDIT"
+        scene.kitsu.edit_active_name = context_core.get_versioned_file_basename(
+            Path(edit_file_path_str).stem
+        )
+        scene.kitsu.task_type_active_name = bkglobals.EDIT_TASK_TYPE
+
+        # Save File
+        if self.save_file:
+            if not save_shot_builder_file(file_path=edit_file_path_str):
+                self.report(
+                    {"WARNING"},
+                    f"Failed to save file at path `{edit_file_path_str}`",
+                )
+                return {"FINISHED"}
+
+        self.report({'INFO'}, f"Created edit file at {edit_file_path_str}")
+
+        return {'FINISHED'}
+
+
 classes = [
     KITSU_OT_build_new_shot,
+    KITSU_OT_build_new_asset,
     KITSU_OT_build_config_save_hooks,
     KITSU_OT_build_config_save_settings,
     KITSU_OT_build_config_save_templates,
+    KITSU_OT_create_edit_file,
 ]
 
 
