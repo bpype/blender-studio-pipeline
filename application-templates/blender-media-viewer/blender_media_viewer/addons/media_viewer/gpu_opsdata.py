@@ -20,7 +20,7 @@ Float4 = Tuple[float, float, float, float]
 
 
 def get_gpframe_coords(
-    gpframe: bpy.types.GreasePencilFrame, do_3_dimensions=False
+    gpframe: bpy.types.AnnotationFrame, do_3_dimensions=False
 ) -> List[Float2]:
 
     coords: List[Float2] = []
@@ -51,7 +51,7 @@ def get_gpframe_coords(
     return coords
 
 
-def get_active_gp_layer() -> bpy.types.GreasePencilLayer:
+def get_active_gp_layer() -> bpy.types.AnnotationLayer:
 
     active_media_area = ops.active_media_area
 
@@ -81,7 +81,7 @@ def lin2srgb(lin: float) -> float:
 
 
 class GPDrawerCustomShader:
-    def draw(self, gpframe: bpy.types.GreasePencilFrame, line_widht: int, color: Float4):
+    def draw(self, gpframe: bpy.types.AnnotationFrame, line_widht: int, color: Float4):
 
         coords = get_gpframe_coords(gpframe)
 
@@ -102,7 +102,7 @@ class GPDrawerBuiltInShader:
     def __init__(self):
         self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
 
-    def draw(self, gpframe: bpy.types.GreasePencilLayer, line_width: int, color: Float4):
+    def draw(self, gpframe: bpy.types.AnnotationLayer, line_width: int, color: Float4):
 
         # TODO: not optimal to set here
         self.shader.uniform_float("color", color)
@@ -126,8 +126,8 @@ class GPDrawerBuiltInShader:
 
 
 def get_active_gpframe(
-    gplayer: bpy.types.GreasePencilLayer, frame: int
-) -> Optional[bpy.types.GreasePencilFrame]:
+    gplayer: bpy.types.AnnotationLayer, frame: int
+) -> Optional[bpy.types.AnnotationFrame]:
 
     if not gplayer.frames:
         return None

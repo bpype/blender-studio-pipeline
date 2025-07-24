@@ -59,10 +59,10 @@ def get_scale_vector_to_3dview(
 
 
 def gplayer_sqe_to_3d(
-    gpobj: bpy.types.GreasePencilv3,
+    gpobj: bpy.types.Annotation,
     v_translate: Vector,
     v_scale: Vector,
-) -> bpy.types.GreasePencilv3:
+) -> bpy.types.Annotation:
     """
     Loops through all points of input gpobj and first translates them with v_translate Vector
     and then scales them with the v_scale Vector.
@@ -79,7 +79,7 @@ def gplayer_sqe_to_3d(
     else:
         bpy.data.annotations.remove(gp_exists)
 
-    gp_convert: bpy.types.GreasePencilv3 = gpobj.copy()
+    gp_convert: bpy.types.Annotation = gpobj.copy()
     gp_convert.name = f"{gpobj.name}_3D_CONVERT"
 
     # We assume gpobj was painted on media file that had same resolution
@@ -133,11 +133,11 @@ def gplayer_sqe_to_3d(
         for frame in layer.frames:
 
             # For autocomplete.
-            frame: bpy.types.GreasePencilFrame = frame
+            frame: bpy.types.AnnotationFrame = frame
 
             for stroke in frame.strokes:
                 # For autocomplete.
-                stroke: bpy.types.GreasePencilStroke = stroke
+                stroke: bpy.types.AnnotationStroke = stroke
 
                 # Set stroke to screen.
                 stroke.display_mode = "SCREEN"

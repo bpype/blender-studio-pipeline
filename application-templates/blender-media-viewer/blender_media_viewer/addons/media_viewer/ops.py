@@ -1259,8 +1259,8 @@ class MV_OT_delete_all_gpencil_frames(bpy.types.Operator):
 class MV_OT_insert_empty_gpencil_frame(bpy.types.Operator):
 
     bl_idname = "media_viewer.insert_empty_gpencil_frame"
-    bl_label = "Insert Empty GreasePencil Frame"
-    bl_description = "Inserts an empty GreasePencil frame at current frame"
+    bl_label = "Insert Empty Annotation Frame"
+    bl_description = "Inserts an empty Annotation frame at current frame"
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         global active_media_area

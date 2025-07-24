@@ -372,7 +372,7 @@ def add_to_folder_history(
 
 
 def update_gp_object_with_filepath(
-    gp_obj: bpy.types.GreasePencilv3, filepath: Path
+    gp_obj: bpy.types.Annotation, filepath: Path
 ) -> None:
     """
     Takes input grease pencil object and adds a new layer named after filepath if not existent.
