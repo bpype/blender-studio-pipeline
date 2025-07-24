@@ -17,6 +17,9 @@ BUILDS_INDEX = "https://builder.blender.org/download/daily/?format=json&v=1"
 # Use a value found in the "branch" property. For example "v33", "v34", "main", etc.
 BLENDER_BRANCH = "main"
 
+# Filter specific builds types when not on the main branch For example, "stable", "beta", "alpha" or "candidate".
+VALID_RISK_ID = "stable"
+
 
 def download_file(url, out_folder):
     print("Downloading: " + url)
@@ -68,6 +71,12 @@ available_downloads = json.loads(reqs.text)
 for download in available_downloads:
     if download["branch"] != BLENDER_BRANCH:
         continue
+
+    if BLENDER_BRANCH != "main":
+        # If we are not on the main branch, we only want builds of a certain risk id
+        if download["risk_id"] != VALID_RISK_ID:
+            continue
+
     for platform in platforms_dict:
         if download["platform"] != platform:
             continue
