@@ -5,6 +5,7 @@
 import bpy
 from bpy.types import Collection
 from .transfer_data.transfer_functions.shape_keys import shape_key_set_active
+from .. import prefs
 
 class Perserve:
     def __init__(self, local_col: Collection) -> None:
@@ -13,8 +14,11 @@ class Perserve:
         self.generate_preserve_maps()
 
     def generate_preserve_maps(self) -> None:
-        self._action_dict = self._get_action_map()
-        self._active_index_dict = self._get_active_index_map()
+        addon_prefs = prefs.get_addon_prefs()
+        if addon_prefs.preserve_action:
+            self._action_dict = self._get_action_map()
+        if addon_prefs.preserve_indexes:
+            self._active_index_dict = self._get_active_index_map()
 
     def _get_action_map(self):
         action_dict = {}
@@ -28,20 +32,21 @@ class Perserve:
 
             # Store obj name as obj may removed during merge
             action = obj.animation_data.action
-            action_dict[obj.name] = {'action': action, 'fake_user': action.use_fake_user}
+            action_dict[obj.name] = (action, obj.animation_data.action_slot, action.use_fake_user)
             action.use_fake_user = True
         return action_dict
 
     def set_action_map(self):
         for obj_name, action_info in self._action_dict.items():
+            action, slot, fake_user = action_info
             obj = bpy.data.objects.get(obj_name)
             if not obj:
                 continue
-            action = action_info.get('action')
             if not obj.animation_data:
                 obj.animation_data_create()
             obj.animation_data.action = action
-            action.use_fake_user = action_info.get('fake_user')
+            obj.animation_data.action_slot = slot
+            action.use_fake_user = fake_user
 
     def _get_active_index_map(self):
         active_index = {}
@@ -54,8 +59,10 @@ class Perserve:
             if getattr(obj.vertex_groups, "active", None):
                 indexes['vertex_group'] = obj.vertex_groups.active.name
 
-            if getattr(obj.data, "color_attributes", None) and getattr(
-                obj.data.color_attributes, "active_color", None
+            if (
+                getattr(obj.data, "color_attributes", None) and 
+                getattr(obj.data.color_attributes, "active_color", None) and
+                len(obj.data.color_attributes) > 0
             ):
                 indexes['color_attribute'] = obj.data.color_attributes.active_color_name
 
