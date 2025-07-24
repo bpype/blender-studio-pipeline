@@ -20,7 +20,7 @@ Float4 = Tuple[float, float, float, float]
 
 
 def get_gpframe_coords(
-    gpframe: bpy.types.GPencilFrame, do_3_dimensions=False
+    gpframe: bpy.types.GreasePencilFrame, do_3_dimensions=False
 ) -> List[Float2]:
 
     coords: List[Float2] = []
@@ -51,13 +51,13 @@ def get_gpframe_coords(
     return coords
 
 
-def get_active_gp_layer() -> bpy.types.GPencilLayer:
+def get_active_gp_layer() -> bpy.types.GreasePencilLayer:
 
     active_media_area = ops.active_media_area
 
     # In startup.blend we made sure that the gp objects are named after
     # the area type.
-    gp_obj = bpy.data.grease_pencils[active_media_area]
+    gp_obj = bpy.data.annotations[active_media_area]
 
     # Get active layer and remove active frame.
     active_layer = gp_obj.layers.active
@@ -81,7 +81,7 @@ def lin2srgb(lin: float) -> float:
 
 
 class GPDrawerCustomShader:
-    def draw(self, gpframe: bpy.types.GPencilFrame, line_widht: int, color: Float4):
+    def draw(self, gpframe: bpy.types.GreasePencilFrame, line_widht: int, color: Float4):
 
         coords = get_gpframe_coords(gpframe)
 
@@ -102,7 +102,7 @@ class GPDrawerBuiltInShader:
     def __init__(self):
         self.shader = gpu.shader.from_builtin("UNIFORM_COLOR")
 
-    def draw(self, gpframe: bpy.types.GPencilLayer, line_width: int, color: Float4):
+    def draw(self, gpframe: bpy.types.GreasePencilLayer, line_width: int, color: Float4):
 
         # TODO: not optimal to set here
         self.shader.uniform_float("color", color)
@@ -126,8 +126,8 @@ class GPDrawerBuiltInShader:
 
 
 def get_active_gpframe(
-    gplayer: bpy.types.GPencilLayer, frame: int
-) -> Optional[bpy.types.GPencilFrame]:
+    gplayer: bpy.types.GreasePencilLayer, frame: int
+) -> Optional[bpy.types.GreasePencilFrame]:
 
     if not gplayer.frames:
         return None
