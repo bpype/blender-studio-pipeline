@@ -1443,7 +1443,7 @@ class Edit(Entity):
             project.update_project()
 
         if not gazu.task.get_task_by_entity(asdict(self), edit_task_type.id):
-            gazu.task.new_task(asdict(self), edit_task_type)
+            gazu.task.new_task(asdict(self), asdict(edit_task_type))
 
     @property
     def episode_id(self) -> Optional[str]:
