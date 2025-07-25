@@ -65,17 +65,6 @@ class AssetTransferDataTemp(bpy.types.PropertyGroup):
     surrender: bpy.props.BoolProperty(name="Surrender Ownership", default=False)
     obj_name: bpy.props.StringProperty(name="Object Name", default="")
 
-    def check_transfer_data_entry(self) -> set:
-        """
-        Verifies if Transferable Data entry exists
-        """
-        existing_items = [
-            transfer_data_item.name
-            for transfer_data_item in self.target_obj.transfer_data_ownership
-            if transfer_data_item.type == self.type
-        ]
-        return set([self.name]).intersection(set(existing_items))
-
 
 class TaskLayerSettings(bpy.types.PropertyGroup):
     is_local: bpy.props.BoolProperty(name="Task Layer is Local", default=False)
@@ -130,7 +119,7 @@ class AssetPipeline(bpy.types.PropertyGroup):
 
     temp_transfer_data: bpy.props.CollectionProperty(type=AssetTransferDataTemp)
 
-    def add_temp_transfer_data(self, name, owner, type, obj_name, surrender):
+    def add_temp_transfer_data(self, name, owner, type, obj_name, surrender) -> 'AssetTransferDataTemp':
         new_transfer_data = self.temp_transfer_data
         transfer_data_item = new_transfer_data.add()
         transfer_data_item.name = name
@@ -138,6 +127,7 @@ class AssetPipeline(bpy.types.PropertyGroup):
         transfer_data_item.type = type
         transfer_data_item.obj_name = obj_name
         transfer_data_item.surrender = surrender
+        return transfer_data_item
 
     ## NEW FILE
 

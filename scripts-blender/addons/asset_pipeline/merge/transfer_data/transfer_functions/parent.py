@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from ..transfer_util import check_transfer_data_entry
+from ..transfer_util import find_ownership_data
 from ...task_layer import get_transfer_data_owner
 from ...naming import merge_get_basename
 from .... import constants, logging
@@ -10,13 +10,13 @@ from .... import constants, logging
 
 def parent_clean(obj):
     logger = logging.get_logger()
-    matches = check_transfer_data_entry(
+    ownership_data = find_ownership_data(
         obj.transfer_data_ownership,
         merge_get_basename(constants.PARENT_TRANSFER_DATA_ITEM_NAME),
         constants.PARENT_KEY,
     )
 
-    if len(matches) != 0:
+    if ownership_data:
         return
 
     obj.parent = None
@@ -39,9 +39,9 @@ def init_parent(scene, obj):
 
     if obj.parent not in list(asset_pipe.asset_collection.all_objects) and obj.parent is not None:
         raise Exception(f"Object parent {obj.parent.name} cannot be outside of asset collection")
-    matches = check_transfer_data_entry(transfer_data, name, td_type_key)
+    ownership_data = find_ownership_data(transfer_data, name, td_type_key)
     # Only add new ownership transfer_data_item if vertex group doesn't have an owner
-    if len(matches) == 0:
+    if not ownership_data:
         task_layer_owner, auto_surrender = get_transfer_data_owner(
             asset_pipe,
             td_type_key,

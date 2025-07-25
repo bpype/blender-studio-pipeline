@@ -6,7 +6,7 @@ import bpy
 from ..transfer_util import (
     transfer_data_clean,
     transfer_data_item_is_missing,
-    check_transfer_data_entry,
+    find_ownership_data,
 )
 from ...naming import task_layer_prefix_name_get
 from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
@@ -40,17 +40,18 @@ def init_constraints(scene, obj):
         td_type_key,
     )
     for const in obj.constraints:
-        const.name = task_layer_prefix_name_get(const.name, task_layer_owner)
         # Only add new ownership transfer_data_item if vertex group doesn't have an owner
-        matches = check_transfer_data_entry(transfer_data, const.name, td_type_key)
-        if len(matches) == 0:
-            asset_pipe.add_temp_transfer_data(
+        ownership_data = find_ownership_data(transfer_data, const.name, td_type_key)
+        if not ownership_data:
+            ownership_data = asset_pipe.add_temp_transfer_data(
                 name=const.name,
                 owner=task_layer_owner,
                 type=td_type_key,
                 obj_name=obj.name,
                 surrender=auto_surrender,
             )
+
+        const.name = task_layer_prefix_name_get(const.name, ownership_data.owner)
 
 
 def transfer_constraint(constraint_name, target_obj, source_obj):

@@ -4,7 +4,7 @@
 
 import bpy
 from .attributes import transfer_attribute
-from ..transfer_util import check_transfer_data_entry
+from ..transfer_util import find_ownership_data
 from ...task_layer import get_transfer_data_owner
 from .... import constants
 from .transfer_function_util.proximity_core import (
@@ -15,14 +15,14 @@ from .transfer_function_util.proximity_core import (
 def materials_clean(obj):
     # Material slots cannot use generic transfer_data_clean() function
 
-    matches = check_transfer_data_entry(
+    ownership_data = find_ownership_data(
         obj.transfer_data_ownership,
         constants.MATERIAL_TRANSFER_DATA_ITEM_NAME,
         constants.MATERIAL_SLOT_KEY,
     )
 
     # Clear Materials if No Transferable Data is Found
-    if len(matches) != 0:
+    if ownership_data:
         return
 
     if obj.data and hasattr(obj.data, 'materials'):
@@ -46,9 +46,9 @@ def init_materials(scene, obj):
     if not (obj.data and hasattr(obj.data, 'materials')):
         return
 
-    matches = check_transfer_data_entry(transfer_data, name, td_type_key)
+    ownership_data = find_ownership_data(transfer_data, name, td_type_key)
     # Only add new ownership transfer_data_item if material doesn't have an owner
-    if len(matches) == 0:
+    if not ownership_data:
         task_layer_owner, auto_surrender = get_transfer_data_owner(
             asset_pipe,
             td_type_key,
