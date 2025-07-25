@@ -648,6 +648,8 @@ class ASSETPIPE_OT_revert_file(bpy.types.Operator):
 
 class ASSETPIPE_OT_fix_prefixes(bpy.types.Operator):
     bl_idname = "assetpipe.fix_prefixes"
+    bl_label = "Fix Modifier Prefixes"
+    bl_description = """Fix Prefixes for Modifiers so they match Transferable Data Owner on selected object(s)"""
     bl_options = {'REGISTER', 'UNDO'}
 
     _updated_prefix = False
@@ -665,12 +667,23 @@ class ASSETPIPE_OT_fix_prefixes(bpy.types.Operator):
         for obj in objs:
             transfer_data_items = obj.transfer_data_ownership
             for transfer_data_item in transfer_data_items:
-                if task_layer.get_transfer_data_owner(asset_pipe, transfer_data_item.type):
-                    self.report(
-                        {'INFO'},
-                        f"Renamed {transfer_data_item.type} on '{obj.name}'",
-                    )
-                    self._updated_prefix = True
+                if transfer_data_item.type != 'MODIFIER':
+                    continue
+                modifier = obj.modifiers.get(transfer_data_item.name)
+                if not modifier:
+                    continue
+                owner = task_layer.get_transfer_data_owner(asset_pipe, transfer_data_item.type)
+                if not owner:
+                    continue
+                prefixed = naming.task_layer_prefix_name_get(modifier.name, owner[0])
+                if prefixed == modifier.name:
+                    continue
+                transfer_data_item.name = modifier.name = prefixed
+                self.report(
+                    {'INFO'},
+                    f"Renamed {transfer_data_item.name} on '{obj.name}'",
+                )
+                self._updated_prefix = True
 
         if not self._updated_prefix:
             self.report(
