@@ -450,6 +450,12 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
 
     tasks: bpy.props.CollectionProperty(type=KITSU_task)
 
+    version_control: bpy.props.BoolProperty(  # type: ignore
+        name="Use Version Control",
+        description="Indicates if SVN or GIT-LFS is being used for version control. If disabled local backups of production files will be created when Publishing to Kitsu",
+        default=True,
+    )
+
     ####################
     # Render Review
     ####################
@@ -654,6 +660,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             box.row().prop(self, "shot_pattern")
             box.row().prop(self, "shot_counter_digits")
             box.row().prop(self, "shot_counter_increment")
+            box.row().prop(self, "version_control")
 
     def draw_render_review(self, layout: bpy.types.UILayout) -> None:
         box = layout.box()
