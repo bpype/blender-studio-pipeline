@@ -7,7 +7,7 @@ from bpy.types import Strip, Context
 import os
 from typing import Set, List
 from pathlib import Path
-from .. import cache, prefs, util
+from .. import cache, prefs, util, propsdata
 from ..types import Task, TaskStatus
 from ..playblast.core import override_render_path, override_render_format
 from . import opsdata
@@ -108,6 +108,7 @@ class KITSU_OT_edit_export_publish(bpy.types.Operator):
         render_path = Path(kitsu_props.edit_export_file)
         render_path_str = render_path.as_posix()
         render_name = render_path.name
+        render_path.parent.mkdir(parents=True, exist_ok=True)
         if not render_path.parent.exists():
             self.report({"ERROR"}, f"Render path is not set to a directory. '{self.render_dir}'")
             return {"CANCELLED"}
@@ -153,7 +154,13 @@ class KITSU_OT_edit_export_set_version(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         addon_prefs = prefs.addon_prefs_get(context)
-        return bool(addon_prefs.edit_export_dir != "")
+        if addon_prefs.edit_export_dir == "":
+            cls.poll_message_set("Edit Export Directory is not set, check add-on preferences")
+            return False
+        if not addon_prefs.is_edit_export_root_valid:
+            cls.poll_message_set("Edit Export Directory is Invalid, see Add-On preferences")
+            return False
+        return True
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         kitsu_props = context.scene.kitsu

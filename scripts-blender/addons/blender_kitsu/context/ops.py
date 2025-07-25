@@ -77,6 +77,10 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
         if is_edit_type:
             kitsu_props.category = "EDIT"
+            if active_project.production_type == bkglobals.KITSU_TV_PROJECT:
+                episode = active_project.get_episode_by_name(filepath.parents[0].name)
+                if episode:
+                    kitsu_props.episode_active_name = episode.name
             kitsu_props.edit_active_name = context_core.get_versioned_file_basename(filepath.stem)
             kitsu_props.task_type_active_name = bkglobals.EDIT_TASK_TYPE
 

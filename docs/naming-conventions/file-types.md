@@ -38,6 +38,12 @@ Sets are more tricky to define, since they can differ even on a shot level. In p
 
 **TV Show Location:** `{project root}/pro/shots/{episode identifier}/{sequence number}/{shot identifier}/{shot identifier}-{task identifier}.blend`
 
+## Edit Export
+
+**Standard Location:** `{project root}/shared/editorial/export/{edit name}-v{version}.mp4`
+
+**TV Show Location:** `{project root}/shared/editorial/export/{episode identifier}/{edit name}-v{version}.mp4`
+
 ##
 Example: `prop-dresser_wood.faded-modeling.png`
 

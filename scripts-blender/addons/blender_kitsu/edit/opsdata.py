@@ -4,7 +4,7 @@
 
 from typing import Any, List, Tuple
 from pathlib import Path
-from .. import prefs
+from .. import prefs, propsdata
 import bpy
 
 from ..models import FileListModel
@@ -27,7 +27,7 @@ def init_edit_export_file_model(
 
     addon_prefs = prefs.addon_prefs_get(context)
     kitsu_props = context.scene.kitsu
-    edit_export_dir = Path(addon_prefs.edit_export_dir)
+    edit_export_dir = propsdata.get_edit_export_dir()
 
     # Is None if invalid.
     if addon_prefs.edit_export_dir == "" or not edit_export_dir.exists():
