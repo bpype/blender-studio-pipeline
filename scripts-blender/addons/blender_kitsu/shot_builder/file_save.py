@@ -4,6 +4,7 @@
 
 from pathlib import Path
 import bpy
+import functools
 
 
 def save_shot_builder_file(file_path: str) -> bool:
@@ -14,5 +15,8 @@ def save_shot_builder_file(file_path: str) -> bool:
         return False
     dir_path = Path(file_path).parent
     dir_path.mkdir(parents=True, exist_ok=True)
-    bpy.ops.wm.save_mainfile(filepath=file_path, relative_remap=True)
+    bpy.app.timers.register(
+        functools.partial(bpy.ops.wm.save_mainfile, filepath=file_path, relative_remap=True),
+        first_interval=0.1,
+    )
     return True
