@@ -24,6 +24,10 @@ def edit_export_get_all(context: bpy.types.Context):
 
     edit_export_path = propsdata.get_edit_export_dir()
 
+    if not edit_export_path.exists():
+        print(f"Editorial export directory '{edit_export_path}' does not exist.")
+        return []
+
     files_list = [
         f
         for f in edit_export_path.iterdir()

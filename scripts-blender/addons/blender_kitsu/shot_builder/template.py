@@ -20,13 +20,18 @@ def get_template_for_task_type(task_type_name: str) -> Path:
     for file in list_dir_blend_files(config.template_example_dir_get()):
         if file.stem.lower() == task_type_name.lower():
             return file
+    return
 
 
 def replace_workspace_with_template(context: bpy.types.Context, task_type_name: str):
     if task_type_name is None:
         return
-    file_path = get_template_for_task_type(task_type_name).resolve().absolute()
+    file_path = get_template_for_task_type(task_type_name)
     remove_prefix = "REMOVE-"
+    if not file_path:
+        print(f"No template found for task type '{task_type_name}'")
+        return
+
     if not file_path.exists():
         return
 
@@ -37,7 +42,7 @@ def replace_workspace_with_template(context: bpy.types.Context, task_type_name: 
         workspace.name = remove_prefix + workspace.name
 
     # Add EXEC_DEFAULT to all bpy,ops calls to ensure they are "blocking" calls
-    file_path_str = file_path.__str__()
+    file_path_str = file_path.absolute().as_posix()
     with bpy.data.libraries.load(file_path_str) as (data_from, data_to):
         for workspace in data_from.workspaces:
             bpy.ops.wm.append(

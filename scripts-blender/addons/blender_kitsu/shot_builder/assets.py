@@ -27,6 +27,7 @@ def get_shot_assets(
         filepath = prefs.project_root_dir_get(bpy.context).joinpath(asset_path).absolute()
         if not filepath.exists():
             print(f"Asset '{kitsu_asset.name}' filepath '{str(filepath)}' does not exist. Skipping")
+            continue
 
         if config.ASSET_TYPE_TO_OVERRIDE.get(collection_name.split('-')[0]):
             linked_collection = core.link_and_override_collection(

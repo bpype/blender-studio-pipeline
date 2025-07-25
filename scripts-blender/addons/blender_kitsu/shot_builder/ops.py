@@ -331,8 +331,9 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
             return {'CANCELLED'}
 
         if self._frame_range_invalid(context, shot):
-            self.report({'ERROR'}, F"Shot {shot.name} is missing frame range data on Kitsu Server")
-            return {'CANCELLED'}
+            self.report(
+                {'WARNING'}, F"Shot {shot.name} is missing frame range data on Kitsu Server"
+            )
 
         task_type_short_name = task_type.get_short_name()
         shot_file_path_str = shot.get_filepath(context, task_type_short_name)
