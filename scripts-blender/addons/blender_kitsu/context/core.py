@@ -73,3 +73,8 @@ def draw_edit_selector(context: bpy.types.Context, layout: bpy.types.UILayout) -
 
 def draw_task_type_selector(context: bpy.types.Context, layout: bpy.types.UILayout):
     layout.prop(context.scene.kitsu, "task_type_active_name")
+
+
+def get_versioned_file_basename(name: str) -> str:
+    """Removes the version suffix from a file name if it exists and returns basename"""
+    return name.split(bkglobals.DELIMITER + "v")[0]

@@ -49,7 +49,11 @@ def copy_runtime_property(src_id, tgt_id, prop_name, x_mirror=False):
                 # HACK: If we need to copy add-on properties, but the add-on is not present, 
                 # we have to write to the system properties, which is API abuse that could
                 # lose support any moment, but there is no other way to do this atm.
-                tgt_id.bl_system_properties_get()[prop_name] = src_id.bl_system_properties_get()[prop_name]
+                try:
+                    tgt_id.bl_system_properties_get()[prop_name] = src_id.bl_system_properties_get()[prop_name]
+                except TypeError:
+                    # Happens for at least a mysterious "booleans" custom property which seems to be an empty PropGroup. Where is it coming from!?
+                    pass
             else:
                 tgt_id[prop_name] = src_id[prop_name]
     else:

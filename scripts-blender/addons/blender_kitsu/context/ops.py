@@ -77,6 +77,9 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
 
         if is_edit_type:
             kitsu_props.category = "EDIT"
+            kitsu_props.edit_active_name = context_core.get_versioned_file_basename(filepath.stem)
+            kitsu_props.task_type_active_name = bkglobals.EDIT_TASK_TYPE
+
             util.ui_redraw()
             return {"FINISHED"}
 

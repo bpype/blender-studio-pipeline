@@ -7,8 +7,95 @@ of having a shared network folder available to all participants.
 This shared folder can be read-only as it is used to ensure that all participants has the same Blender
 version and add-ons.
 
-The scripts themselves will be explained in the order one needs to execute them to setup everything correctly.
+You can use the assistant scripts to get running quickly! Below the assistant scripts the core scripts themselves will be explained in the order one needs to execute them to setup everything correctly manually.
+
 Let's get going! :)
+
+# Assistant Scripts
+
+## setup_assistant.py
+
+`setup_assistant.py` is a friendly helper that sets up everything you need to start a new Blender Studio project. Think of it like a wizard that asks you questions and then builds all the folders and files you need, connects to your Kitsu server, and gets your project ready for you.
+
+### What happens when you run the script?
+
+1. **It asks for information**  
+   The script will ask you for the address of your Kitsu server, your username, your password, and where you want your new project folder to be. You can also give these as command-line arguments if you want to skip the questions. If you make a mistake, it will ask again until you get it right.
+
+2. **It checks your Kitsu login**  
+   The script tries to connect to the Kitsu server with your details. If it can't log in, it will let you know and ask you to try again.
+
+3. **It lets you pick your project**  
+   Once you're logged in, it shows you a list of projects from Kitsu and lets you pick which one you want to set up.
+
+4. **It creates your project folder**  
+   The script makes a new folder for your project in the place you chose. If the folder can't be made (maybe it already exists or the path is wrong), it will ask you for a new place. Calls `init_folder_structure()` from `init_project_folder_structure.py` to create the standard folder skeleton for the project, including the main, `svn`, and `shared` directories, using predefined JSON templates.
+
+5. **It builds all the folders you need**  
+   Inside your new project folder, it creates all the special folders and files that Blender Studio needs to work together with your team.
+
+6. **It asks which Blender version you want**  
+   The script shows you a list of Blender versions and lets you pick which one you want to use for your project.
+
+7. **It sets up Blender for you**  
+   It updates the settings so that the right Blender version will be downloaded and used for your project.
+
+8. **It downloads Blender and add-ons**  
+   The script automatically downloads the Blender version you picked and any extra tools or add-ons you need.  Runs the `update_blender.py` and `update_extensions.py` scripts to download the correct Blender version and any required extensions into the project folders.
+
+9. **It saves your project settings**  
+   Finally, it writes down all the important settings (like your Kitsu info and folder paths) into a file so everything is ready for you when running `deployment_assistant.py`
+
+10. **All done!**  
+    When it's finished, your project is all set up and ready to go.
+
+## Arguments
+
+- `-u`, `--url`  
+  The Kitsu server URL (e.g., `http://localhost/api`).  
+- `-e`, `--user`  
+  Your Kitsu username or email.  
+- `-p`, `--password`  
+  Your Kitsu password.  
+- `-r`, `--root`  
+  The folder where your new project will be created.  
+
+You can give these as arguments, or just run the script and answer the questions.
+
+## Example usage
+
+```sh
+./setup_assistant.py --url http://localhost/api --user admin@example.com --password mysecretpassword --root /mnt/projects
+```
+
+If you make a mistake, the script will help you fix it by asking again.
+
+## deployment_assistant.py
+
+`deployment_assistant.py` is the script you run after setting up your project with `setup_assistant.py`. Its job is to finish preparing your Blender Studio project for artists to use.
+
+When you run this script, it does the following:
+
+1. **Reads your project settings**  
+   It looks for a file called `project_config.json` in the current folder. This file was created earlier by `setup_assistant.py` and contains all the important information about your project, like where your folders are and how to connect to Kitsu.
+
+2. **Starts Blender and sets up preferences**  
+   The script launches Blender in the background and runs another script called `set_blender_kitsu_prefs.py`.  
+   This helper script:
+   - Reads your `project_config.json` file.
+   - Enables the Blender Kitsu add-on.
+   - Sets up all the folder paths and preferences for your project inside Blender.
+   - Prompts you to log in to Kitsu as an artist, so your Blender is ready to connect to the project.
+   - Saves your Blender preferences and closes Blender.
+
+3. **Creates a desktop shortcut (Linux only)**  
+   If you're on Linux, the script will also create a desktop shortcut so you can easily launch Blender for this project from your application menu.
+
+When it's done, your Blender is fully configured for the project, and you can start working right away!
+
+--------------------------------------------------------------------------------------
+
+# Core Scripts
 
 **NOTE:** All scripts besides the `init_project_folder_structure.py` script, is only meant to be run from within the created folder skeleton!
 

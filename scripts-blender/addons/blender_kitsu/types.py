@@ -279,6 +279,9 @@ class Project(Entity):
         project_dict = gazu.project.get_project(project_id)
         return cls.from_dict(project_dict)
 
+    def update_project(self):
+        gazu.project.update_project(asdict(self))
+
     # EPISODES
     # ---------------
     def get_episode_by_name(self, ep_name: str) -> Optional[Episode]:
@@ -753,6 +756,29 @@ class Asset(Entity):
     def get_all_tasks(self) -> List[Task]:
         return [Task.from_dict(t) for t in gazu.task.all_tasks_for_asset(asdict(self))]
 
+    def get_asset_folder_name(self) -> str:
+        if self.asset_type_name in bkglobals.ASSET_FOLDER_MAPPING:
+            folder_name = bkglobals.ASSET_FOLDER_MAPPING[self.asset_type_name]
+        else:
+            folder_name = self.asset_type_name
+        return folder_name
+
+    def get_dir(self, context) -> Path:
+        project_root_dir = prefs.project_root_dir_get(context)
+        return (
+            project_root_dir.joinpath('pro')
+            .joinpath('assets')
+            .joinpath(self.get_asset_folder_name())
+            .joinpath(self.name)
+        )
+
+    def get_filepath(self, context) -> str:
+        file_name = self.name + '.blend'
+        return Path(self.get_dir(context)).joinpath(file_name).__str__()
+
+    def get_collection_name(self) -> str:
+        return self.asset_type_name[:2].upper() + bkglobals.DELIMITER + self.name
+
     def __bool__(self) -> bool:
         return bool(self.id)
 
@@ -814,7 +840,11 @@ class TaskType(Entity):
 
     @classmethod
     def all_edit_task_types(cls) -> List[TaskType]:
-        return [cls.from_dict(t) for t in gazu.task.all_task_types() if t["for_entity"] == "Edit"]
+        return [
+            cls.from_dict(t)
+            for t in gazu.task.all_task_types()
+            if t["for_entity"] == bkglobals.EDIT_TASK_TYPE
+        ]
 
     def get_short_name(self) -> str:
         for key, value in bkglobals.SHOT_TASK_MAPPING.items():
@@ -1275,6 +1305,20 @@ class Person(Entity):
         return bool(self.id)
 
 
+def get_edit_base_name(project: Project, episode: Episode):  # Get Basename
+    if getattr(project, "code", None) and project.code.strip():
+        project_name = project.code
+    else:
+        project_name = project.name
+
+    if project.production_type == bkglobals.KITSU_TV_PROJECT:
+        # For TV Shows, use episode name in edit file name
+        return f"{project_name}-{episode.name}-edit"
+    else:
+        # For Movies, use project name in edit file name
+        return f"{project_name}-edit"
+
+
 @dataclass
 class Edit(Entity):
     """
@@ -1286,12 +1330,16 @@ class Edit(Entity):
     id: str = ""
     name: str = ""
     frame_start: str = ""
+    project_id: str = ""
+    parent_id: Optional[str] = None
+    episode_name: Optional[str] = None
     description: Optional[str] = None
+    _edit_base_name: Optional[str] = None
 
     @classmethod
     def by_name(cls, project: Project, edit_name: str) -> Optional[Edit]:
         # Can return None if edit does not exist.
-        edit_dict = gazu.shot.get_edit_by_name(asdict(project), edit_name)
+        edit_dict = gazu.edit.get_edit_by_name(asdict(project), edit_name)
         if edit_dict:
             return cls.from_dict(edit_dict)
         return None
@@ -1300,6 +1348,44 @@ class Edit(Entity):
     def by_id(cls, ep_id: str) -> Edit:
         ep_dict = gazu.edit.get_edit(ep_id)
         return cls.from_dict(ep_dict)
+
+    @classmethod
+    def get_project_default_edit(
+        cls,
+        project: Project,
+        episode: Optional[Episode] = None,
+        create: bool = False,
+    ) -> Optional[Edit]:
+
+        edit_base_name = get_edit_base_name(project, episode)
+
+        episode_id = episode.id if episode else None
+
+        # If we don't want to create a new edit, return None if not found
+        edit_dict = gazu.edit.get_edit_by_name(
+            project=project.id,
+            edit_name=edit_base_name,
+        )
+        if not edit_dict and not create:
+            return None
+
+        if not edit_dict and create:
+            # Create new edit if not found
+            edit_dict = gazu.edit.new_edit(
+                project=project.id,
+                name=edit_base_name,
+                description="Edit created by Blender Kitsu Add-On",
+                episode={"id": episode_id},
+            )
+
+        # HACK for bug https://github.com/cgwire/gazu/issues/369
+        if (
+            project.production_type == bkglobals.KITSU_TV_PROJECT
+            and edit_dict.get("parent_id") is None
+        ):
+            edit_dict["parent_id"] = episode_id
+
+        return cls.from_dict(edit_dict)
 
     def __bool__(self) -> bool:
         return bool(self.id)
@@ -1318,6 +1404,59 @@ class Edit(Entity):
         self.frame_start = frame_start
         gazu.edit.update_edit(asdict(self))
         return
+
+    def get_dir(self, context) -> str:
+        project_root_dir = prefs.project_root_dir_get(context)
+        return project_root_dir.joinpath('edit')
+
+    def get_filepath(self, context) -> str:
+        dir = Path(self.get_dir(context))
+        base_name = self.edit_base_name
+        blend_files = list(dir.glob(f"{base_name}-v*.blend"))
+        if blend_files:
+            selected_file = max(
+                blend_files,
+                key=lambda f: (
+                    int(f.stem.split("-v")[-1]) if f.stem.split("-v")[-1].isdigit() else 0
+                ),
+                default=None,
+            )
+            file_name = selected_file.name
+        else:
+            file_name = f"{base_name}-v001.blend"
+
+        if self.episode_id:
+            dir = dir.joinpath(Episode.by_id(self.episode_id).name)
+            dir.mkdir(parents=True, exist_ok=True)
+
+        return dir.joinpath(file_name).as_posix()
+
+    def get_task_type(self) -> str:
+        return TaskType.by_name(bkglobals.EDIT_TASK_TYPE)
+
+    def set_edit_task(self):
+        # Ensure Project has Edit TaskType
+        edit_task_type = self.get_task_type()
+        project = Project.by_id(self.project_id)
+        if not edit_task_type in project.task_types:
+            project.task_types.append(edit_task_type.id)
+            project.update_project()
+
+        if not gazu.task.get_task_by_entity(asdict(self), edit_task_type.id):
+            gazu.task.new_task(asdict(self), asdict(edit_task_type))
+
+    @property
+    def episode_id(self) -> Optional[str]:
+        return self.parent_id
+
+    @property
+    def edit_base_name(self) -> str:
+        if not self._edit_base_name:
+            self._edit_base_name = get_edit_base_name(
+                Project.by_id(self.project_id),
+                Episode.by_id(self.parent_id) if self.parent_id else None,
+            )
+        return self._edit_base_name
 
 
 class Cache:

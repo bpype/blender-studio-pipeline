@@ -25,7 +25,7 @@ def update_brushstroke_method(self, context):
     preset_object = bpy.data.objects.get(preset_name)
     settings.preset_object = preset_object
 
-    style_object = utils.get_active_context_brushstrokes_object(context)
+    style_object = utils.get_active_context_brushstrokes_object(context.scene)
     if not style_object:
         style_object = preset_object
 
@@ -45,7 +45,7 @@ def update_context_material(self, context):
     if settings.silent_switch:
         return
 
-    style_object = utils.get_active_context_brushstrokes_object(context)
+    style_object = utils.get_active_context_brushstrokes_object(context.scene)
     if not style_object:
         style_object = settings.preset_object
     if not style_object:
@@ -119,7 +119,14 @@ def get_active_context_brushstrokes_index(self):
     return self["active_context_brushstrokes_index"]
 
 def set_active_context_brushstrokes_index(self, value):
-    settings = bpy.context.scene.BSBST_settings
+    scene = self.id_data
+    settings = scene.BSBST_settings
+
+    for window in bpy.context.window_manager.windows:
+        if window.scene == scene:
+            view_layer = window.view_layer
+            active_object = view_layer.objects.active
+
     if not settings.context_brushstrokes:
         if not settings.preset_object:
             return
@@ -136,12 +143,11 @@ def set_active_context_brushstrokes_index(self, value):
         return
     if not bs_ob:
         return
-    if not bpy.context.object:
+    if not active_object:
         return
-    view_layer = bpy.context.view_layer
-    if bpy.context.object.visible_get(view_layer = view_layer):
+    if active_object.visible_get(view_layer = view_layer):
         bpy.ops.object.mode_set(mode='OBJECT')
-    bpy.context.view_layer.objects.active = bs_ob
+    view_layer.objects.active = bs_ob
     if bs_ob.visible_get(view_layer = view_layer):
         bpy.ops.object.mode_set(mode='OBJECT')
     for ob in bpy.data.objects:

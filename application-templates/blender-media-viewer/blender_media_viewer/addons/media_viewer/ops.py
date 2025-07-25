@@ -177,7 +177,7 @@ class MV_OT_load_media_movie(bpy.types.Operator):
         # movie file. TODO: change layer dynamically when reaching new clip
 
         # startup.blend contains this layer.
-        gp_obj = bpy.data.grease_pencils["SEQUENCE_EDITOR"]
+        gp_obj = bpy.data.annotations["SEQUENCE_EDITOR"]
 
         if len(filepath_list) == 1:
             opsdata.update_gp_object_with_filepath(gp_obj, filepath_list[0])
@@ -303,7 +303,7 @@ class MV_OT_load_media_image(bpy.types.Operator):
 
         # Update annotation layer.
         # startup.blend contains this layer.
-        gp_obj = bpy.data.grease_pencils["IMAGE_EDITOR"]
+        gp_obj = bpy.data.annotations["IMAGE_EDITOR"]
         opsdata.update_gp_object_with_filepath(gp_obj, filepath)
 
         return {"FINISHED"}
@@ -1220,7 +1220,7 @@ class MV_OT_delete_active_gpencil_frame(bpy.types.Operator):
             # Little hack to get the right grease pencil object.
             # In startup.blend we made sure that the gp objects are named after
             # the area type.
-            gp_obj = bpy.data.grease_pencils[active_media_area]
+            gp_obj = bpy.data.annotations[active_media_area]
         except KeyError:
             return {"CANCELLED"}
 
@@ -1244,7 +1244,7 @@ class MV_OT_delete_all_gpencil_frames(bpy.types.Operator):
             # Little hack to get the right grease pencil object.
             # In startup.blend we made sure that the gp objects are named after
             # the area type.
-            gp_obj = bpy.data.grease_pencils[active_media_area]
+            gp_obj = bpy.data.annotations[active_media_area]
         except KeyError:
             return {"CANCELLED"}
 
@@ -1259,15 +1259,15 @@ class MV_OT_delete_all_gpencil_frames(bpy.types.Operator):
 class MV_OT_insert_empty_gpencil_frame(bpy.types.Operator):
 
     bl_idname = "media_viewer.insert_empty_gpencil_frame"
-    bl_label = "Insert Empty GPencil Frame"
-    bl_description = "Inserts an empty GPencil frame at current frame"
+    bl_label = "Insert Empty Annotation Frame"
+    bl_description = "Inserts an empty Annotation frame at current frame"
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         global active_media_area
 
         # Get active grease pencil layer.
         # startup.blend contains this layer.
-        gp_obj = bpy.data.grease_pencils[active_media_area]
+        gp_obj = bpy.data.annotations[active_media_area]
         active_layer = gp_obj.layers[gp_obj.layers.active_index]
 
         # Insert new frame.
@@ -1458,7 +1458,7 @@ class MV_OT_export_annotation_data_to_3dcam(bpy.types.Operator):
 
         # Get active greace pencil layer.
         # startup.blend contains this layer.
-        gp_obj = bpy.data.grease_pencils[active_media_area]
+        gp_obj = bpy.data.annotations[active_media_area]
 
         # Copy grease pencil object.
         gp_obj_export = gp_obj.copy()
@@ -1493,7 +1493,7 @@ class MV_OT_export_annotation_data_to_3dcam(bpy.types.Operator):
         )
 
         # Delete convert grease pencil object.
-        bpy.data.grease_pencils.remove(gp_obj_export)
+        bpy.data.annotations.remove(gp_obj_export)
 
         return {"CANCELLED"}
 

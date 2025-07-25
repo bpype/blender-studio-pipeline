@@ -536,7 +536,7 @@ class BSBST_PT_brushstroke_tools_panel(bpy.types.Panel):
                 row = style_panel.row()
                 row_edit = row.row(align=True)
                 row_edit.operator('brushstroke_tools.select_surface', icon='OUTLINER_OB_SURFACE', text='')
-                bs_ob = utils.get_active_context_brushstrokes_object(context)
+                bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
                 text = 'Edit Flow' if getattr(bs_ob, '["BSBST_method"]', None)=='SURFACE_FILL' else 'Edit Brushstrokes'
                 row_edit.operator('brushstroke_tools.edit_brushstrokes', icon='GREASEPENCIL', text = text)
                 row_edit.prop(settings, 'edit_toggle', icon='RESTRICT_SELECT_OFF' if settings.edit_toggle else 'RESTRICT_SELECT_ON', icon_only=True)

@@ -59,10 +59,10 @@ def get_scale_vector_to_3dview(
 
 
 def gplayer_sqe_to_3d(
-    gpobj: bpy.types.GreasePencil,
+    gpobj: bpy.types.Annotation,
     v_translate: Vector,
     v_scale: Vector,
-) -> bpy.types.GreasePencil:
+) -> bpy.types.Annotation:
     """
     Loops through all points of input gpobj and first translates them with v_translate Vector
     and then scales them with the v_scale Vector.
@@ -73,13 +73,13 @@ def gplayer_sqe_to_3d(
     # Should copy the data but currently there seems to be no way to change active
     # annotation_data (context.annotation_data) with Python.
     try:
-        gp_exists = bpy.data.grease_pencils[f"{gpobj.name}_3D_CONVERT"]
+        gp_exists = bpy.data.annotations[f"{gpobj.name}_3D_CONVERT"]
     except KeyError:
         pass
     else:
-        bpy.data.grease_pencils.remove(gp_exists)
+        bpy.data.annotations.remove(gp_exists)
 
-    gp_convert: bpy.types.GreasePencil = gpobj.copy()
+    gp_convert: bpy.types.Annotation = gpobj.copy()
     gp_convert.name = f"{gpobj.name}_3D_CONVERT"
 
     # We assume gpobj was painted on media file that had same resolution
@@ -133,11 +133,11 @@ def gplayer_sqe_to_3d(
         for frame in layer.frames:
 
             # For autocomplete.
-            frame: bpy.types.GPencilFrame = frame
+            frame: bpy.types.AnnotationFrame = frame
 
             for stroke in frame.strokes:
                 # For autocomplete.
-                stroke: bpy.types.GPencilStroke = stroke
+                stroke: bpy.types.AnnotationStroke = stroke
 
                 # Set stroke to screen.
                 stroke.display_mode = "SCREEN"
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     v_translate = get_translation_vector_to_3dview(resolution, "IMAGE_EDITOR")
     v_scale = get_scale_vector_to_3dview(resolution, "IMAGE_EDITOR")
 
-    gpobj = bpy.data.grease_pencils["TEST_IMAGE_EDITOR"]
+    gpobj = bpy.data.annotations["TEST_IMAGE_EDITOR"]
     gplayer_sqe_to_3d(gpobj, v_translate, v_scale)
 
 # Calculate corner coordinates of SQE with that resolution.
