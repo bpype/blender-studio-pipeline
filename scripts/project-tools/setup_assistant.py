@@ -250,7 +250,9 @@ def make_project_folder(project_name: str, project_root_arg: str = None) -> Path
     return project_path
 
 
-def write_config_file(kitsu_server_url: str, kitsu_project: dict, project_path: Path):
+def write_config_file(
+    kitsu_server_url: str, kitsu_project: dict, project_path: Path, version_control: bool
+):
     config_data = {
         "login_data": {
             "host": kitsu_server_url,
@@ -264,6 +266,9 @@ def write_config_file(kitsu_server_url: str, kitsu_project: dict, project_path: 
             "seq_playblast_root_dir": "shared/editorial/footage/pre/",
             "frames_root_dir": "shared/editorial/footage/post/",
             "edit_export_dir": "shared/editorial/export/",
+        },
+        "generic_prefs": {
+            "version_control": version_control,
         },
     }
     config_file = project_path.joinpath("svn/tools/project_config.json")
@@ -370,6 +375,23 @@ def ensure_kitsu_project_short_name(project: dict, access_token: str):
             print("Invalid input. Please enter 'y' or 'n'.")
 
 
+def check_version_control():
+    print("This toolset relies on a version control system to manage project files, typically SVN.")
+    print(
+        "If you are not using version control this is considered an ad-hoc deployment, and it is not recommended."
+    )
+    while True:
+        answer = (
+            input("Are you using a version control system (SVN/GIT-LFS)? (y/n): ").strip().lower()
+        )
+        if answer.lower() == "y":
+            return True
+        elif answer.lower() == "n":
+            return False
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+
+
 def main():
     verify_python_version()
     parser = argparse.ArgumentParser(
@@ -414,6 +436,10 @@ def main():
     project_path = make_project_folder(selected_project["code"], args.root)
     print(f"Project path created at: {project_path}")
 
+    # Check for verson control vs ad-hoc deployment
+    print_header("Version Control Setup", 1)
+    version_control = check_version_control()
+
     # Populate Folder Structure
     init_folder_structure(
         project_path.as_posix(), Path(__file__).parent.joinpath("folder_structure.json")
@@ -443,11 +469,11 @@ def main():
     # Download Blender Studio Extensions
     update_extensions_script = project_path.joinpath("svn/tools/update_extensions.py")
     run_background_script(update_extensions_script)
-
     # Write project config file
-    write_config_file(KITSU_URL, selected_project, project_path)
+    write_config_file(KITSU_URL, selected_project, project_path, version_control)
 
     print_header("Mounting Project Folders", 1)
+
     print(
         f"If you are using SVN or GIT LFS to do version control please make your initial commit of {project_path.joinpath('svn').as_posix()} now."
     )

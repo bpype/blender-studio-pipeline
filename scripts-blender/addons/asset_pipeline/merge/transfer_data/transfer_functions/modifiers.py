@@ -8,7 +8,7 @@ from .transfer_function_util.visibility import override_obj_visibility
 from ..transfer_util import (
     transfer_data_clean,
     transfer_data_item_is_missing,
-    check_transfer_data_entry,
+    find_ownership_data,
     activate_shapekey,
     disable_modifiers,
 )
@@ -51,17 +51,18 @@ def init_modifiers(scene, obj):
     )
 
     for mod in obj.modifiers:
-        mod.name = task_layer_prefix_name_get(mod.name, task_layer_owner)
         # Only add new ownership transfer_data_item if vertex group doesn't have an owner
-        matches = check_transfer_data_entry(transfer_data, mod.name, td_type_key)
-        if len(matches) == 0:
-            asset_pipe.add_temp_transfer_data(
+        ownership_data = find_ownership_data(transfer_data, mod.name, td_type_key)
+        if not ownership_data:
+            ownership_data = asset_pipe.add_temp_transfer_data(
                 name=mod.name,
                 owner=task_layer_owner,
                 type=td_type_key,
                 obj_name=obj.name,
                 surrender=auto_surrender,
             )
+
+        mod.name = task_layer_prefix_name_get(mod.name, ownership_data.owner)
 
 
 def transfer_modifier(context, modifier_name, target_obj, source_obj):

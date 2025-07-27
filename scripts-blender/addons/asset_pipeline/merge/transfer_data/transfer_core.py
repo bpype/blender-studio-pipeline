@@ -18,7 +18,7 @@ from typing import List
 from ... import constants, logging
 from .transfer_util import (
     transfer_data_add_entry,
-    check_transfer_data_entry,
+    find_ownership_data,
     link_objs_to_collection,
     isolate_collection,
 )
@@ -35,12 +35,12 @@ def copy_transfer_data_ownership(
         target_obj (bpy.types.Object): Object to add Transferable Data item to
     """
     transfer_data = target_obj.transfer_data_ownership
-    matches = check_transfer_data_entry(
+    ownership_data = find_ownership_data(
         transfer_data,
         transfer_data_dict["name"],
         td_type_key,
     )
-    if len(matches) == 0:
+    if not ownership_data:
         transfer_data_add_entry(
             transfer_data,
             transfer_data_dict["name"],

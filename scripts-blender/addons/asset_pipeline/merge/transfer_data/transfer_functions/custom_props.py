@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from ..transfer_util import check_transfer_data_entry
+from ..transfer_util import find_ownership_data
 from ...task_layer import get_transfer_data_owner
 
 from .... import constants
@@ -19,12 +19,12 @@ def transfer_custom_prop(prop_name, target_obj, source_obj):
 def custom_prop_clean(obj):
     cleaned_item_names = set()
     for key in get_valid_runtime_prop_names(obj):
-        matches = check_transfer_data_entry(
+        ownership_data = find_ownership_data(
             obj.transfer_data_ownership,
             key,
             constants.CUSTOM_PROP_KEY,
         )
-        if len(matches) == 0:
+        if not ownership_data:
             cleaned_item_names.add(key)
             remove_property(obj, key)
 
@@ -42,8 +42,8 @@ def init_custom_prop(scene, obj):
     td_type_key = constants.CUSTOM_PROP_KEY
 
     for prop_name in get_valid_runtime_prop_names(obj):
-        matches = check_transfer_data_entry(transfer_data, prop_name, td_type_key)
-        if len(matches) == 0:
+        ownership_data = find_ownership_data(transfer_data, prop_name, td_type_key)
+        if not ownership_data:
             task_layer_owner, auto_surrender = get_transfer_data_owner(
                 asset_pipe, td_type_key, prop_name
             )

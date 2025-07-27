@@ -3,29 +3,22 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from ..naming import merge_get_basename
+from ..naming import merge_get_basename, task_layer_prefix_basename_get
 from ..task_layer import get_transfer_data_owner
 import contextlib
+from ...props import AssetTransferData
 
-def check_transfer_data_entry(
-    transfer_data: bpy.types.CollectionProperty, key: str, td_type_key: str
-) -> set:
-    """Verifies if Transferable Data entry exists
-
-    Args:
-        ownership (bpy.types.CollectionProperty): Transferable Data of an object
-        key (str): Name of item that is being verified
-        td_type_key (str): Type of Transferable Data
-
-    Returns:
-        set: Returns set of matches where name is found in ownership
-    """
-    existing_items = [
-        transfer_data_item.name
-        for transfer_data_item in transfer_data
-        if transfer_data_item.type == td_type_key
-    ]
-    return set([key]).intersection(set(existing_items))
+def find_ownership_data(
+    transfer_data: bpy.types.CollectionProperty,
+    key: str,
+    td_type_key: str,
+) -> AssetTransferData | None:
+    """Return matching AssetTransferData if it exists."""
+    base_name = task_layer_prefix_basename_get(key)
+    for transfer_data_item in transfer_data:
+        owned_data_base_name = task_layer_prefix_basename_get(transfer_data_item.name)
+        if transfer_data_item.type == td_type_key and base_name == owned_data_base_name:
+            return transfer_data_item
 
 
 def transfer_data_add_entry(
@@ -64,16 +57,17 @@ def transfer_data_clean(
     cleaned_item_names = set()
 
     for item in data_list:
-        matches = check_transfer_data_entry(
+        ownership_data = find_ownership_data(
             obj.transfer_data_ownership,
             merge_get_basename(item.name),
             td_type_key,
         )
-        if len(matches) == 0:
+        if not ownership_data:
             cleaned_item_names.add(item.name)
             data_list.remove(item)
 
     return cleaned_item_names
+
 
 def transfer_data_item_is_missing(
     transfer_data_item, data_list: bpy.types.CollectionProperty, td_type_key: str
@@ -117,8 +111,8 @@ def transfer_data_item_init(
 
     for item in data_list:
         # Only add new ownership transfer_data_item if vertex group doesn't have an owner
-        matches = check_transfer_data_entry(transfer_data, item.name, td_type_key)
-        if len(matches) == 0:
+        ownership_data = find_ownership_data(transfer_data, item.name, td_type_key)
+        if not ownership_data:
             task_layer_owner, auto_surrender = get_transfer_data_owner(
                 asset_pipe,
                 td_type_key,

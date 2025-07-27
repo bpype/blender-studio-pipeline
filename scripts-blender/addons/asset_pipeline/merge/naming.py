@@ -152,13 +152,8 @@ def task_layer_prefix_name_get(name: str, task_layer_owner: str) -> str:
     Returns:
         str: Returns name with prefix
     """
-    for task_layer_key in config.TASK_LAYER_TYPES:
-        if name.startswith(
-            config.TASK_LAYER_TYPES[task_layer_key] + constants.NAME_DELIMITER
-        ):
-            return name
     prefix = config.TASK_LAYER_TYPES[task_layer_owner]
-    return prefix + constants.NAME_DELIMITER + name
+    return prefix + constants.NAME_DELIMITER + task_layer_prefix_basename_get(name)
 
 
 def task_layer_prefix_basename_get(name: str) -> str:
@@ -173,10 +168,9 @@ def task_layer_prefix_basename_get(name: str) -> str:
         str: Returns name without task layer prefix
     """
     for task_layer_key in config.TASK_LAYER_TYPES:
-        if name.startswith(
-            config.TASK_LAYER_TYPES[task_layer_key] + constants.NAME_DELIMITER
-        ):
-            return name.replace(name.split(constants.NAME_DELIMITER)[0], "")[1:]
+        prefix = config.TASK_LAYER_TYPES[task_layer_key] + constants.NAME_DELIMITER
+        if name.startswith(prefix):
+            return name[len(prefix):]
     return name
 
 

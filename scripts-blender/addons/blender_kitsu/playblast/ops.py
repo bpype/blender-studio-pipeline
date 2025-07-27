@@ -199,6 +199,13 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         # Upload playblast
         self._upload_playblast(context, output_path)
 
+        if not addon_prefs.version_control:
+            basename = context_core.get_versioned_file_basename(Path(bpy.data.filepath).stem)
+
+            version_filename = basename + "-" + kitsu_scene_props.playblast_version + ".blend"
+            version_filepath = Path(bpy.data.filepath).parent.joinpath(version_filename).as_posix()
+            bpy.ops.wm.save_as_mainfile(filepath=version_filepath, copy=True)
+
         context.window_manager.progress_update(2)
         context.window_manager.progress_end()
 

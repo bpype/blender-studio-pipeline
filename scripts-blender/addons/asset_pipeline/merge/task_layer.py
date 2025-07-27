@@ -60,7 +60,7 @@ def draw_task_layer_selection(
     - When a user is overriding or the object is new (using default ownership): "Show All Task Layers"
     Args:
         layout (bpy.types.UILayout): Any UI Layout element like self.layout or row
-        data (bpy.types.CollectionProperty or bpy.types.ID): Object, Collection or Transferable Data Item
+        data (bpy.types.CollectionProperty or bpy.types.ID or bpy.types.Operator): Python object that owns the ownership data.
         show_all_task_layers (bool, optional): Used when we want to list all task layers in the production as options.
         text (str, optional): Title of prop search.
         data_owner_name(str, optional): Name of Data if it needs to be specified
@@ -83,8 +83,9 @@ def draw_task_layer_selection(
 
     row = layout.row()
     if current_data_owner not in asset_pipe.local_task_layers:
-        row.enabled = False
         show_all_task_layers = True
+        if not isinstance(data, bpy.types.Operator):
+            row.enabled = False
 
     if show_all_task_layers:
         row.prop_search(

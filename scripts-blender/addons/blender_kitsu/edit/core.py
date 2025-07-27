@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from .. import prefs
+from .. import prefs, propsdata
 import re
 from pathlib import Path
 
@@ -22,7 +22,11 @@ def edit_export_get_all(context: bpy.types.Context):
     """Find all renders in editorial export directory"""
     addon_prefs = prefs.addon_prefs_get(context)
 
-    edit_export_path = Path(addon_prefs.edit_export_dir)
+    edit_export_path = propsdata.get_edit_export_dir()
+
+    if not edit_export_path.exists():
+        print(f"Editorial export directory '{edit_export_path}' does not exist.")
+        return []
 
     files_list = [
         f

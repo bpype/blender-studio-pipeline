@@ -68,8 +68,7 @@ def main():
     )
     args = parser.parse_args()
 
-    init_folder_structure(args.json_file, args.target_folder)
-    print("Done!")
+    init_folder_structure(args.target_folder, args.json_file)
 
 
 if __name__ == "__main__":

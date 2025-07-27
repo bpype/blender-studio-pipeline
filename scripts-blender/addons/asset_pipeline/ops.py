@@ -243,6 +243,7 @@ class ASSETPIPE_OT_prepare_sync(bpy.types.Operator):
         "Prepare all Objects for Sync; by updating the Ownership of Objects "
         "and Transferable Data. Also runs Pre-Pull hooks"
     )
+    bl_options = {'REGISTER', 'UNDO'}
 
     _temp_transfer_data = None
     _invalid_objs = []
@@ -270,6 +271,7 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
     bl_idname = "assetpipe.sync_pull"
     bl_label = "Pull Asset"
     bl_description = """Pull Task Layers from the published sync target"""
+    bl_options = {'REGISTER', 'UNDO'}
 
     _temp_transfer_data = None
     _invalid_objs = []
@@ -562,6 +564,7 @@ class ASSETPIPE_OT_reset_ownership(bpy.types.Operator):
     bl_idname = "assetpipe.reset_ownership"
     bl_label = "Reset Ownership"
     bl_description = """Reset the Object owner and Transferable Data on selected object(s)"""
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -586,6 +589,7 @@ class ASSETPIPE_OT_update_local_task_layers(bpy.types.Operator):
     bl_idname = "assetpipe.update_local_task_layers"
     bl_label = "Update Local Task Layers"
     bl_description = """Change the Task Layers that are Local to your file"""
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -644,8 +648,9 @@ class ASSETPIPE_OT_revert_file(bpy.types.Operator):
 
 class ASSETPIPE_OT_fix_prefixes(bpy.types.Operator):
     bl_idname = "assetpipe.fix_prefixes"
-    bl_label = "Fix Prefixes"
-    bl_description = """Fix Prefixes for Modifiers and Constraints so they match Transferable Data Owner on selected object(s)"""
+    bl_label = "Fix Modifier Prefixes"
+    bl_description = """Fix Prefixes for Modifiers so they match Transferable Data Owner on selected object(s)"""
+    bl_options = {'REGISTER', 'UNDO'}
 
     _updated_prefix = False
 
@@ -662,12 +667,23 @@ class ASSETPIPE_OT_fix_prefixes(bpy.types.Operator):
         for obj in objs:
             transfer_data_items = obj.transfer_data_ownership
             for transfer_data_item in transfer_data_items:
-                if task_layer.get_transfer_data_owner(asset_pipe, transfer_data_item.type):
-                    self.report(
-                        {'INFO'},
-                        f"Renamed {transfer_data_item.type} on '{obj.name}'",
-                    )
-                    self._updated_prefix = True
+                if transfer_data_item.type != 'MODIFIER':
+                    continue
+                modifier = obj.modifiers.get(transfer_data_item.name)
+                if not modifier:
+                    continue
+                owner = task_layer.get_transfer_data_owner(asset_pipe, transfer_data_item.type)
+                if not owner:
+                    continue
+                prefixed = naming.task_layer_prefix_name_get(modifier.name, owner[0])
+                if prefixed == modifier.name:
+                    continue
+                transfer_data_item.name = modifier.name = prefixed
+                self.report(
+                    {'INFO'},
+                    f"Renamed {transfer_data_item.name} on '{obj.name}'",
+                )
+                self._updated_prefix = True
 
         if not self._updated_prefix:
             self.report(
@@ -682,6 +698,7 @@ class ASSETPIPE_OT_update_surrendered_object(bpy.types.Operator):
     bl_idname = "assetpipe.update_surrendered_object"
     bl_label = "Claim Surrendered"
     bl_description = """Claim Surrended Object Owner"""
+    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
         obj = context.active_object
@@ -716,6 +733,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
     bl_idname = "assetpipe.update_surrendered_transfer_data"
     bl_label = "Claim Surrendered"
     bl_description = """Claim Surrended Transferable Data Owner"""
+    bl_options = {'REGISTER', 'UNDO'}
 
     transfer_data_item_name: bpy.props.StringProperty(name="Transferable Data Item Name")
 
@@ -764,6 +782,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
     bl_idname = "assetpipe.batch_ownership_change"
     bl_label = "Batch Set Ownership"
     bl_description = """Re-Assign Ownership in a batch operation"""
+    bl_options = {'REGISTER', 'UNDO'}
 
     name_filter: bpy.props.StringProperty(
         name="Filter by Name",

@@ -13,7 +13,7 @@ from .transfer_function_util.proximity_core import (
     is_obdata_identical,
     transfer_corner_data,
 )
-from ..transfer_util import check_transfer_data_entry
+from ..transfer_util import find_ownership_data
 from ...naming import merge_get_basename
 from ...task_layer import get_transfer_data_owner
 from .... import constants, logging
@@ -39,12 +39,12 @@ def attribute_clean(obj):
     attributes = attributes_get_editable(obj.data.attributes)
     attributes_to_remove = []
     for attribute in attributes:
-        matches = check_transfer_data_entry(
+        ownership_data = find_ownership_data(
             obj.transfer_data_ownership,
             merge_get_basename(attribute.name),
             constants.ATTRIBUTE_KEY,
         )
-        if len(matches) == 0:
+        if not ownership_data:
             attributes_to_remove.append(attribute.name)
 
     for attribute_name_to_remove in reversed(attributes_to_remove):
@@ -74,8 +74,8 @@ def init_attributes(scene, obj):
     td_type_key = constants.ATTRIBUTE_KEY
     for atttribute in attributes_get_editable(obj.data.attributes):
         # Only add new ownership transfer_data_item if vertex group doesn't have an owner
-        matches = check_transfer_data_entry(transfer_data, atttribute.name, td_type_key)
-        if len(matches) == 0:
+        ownership_data = find_ownership_data(transfer_data, atttribute.name, td_type_key)
+        if not ownership_data:
             task_layer_owner, auto_surrender = get_transfer_data_owner(
                 asset_pipe, td_type_key, atttribute.name
             )

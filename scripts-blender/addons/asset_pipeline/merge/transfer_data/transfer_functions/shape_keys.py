@@ -15,7 +15,7 @@ from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
 from ..transfer_util import (
     transfer_data_item_is_missing,
     transfer_data_item_init,
-    check_transfer_data_entry,
+    find_ownership_data,
 )
 from ...naming import merge_get_basename
 from .... import constants, logging
@@ -34,12 +34,12 @@ def shape_keys_clean(obj):
     cleaned_item_names = set()
 
     for shape_key in obj.data.shape_keys.key_blocks:
-        matches = check_transfer_data_entry(
+        ownership_data = find_ownership_data(
             obj.transfer_data_ownership,
             merge_get_basename(shape_key.name),
             constants.SHAPE_KEY_KEY,
         )
-        if len(matches) == 0:
+        if not ownership_data:
             cleaned_item_names.add(shape_key.name)
             obj.shape_key_remove(shape_key)
 

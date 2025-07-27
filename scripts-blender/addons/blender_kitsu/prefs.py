@@ -11,7 +11,7 @@ from pathlib import Path
 
 import bpy
 
-from . import cache, bkglobals
+from . import cache, bkglobals, propsdata
 from .props import get_safely_string_prop
 
 # TODO: restructure this to not access ops_playblast_data.
@@ -386,10 +386,13 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         self,
     ) -> str:
         path = get_safely_string_prop(self.bl_system_properties_get(), 'edit_export_dir')
+        active_project = cache.project_active_get()
         if path == "" and self.project_root_path:
-            dir = self.project_root_path.joinpath("shared/editorial/export/")
-            if dir.exists():
-                return dir.as_posix()
+            if active_project.production_type == bkglobals.KITSU_TV_PROJECT:
+                dir = self.project_root_path.joinpath("shared/editorial/export/<episode>/")
+            else:
+                dir = self.project_root_path.joinpath("shared/editorial/export/")
+            return dir.as_posix()
         return path
 
     edit_export_dir: bpy.props.StringProperty(  # type: ignore
@@ -446,6 +449,12 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     session: Session = Session()
 
     tasks: bpy.props.CollectionProperty(type=KITSU_task)
+
+    version_control: bpy.props.BoolProperty(  # type: ignore
+        name="Use Version Control",
+        description="Indicates if SVN or GIT-LFS is being used for version control. If disabled local backups of production files will be created when Publishing to Kitsu",
+        default=True,
+    )
 
     ####################
     # Render Review
@@ -651,6 +660,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
             box.row().prop(self, "shot_pattern")
             box.row().prop(self, "shot_counter_digits")
             box.row().prop(self, "shot_counter_increment")
+            box.row().prop(self, "version_control")
 
     def draw_render_review(self, layout: bpy.types.UILayout) -> None:
         box = layout.box()
@@ -699,7 +709,12 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     def is_edit_export_root_valid(self) -> bool:
         if self.edit_export_dir.strip() == "":
             return False
-        if not Path(self.edit_export_dir).exists():
+        edit_export_path = Path(self.edit_export_dir)
+        if '<episode>' in edit_export_path.parts:
+            edit_export_path = propsdata.get_edit_export_dir()
+            if edit_export_path.parent.exists():
+                return True
+        if not edit_export_path.exists():
             return False
         return True
 

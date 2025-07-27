@@ -114,12 +114,7 @@ def get_playblast_dir(self: Any) -> str:
     else:
         playblast_dir = addon_prefs.shot_playblast_root_path
 
-    # Inject episode name if available (and if specified as <episode>)
-    if episode and '<episode>' in playblast_dir.parts:
-        i = playblast_dir.parts.index('<episode>')
-        playblast_dir = Path(*playblast_dir.parts[:i]).joinpath(
-            episode.name, *playblast_dir.parts[i + 1 :]
-        )
+    playblast_dir = set_episode_variable(playblast_dir)
 
     if context_core.is_sequence_context():
         playblast_dir = playblast_dir / sequence.name / 'sequence_previews'
@@ -165,14 +160,18 @@ def get_playblast_file(self: Any) -> str:
     return Path(self.playblast_dir).joinpath(file_name).as_posix()
 
 
+def get_edit_export_dir() -> str:
+    addon_prefs = prefs.addon_prefs_get(bpy.context)
+    return set_episode_variable(Path(addon_prefs.edit_export_dir))
+
+
 def get_edit_export_file(self: Any) -> str:
     addon_prefs = prefs.addon_prefs_get(bpy.context)
-    if not bool(addon_prefs.edit_export_dir):
-        return ""
+    export_dir = get_edit_export_dir()
     version = self.edit_export_version
     file_pattern = addon_prefs.edit_export_file_pattern
     file_name = file_pattern.replace('v###', version)
-    return Path(addon_prefs.edit_export_dir).joinpath(file_name).as_posix()
+    return export_dir.joinpath(file_name).as_posix()
 
 
 _active_category_cache_init: bool = False
@@ -211,3 +210,16 @@ def reset_all_kitsu_props(self: Any, context: bpy.types.Context) -> None:
     cache.asset_active_reset(context)
     cache.episode_active_reset(context)
     cache.task_type_active_reset(context)
+
+
+def set_episode_variable(base_path: Path) -> Path:
+    episode = cache.episode_active_get()
+    active_project = cache.project_active_get()
+    if not (
+        episode
+        and '<episode>' in base_path.parts
+        and active_project.production_type == bkglobals.KITSU_TV_PROJECT
+    ):
+        return base_path
+    i = base_path.parts.index('<episode>')
+    return Path(*base_path.parts[:i]).joinpath(episode.name, *base_path.parts[i + 1 :])
