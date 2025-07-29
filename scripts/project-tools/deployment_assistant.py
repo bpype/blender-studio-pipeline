@@ -44,7 +44,13 @@ def main():
     run_blender = Path(__file__).parent.joinpath("run_blender.py")
     set_blender_kitsu_prefs = Path(__file__).parent.joinpath("set_blender_kitsu_prefs.py")
     run_script(
-        [run_blender.as_posix(), "--background", "--python", set_blender_kitsu_prefs.as_posix()]
+        [
+            sys.executable,
+            run_blender.as_posix(),
+            "--background",
+            "--python",
+            set_blender_kitsu_prefs.as_posix(),
+        ]
     )
 
     print_header("Shortcut to launch Project Blender", 1)
