@@ -202,7 +202,7 @@ class KITSU_OT_build_new_file_baseclass(bpy.types.Operator):
 class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
     bl_idname = "kitsu.build_new_asset"
     bl_label = "Build New Asset"
-    bl_description = "Build a New Asset file, based on information from KITSU Server"
+    bl_description = "Build a New Asset file, based on project data from Kitsu Server"
     bl_options = {"REGISTER"}
 
     _kitsu_context_type = "ASSET"  # Default context for this operator
@@ -275,10 +275,43 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
         return {"FINISHED"}
 
 
+class KITSU_OT_open_asset_file(KITSU_OT_build_new_file_baseclass):
+    bl_idname = "kitsu.open_asset_file"
+    bl_label = "Open Asset File"
+    bl_description = "Open an Asset File from the current project"
+
+    _kitsu_context_type = "ASSET"
+
+    def draw(self, context: bpy.types.Context) -> None:
+        global ACTIVE_PROJECT
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        flow = layout.grid_flow(
+            row_major=True, columns=0, even_columns=True, even_rows=False, align=False
+        )
+        col = flow.column()
+        row = col.row()
+        row.enabled = False
+        row.prop(self, "production_name")
+        context_core.draw_asset_type_selector(context, col)
+        context_core.draw_asset_selector(context, col)
+
+    def execute(self, context: bpy.types.Context):
+        asset = cache.asset_active_get()
+        asset_file_path_str = asset.get_filepath(context)
+        if not Path(asset_file_path_str).exists():
+            self.report({'ERROR'}, f"Asset file does not exist: {asset_file_path_str}")
+            return {'CANCELLED'}
+
+        bpy.ops.wm.open_mainfile(filepath=asset_file_path_str)
+        return {'FINISHED'}
+
+
 class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
     bl_idname = "kitsu.build_new_shot"
     bl_label = "Build New Shot"
-    bl_description = "Build a New Shot file, based on infromation from KITSU Server"
+    bl_description = "Build a New Shot file, based on project information found on Kitsu Server"
     bl_options = {"REGISTER"}
 
     _kitsu_context_type = "SHOT"
@@ -399,6 +432,45 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
         return {"FINISHED"}
 
 
+class KITSU_OT_open_shot_file(KITSU_OT_build_new_file_baseclass):
+    bl_idname = "kitsu.open_shot_file"
+    bl_label = "Open Shot File"
+    bl_description = "Open a Shot File from the current project"
+
+    _kitsu_context_type = "SHOT"
+
+    def draw(self, context: bpy.types.Context) -> None:
+        global ACTIVE_PROJECT
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        flow = layout.grid_flow(
+            row_major=True, columns=0, even_columns=True, even_rows=False, align=False
+        )
+        col = flow.column()
+        row = col.row()
+        row.enabled = False
+        row.prop(self, "production_name")
+        if ACTIVE_PROJECT.production_type == bkglobals.KITSU_TV_PROJECT:
+            context_core.draw_episode_selector(context, col)
+        context_core.draw_sequence_selector(context, col)
+        context_core.draw_shot_selector(context, col)
+        context_core.draw_task_type_selector(context, col)
+
+    def execute(self, context: bpy.types.Context):
+        shot = cache.shot_active_get()
+        task_type = cache.task_type_active_get()
+
+        task_type_short_name = task_type.get_short_name()
+        shot_file_path_str = shot.get_filepath(context, task_type_short_name)
+        if not Path(shot_file_path_str).exists():
+            self.report({'ERROR'}, f"Shot file does not exist: {shot_file_path_str}")
+            return {'CANCELLED'}
+
+        bpy.ops.wm.open_mainfile(filepath=shot_file_path_str)
+        return {'FINISHED'}
+
+
 class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
     bl_idname = "kitsu.create_edit_file"
     bl_label = "Create Edit File"
@@ -459,6 +531,44 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
         return {'FINISHED'}
 
 
+class KITSU_OT_open_edit_file(KITSU_OT_build_new_file_baseclass):
+    bl_idname = "kitsu.open_edit_file"
+    bl_label = "Open Edit File"
+    bl_description = "Open Latest Edit File from the current project"
+
+    _kitsu_context_type = "EDIT"
+
+    def draw(self, context: bpy.types.Context) -> None:
+        global ACTIVE_PROJECT
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        flow = layout.grid_flow(
+            row_major=True, columns=0, even_columns=True, even_rows=False, align=False
+        )
+        col = flow.column()
+        row = col.row()
+        row.enabled = False
+        row.prop(self, "production_name")
+        if ACTIVE_PROJECT.production_type == bkglobals.KITSU_TV_PROJECT:
+            context_core.draw_episode_selector(context, col)
+        context_core.draw_edit_selector(context, col)
+
+    def execute(self, context: bpy.types.Context):
+        edit_entity = cache.edit_default_get(episode_id=context.scene.kitsu.episode_active_id)
+        if not edit_entity:
+            self.report({'ERROR'}, "No edit file found for the current episode.")
+            return {'CANCELLED'}
+
+        edit_file_path_str = edit_entity.get_filepath(context)
+        if not Path(edit_file_path_str).exists():
+            self.report({'ERROR'}, f"Edit file does not exist: {edit_file_path_str}")
+            return {'CANCELLED'}
+
+        bpy.ops.wm.open_mainfile(filepath=edit_file_path_str)
+        return {'FINISHED'}
+
+
 classes = [
     KITSU_OT_build_new_shot,
     KITSU_OT_build_new_asset,
@@ -466,6 +576,9 @@ classes = [
     KITSU_OT_build_config_save_settings,
     KITSU_OT_build_config_save_templates,
     KITSU_OT_create_edit_file,
+    KITSU_OT_open_edit_file,
+    KITSU_OT_open_shot_file,
+    KITSU_OT_open_asset_file,
 ]
 
 
