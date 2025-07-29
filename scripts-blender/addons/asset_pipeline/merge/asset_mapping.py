@@ -71,6 +71,10 @@ class AssetTransferMapping:
         return external_obj
 
     def _check_id_conflict(self, external_id, local_id):
+        if local_id.asset_id_owner not in self._local_tls:
+            # If the local ID was not owned by any task layer of the current file 
+            # in the first place, there cannot be a conflict.
+            return
         if external_id.asset_id_owner != local_id.asset_id_owner and (
             local_id.asset_id_surrender == external_id.asset_id_surrender
         ):
