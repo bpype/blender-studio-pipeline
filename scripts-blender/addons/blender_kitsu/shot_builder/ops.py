@@ -491,7 +491,7 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
         layout = self.layout
         if ACTIVE_PROJECT.production_type == bkglobals.KITSU_TV_PROJECT:
             context_core.draw_episode_selector(context, layout)
-        layout.prop(self, "crete_kitsu_edit")
+        layout.prop(self, "create_kitsu_edit")
         layout.prop(self, "save_file")
 
     def execute(self, context):
