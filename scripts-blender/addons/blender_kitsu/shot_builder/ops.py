@@ -481,7 +481,7 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
     _kitsu_context_type = "EDIT"
 
     create_kitsu_edit: bpy.props.BoolProperty(  # type: ignore
-        name="Create Kitsu Edit if not exists.",
+        name="Create Kitsu Edit if none exists.",
         description="Automatically create a Kitsu edit for the edit.",
         default=True,
     )
