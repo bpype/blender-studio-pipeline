@@ -84,6 +84,8 @@ class PoseShapeKey(PropertyGroup):
 
     @property
     def active_target(self):
+        if len(self.target_shapes) == 0:
+            return
         return self.target_shapes[self.active_target_shape_index]
 
     @property
