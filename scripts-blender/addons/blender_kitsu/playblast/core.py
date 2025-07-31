@@ -17,6 +17,11 @@ logger = LoggerFactory.getLogger()
 def override_render_format(self, context: Context, enable_sequencer: bool = False):
     """Overrides the render settings for playblast creation"""
     rd = context.scene.render
+
+    if bpy.app.version >= (5, 0, 0):
+        # For Blender 5.0 and later, use the new FFMPEG settings.
+        media_type = rd.image_settings.media_type
+
     use_sequencer = rd.use_sequencer = enable_sequencer
     # Format render settings.
     # percentage = rd.resolution_percentage
@@ -27,6 +32,10 @@ def override_render_format(self, context: Context, enable_sequencer: bool = Fals
     ffmpeg_audio_codec = rd.ffmpeg.audio_codec
 
     try:
+        if bpy.app.version >= (5, 0, 0):
+            # For Blender 5.0 and later, use the new FFMPEG settings.
+            rd.image_settings.media_type = "VIDEO"
+
         # rd.resolution_percentage = 100
         rd.use_sequencer = enable_sequencer
         rd.image_settings.file_format = "FFMPEG"
@@ -39,6 +48,10 @@ def override_render_format(self, context: Context, enable_sequencer: bool = Fals
 
     finally:
         # rd.resolution_percentage = percentage
+        if bpy.app.version >= (5, 0, 0):
+            # For Blender 5.0 and later, use the new FFMPEG settings.
+            rd.image_settings.media_type = media_type
+
         rd.use_sequencer = use_sequencer
         rd.image_settings.file_format = file_format
         rd.ffmpeg.codec = ffmpeg_codec

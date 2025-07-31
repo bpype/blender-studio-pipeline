@@ -736,8 +736,8 @@ class KITSU_PT_sqe_general_tools(bpy.types.Panel):
         )
         row.operator(KITSU_OT_sqe_clear_update_indicators.bl_idname, text="", icon="X")
 
-        # Up down source operator.
-        if len(selshots) == 1 and active_strip and active_strip.type == "MOVIE":
+        # Up down source operator. Check for to strips to accommodate linked strips
+        if len(selshots) <= 2 and active_strip and active_strip.type == "MOVIE":
             row = box.row(align=True)
             row.prop(active_strip, "filepath_display", text="")
             row.operator(

@@ -343,6 +343,7 @@ class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
 
         # Clear cache.
         Cache.clear_all()
+        cache.reset_sequences_enum_list()
 
         self.report(
             {"INFO"},
