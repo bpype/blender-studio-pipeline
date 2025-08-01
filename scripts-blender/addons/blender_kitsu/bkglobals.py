@@ -23,10 +23,12 @@ ASSET_TASK_MAPPING = {
 }
 
 ASSET_TYPE_MAPPING = {
-    "char": "Character",
-    "set": "Set",
+    "chars": "Character",
+    "fx": "FX",
+    "libs": "Library",
+    "lgt": "Lighting",
     "props": "Prop",
-    "env": "Library",
+    "sets": "Set",
 }
 
 SEQ_TASK_MAPPING = {
@@ -67,15 +69,6 @@ MULTI_ASSETS = [
 ]  # list of assets that gets duplicated and therefore follows another naming sheme
 
 ASSET_COLL_PREFIXES = ["CH-", "PR-", "SE-", "FX-", "EN-"]
-
-ASSET_FOLDER_MAPPING = {
-    "Character" : "chars",
-    "FX" : "fx",
-    "Library" : "lib",
-    "Lighting" : "lgt",
-    "Prop" : "props",
-    "Set" : "sets",
-}
 
 # Kitsu Constants
 KITSU_TV_PROJECT = 'tvshow'
