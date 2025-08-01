@@ -496,6 +496,7 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
 
     def execute(self, context):
         scene = context.scene
+        active_project = cache.project_active_get()
         self._edit_entity = cache.edit_default_get(
             create=self.create_kitsu_edit, episode_id=context.scene.kitsu.episode_active_id
         )
@@ -510,6 +511,7 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
 
         # Create a new file using the Video Editing template
         replace_workspace_with_template(context, task_type.name)
+        core.set_resolution_and_fps(active_project, scene)
 
         scene.kitsu.category = "EDIT"
         scene.kitsu.edit_active_name = context_core.get_versioned_file_basename(

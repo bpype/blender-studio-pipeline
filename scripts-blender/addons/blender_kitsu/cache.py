@@ -343,6 +343,15 @@ def get_episodes_enum_list(
     return _episodes_enum_list
 
 
+def reset_sequences_enum_list() -> None:
+    global _sequence_enum_list
+    global _seq_cache_proj_id
+    global _seq_cache_episode_id
+
+    _sequence_enum_list.clear()
+    _seq_cache_proj_id = ""
+    _seq_cache_episode_id = ""
+
 def get_sequences_enum_list(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
