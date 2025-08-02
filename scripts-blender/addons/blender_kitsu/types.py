@@ -757,10 +757,12 @@ class Asset(Entity):
         return [Task.from_dict(t) for t in gazu.task.all_tasks_for_asset(asdict(self))]
 
     def get_asset_folder_name(self) -> str:
-        if self.asset_type_name in bkglobals.ASSET_FOLDER_MAPPING:
-            folder_name = bkglobals.ASSET_FOLDER_MAPPING[self.asset_type_name]
-        else:
-            folder_name = self.asset_type_name
+        # Use the mapped folder name if found, otherwise use asset_type_name
+        folder_name = self.asset_type_name
+        for key, value in bkglobals.ASSET_TYPE_MAPPING.items():
+            if value == self.asset_type_name:
+                folder_name = key
+                break
         return folder_name
 
     def get_dir(self, context) -> Path:
