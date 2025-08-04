@@ -594,7 +594,7 @@ class KITSU_OT_open_edit_file(KITSU_OT_build_new_file_baseclass):
     def execute(self, context: bpy.types.Context):
         edit_entity = cache.edit_default_get(episode_id=context.scene.kitsu.episode_active_id)
         if not edit_entity:
-            self.report({'ERROR'}, "No edit file found for the current episode.")
+            self.report({'ERROR'}, "No edit task found on Kitsu Server.")
             return {'CANCELLED'}
 
         edit_file_path_str = edit_entity.get_filepath(context)
