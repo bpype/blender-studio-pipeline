@@ -563,6 +563,15 @@ def get_shot_task_types_enum_for_shot(  # TODO Rename
     return _task_types_shots_enum_list
 
 
+def reset_all_edits_enum_for_active_project() -> None:
+    global _all_edits_cache_proj_id
+    global _all_edits_enum_list
+
+    _all_edits_cache_proj_id = None
+    _all_edits_enum_list.clear()
+    gazu.cache.clear_all()
+
+
 def get_all_edits_enum_for_active_project(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:

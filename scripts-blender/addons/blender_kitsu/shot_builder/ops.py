@@ -513,6 +513,8 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
         replace_workspace_with_template(context, task_type.name)
         core.set_resolution_and_fps(active_project, scene)
 
+        cache.reset_all_edits_enum_for_active_project()
+
         scene.kitsu.category = "EDIT"
         scene.kitsu.edit_active_name = context_core.get_versioned_file_basename(
             Path(edit_file_path_str).stem
