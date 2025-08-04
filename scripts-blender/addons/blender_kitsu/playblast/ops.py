@@ -561,29 +561,55 @@ def draw_kitsu_context_warning(self, context):
 
 
 @persistent
+def detect_kitsu_context(dummy: Any) -> None:
+    # TODO Move this handler should not be part of playblast
+    # Leaving this here so it can be set in order along with frame range detection
+
+    # Skip not logged into Kitsu
+    if not prefs.session_auth(bpy.context):
+        return
+
+    # Skip project not set
+    if not cache.project_active_get():
+        return
+
+    # Skip if project root dir is not in file path
+    project_root_dir = prefs.project_root_dir_get(bpy.context)
+    if not project_root_dir in Path(bpy.data.filepath).parents:
+        return
+
+    # Skip if Unsaved File
+    if not bpy.data.is_saved:
+        return
+
+    try:
+        bpy.ops.kitsu.con_detect_context()
+    except RuntimeError:
+        bpy.context.window_manager.popup_menu(
+            draw_kitsu_context_warning,
+            title="Warning: Kitsu Context Auto-Detection Failed.",
+            icon='WARNING',
+        )
+        pass
+
+
+@persistent
 def load_post_handler_check_frame_range(dummy: Any) -> None:
     # Only show if kitsu context is detected
     cat = bpy.context.scene.kitsu.category
     project_root_dir = prefs.project_root_dir_get(bpy.context)
     shots_dir = project_root_dir.joinpath("pro/shots/")
 
-    # Unsaved File
+    # Skip if Unsaved File
     if not bpy.data.is_saved:
         return
 
-    # File Outside of Shots Directory
+    # Skip if File Outside of Shots Directory
     if not shots_dir in Path(bpy.data.filepath).parents:
         return
 
-    try:
-        bpy.ops.kitsu.con_detect_context()
-    except RuntimeError:
-        if cat == "SHOT":
-            bpy.context.window_manager.popup_menu(
-                draw_kitsu_context_warning,
-                title="Warning: Kitsu Context Error.",
-                icon='ERROR',
-            )
+    # Skip if category is not SHOT
+    if not cat == "SHOT":
         return
 
     if not core.check_frame_range(bpy.context):
@@ -636,6 +662,7 @@ def register():
 
     # Handlers.
     bpy.app.handlers.load_post.append(load_post_handler_init_version_model)
+    bpy.app.handlers.load_post.append(detect_kitsu_context)
     bpy.app.handlers.load_post.append(load_post_handler_check_frame_range)
 
     bpy.app.handlers.save_pre.append(save_pre_handler_clean_overrides)
@@ -645,6 +672,7 @@ def unregister():
     # Clear handlers.
     bpy.app.handlers.load_post.remove(load_post_handler_check_frame_range)
     bpy.app.handlers.load_post.remove(load_post_handler_init_version_model)
+    bpy.app.handlers.load_post.remove(detect_kitsu_context)
 
     bpy.app.handlers.save_pre.remove(save_pre_handler_clean_overrides)
 
