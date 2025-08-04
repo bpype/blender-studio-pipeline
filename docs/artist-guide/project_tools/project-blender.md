@@ -1,6 +1,6 @@
 # Project Blender
 
-Project Tools will store a version of Blender within the `shared` directory. This version of Blender is internal to that project. This allows for multiple Blenders to be installed on your system, each with their own preferences tailored specifically to that project. The main advantage to running/managing Blender using the Project Tools scripts is that it will synchronize the Blender version and Shared Extensions across for all users contributing the the project. Project Tools also allows you to run a custom build of Blender with the Extensions and preferences set for your project.
+Project Tools will store a version of Blender within the `shared` directory. This version of Blender is internal to that project. This allows for multiple Blender installations on your system, each with their own preferences tailored specifically to that project. The main advantage of running/managing Blender using the Project Tools scripts is that it will synchronize the Blender version and Shared Extensions across all users contributing to the project. Project Tools also allows you to run a custom build of Blender with the Extensions and preferences set for your project.
 
 <!---
 TODO Note from Julien:
@@ -23,23 +23,23 @@ cd %HOMEPATH%\data\your_project_name\svn\tools
 python update_blender.py
 ```
 
-This will download the latest blender to `data/your_project_name/local/blender`
+This will download the latest Blender to `data/your_project_name/local/blender`.
 
 ::: info Choosing Branch to Install
 You can specify a [daily build](https://builder.blender.org/download/daily/) branch to fetch by editing the `BLENDER_BRANCH` variable in the script file.
 :::
 
 ### Manually deploying Blender versions of your choosing
-You can download and put any Blender release into the `your_project_name/shared/artifacts/blender` folder with their corresponding shasum file.
-NOTE: If you do this, it is strongly adviced to not run the `update_blender.py` script as it will overwrite your files.
+You can download and put any Blender release into the `your_project_name/shared/artifacts/blender` folder with its corresponding shasum file.
+**Note:** If you do this, it is strongly advised not to run the `update_blender.py` script as it will overwrite your files.
 
-There are a few things to keep in mind though:
+There are a few things to keep in mind:
 1. It has to be the `.zip` release for Windows, `.tar.gz` for Linux, and `.dmg` for Mac.
-2. Each file has to have a shasum file. You can generate this yourself easily on Linux with:
+2. Each file must have a shasum file. You can generate this yourself easily on Linux with:
 
-`shasum256 file.tar.gz > file.tar.gz.sha256`
+`sha256sum file.tar.gz > file.tar.gz.sha256`
 
-3. The file names for the Blender archives has to have the following naming scheme:
+3. The file names for the Blender archives must follow the naming scheme:
 
 Linux:
 `blender-linux.x86_64.tar.xz`
@@ -50,15 +50,15 @@ Mac:
 Windows:
 `blender-windows.arm64.zip` or `blender-windows.amd64.zip`
 
-Note that the file names doesn't have to match exactly with the examples above as long as their corresponding shasum file is picked up by the following file globbing schema:
+Note that the file names do not have to match exactly with the examples above as long as their corresponding shasum file is picked up by the following file globbing schema:
 
 `"blender*" + operating_system + "." + architecture + "*.sha256"`
 
-4. There can be no ambiguity on which archive the `run_blender.py` script should use. So for example you can not have `blender-windows.arm64.zip` and `blender2-windows.arm64.zip` in the `your_project_name/shared/artifacts/blender` folder at the same time.
+4. There can be no ambiguity about which archive the `run_blender.py` script should use. For example, you cannot have both `blender-windows.arm64.zip` and `blender2-windows.arm64.zip` in the `your_project_name/shared/artifacts/blender` folder at the same time.
 
 ## Create Shortcut
 
-Once your project has been setup using the "Project Tools" scripts the `run_blender.py` should be available inside `your_project_name/svn/tools`. Follow the below steps to create a shortcut to this script. This shortcut will call the `run_blender.py` script which will fetch the correct blender version for your operating system from `your_project_name/shared/artifacts/blender` directory and extract it to the `local` directory. It will also fetch extensions in the `your_project_name/shared/artifacts/extensions` folder. 
+Once your project has been set up using the "Project Tools" scripts, the `run_blender.py` script should be available inside `your_project_name/svn/tools`. Follow the steps below to create a shortcut to this script. This shortcut will call the `run_blender.py` script, which will fetch the correct Blender version for your operating system from the `your_project_name/shared/artifacts/blender` directory and extract it to the `local` directory. It will also fetch extensions in the `your_project_name/shared/artifacts/extensions` folder.
 
 ### Create Linux Shortcut
 ```bash
@@ -66,17 +66,15 @@ cd ~/data/your_project_name/svn/tools
 ./install_desktop_file.sh
 ```
 ::: info Available on Gentoo
-To learn more about running the Blender if you are on a Gentoo system please see the [Gentoo guide](/gentoo/user/running-blender.md), including how to run a [debug build](/gentoo/user/running-blender.md#debug-build).
+To learn more about running Blender if you are on a Gentoo system, please see the [Gentoo guide](/gentoo/user/running-blender.md), including how to run a [debug build](/gentoo/user/running-blender.md#debug-build).
 :::
 
 #### Launch with Custom Build on Linux
-You must run the Create Linux Shortcut step before running a custom build. This will launch blender using your custom binary, but with the Extensions and preferences of your project.
+You must run the Create Linux Shortcut step before running a custom build. This will launch Blender using your custom binary, but with the Extensions and preferences of your project.
 
 1. Navigate to your custom Blender binary
-2. Right Click the binary
+2. Right-click the binary
 3. Select `Open with > Blender your_project_name`
-
-
 
 <!---
 TODO Replace Image with Project-Tools version
@@ -92,8 +90,7 @@ TODO Replace Image with Project-Tools version
 ### Create Mac Shortcut
 
 1. Open the directory `~/data/your_project_name/svn/tools`
-2. In finder, select the `launch_blender_mac.command` and press `ctrl+shift+command+t` to add it to the dock.
-
+2. In Finder, select the `launch_blender_mac.command` and press `ctrl+shift+command+t` to add it to the dock.
 
 ## Run Blender 
 
@@ -111,15 +108,15 @@ python run_blender.py
 ```
 
 ::: warning Command Line Arguments
-Note: Command Line Arguments also known as Flags are not supported by the `run_blender.py` script.
+Note: Command line arguments, also known as flags, are not supported by the `run_blender.py` script.
 :::
 
 ## Update Blender
 
-This script will fetch the latest Blender download from https://builder.blender.org/download/  The Blender download for Linux, Mac, and Windows will be downloaded into the `your_project_name/shared/artifacts/blender` folder. It will keep up to 10 previous downloaded versions for backup. This Blender doesn't update automatically, at least one user in the project must manually initiate an update, all users will receive this update because blender is stored within the `shared` directory.
+This script will fetch the latest Blender download from https://builder.blender.org/download/. The Blender download for Linux, Mac, and Windows will be downloaded into the `your_project_name/shared/artifacts/blender` folder. It will keep up to 10 previously downloaded versions for backup. This Blender does not update automatically; at least one user in the project must manually initiate an update. All users will receive this update because Blender is stored within the `shared` directory.
 
-::: info  Blender Studio Users
-Internally to the Blender Studio only, the blender inside your project is automatically updated overnight, not manual update is required.
+::: info Blender Studio Users
+Internally to the Blender Studio only, the Blender inside your project is automatically updated overnight; no manual update is required.
 :::
 
 ```bash
@@ -134,7 +131,7 @@ python update_blender.py
 ```
 ## Rollback Blender
 
-Use `rollback_blender.py` to switch the "current" version hosted in `your_project_name/shared/artifacts/blender` to one the older downloads, rolling back affects all users using your project. This is intended to be used to rollback to an older version in case of bugs in newer downloaded versions.
+Use `rollback_blender.py` to switch the "current" version hosted in `your_project_name/shared/artifacts/blender` to one of the older downloads. Rolling back affects all users using your project. This is intended to be used to rollback to an older version in case of bugs in newer downloaded versions.
 
 ```bash
 # Linux/Mac
@@ -147,10 +144,9 @@ cd %HOMEPATH%\data\your_project_name\svn\tools
 python rollback_blender.py
 ```
 
+### Run a Previous Version of Blender Locally
 
-### Run a previous version of Blender Locally
-
-In some cases users may want to run a previous version of Blender on their machine without affecting other users.
+In some cases, users may want to run a previous version of Blender on their machine without affecting other users.
 
 ```bash
 # Linux/Mac
@@ -164,7 +160,7 @@ python rollback_blender_local.py
 ```
 
 ## Update Blender Studio Extensions
-All Extensions in the Blender Studio Pipeline repository can be quickly downloaded using the `update_extensions.py` script.
+All extensions in the Blender Studio Pipeline repository can be quickly downloaded using the `update_extensions.py` script.
 
 ```bash
 # Linux/Mac
@@ -177,9 +173,8 @@ cd %HOMEPATH%\data\your_project_name\svn\tools
 python update_extensions.py
 ```
 
-*To learn more see [Extensions Setup page](/td-guide/extensions_setup.md)*
-
+*To learn more, see the [Extensions Setup page](/td-guide/extensions_setup.md).*
 
 ::: info Gentoo Users
-Flamenco is installed and updated by the package manager of your Gentoo workstation. To learn more see [Update Local Add-Ons](/gentoo/td/maintaince#update-local-add-ons) in the Gentoo section.
+Flamenco is installed and updated by the package manager of your Gentoo workstation. To learn more, see [Update Local Add-Ons](/gentoo/td/maintaince#update-local-add-ons) in the Gentoo section.
 :::

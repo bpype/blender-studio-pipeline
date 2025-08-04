@@ -1,9 +1,11 @@
 # Populating `SVN`
-This is the folder that should contain a version controlled file system to be shared over the network. (By using SVN, GIT-LFS, etc). Connect this folder to your version control software of choice and create the following folder structure. More details about shared folder structure can be found [here](/naming-conventions/svn-folder-structure.md)
+
+This folder should contain a version-controlled file system to be shared over the network (using SVN, GIT-LFS, etc.). Connect this folder to your version control software of choice and create the following folder structure. More details about the shared folder structure can be found [here](/naming-conventions/svn-folder-structure.md).
 
 ## Initial Directory Set-Up
-1. Follow the [SVN-Setup guide](/td-guide/svn-setup.md) to create your SVN repository **before** populating the directory with folders. *(optional)*
-2. Use the following commands to generate the below folder structure.
+
+1. Follow the [SVN-Setup guide](/td-guide/svn-setup.md) to create your SVN repository **before** populating the directory with folders. *(Optional)*
+2. Use the following commands to generate the folder structure below.
     ```bash
     # Linux/Mac
     cd ~/data/blender-studio-tools/scripts/project-tools
@@ -16,34 +18,34 @@ This is the folder that should contain a version controlled file system to be sh
     ```
 
 ## Add Existing Directory to User Workstation
-1. Clone your SVN Folder directly into the target directory `data/your_project_name/svn`.
 
+1. Clone your SVN folder directly into the target directory `data/your_project_name/svn`.
 
 ```bash
 .
-└── svn  /
-    ├── dev / # Anything related to early development or tests
+└── svn/
+    ├── dev/        # Anything related to early development or tests
     │   ├── boards
     │   ├── concepts
     │   └── tests
-    ├── pre/ # For pre-production
+    ├── pre/        # For pre-production
     │   ├── assets
     │   └── shots
-    ├── edit # Where the editorial .blend file lives
-    ├── pro/ # All files from the production
-    │   ├── assets/ # All assets from the production
-    │   │   ├── cam # Camera rig & setup
-    │   │   ├── chars # Characters & character variations
-    │   │   ├── fx # Effects
-    │   │   ├── lgt # Lighting setups
+    ├── edit        # Where the editorial .blend file lives
+    ├── pro/        # All files from the production
+    │   ├── assets/     # All assets from the production
+    │   │   ├── cam     # Camera rig & setup
+    │   │   ├── chars   # Characters & character variations
+    │   │   ├── fx      # Effects
+    │   │   ├── lgt     # Lighting setups
     │   │   ├── lib
-    │   │   ├── maps # General textures and HDRIs
-    │   │   ├── nodes # General Node groups
-    │   │   ├── poses # Pose libraries for animation
+    │   │   ├── maps    # General textures and HDRIs
+    │   │   ├── nodes   # General Node groups
+    │   │   ├── poses   # Pose libraries for animation
     │   │   ├── props
     │   │   ├── scripts
     │   │   └── sets
     │   ├── config
-    │   └── shots #Structured into sequences
+    │   └── shots       # Structured into sequences
     └── tools
 ```

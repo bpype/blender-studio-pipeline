@@ -1,16 +1,16 @@
 # Setup Blender Extensions
 
 ::: info Update Extensions
-To learn how to update the core Blender Studio Extensions see [Update Blender Studio Extensions](blender_setup#update-blender-studio-extensions) guide.
+To learn how to update the core Blender Studio Extensions, see the [Update Blender Studio Extensions](blender_setup#update-blender-studio-extensions) guide.
 :::
 
 ## Modify Update Extensions Script
 
-*Users can modify the [`update_extensions.py`](https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts/project-tools/update_extensions.py) script to include external extensions not managed by the Blender Studio.* 
+*Users can modify the [`update_extensions.py`](https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts/project-tools/update_extensions.py) script to include external extensions not managed by Blender Studio.*
 
 **Example**
 ```bash
-# Append the follow lines to the end of the `update_extensions.py` script.
+# Append the following lines to the end of the `update_extensions.py` script.
 download_file(
    "https://projects.blender.org/Mets/CloudRig/archive/master.zip",
    download_folder_path,
@@ -18,20 +18,20 @@ download_file(
 )
 ```
 
-## Manually installing Extensions
-To manually install Extensions without using any scripts, simply drop the .zip file and the shasum256 file of the extension into the projects `shared/artifacts/extensions` folder.
-If the zip doesn't already have a shasum file, you can generate it yourself with the `shasum256` program.
+## Manually Installing Extensions
+To manually install extensions without using any scripts, simply drop the .zip file and the sha256 file of the extension into the project's `shared/artifacts/extensions` folder.
+If the zip doesn't already have a sha256 file, you can generate it yourself with the `sha256sum` program.
 For example, on Linux you can generate it like this:
 ```bash
-shasum256 my_test_extension.zip > my_test_extension.zip.sha256
+sha256sum my_test_extension.zip > my_test_extension.zip.sha256
 ```
 
 ## Removing Extensions
-To remove Extensions you are not using anymore, you remove both the Extensions zip file and shasum file from the projects `shared/artifacts/extensions` folder.
-Next time you run the `run_blender.py` script, it will remove the extension locally.
+To remove extensions you are no longer using, remove both the extension's zip file and sha256 file from the project's `shared/artifacts/extensions` folder.
+The next time you run the `run_blender.py` script, it will remove the extension locally.
 
 ## Package Blender Studio Extensions from Source
-Blender Extensions can be packaged directly from the [Blender Studio Pipeline](https://projects.blender.org/studio/blender-studio-tools) repository. Personal Add-Ons/Extensions can be installed [normally](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#installing-add-ons).
+Blender extensions can be packaged directly from the [Blender Studio Pipeline](https://projects.blender.org/studio/blender-studio-tools) repository. Personal add-ons/extensions can be installed [normally](https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#installing-add-ons).
 
 1. Enter Directory
 

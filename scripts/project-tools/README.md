@@ -15,7 +15,7 @@ Let's get going! :)
 
 ## setup_assistant.py
 
-`setup_assistant.py` is a friendly helper that sets up everything you need to start a new Blender Studio project. Think of it like a wizard that asks you questions and then builds all the folders and files you need, connects to your Kitsu server, and gets your project ready for you.
+`setup_assistant.py` is a friendly helper that sets up everything you need to start a new Blender Studio project. Think of it like a wizard that asks you questions and then builds all the folders and files you need, connects to your Kitsu server, and gets your project ready for you. You can get it as part of the "project_tools" <LINK> package on Blender Studio Tools.
 
 ### What happens when you run the script?
 
@@ -27,6 +27,12 @@ Let's get going! :)
 
 3. **It lets you pick your project**  
    Once you're logged in, it shows you a list of projects from Kitsu and lets you pick which one you want to set up.
+
+4. **Set your Project Shortname**
+   If you haven't already set it in Kitsu, you will be prompted to set a shortname which is a project code with no spaces or upper case letters.
+
+4. **Asks if you are using Version Control Software**
+   If you are not using version control software for your project the script will setup the Blender Kitsu add-on to create version files for production files. (Sequences, Shot, Asset, & Edit .blend files.)
 
 4. **It creates your project folder**  
    The script makes a new folder for your project in the place you chose. If the folder can't be made (maybe it already exists or the path is wrong), it will ask you for a new place. Calls `init_folder_structure()` from `init_project_folder_structure.py` to create the standard folder skeleton for the project, including the main, `svn`, and `shared` directories, using predefined JSON templates.
@@ -68,7 +74,7 @@ You can give these as arguments, or just run the script and answer the questions
 ./setup_assistant.py --url http://localhost/api --user admin@example.com --password mysecretpassword --root /mnt/projects
 ```
 
-If you make a mistake, the script will help you fix it by asking again.
+If you make a mistake in your arguments, the script will prompt you during execution.
 
 ## deployment_assistant.py
 
@@ -126,6 +132,7 @@ Run it while in the created `tools` folder with `./consistency_check.py`.
 
 This script will fetch the latest Blender download from https://builder.blender.org/download/
 You can specify the branch to fetch by editing the `BLENDER_BRANCH` variable in the script file.
+Filter specific builds types when not on the main branch by editing the `VALID_RISK_ID` variable in the script file.
 
 The Blender download for Linux, Mac, and Windows will be downloaded into the `shared/artifacts/blender` folder.
 It will keep up to 10 previous downloaded versions for backup.

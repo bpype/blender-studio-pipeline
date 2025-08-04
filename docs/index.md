@@ -11,7 +11,7 @@ hero:
       link: /overview/introduction
     - theme: alt
       text: Artist Guide
-      link: /td-guide/project_folder_structure
+      link: /artist-guide/project_tools/project-overview
 
 features:
   - title: Free Software

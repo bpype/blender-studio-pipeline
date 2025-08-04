@@ -13,7 +13,7 @@ authors = [
     "Simon Thommes <simon@blender.org>"
 ]
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.11"
 
 [tool.black]
 line-length = 100
