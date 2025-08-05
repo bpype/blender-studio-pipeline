@@ -2,6 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# TODO: Remove this file, as a slightly different version of it has now been included in Blender, in `bl_ui.generic_ui_list.py`.
+# Except that one doesn't allow passing a custom add operator, so we may need to hack around that, or tweak it upstream for more flexibility.
+
 import bpy
 from bpy.types import Operator, UILayout
 from bpy.props import EnumProperty, StringProperty
@@ -226,7 +229,7 @@ def filter_items(self, context, data, propname):
         )
 
     if not flt_flags:
-        flt_flags = [self.bitflag_filter_item] * len(island_groups)
+        flt_flags = [self.bitflag_filter_item] * len(list_items)
 
     if self.use_filter_invert:
         for idx, flag in enumerate(flt_flags):

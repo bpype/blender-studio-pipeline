@@ -177,7 +177,7 @@ class SaveAndRestoreState:
     def save_state(self, context):
         rigged_ob = context.object
 
-        pose_key = rigged_ob.data.pose_keys[rigged_ob.data.active_pose_key_index]
+        pose_key = get_active_pose_key(rigged_ob)
         storage_ob = pose_key.storage_object
 
         # Non-Deforming modifiers
@@ -199,7 +199,7 @@ class SaveAndRestoreState:
 
     def restore_state(self, context):
         rigged_ob = context.object
-        pose_key = rigged_ob.data.pose_keys[rigged_ob.data.active_pose_key_index]
+        pose_key = get_active_pose_key(rigged_ob)
         storage_ob = pose_key.storage_object
         self.restore_non_deform_modifiers(storage_ob, rigged_ob)
 
@@ -259,7 +259,7 @@ class OBJECT_OT_pose_key_save(Operator, OperatorWithWarning, SaveAndRestoreState
     def execute(self, context):
         rigged_ob = context.object
 
-        pose_key = rigged_ob.data.pose_keys[rigged_ob.data.active_pose_key_index]
+        pose_key = get_active_pose_key(rigged_ob)
         storage_ob = pose_key.storage_object
         already_existed = storage_ob != None
         self.disable_non_deform_modifiers(storage_ob, rigged_ob)
@@ -388,7 +388,7 @@ class OBJECT_OT_pose_key_push(Operator, OperatorWithWarning, SaveAndRestoreState
 
         rigged_ob = context.object
 
-        pose_key = rigged_ob.data.pose_keys[rigged_ob.data.active_pose_key_index]
+        pose_key = get_active_pose_key(rigged_ob)
 
         storage_object = pose_key.storage_object
         if storage_object.name not in context.view_layer.objects:
@@ -502,7 +502,7 @@ class OBJECT_OT_pose_key_clamp_influence(Operator):
 
     @staticmethod
     def get_affected_vertex_group_names(object: Object) -> list[str]:
-        pose_key = object.data.pose_keys[object.data.active_pose_key_index]
+        pose_key = get_active_pose_key(object)
 
         vg_names = []
         for target_shape in pose_key.target_shapes:
@@ -847,6 +847,8 @@ class OBJECT_OT_pose_key_shape_add(UILIST_OT_Entry_Add, Operator):
         else:
             self.report({'ERROR'}, "Failed to add shape key.")
 
+        obj.data.active_pose_key_index = obj.data.active_pose_key_index
+
         return {'FINISHED'}
 
 
@@ -1172,7 +1174,7 @@ def reset_rig(rig, *, reset_transforms=True, reset_props=True, pbones=[]):
 
 def set_pose_of_active_pose_key(context):
     rigged_ob = context.object
-    pose_key = rigged_ob.data.pose_keys[rigged_ob.data.active_pose_key_index]
+    pose_key = get_active_pose_key(rigged_ob)
 
     arm_ob = get_deforming_armature(rigged_ob)
     reset_rig(arm_ob)
@@ -1235,7 +1237,7 @@ def poll_correct_pose_key_pose(operator, context, demand_pose=True):
 def get_active_pose_key(obj):
     if obj.type != 'MESH':
         return
-    if len(obj.data.pose_keys) == 0:
+    if len(obj.data.pose_keys) == 0 or obj.data.active_pose_key_index >= len(obj.data.pose_keys):
         return
 
     return obj.data.pose_keys[obj.data.active_pose_key_index]

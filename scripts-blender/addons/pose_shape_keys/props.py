@@ -5,7 +5,7 @@
 import bpy
 from bpy.types import PropertyGroup, Object, Action, ShapeKey
 from bpy.props import PointerProperty, IntProperty, CollectionProperty, StringProperty, BoolProperty
-
+from .ops import get_active_pose_key
 
 class PoseShapeKeyTarget(PropertyGroup):
     def update_name(self, context):
@@ -63,14 +63,14 @@ class PoseShapeKey(PropertyGroup):
         obj = context.object
         if not obj.data.shape_keys:
             return
-        try:
-            sk_name = self.target_shapes[self.active_target_shape_index].shape_key_name
-        except IndexError:
-            obj.active_shape_key_index = len(obj.data.shape_keys.key_blocks) - 1
-            return
-        key_block_idx = obj.data.shape_keys.key_blocks.find(sk_name)
-        if key_block_idx > -1:
+        active_target = self.active_target
+        if active_target:
+            sk_name = self.active_target.shape_key_name
+            key_block_idx = obj.data.shape_keys.key_blocks.find(sk_name)
             obj.active_shape_key_index = key_block_idx
+        else:
+            obj.active_shape_key_index = -1
+            return
 
         # If in weight paint mode and there is a mask vertex group,
         # also set that vertex group as active.
@@ -126,10 +126,14 @@ def update_posekey_index(self, context):
     # shape key index when switching pose keys.
     mesh = context.object.data
     if mesh.pose_keys:
-        pk = mesh.pose_keys[mesh.active_pose_key_index]
-        # We just want to fire the update func.
-        pk.active_target_shape_index = pk.active_target_shape_index
-
+        pk = get_active_pose_key(context.object)
+        if pk:
+            # We just want to fire the update func.
+            pk.active_target_shape_index = pk.active_target_shape_index
+        else:
+            # If nothing is active in the UI, avoid any shape key being active, 
+            # so it doesn't get unintentionally modified.
+            context.object.data.active_shape_key_index = -1
 
 def register():
     bpy.types.Mesh.pose_keys = CollectionProperty(type=PoseShapeKey)
