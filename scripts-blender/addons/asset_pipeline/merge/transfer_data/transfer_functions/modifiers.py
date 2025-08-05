@@ -72,8 +72,8 @@ def transfer_modifier(context, modifier_name, target_obj, source_obj):
     """
     logger = logging.get_logger()
 
-    # get modifier & index
     source_mod = source_obj.modifiers.get(modifier_name)
+    target_mod = target_obj.modifiers.get(modifier_name)
 
     if not source_mod:
         logger.debug(
@@ -85,7 +85,6 @@ def transfer_modifier(context, modifier_name, target_obj, source_obj):
         return
 
     # remove old and sync existing modifiers
-    target_mod = target_obj.modifiers.get(modifier_name)
     if not target_mod:
         target_mod = target_obj.modifiers.new(source_mod.name, source_mod.type)
 
