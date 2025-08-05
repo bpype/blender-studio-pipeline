@@ -76,15 +76,15 @@ def transfer_modifier(context, modifier_name, target_obj, source_obj):
     target_mod = target_obj.modifiers.get(modifier_name)
 
     if not source_mod:
+        # This happens if a modifier's transfer data is still around, but the modifier
+        # itself was removed.
         logger.debug(
             f"Modifer Transfer cancelled, '{modifier_name}' not found on '{source_obj.name}'"
         )
-        target_obj.modifiers.remove(target_mod)
-        # This happens if a modifier's transfer data is still around, but the modifier
-        # itself was removed.
+        if target_mod:
+            target_obj.modifiers.remove(target_mod)
         return
 
-    # remove old and sync existing modifiers
     if not target_mod:
         target_mod = target_obj.modifiers.new(source_mod.name, source_mod.type)
 
