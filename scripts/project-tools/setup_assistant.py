@@ -237,16 +237,25 @@ def get_project_parent_path(project_name: str, project_root_arg: str = None) -> 
     project_path = project_parent_path.joinpath(project_name)
     if project_path.exists():
         print(f"Project path '{project_name}' already exists in '{project_parent_path}'.")
-        return get_project_parent_path(project_name)
+        print(f"Are you sure this is what you want? ")
+        while True:
+            use_path = (
+                input(f"Use '{project_parent_path} '? (y/n): ").strip().lower()
+            )
+            if use_path == "n":
+                return get_project_parent_path(project_name)
+            elif use_path == "y":
+                return project_path
+            else:
+                print("Invalid input. Please enter 'y' or 'n'.")
     return project_path
-
 
 def make_project_folder(project_name: str, project_root_arg: str = None) -> Path:
     """
     Create a project path from the project name.
     """
     project_path = get_project_parent_path(project_name, project_root_arg)
-    project_path.mkdir(parents=False, exist_ok=False)
+    project_path.mkdir(parents=False, exist_ok=True)
     return project_path
 
 
