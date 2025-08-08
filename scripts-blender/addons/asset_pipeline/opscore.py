@@ -200,6 +200,7 @@ def sync_execute_push(self, context):
         if task_layer not in self._task_layer_keys
     ]
 
+    preserve_map = Perserve(context.scene.asset_pipeline.asset_collection)
     error_msg = merge_task_layer(
         context,
         local_tls=local_tls,
@@ -209,6 +210,8 @@ def sync_execute_push(self, context):
         context.scene.asset_pipeline.sync_error = True
         self.report({'ERROR'}, error_msg)
         return {'CANCELLED'}
+
+    preserve_map.unassign_actions()
 
     if asset_col.asset_data:
         if _catalog_id:

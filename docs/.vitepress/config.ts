@@ -67,21 +67,23 @@ export default defineConfig({
         text: 'Artist Guide',
         collapsed: false,
         items: [
-          {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
+          {text: 'Project Overview', link: '/artist-guide/project_tools/project-overview' },
           {text: 'Project Blender', link: '/artist-guide/project_tools/project-blender' },
           {
             text: 'Project Tools',
             collapsed: true,
             items: [
-              { text: 'Project Overview', link: '/artist-guide/project_tools/project-overview' },
+              
               {
                 text: 'Project Usage',
                 collapsed: true,
                 items: [
                   {text: 'Introduction', link: '/artist-guide/project_tools/project-usage'},
                   {text: 'Prepare Edit', link: '/artist-guide/project_tools/usage-sync-edit'},
+                  {text: 'Creating Assets', link: '/artist-guide/project_tools/usage-asset'},
                   {text: 'Building Shots', link: '/artist-guide/project_tools/usage-build-shot'},
                   {text: 'Playblast Shot', link: '/artist-guide/project_tools/usage-playblast'},
+                  {text: 'Import Playblast', link: '/artist-guide/project_tools/usage-import-playblast'},
                   {text: 'Update Shot', link: '/artist-guide/project_tools/usage-update-shot'},
                   {text: 'Flamenco Render', link: '/artist-guide/project_tools/usage-render-flamenco'},
                   {text: 'Render Review', link: '/artist-guide/project_tools/usage-render-review'},
@@ -134,43 +136,46 @@ export default defineConfig({
         text: 'IT and TD Guide',
         collapsed: true,
         items: [
-          { text: 'Infrastructure', link: '/td-guide/infrastructure'},
-          {text: 'Introduction', link: '/td-guide/project-tools-setup'},
-          {text: 'Repository', link: '/td-guide/repository'},
+          {text: 'Introduction', link: '/td-guide/introduction'},
+          {text: 'Quick Start', link: '/td-guide/quick-start'},
+          {text: 'Folder Structure', link: '/td-guide/folder_structure_overview'},
           {text: 'Python', link: '/td-guide/python'},
-
-          {text: 'Folder Structure', link: '/td-guide/project_folder_structure'},
-          {
-            text: 'Shared',
-            collapsed: true,
-            items: [
-              {text: 'Syncthing Setup', link: '/td-guide/syncthing-setup'},
-              {text: 'Populating Shared', link: '/td-guide/populating_shared'},
-            ],
-          },
-          {
-            text: 'SVN',
-            collapsed: true,
-            items: [
-              {text: 'SVN Setup', link: '/td-guide/svn-setup'},
-              {text: 'Populating SVN', link: '/td-guide/populating_svn'},
-            ],
-          },
-
-
-
           {text: 'Kitsu', link: '/td-guide/kitsu_server'},
+          {text: 'Setup Assistant', link: '/td-guide/setup_assistant'},
+          {text: 'Deployment Assistant', link: '/td-guide/deployment_assistant'},
           {
-            text: 'Blender',
+            text: 'Manual Configuration',
             collapsed: true,
             items: [
-              {text: 'Blender Setup', link: '/td-guide/blender_setup'},
-              {text: 'Extensions Setup', link: '/td-guide/extensions_setup'},
-              {text: 'Add-Ons Preferences', link: '/td-guide/addon_preferences'},
+              {text: 'Folder Structure Setup', link: '/td-guide/folder_structure_setup'},
+              {
+                text: 'Shared',
+                collapsed: true,
+                items: [
+                  {text: 'Syncthing Setup', link: '/td-guide/syncthing-setup'},
+                  {text: 'Populating Shared', link: '/td-guide/populating_shared'},
+                ],
+              },
+              {
+                text: 'SVN',
+                collapsed: true,
+                items: [
+                  {text: 'SVN Setup', link: '/td-guide/svn-setup'},
+                  {text: 'Populating SVN', link: '/td-guide/populating_svn'},
+                ],
+              },
+              {
+                text: 'Blender',
+                collapsed: true,
+                items: [
+                  {text: 'Blender Setup', link: '/td-guide/blender_setup'},
+                  {text: 'Extensions Setup', link: '/td-guide/extensions_setup'},
+                  {text: 'Add-Ons Preferences', link: '/td-guide/addon_preferences'},
+                ],
+              },
             ],
           },
           {text: 'Flamenco', link: '/td-guide/flamenco_setup'},
-
 
         ]
       },

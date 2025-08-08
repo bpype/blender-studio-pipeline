@@ -8,8 +8,9 @@ from bl_ui.properties_data_mesh import DATA_PT_shape_keys
 from bpy.props import EnumProperty
 
 from .ui_list import draw_ui_list
-from .ops import get_deforming_armature, poll_correct_pose_key_pose
+from .ops import get_deforming_armature, poll_correct_pose_key_pose, get_active_pose_key
 from .prefs import get_addon_prefs
+from .props import update_posekey_index
 
 
 class MESH_PT_pose_keys(Panel):
@@ -63,8 +64,9 @@ class MESH_PT_pose_keys(Panel):
         if len(mesh.pose_keys) == 0:
             return
 
-        idx = context.object.data.active_pose_key_index
-        active_posekey = context.object.data.pose_keys[idx]
+        active_posekey = get_active_pose_key(context.object)
+        if not active_posekey:
+            return
 
         action_split = layout.row().split(factor=0.4, align=True)
         action_split.alignment = 'RIGHT'
@@ -154,7 +156,9 @@ class MESH_PT_shape_key_subpanel(Panel):
         layout.use_property_decorate = False
 
         idx = context.object.data.active_pose_key_index
-        active_posekey = context.object.data.pose_keys[idx]
+        active_posekey = get_active_pose_key(context.object)
+        if not active_posekey:
+            return
 
         layout.operator('object.posekey_push', text="Overwrite Shape Keys", icon="IMPORT")
 
@@ -267,6 +271,7 @@ def register():
                 "Organize shape keys into a higher-level concept called Pose Keys. These can store vertex positions and push one shape to multiple shape keys at once, relative to existing deformation",
             ),
         ],
+        update=update_posekey_index,
     )
 
     for panel in bpy.types.Panel.__subclasses__():

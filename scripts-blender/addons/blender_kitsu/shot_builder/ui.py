@@ -16,10 +16,10 @@ from typing import Any
 
 def topbar_file_new_draw_handler(self: Any, context: bpy.types.Context) -> None:
     layout = self.layout
+    layout.separator()
     layout.operator("kitsu.build_new_shot", text="Shot File")
     layout.operator("kitsu.build_new_asset", text="Asset File")
     layout.operator("kitsu.create_edit_file", text="Edit File")
-    layout.separator()
 
 
 def topbar_kitsu_menu_draw_handler(self: Any, context: bpy.types.Context) -> None:
@@ -51,7 +51,7 @@ classes = [
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    bpy.types.TOPBAR_MT_file_new.prepend(topbar_file_new_draw_handler)
+    bpy.types.TOPBAR_MT_file_new.append(topbar_file_new_draw_handler)
     bpy.types.TOPBAR_MT_editor_menus.append(topbar_kitsu_menu_draw_handler)
 
 

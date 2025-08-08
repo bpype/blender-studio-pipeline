@@ -2270,6 +2270,10 @@ class KITSU_OT_sqe_import_playblast(bpy.types.Operator):
             else:
                 failed.add(metadata_strip.name)
 
+        # Convert Sets to Lists for easy access to contents
+        succeeded = list(succeeded)
+        failed = list(failed)
+
         if len(metadata_strips) == 1:
             if len(failed) == 1:
                 self.report({"WARNING"}, f"Failed to import Playblast `{failed[0]}` does not exist")

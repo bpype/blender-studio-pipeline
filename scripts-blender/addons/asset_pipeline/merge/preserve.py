@@ -48,6 +48,16 @@ class Perserve:
             obj.animation_data.action_slot = slot
             action.use_fake_user = fake_user
 
+    def unassign_actions(self):
+        for obj_name, action_info in self._action_dict.items():
+            action, slot, fake_user = action_info
+            obj = bpy.data.objects.get(obj_name)
+            if not obj:
+                continue
+            if obj.animation_data:
+                obj.animation_data.action = None
+            action.use_fake_user = fake_user
+
     def _get_active_index_map(self):
         active_index = {}
         for obj in self._local_col.all_objects:

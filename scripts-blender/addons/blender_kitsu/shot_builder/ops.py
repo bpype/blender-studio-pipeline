@@ -282,6 +282,12 @@ class KITSU_OT_open_asset_file(KITSU_OT_build_new_file_baseclass):
 
     _kitsu_context_type = "ASSET"
 
+    save_current: bpy.props.BoolProperty(  # type: ignore
+        name="Save Current File",
+        description="Automatically save the current file before opening a new one.",
+        default=True,
+    )
+
     def draw(self, context: bpy.types.Context) -> None:
         global ACTIVE_PROJECT
         layout = self.layout
@@ -297,12 +303,18 @@ class KITSU_OT_open_asset_file(KITSU_OT_build_new_file_baseclass):
         context_core.draw_asset_type_selector(context, col)
         context_core.draw_asset_selector(context, col)
 
+        if bpy.data.is_dirty:
+            col.prop(self, "save_current")
+
     def execute(self, context: bpy.types.Context):
         asset = cache.asset_active_get()
         asset_file_path_str = asset.get_filepath(context)
         if not Path(asset_file_path_str).exists():
             self.report({'ERROR'}, f"Asset file does not exist: {asset_file_path_str}")
             return {'CANCELLED'}
+
+        if bpy.data.is_dirty and self.save_current:
+            bpy.ops.wm.save_mainfile()
 
         bpy.ops.wm.open_mainfile(filepath=asset_file_path_str)
         return {'FINISHED'}
@@ -439,6 +451,12 @@ class KITSU_OT_open_shot_file(KITSU_OT_build_new_file_baseclass):
 
     _kitsu_context_type = "SHOT"
 
+    save_current: bpy.props.BoolProperty(  # type: ignore
+        name="Save Current File",
+        description="Automatically save the current file before opening a new one.",
+        default=True,
+    )
+
     def draw(self, context: bpy.types.Context) -> None:
         global ACTIVE_PROJECT
         layout = self.layout
@@ -457,6 +475,9 @@ class KITSU_OT_open_shot_file(KITSU_OT_build_new_file_baseclass):
         context_core.draw_shot_selector(context, col)
         context_core.draw_task_type_selector(context, col)
 
+        if bpy.data.is_dirty:
+            col.prop(self, "save_current")
+
     def execute(self, context: bpy.types.Context):
         shot = cache.shot_active_get()
         task_type = cache.task_type_active_get()
@@ -466,6 +487,9 @@ class KITSU_OT_open_shot_file(KITSU_OT_build_new_file_baseclass):
         if not Path(shot_file_path_str).exists():
             self.report({'ERROR'}, f"Shot file does not exist: {shot_file_path_str}")
             return {'CANCELLED'}
+
+        if bpy.data.is_dirty and self.save_current:
+            bpy.ops.wm.save_mainfile()
 
         bpy.ops.wm.open_mainfile(filepath=shot_file_path_str)
         return {'FINISHED'}
@@ -513,6 +537,8 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
         replace_workspace_with_template(context, task_type.name)
         core.set_resolution_and_fps(active_project, scene)
 
+        cache.reset_all_edits_enum_for_active_project()
+
         scene.kitsu.category = "EDIT"
         scene.kitsu.edit_active_name = context_core.get_versioned_file_basename(
             Path(edit_file_path_str).stem
@@ -540,6 +566,12 @@ class KITSU_OT_open_edit_file(KITSU_OT_build_new_file_baseclass):
 
     _kitsu_context_type = "EDIT"
 
+    save_current: bpy.props.BoolProperty(  # type: ignore
+        name="Save Current File",
+        description="Automatically save the current file before opening a new one.",
+        default=True,
+    )
+
     def draw(self, context: bpy.types.Context) -> None:
         global ACTIVE_PROJECT
         layout = self.layout
@@ -556,16 +588,22 @@ class KITSU_OT_open_edit_file(KITSU_OT_build_new_file_baseclass):
             context_core.draw_episode_selector(context, col)
         context_core.draw_edit_selector(context, col)
 
+        if bpy.data.is_dirty:
+            col.prop(self, "save_current")
+
     def execute(self, context: bpy.types.Context):
         edit_entity = cache.edit_default_get(episode_id=context.scene.kitsu.episode_active_id)
         if not edit_entity:
-            self.report({'ERROR'}, "No edit file found for the current episode.")
+            self.report({'ERROR'}, "No edit task found on Kitsu Server.")
             return {'CANCELLED'}
 
         edit_file_path_str = edit_entity.get_filepath(context)
         if not Path(edit_file_path_str).exists():
             self.report({'ERROR'}, f"Edit file does not exist: {edit_file_path_str}")
             return {'CANCELLED'}
+
+        if bpy.data.is_dirty and self.save_current:
+            bpy.ops.wm.save_mainfile()
 
         bpy.ops.wm.open_mainfile(filepath=edit_file_path_str)
         return {'FINISHED'}

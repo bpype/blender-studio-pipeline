@@ -237,16 +237,25 @@ def get_project_parent_path(project_name: str, project_root_arg: str = None) -> 
     project_path = project_parent_path.joinpath(project_name)
     if project_path.exists():
         print(f"Project path '{project_name}' already exists in '{project_parent_path}'.")
-        return get_project_parent_path(project_name)
+        print(f"Are you sure this is what you want? ")
+        while True:
+            use_path = (
+                input(f"Use '{project_parent_path} '? (y/n): ").strip().lower()
+            )
+            if use_path == "n":
+                return get_project_parent_path(project_name)
+            elif use_path == "y":
+                return project_path
+            else:
+                print("Invalid input. Please enter 'y' or 'n'.")
     return project_path
-
 
 def make_project_folder(project_name: str, project_root_arg: str = None) -> Path:
     """
     Create a project path from the project name.
     """
     project_path = get_project_parent_path(project_name, project_root_arg)
-    project_path.mkdir(parents=False, exist_ok=False)
+    project_path.mkdir(parents=False, exist_ok=True)
     return project_path
 
 
@@ -323,10 +332,10 @@ def run_background_script(script_path: Path):
 
 def verify_python_version():
     """
-    Ensure Python version is 3.8 or newer.
+    Ensure Python version is 3.11 or newer.
     """
-    if sys.version_info < (3, 8):
-        print(f"Error: Python 3.8 or newer is required. Current version: {sys.version}")
+    if sys.version_info < (3, 11):
+        print(f"Error: Python 3.11 or newer is required. Current version: {sys.version}")
         sys.exit(1)
 
 
@@ -376,13 +385,11 @@ def ensure_kitsu_project_short_name(project: dict, access_token: str):
 
 
 def check_version_control():
-    print("This toolset relies on a version control system to manage project files, typically SVN.")
-    print(
-        "If you are not using version control this is considered an ad-hoc deployment, and it is not recommended."
-    )
+    print("The Blender Studio Tools project is designed to work with version control software (SVN/GIT-LFS) to manage versioning project files such as Assets & Shots.")
+    print("If you are not using version control the Blender Kitsu add-on will create version files on your disk to provide versioning functionality.")
     while True:
         answer = (
-            input("Are you using a version control system (SVN/GIT-LFS)? (y/n): ").strip().lower()
+            input("Are you using a version control software (SVN/GIT-LFS)? (y/n): ").strip().lower()
         )
         if answer.lower() == "y":
             return True
@@ -436,8 +443,8 @@ def main():
     project_path = make_project_folder(selected_project["code"], args.root)
     print(f"Project path created at: {project_path}")
 
-    # Check for verson control vs ad-hoc deployment
-    print_header("Version Control Setup", 1)
+    # Check for verson control vs disk version deployment
+    print_header("Version Control Software", 1)
     version_control = check_version_control()
 
     # Populate Folder Structure

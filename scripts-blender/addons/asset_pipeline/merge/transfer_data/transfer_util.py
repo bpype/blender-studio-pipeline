@@ -14,11 +14,13 @@ def find_ownership_data(
     td_type_key: str,
 ) -> AssetTransferData | None:
     """Return matching AssetTransferData if it exists."""
-    base_name = task_layer_prefix_basename_get(key)
-    for transfer_data_item in transfer_data:
-        owned_data_base_name = task_layer_prefix_basename_get(transfer_data_item.name)
-        if transfer_data_item.type == td_type_key and base_name == owned_data_base_name:
-            return transfer_data_item
+    existing_items = [
+        transfer_data_item
+        for transfer_data_item in transfer_data
+        if transfer_data_item.type == td_type_key and key == transfer_data_item.name
+    ]
+    if existing_items:
+        return existing_items[0]
 
 
 def transfer_data_add_entry(

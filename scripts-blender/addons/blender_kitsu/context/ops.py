@@ -194,24 +194,27 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 return {"CANCELLED"}
             kitsu_props.asset_active_name = asset.name
 
-            # Detect and load asset task_type.
-            kitsu_task_type_name = self._find_in_mapping(
-                item_task_type, bkglobals.ASSET_TASK_MAPPING, "task type"
-            )
-            if not kitsu_task_type_name:
-                return {"CANCELLED"}
-
-            task_type = TaskType.by_name(kitsu_task_type_name)
-            if not task_type:
-                self.report(
-                    {"ERROR"},
-                    f"Failed to find task type: '{kitsu_task_type_name}' on server",
+            # If split == 1 then filepath has no task type in name, skip asset task_type
+            if len(filepath.stem.split(bkglobals.DELIMITER)) > 1:
+                # Detect and load asset task_type.
+                kitsu_task_type_name = self._find_in_mapping(
+                    item_task_type, bkglobals.ASSET_TASK_MAPPING, "task type"
                 )
-                return {"CANCELLED"}
+                if not kitsu_task_type_name:
+                    return {"CANCELLED"}
 
-            kitsu_props.task_type_active_name = task_type.name
+                task_type = TaskType.by_name(kitsu_task_type_name)
+                if not task_type:
+                    self.report(
+                        {"ERROR"},
+                        f"Failed to find task type: '{kitsu_task_type_name}' on server",
+                    )
+                    return {"CANCELLED"}
+
+                kitsu_props.task_type_active_name = task_type.name
 
         util.ui_redraw()
+        self.report({"INFO"}, f"Context Successfully Set!")
         return {"FINISHED"}
 
     def _find_in_mapping(

@@ -1,9 +1,11 @@
 # Populating `shared`
-This is the folder that should be shared over the network. (By using Syncthing, NFS shares, Samba, Dropbox, etc) Connect this folder to your sharing software of choice and create the following folder structure. More details about shared folder structure can be found [here](/naming-conventions/shared-folder-structure.md)
+
+This is the folder that should be shared over the network (using Syncthing, NFS shares, Samba, Dropbox, etc.). Connect this folder to your sharing software of choice and create the following folder structure. More details about the shared folder structure can be found [here](/naming-conventions/shared-folder-structure.md).
 
 ## Initial Directory Set-Up
-1. Create your Shared Folder directly in the target directory or symlink it to`data/your_project_name/shared`. 
-2. Use the following commands to generate the below folder structure.
+
+1. Create your shared folder directly in the target directory or symlink it to `data/your_project_name/shared`.
+2. Use the following commands to generate the folder structure below.
     ```bash
     # Linux/Mac    
     cd ~/data/blender-studio-tools/scripts/project-tools
@@ -16,19 +18,20 @@ This is the folder that should be shared over the network. (By using Syncthing, 
     ```
 
 ## Add Existing Directory to User Workstation
-1. Clone your Shared Folder directly into the target directory `data/your_project_name/shared`.
+
+1. Clone your shared folder directly into the target directory `data/your_project_name/shared`.
 
 ```bash
 shared
-├── artifacts # Where Global Blender & Add-Ons are stored
+├── artifacts   # Where global Blender & add-ons are stored
 └── editorial   
-    ├── audio # Audio
-    ├── deliver # Delivery for script
-    ├── export # Renders coming out of edit
+    ├── audio      # Audio
+    ├── deliver    # Delivery for script
+    ├── export     # Renders coming out of edit
     │   ├── _archive
     └── footage 
-        ├── dev # Early Development
-        ├── pre # Pre-Production steps like previs
-        ├── pro # Playblast from Production
-        └── post # Image Sequences/Final Renders
+        ├── dev    # Early development
+        ├── pre    # Pre-production steps like previs
+        ├── pro    # Playblast from production
+        └── post   # Image sequences/final renders
 ```
