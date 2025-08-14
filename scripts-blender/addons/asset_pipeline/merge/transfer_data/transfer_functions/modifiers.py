@@ -51,7 +51,7 @@ def init_modifiers(scene, obj):
     )
 
     for mod in obj.modifiers:
-        # Only add new ownership transfer_data_item if vertex group doesn't have an owner
+        # Only add new ownership transfer_data_item if modifier doesn't have an owner
         ownership_data = find_ownership_data(transfer_data, mod.name, td_type_key)
         if not ownership_data:
             ownership_data = asset_pipe.add_temp_transfer_data(
@@ -63,6 +63,7 @@ def init_modifiers(scene, obj):
             )
 
         mod.name = task_layer_prefix_name_get(mod.name, ownership_data.owner)
+        ownership_data.name = mod.name
 
 
 def transfer_modifier(context, modifier_name, target_obj, source_obj):
