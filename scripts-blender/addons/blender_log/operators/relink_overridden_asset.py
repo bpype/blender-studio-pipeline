@@ -258,8 +258,12 @@ def insert_missing_keys(new_hierarchy_root, old_hierarchy_root):
                 old_value = old_override_obj.path_resolve(rna_path)
                 owner_path, prop_name = rna_path_split_owner(rna_path)
                 new_owner = new_override_obj.path_resolve(owner_path)
-                setattr(new_owner, prop_name, old_value)
-                success = new_owner.keyframe_insert(prop_name)
+                success = False
+                try:
+                    setattr(new_owner, prop_name, old_value)
+                    success = new_owner.keyframe_insert(prop_name)
+                except:
+                    pass
                 if success:
                     print("    Inserted keyframe:", rna_path, old_value)
                 else:
