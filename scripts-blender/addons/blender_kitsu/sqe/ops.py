@@ -1217,6 +1217,9 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
         """Overrides the render settings for thumbnail size in a 'with' block scope"""
 
         rd = context.scene.render
+        if bpy.app.version >= (5, 0, 0):
+            # For Blender 5.0 and later, use the new media_type settings.
+            media_type = rd.image_settings.media_type
 
         # Remember current render settings in order to restore them later.
         percentage = rd.resolution_percentage
@@ -1225,6 +1228,9 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
         use_stamp_frame = rd.use_stamp_frame
 
         try:
+            if bpy.app.version >= (5, 0, 0):
+                # For Blender 5.0 and later, use the new media_type settings.
+                rd.image_settings.media_type = "IMAGE"
             # Set the render settings to thumbnail size.
             # Update resolution % instead of the actual resolution to scale text strips properly.
             rd.resolution_percentage = round(thumbnail_width * 100 / rd.resolution_x)
@@ -1235,6 +1241,9 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
 
         finally:
             # Return the render settings to normal.
+            if bpy.app.version >= (5, 0, 0):
+                # For Blender 5.0 and later, use the new media_type settings.
+                rd.image_settings.media_type = media_type
             rd.resolution_percentage = percentage
             rd.image_settings.file_format = file_format
             rd.image_settings.quality = quality
