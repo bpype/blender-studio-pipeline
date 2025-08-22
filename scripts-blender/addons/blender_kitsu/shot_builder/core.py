@@ -217,3 +217,21 @@ def add_action_to_armature(collection: bpy.types.Collection, shot_active: Shot):
             if obj.animation_data.action and obj.animation_data.action.name == name:
                 continue
             obj.animation_data.action = bpy.data.actions.new(name=name)
+
+
+def save_current_file() -> str | None:
+    """Attempt to save current file safely.
+
+    Returns:
+        str|None: Return error message / exception mesage if file is still dirty.
+    """
+    msg = "Failed to Saved current file."
+
+    try:
+        bpy.ops.wm.save_mainfile()
+    except Exception as error:
+        msg += " " + type(error).__name__ + ": " + error.__str__()
+        print(msg)
+
+    if bpy.data.is_dirty:
+        return msg

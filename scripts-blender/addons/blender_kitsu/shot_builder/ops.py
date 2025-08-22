@@ -314,7 +314,11 @@ class KITSU_OT_open_asset_file(KITSU_OT_build_new_file_baseclass):
             return {'CANCELLED'}
 
         if bpy.data.is_dirty and self.save_current:
-            bpy.ops.wm.save_mainfile()
+            error_msg = core.save_current_file()
+
+            if error_msg:
+                self.report({'ERROR'}, error_msg)
+                return {"CANCELLED"}
 
         bpy.ops.wm.open_mainfile(filepath=asset_file_path_str)
         return {'FINISHED'}
@@ -489,7 +493,11 @@ class KITSU_OT_open_shot_file(KITSU_OT_build_new_file_baseclass):
             return {'CANCELLED'}
 
         if bpy.data.is_dirty and self.save_current:
-            bpy.ops.wm.save_mainfile()
+            error_msg = core.save_current_file()
+
+            if error_msg:
+                self.report({'ERROR'}, error_msg)
+                return {"CANCELLED"}
 
         bpy.ops.wm.open_mainfile(filepath=shot_file_path_str)
         return {'FINISHED'}
@@ -603,7 +611,11 @@ class KITSU_OT_open_edit_file(KITSU_OT_build_new_file_baseclass):
             return {'CANCELLED'}
 
         if bpy.data.is_dirty and self.save_current:
-            bpy.ops.wm.save_mainfile()
+            error_msg = core.save_current_file()
+
+            if error_msg:
+                self.report({'ERROR'}, error_msg)
+                return {"CANCELLED"}
 
         bpy.ops.wm.open_mainfile(filepath=edit_file_path_str)
         return {'FINISHED'}
