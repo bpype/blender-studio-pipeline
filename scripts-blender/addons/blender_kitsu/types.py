@@ -10,10 +10,10 @@ from typing import Any, Dict, List, Optional, Union, Tuple, TypeVar
 from pathlib import Path
 import gazu
 from .logger import LoggerFactory
-from . import bkglobals
-from . import prefs
+from . import bkglobals, prefs, util
 from .models import FileListModel
 import mimetypes
+import bpy
 
 logger = LoggerFactory.getLogger()
 
@@ -602,10 +602,11 @@ class Shot(Entity):
 
     def get_3d_start(self) -> int:
         try:
-            logger.info(f"3d_start not found on server, defaulting to '{bkglobals.FRAME_START}'")
+            logger.info(f"3d_start not found on server, defaulting to 'shot_builder_frame_offset'")
             return int(self.data["3d_start"])
         except:
-            return bkglobals.FRAME_START
+            addon_prefs = util.addon_prefs_get(bpy.context)
+            return addon_prefs.shot_builder_frame_offset
 
     def get_task_name(self, task_type_short_name: str) -> str:  #
         return f"{self.name}{bkglobals.DELIMITER}{task_type_short_name}"

@@ -101,10 +101,10 @@ def set_resolution_and_fps(project: Project, scene: bpy.types.Scene):
 
 
 def set_frame_range(shot: Shot, scene: bpy.types.Scene):
-    if not shot.nb_frames:
-        return
     kitsu_start_3d = shot.get_3d_start()
     scene.frame_start = kitsu_start_3d
+    if not shot.nb_frames:
+        return
     scene.frame_end = kitsu_start_3d + shot.nb_frames - 1
     scene.frame_current = kitsu_start_3d
 

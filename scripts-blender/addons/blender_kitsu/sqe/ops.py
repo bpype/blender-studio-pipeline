@@ -2435,10 +2435,11 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
         frame_end = metadata_strip.frame_final_end
 
         files = []
-
+        
+        prefs = util.addon_prefs_get(context)
         shot = Shot.by_id(metadata_strip.kitsu.shot_id)
         start_frame = (
-            shot.data.get('3d_start') if shot.data.get('3d_start') else bkglobals.FRAME_START
+            shot.data.get('3d_start') if shot.data.get('3d_start') else prefs.shot_builder_frame_offset
         )
         for file in sorted(list(directory.iterdir())):
             if file.name.endswith("mp4"):

@@ -7,7 +7,7 @@ from typing import Any, Union, List, Dict, Optional, Tuple
 import bpy
 from bpy.app.handlers import persistent
 
-from . import propsdata, bkglobals
+from . import propsdata, bkglobals, util
 from .logger import LoggerFactory
 from . import cache
 from .types import Sequence
@@ -808,7 +808,9 @@ def _calc_kitsu_3d_start(self):
     Calculates strip.kitsu_3d_start, little hack because it seems like we cant access the strip from a property group
     But we need acess to seqeuence properties.
     """
-    return int(self.frame_final_start - self.frame_start + bkglobals.FRAME_START)
+
+    prefs = util.addon_prefs_get(bpy.context)
+    return int(self.frame_final_start - self.frame_start + prefs.shot_builder_frame_offset)
 
 
 def _calc_kitsu_frame_end(self):
