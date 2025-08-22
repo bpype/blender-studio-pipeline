@@ -109,7 +109,9 @@ def set_frame_range(shot: Shot, scene: bpy.types.Scene):
     scene.frame_current = kitsu_start_3d
 
 
-def link_data_block(file_path: str, data_block_name: str, data_block_type: str):
+def link_data_block(
+    file_path: str, data_block_name: str, data_block_type: str
+) -> bpy.types.Collection | None:
     bpy.ops.wm.link(
         filepath=file_path,
         directory=file_path + "/" + data_block_type,
@@ -122,7 +124,7 @@ def link_data_block(file_path: str, data_block_name: str, data_block_type: str):
 
 def link_and_override_collection(
     file_path: str, collection_name: str, scene: bpy.types.Scene
-) -> bpy.types.Collection:
+) -> bpy.types.Collection | None:
     """_summary_
 
     Args:
@@ -134,6 +136,8 @@ def link_and_override_collection(
         bpy.types.Collection: Overriden Collection linked to Scene Collection
     """
     collection = link_data_block(file_path, collection_name, "Collection")
+    if not collection:
+        return
     override_collection = collection.override_hierarchy_create(
         scene, bpy.context.view_layer, do_fully_editable=True
     )

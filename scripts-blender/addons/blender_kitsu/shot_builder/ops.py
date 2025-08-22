@@ -410,7 +410,7 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
             core.link_camera_rig(context.scene, output_col)
 
             # Load Assets
-            get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
+            _, fail_links = get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
 
         # Link External Output Collections
         core.link_task_type_output_collections(shot, task_type)
@@ -442,9 +442,16 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
                     {"WARNING"},
                     f"Failed to save file at path `{shot_file_path_str}`",
                 )
-                return {"FINISHED"}
 
-        self.report({"INFO"}, f"Successfully Built Shot:`{shot.name}` Task: `{task_type.name}`")
+        if len(fail_links) > 0:
+            msg = ""
+            for fail_msg in fail_links:
+                msg += fail_msg + "\n"
+
+            self.report({"WARNING"}, msg)
+            self.report({"WARNING"}, f"Failed to link '{len(fail_links)}' Assets")
+        else:
+            self.report({"INFO"}, f"Successfully Built Shot:`{shot.name}` Task: `{task_type.name}`")
         return {"FINISHED"}
 
 
