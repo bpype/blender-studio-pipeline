@@ -7,6 +7,10 @@ import bpy
 import functools
 
 
+def save_shot_timer_target(file_path: str) -> None:
+    bpy.ops.wm.save_mainfile(filepath=file_path, relative_remap=True)
+
+
 def save_shot_builder_file(file_path: str) -> bool:
     """Save Shot File within Folder of matching name.
     Set Shot File to relative Paths."""
@@ -16,7 +20,7 @@ def save_shot_builder_file(file_path: str) -> bool:
     dir_path = Path(file_path).parent
     dir_path.mkdir(parents=True, exist_ok=True)
     bpy.app.timers.register(
-        functools.partial(bpy.ops.wm.save_mainfile, filepath=file_path, relative_remap=True),
+        functools.partial(save_shot_timer_target, filepath=file_path),
         first_interval=0.1,
     )
     return True
