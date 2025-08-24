@@ -20,7 +20,7 @@ def save_shot_builder_file(file_path: str) -> bool:
     dir_path = Path(file_path).parent
     dir_path.mkdir(parents=True, exist_ok=True)
     bpy.app.timers.register(
-        functools.partial(save_shot_timer_target, filepath=file_path),
+        functools.partial(save_shot_timer_target, file_path=file_path),
         first_interval=0.1,
     )
     return True
