@@ -11,7 +11,7 @@ from . import core, config
 from ..context import core as context_core
 
 from ..edit.core import edit_export_import_latest
-from .file_save import save_shot_builder_file
+from .file_save import save_shot_builder_file, set_default_sequencer_scene
 from .template import replace_workspace_with_template
 from .assets import get_shot_assets
 from .hooks import Hooks
@@ -442,6 +442,9 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
                     {"WARNING"},
                     f"Failed to save file at path `{shot_file_path_str}`",
                 )
+        else:
+            # We need up update the the default seq scene after the workspace changes has taken effect.
+            bpy.app.timers.register(set_default_sequencer_scene, first_interval=0.1,)
 
         if len(fail_links) > 0:
             msg = ""
@@ -568,6 +571,9 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
                     f"Failed to save file at path `{edit_file_path_str}`",
                 )
                 return {"FINISHED"}
+        else:
+            # We need up update the the default seq scene after the workspace changes has taken effect.
+            bpy.app.timers.register(set_default_sequencer_scene, first_interval=0.1,)
 
         self.report({'INFO'}, f"Created edit file at {edit_file_path_str}")
 
