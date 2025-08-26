@@ -20,9 +20,9 @@ import importlib
 bl_info = {
     "name": "Easy Weight",
     "author": "Demeter Dzadik",
-    "version": (1, 0, 5),
+    "version": (1, 0, 8),
     "blender": (4, 2, 0),
-    "location": "3D View -> Sidebar -> Easy Weight",
+    "location": "Weight Paint->W key & Sidebar->Easy Weight",
     "description": "Operators to make weight painting easier.",
     "category": "Rigging",
     "doc_url": "https://studio.blender.org/tools/addons/easy_weight",

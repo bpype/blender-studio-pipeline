@@ -35,8 +35,13 @@ class EASYWEIGHT_MT_PIE_easy_weight(Menu):
         # 4) ^ Accumulate
         pie.prop(prefs, 'global_accumulate', icon='GP_SELECT_STROKES')
 
-        # 5) <^ Empty
-        pie.separator()
+        # 5) <^ Weight Mirror
+        pie.prop(
+            context.active_object,
+            'use_mesh_mirror_x',
+            text="X Mirror Weights",
+            icon='MOD_MIRROR'
+        )
 
         # 6) ^> Toggle Falloff Shape
         icon = 'SPHERE' if prefs.global_falloff_shape_sphere else 'MESH_CIRCLE'
