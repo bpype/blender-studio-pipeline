@@ -245,7 +245,7 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
 
         # Remove All Objects from Scene
         for object in context.scene.objects:
-            context.scene.objects.unlink(object)
+            bpy.context.scene.collection.objects.unlink(object)
             bpy.data.objects.remove(object)
 
         bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
