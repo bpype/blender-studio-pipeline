@@ -56,6 +56,7 @@ class BGP_SVN_Commit(BackgroundProcess):
         Processes.start('Status')
         repo.commit_message = ""
         Processes.kill('Commit')
+        repo.force_update_ui_caches()
 
     def get_ui_message(self, context) -> str:
         """Return a string that should be drawn in the UI for user feedback, 
