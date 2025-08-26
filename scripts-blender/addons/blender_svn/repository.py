@@ -391,7 +391,7 @@ class SVN_repository(PropertyGroup):
         return Path(self.directory+"/.svn/svn.log")
 
     @property
-    def active_log(self):
+    def active_log(self) -> SVN_log | None:
         try:
             return self.log[self.log_active_index]
         except IndexError:

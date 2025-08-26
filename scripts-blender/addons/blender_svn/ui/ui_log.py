@@ -197,6 +197,11 @@ def execute_tooltip_log(self, context):
     tup = repo.get_log_by_revision(self.log_rev)
     if tup:
         repo.log_active_index = tup[0]
+    if hasattr(self, 'copy_to_clipboard') and self.copy_to_clipboard:
+        active_log = repo.active_log
+        if active_log:
+            context.window_manager.clipboard = active_log.commit_message
+        self.report({'INFO'}, "Copied to clipboard.")
     return {'FINISHED'}
 
 
@@ -218,13 +223,18 @@ class SVN_OT_log_tooltip(Operator):
 
 
 class SVN_OT_log_show_commit_msg(Operator):
+    """Show the currently active commit, using a dynamic tooltip"""
     bl_idname = "svn.display_commit_message"
-    bl_label = ""  # Don't want the first line of the tooltip on mouse hover.
-    # bl_description = "Show the currently active commit, using a dynamic tooltip"
+    bl_label = "helo"  # Don't want the first line of the tooltip on mouse hover.
+    bl_description = "Ctrl+Click to copy to clipboard"
     bl_options = {'INTERNAL'}
 
     log_rev: IntProperty(
         description="Revision number of the log entry to show in the tooltip"
+    )
+    copy_to_clipboard: BoolProperty(
+        default=False,
+        options={'SKIP_SAVE'}
     )
 
     @classmethod
@@ -262,11 +272,17 @@ class SVN_OT_log_show_commit_msg(Operator):
 
             pretty_msg += "\n"+line
 
+        pretty_msg = pretty_msg.strip()
         # Remove last period because Blender adds it.
         if pretty_msg.endswith("."):
             pretty_msg = pretty_msg[:-1]
 
         return pretty_msg
+
+    def invoke(self, context, event):
+        if event.ctrl:
+            self.copy_to_clipboard = True
+        return self.execute(context)
 
     execute = execute_tooltip_log
 
