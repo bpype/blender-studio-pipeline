@@ -148,7 +148,7 @@ class MV_OT_load_media_movie(bpy.types.Operator):
                 "COLOR",
                 1,
                 frame_start,
-                frame_end=strip_movie.frame_final_end,
+                length=strip_movie.frame_final_duration,
             )
             strip_color.color = (0, 0, 0)
 
