@@ -130,6 +130,8 @@ The main goal when naming bones is to make the rig easy to learn and intuitive.
 - Avoid wasting the best names on mechanism bones.
 - Start numbering at 1, not 0.
 - Indicate symmetry with `.L`/`.R`.
+- We use two root bones so the first one can be constrained to the set, and the second can be animated.
+    - These should be named "root" and "subroot" respectively, so it's unambiguous which is which.
 
 Examples:
 ```
