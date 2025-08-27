@@ -9,7 +9,7 @@ import sys
 from run_blender import update_blender, launch_blender
 
 # The project base path (where shared, local and svn are located)
-PATH_BASE = Path(__file__).resolve().parent.parent.parent
+PATH_BASE = Path(__file__).parent.parent.parent
 PATH_ROLLBACK_LOCAL = PATH_BASE / 'local' / 'blender_previous'
 PATH_ARTIFACTS = PATH_BASE / 'shared' / 'artifacts' / 'blender'
 PATH_PREVIOUS = PATH_ARTIFACTS / 'previous'

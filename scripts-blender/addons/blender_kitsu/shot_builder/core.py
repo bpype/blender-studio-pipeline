@@ -101,15 +101,17 @@ def set_resolution_and_fps(project: Project, scene: bpy.types.Scene):
 
 
 def set_frame_range(shot: Shot, scene: bpy.types.Scene):
-    if not shot.nb_frames:
-        return
     kitsu_start_3d = shot.get_3d_start()
     scene.frame_start = kitsu_start_3d
+    if not shot.nb_frames:
+        return
     scene.frame_end = kitsu_start_3d + shot.nb_frames - 1
     scene.frame_current = kitsu_start_3d
 
 
-def link_data_block(file_path: str, data_block_name: str, data_block_type: str):
+def link_data_block(
+    file_path: str, data_block_name: str, data_block_type: str
+) -> bpy.types.Collection | None:
     bpy.ops.wm.link(
         filepath=file_path,
         directory=file_path + "/" + data_block_type,
@@ -122,7 +124,7 @@ def link_data_block(file_path: str, data_block_name: str, data_block_type: str):
 
 def link_and_override_collection(
     file_path: str, collection_name: str, scene: bpy.types.Scene
-) -> bpy.types.Collection:
+) -> bpy.types.Collection | None:
     """_summary_
 
     Args:
@@ -134,6 +136,8 @@ def link_and_override_collection(
         bpy.types.Collection: Overriden Collection linked to Scene Collection
     """
     collection = link_data_block(file_path, collection_name, "Collection")
+    if not collection:
+        return
     override_collection = collection.override_hierarchy_create(
         scene, bpy.context.view_layer, do_fully_editable=True
     )
@@ -217,3 +221,21 @@ def add_action_to_armature(collection: bpy.types.Collection, shot_active: Shot):
             if obj.animation_data.action and obj.animation_data.action.name == name:
                 continue
             obj.animation_data.action = bpy.data.actions.new(name=name)
+
+
+def save_current_file() -> str | None:
+    """Attempt to save current file safely.
+
+    Returns:
+        str|None: Return error message / exception mesage if file is still dirty.
+    """
+    msg = "Failed to Saved current file."
+
+    try:
+        bpy.ops.wm.save_mainfile()
+    except Exception as error:
+        msg += " " + type(error).__name__ + ": " + error.__str__()
+        print(msg)
+
+    if bpy.data.is_dirty:
+        return msg

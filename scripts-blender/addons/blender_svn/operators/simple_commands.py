@@ -483,6 +483,8 @@ class SVN_OT_cleanup(SVN_Operator, Operator):
         Processes.restart('Log')
         Processes.restart('Redraw Viewport')
 
+        repo.force_update_ui_caches(context)
+
         self.report({'INFO'}, "SVN Cleanup complete.")
 
         return {"FINISHED"}

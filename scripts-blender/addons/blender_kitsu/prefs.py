@@ -442,8 +442,9 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
 
     shot_builder_frame_offset: bpy.props.IntProperty(  # type: ignore
         name="Start Frame Offset",
-        description="All Shots built by 'Shot_builder' should begin at this frame",
+        description="All Shots built by 'Shot_builder' should begin at this frame, unless the shot has already been submitted to Kitsu Server",
         default=101,
+        min=1,
     )
 
     session: Session = Session()

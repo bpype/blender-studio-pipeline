@@ -7,7 +7,6 @@ from pathlib import Path
 
 FPS = 24
 VERSION_PATTERN = r"v\d\d\d"
-FRAME_START = 101
 
 # Naming Conventions Set by https://studio.blender.org/tools/naming-conventions/introduction
 DELIMITER = "-"  # Seperates items (e.g."{shot_name}-{shot_task}"")

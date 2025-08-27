@@ -48,7 +48,7 @@ def new_shot(
         nb_frames=strip.frame_final_duration,
         frame_in=frame_range[0],
         frame_out=frame_range[1],
-        data={"fps": bkglobals.FPS, "3d_start": bkglobals.FRAME_START},
+        data={"fps": bkglobals.FPS},
     )
 
     if add_tasks:

@@ -82,6 +82,10 @@ class KITSU_OT_sqe_push_shot_meta(bpy.types.Operator):
             shot = checkstrip.shot_exists_by_id(strip, clear_cache=False)
             if not shot:
                 failed.append(strip)
+                logger.error(
+                    "Strip '%s' does not have a valid shot id on Kitsu.",
+                    strip.name,
+                )
                 continue
 
             # Push update to shot.
@@ -195,11 +199,19 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
             # Check if strip is already linked to server.
             if checkstrip.is_linked(strip):
                 failed.append(strip)
+                logger.error(
+                    "Strip '%s' is already linked to the kitsu server.",
+                    strip.name,
+                )
                 continue
 
             # Check if user provided enough info.
             if not checkstrip.has_meta(strip):
                 failed.append(strip)
+                logger.error(
+                    "Strip '%s' didn't have the required kitsu metadata.",
+                    strip.name,
+                )
                 continue
 
             if strip.kitsu.sequence_id == "":
@@ -215,6 +227,10 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
             shot = checkstrip.shot_exists_by_name(strip, project_active, seq, clear_cache=False)
             if shot:
                 failed.append(strip)
+                logger.error(
+                    "The shot for strip '%s' couldn't be created on Kitsu.",
+                    strip.name,
+                )
                 continue
 
             if strip.kitsu.manual_shot_name:
@@ -775,6 +791,10 @@ class KITSU_OT_sqe_pull_shot_meta(bpy.types.Operator):
             shot = checkstrip.shot_exists_by_id(strip, clear_cache=False)
             if not shot:
                 failed.append(strip)
+                logger.error(
+                    "Strip '%s' does not have a valid shot id on Kitsu.",
+                    strip.name,
+                )
                 continue
 
             # Push update to shot.
@@ -967,6 +987,10 @@ class KITSU_OT_sqe_push_del_shot(bpy.types.Operator):
             shot = checkstrip.shot_exists_by_id(strip, clear_cache=False)
             if not shot:
                 failed.append(strip)
+                logger.error(
+                    "Strip '%s' does not have a valid shot id on Kitsu.",
+                    strip.name,
+                )
                 continue
 
             # Delete shot.
@@ -1143,6 +1167,10 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
                     shot = checkstrip.shot_exists_by_id(strip, clear_cache=False)
                     if not shot:
                         failed.append(strip)
+                        logger.error(
+                            "Strip '%s' does not have a valid shot id on Kitsu.",
+                            strip.name,
+                        )
                         continue
 
                     # If only one strip is selected,.
@@ -1217,6 +1245,9 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
         """Overrides the render settings for thumbnail size in a 'with' block scope"""
 
         rd = context.scene.render
+        if bpy.app.version >= (5, 0, 0):
+            # For Blender 5.0 and later, use the new media_type settings.
+            media_type = rd.image_settings.media_type
 
         # Remember current render settings in order to restore them later.
         percentage = rd.resolution_percentage
@@ -1225,6 +1256,9 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
         use_stamp_frame = rd.use_stamp_frame
 
         try:
+            if bpy.app.version >= (5, 0, 0):
+                # For Blender 5.0 and later, use the new media_type settings.
+                rd.image_settings.media_type = "IMAGE"
             # Set the render settings to thumbnail size.
             # Update resolution % instead of the actual resolution to scale text strips properly.
             rd.resolution_percentage = round(thumbnail_width * 100 / rd.resolution_x)
@@ -1235,6 +1269,9 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
 
         finally:
             # Return the render settings to normal.
+            if bpy.app.version >= (5, 0, 0):
+                # For Blender 5.0 and later, use the new media_type settings.
+                rd.image_settings.media_type = media_type
             rd.resolution_percentage = percentage
             rd.image_settings.file_format = file_format
             rd.image_settings.quality = quality
@@ -1318,6 +1355,10 @@ class KITSU_OT_sqe_push_render(bpy.types.Operator):
                 shot = checkstrip.shot_exists_by_id(strip, clear_cache=False)
                 if not shot:
                     failed.append(strip)
+                    logger.error(
+                        "Strip '%s' does not have a valid shot id on Kitsu.",
+                        strip.name,
+                    )
                     continue
 
                 # Output path.
@@ -2394,10 +2435,11 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
         frame_end = metadata_strip.frame_final_end
 
         files = []
-
+        
+        prefs = util.addon_prefs_get(context)
         shot = Shot.by_id(metadata_strip.kitsu.shot_id)
         start_frame = (
-            shot.data.get('3d_start') if shot.data.get('3d_start') else bkglobals.FRAME_START
+            shot.data.get('3d_start') if shot.data.get('3d_start') else prefs.shot_builder_frame_offset
         )
         for file in sorted(list(directory.iterdir())):
             if file.name.endswith("mp4"):

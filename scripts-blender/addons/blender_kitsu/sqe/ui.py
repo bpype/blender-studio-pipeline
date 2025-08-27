@@ -266,11 +266,10 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
     @classmethod
     def poll_metadata(cls, context: bpy.types.Context) -> bool:
-        nr_of_shots = len(context.selected_sequences)
+        if context.selected_sequences == None or len(context.selected_sequences) != 1:
+            return False
         strip = context.scene.sequence_editor.active_strip
-        if nr_of_shots == 1:
-            return strip.kitsu.initialized
-        return False
+        return strip.kitsu.initialized
 
     def draw_metadata(self, context: bpy.types.Context) -> None:
         """

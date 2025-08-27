@@ -11,7 +11,7 @@ from . import core, config
 from ..context import core as context_core
 
 from ..edit.core import edit_export_import_latest
-from .file_save import save_shot_builder_file
+from .file_save import save_shot_builder_file, set_default_sequencer_scene
 from .template import replace_workspace_with_template
 from .assets import get_shot_assets
 from .hooks import Hooks
@@ -245,7 +245,7 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
 
         # Remove All Objects from Scene
         for object in context.scene.objects:
-            context.scene.objects.unlink(object)
+            bpy.context.scene.collection.objects.unlink(object)
             bpy.data.objects.remove(object)
 
         bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
@@ -314,7 +314,11 @@ class KITSU_OT_open_asset_file(KITSU_OT_build_new_file_baseclass):
             return {'CANCELLED'}
 
         if bpy.data.is_dirty and self.save_current:
-            bpy.ops.wm.save_mainfile()
+            error_msg = core.save_current_file()
+
+            if error_msg:
+                self.report({'ERROR'}, error_msg)
+                return {"CANCELLED"}
 
         bpy.ops.wm.open_mainfile(filepath=asset_file_path_str)
         return {'FINISHED'}
@@ -406,7 +410,7 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
             core.link_camera_rig(context.scene, output_col)
 
             # Load Assets
-            get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
+            _, fail_links = get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
 
         # Link External Output Collections
         core.link_task_type_output_collections(shot, task_type)
@@ -438,9 +442,19 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
                     {"WARNING"},
                     f"Failed to save file at path `{shot_file_path_str}`",
                 )
-                return {"FINISHED"}
+        else:
+            # We need up update the the default seq scene after the workspace changes has taken effect.
+            bpy.app.timers.register(set_default_sequencer_scene, first_interval=0.1,)
 
-        self.report({"INFO"}, f"Successfully Built Shot:`{shot.name}` Task: `{task_type.name}`")
+        if len(fail_links) > 0:
+            msg = ""
+            for fail_msg in fail_links:
+                msg += fail_msg + "\n"
+
+            self.report({"WARNING"}, msg)
+            self.report({"WARNING"}, f"Failed to link '{len(fail_links)}' Assets")
+        else:
+            self.report({"INFO"}, f"Successfully Built Shot:`{shot.name}` Task: `{task_type.name}`")
         return {"FINISHED"}
 
 
@@ -489,7 +503,11 @@ class KITSU_OT_open_shot_file(KITSU_OT_build_new_file_baseclass):
             return {'CANCELLED'}
 
         if bpy.data.is_dirty and self.save_current:
-            bpy.ops.wm.save_mainfile()
+            error_msg = core.save_current_file()
+
+            if error_msg:
+                self.report({'ERROR'}, error_msg)
+                return {"CANCELLED"}
 
         bpy.ops.wm.open_mainfile(filepath=shot_file_path_str)
         return {'FINISHED'}
@@ -553,6 +571,9 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
                     f"Failed to save file at path `{edit_file_path_str}`",
                 )
                 return {"FINISHED"}
+        else:
+            # We need up update the the default seq scene after the workspace changes has taken effect.
+            bpy.app.timers.register(set_default_sequencer_scene, first_interval=0.1,)
 
         self.report({'INFO'}, f"Created edit file at {edit_file_path_str}")
 
@@ -603,7 +624,11 @@ class KITSU_OT_open_edit_file(KITSU_OT_build_new_file_baseclass):
             return {'CANCELLED'}
 
         if bpy.data.is_dirty and self.save_current:
-            bpy.ops.wm.save_mainfile()
+            error_msg = core.save_current_file()
+
+            if error_msg:
+                self.report({'ERROR'}, error_msg)
+                return {"CANCELLED"}
 
         bpy.ops.wm.open_mainfile(filepath=edit_file_path_str)
         return {'FINISHED'}

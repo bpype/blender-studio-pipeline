@@ -391,7 +391,7 @@ class SVN_repository(PropertyGroup):
         return Path(self.directory+"/.svn/svn.log")
 
     @property
-    def active_log(self):
+    def active_log(self) -> SVN_log | None:
         try:
             return self.log[self.log_active_index]
         except IndexError:
@@ -465,7 +465,7 @@ class SVN_repository(PropertyGroup):
         """Update UI caches even if the active file index hasn't changed.
         This is used when loading a file.
         """
-        self.prev_external_files_active_index = -1
+        self.prev_active_file_name = ""
         self.update_ui_caches(context)
 
     def update_ui_caches(self, context):
@@ -474,12 +474,11 @@ class SVN_repository(PropertyGroup):
         NOTE: Try to only trigger this on explicit user actions!
         """
 
-        if self.external_files_active_index == self.prev_external_files_active_index:
-            return
-        self.prev_external_files_active_index = self.external_files_active_index
-
         if not self.active_file:
             return
+        if self.active_file.name == self.prev_active_file_name:
+            return
+        self.prev_active_file_name = self.active_file.name
 
         latest_rev = self.get_latest_revision_of_file(
             self.active_file.svn_path)
@@ -505,8 +504,8 @@ class SVN_repository(PropertyGroup):
              for log_entry in self.log]
         )
 
-    prev_external_files_active_index: IntProperty(
-        name="Previous Active Index",
+    prev_active_file_name: StringProperty(
+        name="Previous Active File",
         description="Internal value to avoid triggering the update callback unnecessarily",
         options=set()
     )
