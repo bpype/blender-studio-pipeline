@@ -48,10 +48,10 @@ parser.add_argument(
 )
 
 # The project base path (where shared, local and svn are located)
-PATH_BASE = Path(__file__).resolve().parent.parent.parent
+PATH_BASE = Path(__file__).parent.parent.parent
 PATH_ARTIFACTS = PATH_BASE / 'shared' / 'artifacts'
 PATH_LOCAL = PATH_BASE / 'local'
-PATH_CUSTOM_SPLASH = Path(__file__).resolve().parent / "custom_splash.png"
+PATH_CUSTOM_SPLASH = Path(__file__).parent / "custom_splash.png"
 
 
 def setup_logger():
