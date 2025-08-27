@@ -39,17 +39,17 @@ class EASYWEIGHT_MT_PIE_easy_weight(Menu):
         pie.prop(
             context.active_object,
             'use_mesh_mirror_x',
-            text="X Mirror Weights",
+            text="X Symmetry",
             icon='MOD_MIRROR'
         )
 
         # 6) ^> Toggle Falloff Shape
         icon = 'SPHERE' if prefs.global_falloff_shape_sphere else 'MESH_CIRCLE'
-        text = "Spherical" if prefs.global_falloff_shape_sphere else "Projected Circle"
+        text = "Sphere" if prefs.global_falloff_shape_sphere else "Circle"
         pie.prop(
             prefs,
             'global_falloff_shape_sphere',
-            text="Falloff Shape: " + text,
+            text="Falloff: " + text,
             icon=icon,
             invert_checkbox=prefs.global_falloff_shape_sphere,
         )
@@ -136,13 +136,11 @@ class EASYWEIGHT_MT_PIE_easy_weight_overlays(Menu):
         prefs = get_addon_prefs(context)
 
         # 1) < X-Ray
-        if overlay.show_xray_bone:
-            pie.prop(overlay, 'show_xray_bone', text="X-Ray Overlay")
-        elif context.pose_object:
+        if context.pose_object.show_in_front:
             pie.prop(context.pose_object, "show_in_front", toggle=True, icon='XRAY', text="Armature X-Ray")
         else:
-            pie.separator()
-        
+            pie.prop(overlay, 'show_xray_bone', text="X-Ray Overlay")
+
         # 2) > Weight Contours
         pie.prop(
             overlay,
