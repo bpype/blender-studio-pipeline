@@ -30,18 +30,19 @@ These are CloudRig's component types. Most component types are built on top of o
 
 ## Assigning Components
 You can assign a component to a bone in the metarig. For chain components, the connected children will be part of the same component, as long as they aren't assigned a component of their own. You can assign components to bones in two places in the UI:
-- Properties -> Armature -> CloudRig -> Rig Components (Hit the + button to assign a component to the active bone.)
-- Properties -> Bone -> CloudRig Component -> Component Type (Only appears when 'CloudRig' is enabled on the armature.)
+- Properties -> Bone -> CloudRig Component -> Component Type. This panel only appears when the 'CloudRig' toggle is enabled in the armature settings.
+- Properties -> Armature -> CloudRig -> Rig Components. This is a list that shows the hierarchy of all your rig components, and allows you to re-order siblings in the generation order. Hit the + button to assign a component to the active bone.
+
+<img src="/media/addons/cloudrig/assigning_components.png" width=800>
 
 ## Copy/Mirror Components
 
-<img src="/media/addons/cloudrig/cloudrig_operators_menu.png" width=600>
+<img src="/media/addons/cloudrig/cloudrig_operators_menu.png" width=400>
 
 You can copy and mirror component types using the operators found in the CloudRig header menu.  
 "Copy Component" will copy the component type and parameters of the active bone to all selected bones.
 "Symmetrize Components" will copy the component type and parameters of all selected bones to the bones with the opposite name, eg. "Hand.L"->"Hand.R". Any component parameters that reference bones or objects will also be mirrored if possible.
 
-<img src="/media/addons/cloudrig/assigning_components.png" width=800>
 
 ## Component Samples
 Each component type comes with a sample so you can get something up and running quickly and start playing around with it.
