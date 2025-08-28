@@ -33,6 +33,14 @@ You can assign a component to a bone in the metarig. For chain components, the c
 - Properties -> Armature -> CloudRig -> Rig Components (Hit the + button to assign a component to the active bone.)
 - Properties -> Bone -> CloudRig Component -> Component Type (Only appears when 'CloudRig' is enabled on the armature.)
 
+## Copy/Mirror Components
+
+<img src="/media/addons/cloudrig/cloudrig_operators_menu.png" width=600>
+
+You can copy and mirror component types using the operators found in the CloudRig header menu.  
+"Copy Component" will copy the component type and parameters of the active bone to all selected bones.
+"Symmetrize Components" will copy the component type and parameters of all selected bones to the bones with the opposite name, eg. "Hand.L"->"Hand.R". Any component parameters that reference bones or objects will also be mirrored if possible.
+
 <img src="/media/addons/cloudrig/assigning_components.png" width=800>
 
 ## Component Samples
