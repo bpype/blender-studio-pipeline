@@ -235,4 +235,8 @@ def get_id_type_name(id_type: bpy.types) -> str:
     Returns:
         str: Name of an ID type e.g. bpy.types.Object will return 'Object'
     """
-    return str(id_type).split("'bpy_types.")[1].replace("'>", "")
+    type_str = str(id_type)
+    if "types." in type_str:
+        return type_str.split("types.")[1].replace("'>", "")
+    else:
+        return type_str
