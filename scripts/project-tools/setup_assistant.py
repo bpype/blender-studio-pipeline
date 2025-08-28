@@ -269,7 +269,6 @@ def write_config_file(
             "project_name": kitsu_project['name'],
             "project_code": kitsu_project['code'],
         },
-        "project_root_dir": project_path.as_posix(),
         "project_paths": {
             "shot_playblast_root_dir": "shared/editorial/footage/pro/",
             "seq_playblast_root_dir": "shared/editorial/footage/pre/",

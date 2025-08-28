@@ -37,12 +37,14 @@ def set_blender_kitsu_login(login_data, addon_prefs):
 
 
 def set_blender_kitsu_paths(project_config, addon_prefs):
-    base_path = project_config["project_root_dir"]
+    base_path = Path(__file__).parents[2].as_posix()
     project_paths = project_config["project_paths"]
     setattr(addon_prefs, "project_root_dir", base_path)
+    print("project root dir: ", base_path)
 
     for key, value in project_paths.items():
         setattr(addon_prefs, key, Path(base_path).joinpath(value).as_posix())
+        print(key,": ", Path(base_path).joinpath(value).as_posix())
 
 
 def set_blender_kitsu_generic_prefs(generic_prefs, addon_prefs):
@@ -71,8 +73,10 @@ def main():
     addon_prefs = prefs.addon_prefs_get(bpy.context)
     print_header("Artist Kitsu Login", 1)
     set_blender_kitsu_login(project_config["login_data"], addon_prefs)
+    print_header("Kitsu Project Paths", 1)
     set_blender_kitsu_paths(project_config, addon_prefs)
     set_blender_kitsu_generic_prefs(project_config["generic_prefs"], addon_prefs)
+    print_header("Writing Preferences", 1)
     bpy.ops.wm.save_userpref()
     bpy.ops.wm.quit_blender()
 
