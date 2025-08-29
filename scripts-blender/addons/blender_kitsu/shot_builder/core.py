@@ -194,7 +194,10 @@ def link_task_type_output_collections(shot: Shot, task_type: TaskType):
             continue
         file_path = external_filepath.__str__()
         colection_name = shot.get_output_collection_name(short_name)
-        link_data_block(file_path, colection_name, "collections")
+        collection = link_data_block(file_path, colection_name, "collections")
+        if not collection:
+            return
+        bpy.context.scene.collection.children.link(collection)
 
 def add_action_to_armature(collection: bpy.types.Collection, shot_active: Shot):
     for obj in collection.all_objects:
