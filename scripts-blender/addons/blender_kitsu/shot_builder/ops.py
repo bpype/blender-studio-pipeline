@@ -395,14 +395,15 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
         core.set_resolution_and_fps(active_project, scene)
         core.set_frame_range(shot, scene)
 
+        fail_links = []
         # Create Output Collection & Link Camera
         if config.OUTPUT_COL_CREATE.get(task_type_short_name):
             output_col = core.create_task_type_output_collection(context.scene, shot, task_type)
-        if task_type_short_name == 'anim' or task_type_short_name == 'layout':
-            core.link_camera_rig(context.scene, output_col)
+            if task_type_short_name == 'anim' or task_type_short_name == 'layout':
+                core.link_camera_rig(context.scene, output_col)
 
-            # Load Assets
-            _, fail_links = get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
+                # Load Assets
+                _, fail_links = get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
 
         # Link External Output Collections
         core.link_task_type_output_collections(shot, task_type)
