@@ -55,41 +55,13 @@ def get_file_dir(seq: Sequence, shot: Shot, task_type: TaskType) -> Path:
         shot_dir.mkdir(parents=True)
     return shot_dir
 
-
-def set_render_engine(scene: bpy.types.Scene, engine='CYCLES'):
-    scene.render.engine = engine
-
-
-def remove_all_data():
-    for lib in bpy.data.libraries:
-        bpy.data.libraries.remove(lib)
-
-    for col in bpy.data.collections:
-        bpy.data.collections.remove(col)
-
-    for obj in bpy.data.objects:
-        bpy.data.objects.remove(obj)
-
-    for action in bpy.data.actions:
-        bpy.data.actions.remove(action)
-
-    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
-
-
 def set_shot_scene(context: bpy.types.Context, scene_name: str) -> bpy.types.Scene:
-    print(f"create scene with name {scene_name}")
-    for scene in bpy.data.scenes:
-        scene.name = 'REMOVE-' + scene.name
-
-    keep_scene = bpy.data.scenes.new(name=scene_name)
-    for scene in bpy.data.scenes:
-        if scene.name == scene_name:
-            continue
-        print(f"remove scene {scene.name}")
-        bpy.data.scenes.remove(scene)
-
-    context.window.scene = keep_scene
-    return keep_scene
+    # We assume the context scene is the one to use as the "shot" scene
+    # Removing or modifying the scenes will cause blender to crash
+    # Removing scenes also defeats the purpose of having customizable templates
+    scene = context.scene
+    scene.name = scene_name
+    return scene
 
 
 def set_resolution_and_fps(project: Project, scene: bpy.types.Scene):
@@ -110,16 +82,29 @@ def set_frame_range(shot: Shot, scene: bpy.types.Scene):
 
 
 def link_data_block(
-    file_path: str, data_block_name: str, data_block_type: str
-) -> bpy.types.Collection | None:
-    bpy.ops.wm.link(
-        filepath=file_path,
-        directory=file_path + "/" + data_block_type,
-        filename=data_block_name,
-        instance_collections=False,
-    )
-    # TODO This doesn't return anything but collections
-    return bpy.data.collections.get(data_block_name)
+    file_path: str, data_block_name: str, data_block_attr: str
+) -> bpy.types.ID | None:
+    """Link a datablock from another file
+
+    Args:
+        file_path (str): Path to file as a string
+        data_block_name (str): Name of the data block
+        data_block_attr (str): Name of data block collection in bpy.data (e.g. 'collections', 'objects', 'materials')
+
+    Returns:
+        bpy.types.ID | None: Returns the linked data block or None if not found
+    """
+    with bpy.data.libraries.load(file_path, link=True) as (data_from, data_to):
+        data_blocks = [
+            data_block
+            for data_block in getattr(data_from, data_block_attr)
+            if data_block == data_block_name
+        ]
+
+        setattr(data_to, data_block_attr, data_blocks)
+
+    linked_data = getattr(data_to, data_block_attr)
+    return linked_data[0] if linked_data else None
 
 
 def link_and_override_collection(
@@ -135,9 +120,10 @@ def link_and_override_collection(
     Returns:
         bpy.types.Collection: Overriden Collection linked to Scene Collection
     """
-    collection = link_data_block(file_path, collection_name, "Collection")
+    collection = link_data_block(file_path, collection_name, "collections")
     if not collection:
         return
+    scene.collection.children.link(collection)
     override_collection = collection.override_hierarchy_create(
         scene, bpy.context.view_layer, do_fully_editable=True
     )
@@ -208,8 +194,10 @@ def link_task_type_output_collections(shot: Shot, task_type: TaskType):
             continue
         file_path = external_filepath.__str__()
         colection_name = shot.get_output_collection_name(short_name)
-        link_data_block(file_path, colection_name, 'Collection')
-
+        collection = link_data_block(file_path, colection_name, "collections")
+        if not collection:
+            return
+        bpy.context.scene.collection.children.link(collection)
 
 def add_action_to_armature(collection: bpy.types.Collection, shot_active: Shot):
     for obj in collection.all_objects:

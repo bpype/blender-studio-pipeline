@@ -2,11 +2,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Optional, Any, Set, Tuple, List
+from typing import Optional
 import platform
 
 import bpy
-from bpy.props import IntProperty, CollectionProperty, BoolProperty, EnumProperty
+from bpy.props import IntProperty, CollectionProperty, BoolProperty
 from bpy.types import AddonPreferences
 
 from .ui.ui_repo_list import draw_checkout, draw_repo_list
@@ -149,6 +149,9 @@ class SVN_addon_preferences(AddonPreferences):
                     repo.directory = directory
                     for key, value in repo_data.items():
                         setattr(repo, key, value)
+        except json.JSONDecodeError:
+            # This can happen if the file exists but is empty.
+            pass
         finally:
             self.loading = False
 

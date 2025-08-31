@@ -11,6 +11,14 @@ def list_dir_blend_files(p: Path) -> list[Path]:
     return list(p.glob('*.blend'))
 
 
+def open_template_as_homefile(task_type_name: str) -> None:
+    """Open Template File as Homefile so it has no filepath."""
+    file_path = get_template_for_task_type(task_type_name)
+    if not file_path.exists():
+        raise FileNotFoundError(f"Template file '{file_path}' does not exist.")
+    bpy.ops.wm.read_homefile(filepath=file_path.as_posix())
+
+
 def get_template_for_task_type(task_type_name: str) -> Path:
     # Find Custom Template in Config Dir if available
     for file in list_dir_blend_files(config.template_dir_get()):
@@ -21,49 +29,3 @@ def get_template_for_task_type(task_type_name: str) -> Path:
         if file.stem.lower() == task_type_name.lower():
             return file
     return
-
-
-def replace_workspace_with_template(context: bpy.types.Context, task_type_name: str):
-    if task_type_name is None:
-        return
-    file_path = get_template_for_task_type(task_type_name)
-    remove_prefix = "REMOVE-"
-    if not file_path:
-        print(f"No template found for task type '{task_type_name}'")
-        return
-
-    if not file_path.exists():
-        return
-
-    # Mark Existing Workspaces for Removal
-    for workspace in bpy.data.workspaces:
-        if workspace.name.startswith(remove_prefix):
-            continue
-        workspace.name = remove_prefix + workspace.name
-
-    # Add EXEC_DEFAULT to all bpy,ops calls to ensure they are "blocking" calls
-    file_path_str = file_path.absolute().as_posix()
-    with bpy.data.libraries.load(file_path_str) as (data_from, data_to):
-        for workspace in data_from.workspaces:
-            bpy.ops.wm.append(
-                'EXEC_DEFAULT',
-                filepath=file_path_str,
-                directory=file_path_str + "/" + 'WorkSpace',
-                filename=str(workspace),
-            )
-
-    for lib in bpy.data.libraries:
-        if lib.filepath == file_path_str:
-            bpy.data.libraries.remove(bpy.data.libraries.get(lib.name))
-            break
-
-    workspaces_to_remove = []
-    for workspace in bpy.data.workspaces:
-        if workspace.name.startswith(remove_prefix):
-            workspaces_to_remove.append(workspace)
-
-    # context.window.workspace = workspace
-    for workspace in workspaces_to_remove:
-        with context.temp_override(workspace=workspace):
-            bpy.ops.workspace.delete('EXEC_DEFAULT')
-    return True

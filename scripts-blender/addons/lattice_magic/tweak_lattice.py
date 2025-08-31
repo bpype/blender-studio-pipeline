@@ -92,7 +92,7 @@ class OBJECT_OT_tweaklattice_create(Operator):
             (
                 'AUTO',
                 'Automatic',
-                "Parent using an Armature constraint which mimics the deformation of the nearest vertex to the cursor",
+                "If the target mesh is deformed by an armature, parent the lattice set-up to the same bones which deform the nearest vertex."
             ),
             (
                 'MANUAL',
@@ -150,6 +150,19 @@ class OBJECT_OT_tweaklattice_create(Operator):
                 col.prop_search(self, 'parent_bone', scene.tweak_lattice_parent_ob.data, 'bones')
 
     def execute(self, context):
+        # Pre-flight checks... (kinda expensive but meh...)
+        if self.parent_method == 'AUTO':
+            if not any([obj.find_armature() for obj in context.selected_objects]):
+                self.report({'ERROR'}, "No selected object uses Armature deformation. Please use Manual parenting in this case.")
+                return {'CANCELLED'}
+            parent, weights = self.get_parenting_weights(context)
+            if not parent:
+                self.report({'ERROR'}, "Object of nearest vertex is not deformed by an Armature. Please use Manual parenting in this case.")
+                return {'CANCELLED'}
+            if not weights:
+                self.report({'ERROR'}, "Nearest vertex is not deformed by any deforming bones of its armature. Please use Manual parenting in this case.")
+                return {'CANCELLED'}
+
         scene = context.scene
 
         # Ensure a collection to organize all our objects in.
@@ -244,32 +257,13 @@ class OBJECT_OT_tweaklattice_create(Operator):
         return {'FINISHED'}
 
     def set_parent_and_transform(self, context, root):
-        scene = context.scene
-        depsgraph = context.evaluated_depsgraph_get()
 
         matrix_of_parent = self.get_lattice_parent_matrix(context)
-
         root.matrix_world = matrix_of_parent.copy()
         context.view_layer.update()
         mat_pre_arm_con = root.matrix_world.copy()
 
-        if self.parent_method == 'AUTO':
-            # Parent to the nearest deforming vertex.
-            nearest_vertex = get_nearest_evaluated_vertex(
-                dg=depsgraph,
-                coord=matrix_of_parent.copy().to_translation(),
-                objs=context.selected_objects,
-            )
-            obj, eval_obj, vert_idx, _vert_co = nearest_vertex
-
-            root.parent = obj.find_armature() or obj
-            weights = get_deforming_weights(obj, eval_obj, vert_idx)
-        else:
-            root.parent = scene.tweak_lattice_parent_ob
-            weights = {}
-            if self.parent_bone:
-                weights = {self.parent_bone: 1.0}
-
+        root.parent, weights = self.get_parenting_weights(context)
         if weights:
             arm_con = root.constraints.new(type='ARMATURE')
             for bone_name, weight in weights.items():
@@ -287,6 +281,31 @@ class OBJECT_OT_tweaklattice_create(Operator):
         
         if self.parent_method != 'AUTO' or self.location != 'CURSOR':
             root.rotation_euler = 0, 0, 0
+
+    def get_parenting_weights(self, context) -> Tuple[Object, dict[str, float]]:
+        scene = context.scene
+        depsgraph = context.evaluated_depsgraph_get()
+
+        matrix_of_parent = self.get_lattice_parent_matrix(context)
+
+        if self.parent_method == 'AUTO':
+            # Parent to the nearest deforming vertex.
+            nearest_vertex = get_nearest_evaluated_vertex(
+                dg=depsgraph,
+                coord=matrix_of_parent.copy().to_translation(),
+                objs=context.selected_objects,
+            )
+            obj, eval_obj, vert_idx, _vert_co = nearest_vertex
+
+            parent = obj.find_armature() or obj
+            weights = get_deforming_weights(obj, eval_obj, vert_idx)
+        else:
+            parent = scene.tweak_lattice_parent_ob
+            weights = {}
+            if self.parent_bone:
+                weights = {self.parent_bone: 1.0}
+        
+        return parent, weights
 
     def get_lattice_parent_matrix(self, context):
         location = self.location

@@ -77,11 +77,7 @@ def get_shot_asset(
         core.add_action_to_armature(linked_collection, shot)
         msg = f"'{collection_name}': Successfully Linked & Overridden"
     else:
-        linked_collection = core.link_data_block(
-            file_path=str(filepath),
-            data_block_name=collection_name,
-            data_block_type="Collection",
-        )
+        linked_collection = core.link_data_block(str(filepath), collection_name, "collections")
         msg = f"'{collection_name}': Successfully Linked"
 
     output_collection.children.link(linked_collection)

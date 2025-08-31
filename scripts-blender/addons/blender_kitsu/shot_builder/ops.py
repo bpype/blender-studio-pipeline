@@ -12,7 +12,7 @@ from ..context import core as context_core
 
 from ..edit.core import edit_export_import_latest
 from .file_save import save_shot_builder_file, set_default_sequencer_scene
-from .template import replace_workspace_with_template
+from .template import open_template_as_homefile
 from .assets import get_shot_assets
 from .hooks import Hooks
 
@@ -226,7 +226,6 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
 
     def execute(self, context: bpy.types.Context):
         # Get Properties
-        scene = context.scene
         asset_type = cache.asset_type_active_get()
         asset = cache.asset_active_get()
 
@@ -234,24 +233,22 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
             self.report({'ERROR'}, "Please select a asset type and asset to build a shot file")
             return {'CANCELLED'}
 
+        open_template_as_homefile("Asset")
+
+        # Update context since file has changed
+        context = bpy.context
+        scene = context.scene
+
         asset_file_path_str = asset.get_filepath(context)
-
-        replace_workspace_with_template(context, "Asset")
-
-        # Remove All Collections from Scene
-        for collection in context.scene.collection.children:
-            context.scene.collection.children.unlink(collection)
-            bpy.data.collections.remove(collection)
-
-        # Remove All Objects from Scene
-        for object in context.scene.objects:
-            bpy.context.scene.collection.objects.unlink(object)
-            bpy.data.objects.remove(object)
-
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
         asset_collection = bpy.data.collections.new(asset.get_collection_name())
         context.scene.collection.children.link(asset_collection)
+
+        # Attempt to set new collection as active may fail based on template setup (multiple view layers etc)
+        view_layer = context.view_layer
+        view_layer_asset_col = view_layer.layer_collection.children.get(asset_collection.name)
+        if view_layer_asset_col:
+            view_layer.active_layer_collection = view_layer_asset_col
 
         # Set Kitsu Context
         scene.kitsu.category = "ASSET"
@@ -384,33 +381,29 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
                 {'WARNING'}, F"Shot {shot.name} is missing frame range data on Kitsu Server"
             )
 
+        open_template_as_homefile(task_type.name)
+
+        # Update context since file has changed
+        context = bpy.context
+
         task_type_short_name = task_type.get_short_name()
         shot_file_path_str = shot.get_filepath(context, task_type_short_name)
-
-        # Open Template File
-        replace_workspace_with_template(context, task_type.name)
 
         # Set Up Scene + Naming
         shot_task_name = shot.get_task_name(task_type.get_short_name())
         scene = core.set_shot_scene(context, shot_task_name)
-        core.remove_all_data()
         core.set_resolution_and_fps(active_project, scene)
         core.set_frame_range(shot, scene)
 
-        # Set Render Settings
-        if task_type_short_name == 'anim':  # TODO get anim from a constant instead
-            core.set_render_engine(context.scene, 'BLENDER_WORKBENCH')
-        else:
-            core.set_render_engine(context.scene)
-
+        fail_links = []
         # Create Output Collection & Link Camera
         if config.OUTPUT_COL_CREATE.get(task_type_short_name):
             output_col = core.create_task_type_output_collection(context.scene, shot, task_type)
-        if task_type_short_name == 'anim' or task_type_short_name == 'layout':
-            core.link_camera_rig(context.scene, output_col)
+            if task_type_short_name == 'anim' or task_type_short_name == 'layout':
+                core.link_camera_rig(context.scene, output_col)
 
-            # Load Assets
-            _, fail_links = get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
+                # Load Assets
+                _, fail_links = get_shot_assets(scene=scene, output_collection=output_col, shot=shot)
 
         # Link External Output Collections
         core.link_task_type_output_collections(shot, task_type)
@@ -444,7 +437,10 @@ class KITSU_OT_build_new_shot(KITSU_OT_build_new_file_baseclass):
                 )
         else:
             # We need up update the the default seq scene after the workspace changes has taken effect.
-            bpy.app.timers.register(set_default_sequencer_scene, first_interval=0.1,)
+            bpy.app.timers.register(
+                set_default_sequencer_scene,
+                first_interval=0.1,
+            )
 
         if len(fail_links) > 0:
             msg = ""
@@ -537,7 +533,6 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
         layout.prop(self, "save_file")
 
     def execute(self, context):
-        scene = context.scene
         active_project = cache.project_active_get()
         self._edit_entity = cache.edit_default_get(
             create=self.create_kitsu_edit, episode_id=context.scene.kitsu.episode_active_id
@@ -549,10 +544,13 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
             self.report({'ERROR'}, "Failed to create Kitsu edit entity.")
             return {'CANCELLED'}
 
-        edit_file_path_str = self._edit_entity.get_filepath(context)
+        open_template_as_homefile(task_type.name)
 
-        # Create a new file using the Video Editing template
-        replace_workspace_with_template(context, task_type.name)
+        # Update context since file has changed
+        context = bpy.context
+        scene = context.scene
+
+        edit_file_path_str = self._edit_entity.get_filepath(context)
         core.set_resolution_and_fps(active_project, scene)
 
         cache.reset_all_edits_enum_for_active_project()
@@ -573,7 +571,10 @@ class KITSU_OT_create_edit_file(KITSU_OT_build_new_file_baseclass):
                 return {"FINISHED"}
         else:
             # We need up update the the default seq scene after the workspace changes has taken effect.
-            bpy.app.timers.register(set_default_sequencer_scene, first_interval=0.1,)
+            bpy.app.timers.register(
+                set_default_sequencer_scene,
+                first_interval=0.1,
+            )
 
         self.report({'INFO'}, f"Created edit file at {edit_file_path_str}")
 

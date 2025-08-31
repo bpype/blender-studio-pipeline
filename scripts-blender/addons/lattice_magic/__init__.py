@@ -5,13 +5,13 @@
 bl_info = {
     "name": "Lattice Magic",
     "author": "Demeter Dzadik",
-    "version": (0, 1, 3),
+    "version": (1, 0, 1),
     "blender": (2, 90, 0),
     "location": "View3D > Sidebar > Lattice Magic",
     "description": "Various Lattice-based tools to smear or adjust geometry.",
     "category": "Rigging",
-    "doc_url": "https://gitlab.com/blender/lattice_magic/-/wikis/home",
-    "tracker_url": "https://gitlab.com/blender/lattice_magic/-/issues/new",
+    "doc_url": "https://studio.blender.org/tools/addons/lattice_magic",
+    "tracker_url": "https://projects.blender.org/studio/blender-studio-tools/issues/new/choose",
 }
 
 import importlib
