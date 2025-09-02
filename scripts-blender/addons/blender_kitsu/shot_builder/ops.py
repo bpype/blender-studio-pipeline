@@ -169,6 +169,13 @@ class KITSU_OT_build_new_file_baseclass(bpy.types.Operator):
         project = cache.project_active_get()
         ACTIVE_PROJECT = project
 
+        if bpy.data.is_dirty and bpy.data.filepath != "":
+            self.report(
+                {'ERROR'},
+                "Current file has unsaved changes. Please save your work before continuing.",
+            )
+            return {'CANCELLED'}
+
         if addon_prefs.session.is_auth() is False:
             self.report(
                 {'ERROR'},
