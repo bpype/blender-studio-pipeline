@@ -1,10 +1,7 @@
 import bpy
-
-from asset_pipeline.hooks import hook
-
+from .hooks import hook
 
 '''
-
 Rules:
     merge_mode: ['pull', 'push'] # Run hook only during pull or push (both if left blank)
     merge_status: ['pre', 'post'] # Run hook either before or after push/pull (both if left blank)
@@ -16,8 +13,6 @@ Notes:
     Function Naming: Must be unique between production hooks and asset hooks files
     Production Hook Path: 'your_project_name/svn/pro/assets/scripts/asset_pipeline/hooks.py'
     Asset Hook Path: 'your_project_name/svn/pro/assets/{asset_type}/{asset_name}/hooks.py'
-
-
 '''
 
 
