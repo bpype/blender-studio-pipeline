@@ -109,6 +109,9 @@ class Hooks:
             print("Shot Builder Hooks directory does not exist. See add-on preferences")
             return
         hook_file_path = shot_builder_config_dir.resolve() / "hooks.py"
+        if not hook_file_path.exists():
+            print("Shot Builder Hooks file does not exist. See add-on preferences")
+            return
         module_name = __package__ + ".production_hooks"
         try:
             spec = importlib.util.spec_from_file_location(module_name, hook_file_path)
