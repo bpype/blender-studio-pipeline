@@ -257,7 +257,7 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
         scene.kitsu.asset_col = asset_collection
 
         relative_path = Path(asset_file_path_str).relative_to(prefs.project_root_dir_get(context))
-        asset.set_asset_path(str(relative_path), asset_collection.name)
+        asset.set_asset_path(relative_path, asset_collection.name)
 
         # Save File
         if self.save_file:

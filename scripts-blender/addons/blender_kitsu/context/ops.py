@@ -316,7 +316,7 @@ class KITSU_OT_con_set_asset(bpy.types.Operator):
             self.report({"ERROR"}, "Failed to find active Kitsu Asset")
             return {"CANCELLED"}
 
-        kitsu_asset.set_asset_path(str(relative_path), blender_asset.name)
+        kitsu_asset.set_asset_path(relative_path, blender_asset.name)
         self.report(
             {"INFO"},
             f"Kitsu Asset '{kitsu_asset.name}' set to Collection '{blender_asset.name}' at path '{relative_path}'",

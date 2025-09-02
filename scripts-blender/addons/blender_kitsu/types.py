@@ -733,11 +733,11 @@ class Asset(Entity):
         asset_dict = gazu.asset.get_asset(asset_id)
         return cls.from_dict(asset_dict)
 
-    def set_asset_path(self, filepath: str, collection_name: str) -> None:
+    def set_asset_path(self, filepath: Path, collection_name: str) -> None:
         data = {}
         filepath_key = bkglobals.KITSU_FILEPATH_KEY
         collection_key = bkglobals.KITSU_COLLECTION_KEY
-        data[filepath_key] = filepath
+        data[filepath_key] = filepath.as_posix()
         data[collection_key] = collection_name
         updated_asset = gazu.asset.update_asset_data(asdict(self), data)
         self.data = updated_asset["data"]
