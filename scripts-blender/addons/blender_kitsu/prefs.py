@@ -782,7 +782,7 @@ def session_get(context: bpy.types.Context) -> Session:
 
 def project_root_dir_get(context: bpy.types.Context):
     addon_prefs = addon_prefs_get(context)
-    return Path(addon_prefs.project_root_dir).joinpath('svn').resolve()
+    return Path(addon_prefs.project_root_dir).joinpath('svn')
 
 
 def session_auth(context: bpy.types.Context) -> bool:
