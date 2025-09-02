@@ -7,7 +7,7 @@ from bpy.types import Collection
 from .transfer_data.transfer_functions.shape_keys import shape_key_set_active
 from .. import prefs
 
-class Perserve:
+class Preserve:
     def __init__(self, local_col: Collection) -> None:
         self._local_col = local_col
         self._action_dict: dict = {}
@@ -46,16 +46,6 @@ class Perserve:
                 obj.animation_data_create()
             obj.animation_data.action = action
             obj.animation_data.action_slot = slot
-            action.use_fake_user = fake_user
-
-    def unassign_actions(self):
-        for obj_name, action_info in self._action_dict.items():
-            action, slot, fake_user = action_info
-            obj = bpy.data.objects.get(obj_name)
-            if not obj:
-                continue
-            if obj.animation_data:
-                obj.animation_data.action = None
             action.use_fake_user = fake_user
 
     def _get_active_index_map(self):
