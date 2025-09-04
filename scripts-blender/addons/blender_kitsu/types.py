@@ -307,7 +307,7 @@ class Project(Entity):
 
     def get_strips_all(self) -> List[Sequence]:
         strips = [
-            Sequence.from_dict(s) for s in gazu.shot.all_strips_for_project(asdict(self))
+            Sequence.from_dict(s) for s in gazu.shot.all_sequences_for_project(asdict(self))
         ]
         return sorted(strips, key=lambda x: x.name)
 
@@ -1217,7 +1217,7 @@ class User(BaseDataClass):
     def all_strips_for_project(self, project: Project) -> List[Sequence]:
         seq_list = [
             Sequence.from_dict(seq_dict)
-            for seq_dict in gazu.user.all_strips_for_project(asdict(project))
+            for seq_dict in gazu.user.all_sequences_for_project(asdict(project))
         ]
         return seq_list
 

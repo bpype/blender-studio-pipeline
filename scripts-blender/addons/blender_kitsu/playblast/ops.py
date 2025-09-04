@@ -588,7 +588,7 @@ def detect_kitsu_context(dummy: Any) -> None:
         bpy.context.window_manager.popup_menu(
             draw_kitsu_context_warning,
             title="Warning: Kitsu Context Auto-Detection Failed.",
-            icon='WARNING',
+            icon='WARNING_LARGE',
         )
         pass
 

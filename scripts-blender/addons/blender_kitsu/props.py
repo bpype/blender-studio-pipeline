@@ -107,10 +107,10 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         default="",
     )
 
-    def get_strips_via_name(self):
+    def get_sequences_via_name(self):
         return get_safely_string_prop(self, "sequence_name")
 
-    def set_strips_via_name(self, input):
+    def set_sequences_via_name(self, input):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
@@ -127,8 +127,8 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         name="Sequence",
         description="Sequence",
         default="",
-        get=get_strips_via_name,
-        set=set_strips_via_name,
+        get=get_sequences_via_name,
+        set=set_sequences_via_name,
         options=set(),
         search=get_sequence_search_list,
         search_options={'SORT'},
@@ -275,10 +275,10 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         default="",
     )
 
-    def get_strips_via_name(self):
+    def get_sequences_via_name(self):
         return get_safely_string_prop(self, "sequence_active_name")
 
-    def set_strips_via_name(self, input):
+    def set_sequences_via_name(self, input):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
@@ -299,8 +299,8 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         name="Sequence",
         description="Sequence",
         default="",  # type: ignore
-        get=get_strips_via_name,
-        set=set_strips_via_name,
+        get=get_sequences_via_name,
+        set=set_sequences_via_name,
         options=set(),
         search=get_sequence_search_list,
         search_options={'SORT'},
@@ -751,10 +751,10 @@ def _add_window_manager_props():
         default="",
     )
 
-    def get_strips_via_name(self):
+    def get_sequences_via_name(self):
         return get_safely_string_prop(self, "selected_sequence_name")
 
-    def set_strips_via_name(self, input):
+    def set_sequences_via_name(self, input):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
@@ -775,8 +775,8 @@ def _add_window_manager_props():
         name="Sequence",
         description="Name of Sequence the generated Shots will be assinged to",
         default="",  # type: ignore
-        get=get_strips_via_name,
-        set=set_strips_via_name,
+        get=get_sequences_via_name,
+        set=set_sequences_via_name,
         options=set(),
         search=get_sequence_search_list,
         search_options={'SORT'},
