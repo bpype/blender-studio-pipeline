@@ -73,28 +73,24 @@ def _copytree_clear_progress_update():
     copytree_prev_printed_len = 0
 
 
-def get_valid_cs_sequences(
-    context: bpy.types.Context, sequence_list: List[bpy.types.Strip] = []
+def get_valid_cs_strips(
+    context: bpy.types.Context, strips: List[bpy.types.Strip] = []
 ) -> List[bpy.types.Strip]:
 
-    sequences: List[bpy.types.Strip] = []
-
-    if sequence_list:
-        sequences = sequence_list
-    else:
-        sequences = context.selected_sequences or context.scene.sequence_editor.sequences_all
+    if not strips:
+        strips = context.selected_strips or context.scene.sequence_editor.strips_all
 
     if cache.project_active_get():
 
-        valid_sequences = [
-            s
-            for s in sequences
-            if s.type in ["MOVIE", "IMAGE"] and not s.mute and not s.kitsu.initialized
+        valid_strips = [
+            strip
+            for strip in strips
+            if strip.type in ["MOVIE", "IMAGE"] and not strip.mute and not strip.kitsu.initialized
         ]
     else:
-        valid_sequences = [s for s in sequences if s.type in ["MOVIE", "IMAGE"] and not s.mute]
+        valid_strips = [s for s in strips if s.type in ["MOVIE", "IMAGE"] and not s.mute]
 
-    return valid_sequences
+    return valid_strips
 
 
 def get_frames_root_dir(strip: bpy.types.Strip) -> Path:
@@ -198,7 +194,7 @@ def save_to_json(obj: Any, path: Path) -> None:
         json.dump(obj, file, indent=4)
 
 
-def update_sequence_statuses(
+def update_strip_statuses(
     context: bpy.types.Context,
 ) -> List[bpy.types.Strip]:
     return update_is_approved(context), update_is_pushed_to_edit(context)
@@ -207,22 +203,22 @@ def update_sequence_statuses(
 def update_is_approved(
     context: bpy.types.Context,
 ) -> List[bpy.types.Strip]:
-    sequences = [s for s in context.scene.sequence_editor.sequences_all if s.rr.is_render]
+    strips = [s for s in context.scene.sequence_editor.strips_all if s.rr.is_render]
 
     approved_strips = []
 
-    for s in sequences:
-        metadata_path = get_shot_frames_metadata_path(s)
+    for strip in strips:
+        metadata_path = get_shot_frames_metadata_path(strip)
         if not metadata_path.exists():
             continue
         json_obj = load_json(metadata_path)  # TODO: prevent opening same json multi times
 
-        if Path(json_obj["source_current"]) == get_strip_folder(s):
-            s.rr.is_approved = True
-            approved_strips.append(s)
-            logger.info("Detected approved strip: %s", s.name)
+        if Path(json_obj["source_current"]) == get_strip_folder(strip):
+            strip.rr.is_approved = True
+            approved_strips.append(strip)
+            logger.info("Detected approved strip: %s", strip.name)
         else:
-            s.rr.is_approved = False
+            strip.rr.is_approved = False
 
     return approved_strips
 
@@ -230,11 +226,11 @@ def update_is_approved(
 def update_is_pushed_to_edit(
     context: bpy.types.Context,
 ) -> List[bpy.types.Strip]:
-    sequences = [s for s in context.scene.sequence_editor.sequences_all if s.rr.is_render]
+    strips = [s for s in context.scene.sequence_editor.strips_all if s.rr.is_render]
 
     pushed_strips = []
 
-    for s in sequences:
+    for s in strips:
         metadata_path = get_shot_previews_metadata_path(s)
         if not metadata_path.exists():
             continue
@@ -358,7 +354,7 @@ def fit_frame_range_to_strips(
         return (strip.frame_final_start, strip.frame_final_duration)
 
     if not strips:
-        strips = context.scene.sequence_editor.sequences_all
+        strips = context.scene.sequence_editor.strips_all
 
     if not strips:
         return (0, 0)
@@ -376,22 +372,22 @@ def get_top_level_valid_strips_continious(
     context: bpy.types.Context,
 ) -> List[bpy.types.Strip]:
 
-    sequences_tmp = get_valid_cs_sequences(
-        context, sequence_list=list(context.scene.sequence_editor.sequences_all)
+    strips_tmp = get_valid_cs_strips(
+        context, strips=list(context.scene.sequence_editor.strips_all)
     )
 
-    sequences_tmp.sort(key=lambda s: (s.channel, s.frame_final_start), reverse=True)
-    sequences: List[bpy.types.Strip] = []
+    strips_tmp.sort(key=lambda s: (s.channel, s.frame_final_start), reverse=True)
+    strips: List[bpy.types.Strip] = []
 
-    for strip in sequences_tmp:
+    for strip in strips_tmp:
 
-        occ_ranges = checksqe.get_occupied_ranges_for_strips(sequences)
+        occ_ranges = checksqe.get_occupied_ranges_for_strips(strips)
         s_range = range(strip.frame_final_start, strip.frame_final_end + 1)
 
         if not checksqe.is_range_occupied(s_range, occ_ranges):
-            sequences.append(strip)
+            strips.append(strip)
 
-    return sequences
+    return strips
 
 
 def setup_color_management(context: bpy.types.Context) -> None:

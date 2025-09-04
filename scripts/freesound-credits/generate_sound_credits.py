@@ -31,16 +31,15 @@ def get_sound_list():
     sound_list = []
 
     # Iterate through all the sound strips in the current scene
-    for s in bpy.context.scene.sequence_editor.sequences_all:
-        if s.type == 'SOUND':
-            filename = pathlib.Path(s.sound.filepath).stem
-            sound_id = filename.split('__')[0]
-            # Assume that if a file starts with an int, it's from freesound
-            try:
-                sound_id = int(sound_id)
-                sound_list.append(filename)
-            except ValueError:
-                print(f'Skipping {sound_id}')
+    for sound_strip in [s for s in bpy.context.scene.sequence_editor.strips_all if s.type=='SOUND']:
+        filename = pathlib.Path(sound_strip.sound.filepath).stem
+        sound_id = filename.split('__')[0]
+        # Assume that if a file starts with an int, it's from freesound
+        try:
+            sound_id = int(sound_id)
+            sound_list.append(filename)
+        except ValueError:
+            print(f'Skipping {sound_id}')
     return set(sound_list)
 
 

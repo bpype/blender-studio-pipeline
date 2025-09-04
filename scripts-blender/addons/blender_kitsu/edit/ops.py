@@ -258,10 +258,10 @@ class KITSU_OT_edit_export_import_latest(bpy.types.Operator):
     def get_existing_edit_exports(
         self, context: Context, all_edit_export_paths: List[Path]
     ) -> List[Strip]:
-        sequences = context.scene.sequence_editor.sequences
+        strips = context.scene.sequence_editor.strips
 
         # Collect Existing Edit Export
-        for strip in sequences:
+        for strip in strips:
             if self.compare_strip_to_paths(strip, all_edit_export_paths):
                 self._existing_edit_exports.append(strip)
         return self._existing_edit_exports
@@ -276,13 +276,13 @@ class KITSU_OT_edit_export_import_latest(bpy.types.Operator):
 
     def remove_existing_edit_exports(self, context: Context) -> None:
         # Remove Existing Strips to make way for new Strip
-        sequences = context.scene.sequence_editor.sequences
+        strips = context.scene.sequence_editor.strips
         for strip in self._existing_edit_exports:
             if strip.type == "MOVIE":
                 self._removed_movie += 1
             if strip.type == "SOUND":
                 self._removed_audio += 1
-            sequences.remove(strip)
+            strips.remove(strip)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         # Reset Values

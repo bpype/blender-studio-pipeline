@@ -73,7 +73,7 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         kitsu_props = context.scene.kitsu
         addon_prefs = context.preferences.addons['.'.join(__package__.split('.')[:-1])].preferences
 
-        is_edit_type = str(filepath.resolve()).startswith(str(prefs.project_root_dir_get(context) / addon_prefs.edit_dir_name))
+        is_edit_type = str(filepath).startswith(str(prefs.project_root_dir_get(context) / addon_prefs.edit_dir_name))
 
         if is_edit_type:
             kitsu_props.category = "EDIT"
@@ -316,7 +316,7 @@ class KITSU_OT_con_set_asset(bpy.types.Operator):
             self.report({"ERROR"}, "Failed to find active Kitsu Asset")
             return {"CANCELLED"}
 
-        kitsu_asset.set_asset_path(str(relative_path), blender_asset.name)
+        kitsu_asset.set_asset_path(relative_path, blender_asset.name)
         self.report(
             {"INFO"},
             f"Kitsu Asset '{kitsu_asset.name}' set to Collection '{blender_asset.name}' at path '{relative_path}'",

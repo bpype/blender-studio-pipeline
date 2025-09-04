@@ -35,10 +35,10 @@ def sqe_update_not_linked(context: bpy.types.Context) -> List[Tuple[str, str, st
     """get all strips that are initialized but not linked yet"""
     enum_list = []
 
-    if context.selected_sequences:
-        strips = context.selected_sequences
+    if context.selected_strips:
+        strips = context.selected_strips
     else:
-        strips = context.scene.sequence_editor.sequences_all
+        strips = context.scene.sequence_editor.strips_all
 
     for strip in strips:
         if strip.kitsu.initialized and not strip.kitsu.linked:
@@ -51,10 +51,10 @@ def sqe_update_duplicates(context: bpy.types.Context) -> List[Tuple[str, str, st
     """get all strips that are initialized but not linked yet"""
     enum_list = []
     data_dict = {}
-    if context.selected_sequences:
-        strips = context.selected_sequences
+    if context.selected_strips:
+        strips = context.selected_strips
     else:
-        strips = context.scene.sequence_editor.sequences_all
+        strips = context.scene.sequence_editor.strips_all
 
     # Create data dict that holds all shots ids and the corresponding strips that are linked to it.
     for i in range(len(strips)):
@@ -89,10 +89,10 @@ def sqe_update_multi_project(context: bpy.types.Context) -> List[Tuple[str, str,
     enum_list: List[Tuple[str, str, str]] = []
     data_dict: Dict[str, Any] = {}
 
-    if context.selected_sequences:
-        strips = context.selected_sequences
+    if context.selected_strips:
+        strips = context.selected_strips
     else:
-        strips = context.scene.sequence_editor.sequences_all
+        strips = context.scene.sequence_editor.strips_all
 
     # Create data dict that holds project names as key and values the corresponding sequence strips.
     for strip in strips:
@@ -234,7 +234,7 @@ def create_metadata_strip(
 ) -> bpy.types.MovieStrip:
 
     addon_prefs = prefs.addon_prefs_get(bpy.context)
-    strip = scene.sequence_editor.sequences.new_movie(
+    strip = scene.sequence_editor.strips.new_movie(
         name,
         addon_prefs.metadatastrip_file,
         channel,

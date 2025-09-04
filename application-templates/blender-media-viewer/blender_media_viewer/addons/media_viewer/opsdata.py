@@ -43,10 +43,10 @@ def is_script(filepath: Path) -> bool:
     return False
 
 
-def del_all_sequences(context: bpy.types.Context) -> None:
-    for seq_name in [s.name for s in context.scene.sequence_editor.sequences_all]:
-        context.scene.sequence_editor.sequences.remove(
-            context.scene.sequence_editor.sequences[seq_name]
+def del_all_strips(context: bpy.types.Context) -> None:
+    for strip_name in [s.name for s in context.scene.sequence_editor.strips_all]:
+        context.scene.sequence_editor.strips.remove(
+            context.scene.sequence_editor.strips[strip_name]
         )
 
 
@@ -70,7 +70,7 @@ def fit_frame_range_to_strips(
     def get_sort_tuple(strip: bpy.types.Strip) -> Tuple[int, int]:
         return (strip.frame_final_start, strip.frame_final_duration)
 
-    strips = context.scene.sequence_editor.sequences_all
+    strips = context.scene.sequence_editor.strips_all
 
     if not strips:
         context.scene.frame_start = 0
@@ -265,11 +265,11 @@ def get_last_strip_frame(context: bpy.types.Context) -> int:
     If there are not strips it will return the start frame of the scene
     as this function is used to place a strip at a specific point in time.
     """
-    sequences = list(context.scene.sequence_editor.sequences_all)
-    if not sequences:
+    strips = list(context.scene.sequence_editor.strips_all)
+    if not strips:
         return context.scene.frame_start
-    sequences.sort(key=lambda s: s.frame_final_end)
-    return sequences[-1].frame_final_end
+    strips.sort(key=lambda s: s.frame_final_end)
+    return strips[-1].frame_final_end
 
 
 def get_image_sequence(filepath: Path) -> List[Path]:
@@ -334,7 +334,7 @@ def get_movie_strips(
     context: bpy.types.Context,
 ) -> List[bpy.types.Strip]:
     strips = [
-        s for s in context.scene.sequence_editor.sequences_all if s.type == "MOVIE"
+        s for s in context.scene.sequence_editor.strips_all if s.type == "MOVIE"
     ]
     strips.sort(key=lambda s: (s.frame_final_start, s.channel))
     return strips
@@ -342,7 +342,7 @@ def get_movie_strips(
 
 def get_loaded_movie_sound_strip_paths(context: bpy.types.Context) -> List[Path]:
     filepath_list = []
-    for strip in context.scene.sequence_editor.sequences_all:
+    for strip in context.scene.sequence_editor.strips_all:
         if strip.type == "MOVIE":
             filepath_list.append(Path(bpy.path.abspath(strip.filepath)))
         elif strip.type == "SOUND":

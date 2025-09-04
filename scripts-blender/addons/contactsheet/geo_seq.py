@@ -24,7 +24,7 @@ class SequenceRect(Rectangle):
 
         if sequence.type not in self.valid_types:
             raise ValueError(
-                f"SequenceRect can only hold sequences of type {str(self.valid_types)}"
+                f"SequenceRect can only hold strips of type {str(self.valid_types)}"
             )
 
         self._sequence: "bpy.types.Strip" = sequence
@@ -99,7 +99,7 @@ class SequenceRect(Rectangle):
     # Functions.
     def copy(self) -> SequenceRect:
         if self.sequence.type == "IMAGE":
-            strip = bpy.context.scene.sequence_editor.sequences.new_image(
+            strip = bpy.context.scene.sequence_editor.strips.new_image(
                 self.sequence.name,
                 Path(self.sequence.directory)
                 .joinpath(self.sequence.elements[0].filename)
@@ -108,7 +108,7 @@ class SequenceRect(Rectangle):
                 self.sequence.frame_final_start,
             )
         elif self.sequence.type == "MOVIE":
-            strip = bpy.context.scene.sequence_editor.sequences.new_movie(
+            strip = bpy.context.scene.sequence_editor.strips.new_movie(
                 self.sequence.name,
                 self.sequence.file,
                 self.sequence.channel + 1,

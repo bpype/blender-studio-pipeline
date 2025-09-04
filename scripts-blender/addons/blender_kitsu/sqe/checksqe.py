@@ -36,7 +36,7 @@ def get_occupied_ranges(context: bpy.types.Context) -> Dict[str, List[range]]:
     ranges: Dict[str, List[range]] = {}
 
     # Populate ranges.
-    for strip in context.scene.sequence_editor.sequences_all:
+    for strip in context.scene.sequence_editor.strips_all:
         ranges.setdefault(str(strip.channel), [])
         ranges[str(strip.channel)].append(
             range(strip.frame_final_start, strip.frame_final_end + 1)
@@ -64,7 +64,7 @@ def get_shot_strips(context: bpy.types.Context) -> List[bpy.types.Strip]:
     shot_strips.extend(
         [
             strip
-            for strip in context.scene.sequence_editor.sequences_all
+            for strip in context.scene.sequence_editor.strips_all
             if checkstrip.is_valid_type(strip, log=False)
             and checkstrip.is_linked(strip, log=False)
         ]

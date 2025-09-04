@@ -114,14 +114,14 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_sequences_enum_list(self, bpy.context),
+            items=cache.get_strips_enum_list(self, bpy.context),
             name_prop='sequence_name',
             id_prop='sequence_id',
         )
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
 
     sequence_name: bpy.props.StringProperty(  # type: ignore
         name="Sequence",
@@ -282,7 +282,7 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_sequences_enum_list(self, bpy.context),
+            items=cache.get_strips_enum_list(self, bpy.context),
             name_prop='sequence_active_name',
             id_prop='sequence_active_id',
         )
@@ -293,7 +293,7 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
 
     sequence_active_name: bpy.props.StringProperty(
         name="Sequence",
@@ -758,7 +758,7 @@ def _add_window_manager_props():
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_sequences_enum_list(self, bpy.context),
+            items=cache.get_strips_enum_list(self, bpy.context),
             name_prop='selected_sequence_name',
             id_prop='selected_sequence_id',
         )
@@ -769,7 +769,7 @@ def _add_window_manager_props():
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
 
     bpy.types.WindowManager.selected_sequence_name = bpy.props.StringProperty(
         name="Sequence",
@@ -836,33 +836,33 @@ def update_sequence_colors_coll_prop(dummy: Any) -> None:
     sqe = bpy.context.scene.sequence_editor
     if not sqe:
         return
-    sequences = sqe.sequences_all
-    sequence_colors = bpy.context.scene.kitsu.sequence_colors
-    existings_seq_ids: List[str] = []
+    strips = sqe.strips_all
+    strip_colors = bpy.context.scene.kitsu.sequence_colors
+    existing_strip_ids: List[str] = []
 
     # Append missing sequences to scene.kitsu.seqeuence_colors.
-    for seq in sequences:
+    for seq in strips:
         if not seq.kitsu.sequence_id:
             continue
 
-        if seq.kitsu.sequence_id not in sequence_colors.keys():
+        if seq.kitsu.sequence_id not in strip_colors.keys():
             logger.info("Added %s to scene.kitsu.seqeuence_colors", seq.kitsu.sequence_name)
-            item = sequence_colors.add()
+            item = strip_colors.add()
             item.name = seq.kitsu.sequence_id
 
-        existings_seq_ids.append(seq.kitsu.sequence_id)
+        existing_strip_ids.append(seq.kitsu.sequence_id)
 
     # Delete sequence colors that are not in edit anymore.
-    existings_seq_ids = set(existings_seq_ids)
+    existing_strip_ids = set(existing_strip_ids)
 
-    to_be_removed = [seq_id for seq_id in sequence_colors.keys() if seq_id not in existings_seq_ids]
+    to_be_removed = [strip_id for strip_id in strip_colors.keys() if strip_id not in existing_strip_ids]
 
     for seq_id in to_be_removed:
-        idx = sequence_colors.find(seq_id)
+        idx = strip_colors.find(seq_id)
         if idx == -1:
             continue
 
-        sequence_colors.remove(idx)
+        strip_colors.remove(idx)
         logger.info(
             "Removed %s from scene.kitsu.seqeuence_colors. Is not used in the sequence editor anymore",
             seq_id,

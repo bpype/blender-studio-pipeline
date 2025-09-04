@@ -169,6 +169,13 @@ class KITSU_OT_build_new_file_baseclass(bpy.types.Operator):
         project = cache.project_active_get()
         ACTIVE_PROJECT = project
 
+        if bpy.data.is_dirty and bpy.data.filepath != "":
+            self.report(
+                {'ERROR'},
+                "Current file has unsaved changes. Please save your work before continuing.",
+            )
+            return {'CANCELLED'}
+
         if addon_prefs.session.is_auth() is False:
             self.report(
                 {'ERROR'},
@@ -257,7 +264,7 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
         scene.kitsu.asset_col = asset_collection
 
         relative_path = Path(asset_file_path_str).relative_to(prefs.project_root_dir_get(context))
-        asset.set_asset_path(str(relative_path), asset_collection.name)
+        asset.set_asset_path(relative_path, asset_collection.name)
 
         # Save File
         if self.save_file:

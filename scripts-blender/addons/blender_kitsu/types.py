@@ -305,11 +305,11 @@ class Project(Entity):
     ) -> Optional[Sequence]:
         return Sequence.by_name(self, seq_name, episode=episode)
 
-    def get_sequences_all(self) -> List[Sequence]:
-        sequences = [
+    def get_strips_all(self) -> List[Sequence]:
+        strips = [
             Sequence.from_dict(s) for s in gazu.shot.all_sequences_for_project(asdict(self))
         ]
-        return sorted(sequences, key=lambda x: x.name)
+        return sorted(strips, key=lambda x: x.name)
 
     def create_sequence(self, sequence_name: str, episode_id: Optional[str] = None) -> Sequence:
         # This function returns a seq dict even if seq already exists, it does not override.
@@ -426,11 +426,11 @@ class Episode(Entity):
         assets = [Asset.from_dict(at) for at in gazu.asset.all_assets_for_episode(asdict(self))]
         return sorted(assets, key=lambda x: x.name)
 
-    def get_sequences_all(self) -> List[Sequence]:
-        sequences = [
-            Sequence.from_dict(s) for s in gazu.shot.all_sequences_for_episode(asdict(self))
+    def get_strips_all(self) -> List[Sequence]:
+        strips = [
+            Sequence.from_dict(s) for s in gazu.shot.all_strips_for_episode(asdict(self))
         ]
-        return sorted(sequences, key=lambda x: x.name)
+        return sorted(strips, key=lambda x: x.name)
 
 
 @dataclass
@@ -733,11 +733,11 @@ class Asset(Entity):
         asset_dict = gazu.asset.get_asset(asset_id)
         return cls.from_dict(asset_dict)
 
-    def set_asset_path(self, filepath: str, collection_name: str) -> None:
+    def set_asset_path(self, filepath: Path, collection_name: str) -> None:
         data = {}
         filepath_key = bkglobals.KITSU_FILEPATH_KEY
         collection_key = bkglobals.KITSU_COLLECTION_KEY
-        data[filepath_key] = filepath
+        data[filepath_key] = filepath.as_posix()
         data[collection_key] = collection_name
         updated_asset = gazu.asset.update_asset_data(asdict(self), data)
         self.data = updated_asset["data"]
@@ -1214,7 +1214,7 @@ class User(BaseDataClass):
 
     # SHOTS.
 
-    def all_sequences_for_project(self, project: Project) -> List[Sequence]:
+    def all_strips_for_project(self, project: Project) -> List[Sequence]:
         seq_list = [
             Sequence.from_dict(seq_dict)
             for seq_dict in gazu.user.all_sequences_for_project(asdict(project))

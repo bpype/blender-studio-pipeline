@@ -15,7 +15,7 @@ from .merge.core import (
 )
 from .merge.transfer_data.transfer_ui import draw_transfer_data
 from .merge.shared_ids import get_shared_id_icon
-from .merge.preserve import Perserve
+from .merge.preserve import Preserve
 from . import config, logging
 from .hooks import Hooks
 from .merge.task_layer import draw_task_layer_selection
@@ -155,7 +155,7 @@ def sync_execute_pull(self, context):
     bpy.ops.wm.save_as_mainfile(filepath=temp_file_path, copy=True)
     logger.debug(f"Creating Backup File at {temp_file_path}")
 
-    preserve_map = Perserve(context.scene.asset_pipeline.asset_collection)
+    preserve_map = Preserve(context.scene.asset_pipeline.asset_collection)
 
     error_msg = merge_task_layer(
         context,
@@ -200,7 +200,6 @@ def sync_execute_push(self, context):
         if task_layer not in self._task_layer_keys
     ]
 
-    preserve_map = Perserve(context.scene.asset_pipeline.asset_collection)
     error_msg = merge_task_layer(
         context,
         local_tls=local_tls,
@@ -210,8 +209,6 @@ def sync_execute_push(self, context):
         context.scene.asset_pipeline.sync_error = True
         self.report({'ERROR'}, error_msg)
         return {'CANCELLED'}
-
-    preserve_map.unassign_actions()
 
     if asset_col.asset_data:
         if _catalog_id:

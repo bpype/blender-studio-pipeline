@@ -100,7 +100,7 @@ def update_vse_references(file_map_dict: dict) -> None:
     for scn in bpy.data.scenes:
         if not scn.sequence_editor:
             continue
-        for strip in scn.sequence_editor.sequences_all:
+        for strip in scn.sequence_editor.strips_all:
             for path in paths_for_vse_strip(strip):
                 if path == "":
                     continue

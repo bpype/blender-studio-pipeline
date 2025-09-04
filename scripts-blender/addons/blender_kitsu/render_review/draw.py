@@ -101,7 +101,7 @@ def draw_callback_px(line_drawer: LineDrawer):
     pixel_size_x = one_pixel_further_x - xwin1
 
     # Strips = shown_strips(context).
-    strips = context.scene.sequence_editor.sequences_all
+    strips = context.scene.sequence_editor.strips_all
 
     coords = []  # type: typing.List[Float2]
     colors = []  # type: typing.List[Float4]

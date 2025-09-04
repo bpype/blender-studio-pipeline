@@ -25,8 +25,8 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
     bl_idname = "contactsheet.make_contactsheet"
     bl_label = "Make Contact Sheet"
     bl_description = (
-        "Creates a temporary scene and arranges the previously selected sequences in a grid. "
-        "If no sequences were selected it takes a continuous row of the top most sequences"
+        "Creates a temporary scene and arranges the previously selected strips in a grid. "
+        "If no strips were selected it takes a continuous row of the top most strips"
     )
 
     @classmethod
@@ -37,18 +37,18 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
 
         addon_prefs = prefs.addon_prefs_get(context)
 
-        # Gather sequences to process.
-        sequences = context.selected_sequences
-        if not sequences:
-            # If nothing selected take a continuous row of the top most sequences.
-            sequences = opsdata.get_top_level_valid_strips_continuous(context)
+        # Gather strips to process.
+        strips = context.selected_strips
+        if not strips:
+            # If nothing selected take a continuous row of the top most strips.
+            strips = opsdata.get_top_level_valid_strips_continuous(context)
         else:
-            sequences = opsdata.get_valid_cs_sequences(sequences)
+            strips = opsdata.get_valid_cs_strips(strips)
 
-        # Select sequences, will remove sequences later that are not selected.
+        # Select strips, will remove strips later that are not selected.
         bpy.ops.sequencer.select_all(action="DESELECT")
-        for s in sequences:
-            s.select = True
+        for strip in strips:
+            strip.select = True
 
         row_count = None
         start_frame = 1
@@ -76,37 +76,37 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
             orig_proxy_render_size
         )
 
-        # Remove sequences in new scene that are not selected.
-        seq_rm: List["bpy.types.Strip"] = [
-            s for s in scene_tmp.sequence_editor.sequences_all if not s.select
+        # Remove strips in new scene that are not selected.
+        strips_rm: List["bpy.types.Strip"] = [
+            s for s in scene_tmp.sequence_editor.strips_all if not s.select
         ]
-        for s in seq_rm:
-            scene_tmp.sequence_editor.sequences.remove(s)
+        for strip in strips_rm:
+            scene_tmp.sequence_editor.strips.remove(strip)
 
         # Get all sequences in new scene and sort them.
-        sequences = list(scene_tmp.sequence_editor.sequences_all)
-        sequences.sort(key=lambda strip: (strip.frame_final_start, strip.channel))
+        strips = list(scene_tmp.sequence_editor.strips_all)
+        strips.sort(key=lambda strip: (strip.frame_final_start, strip.channel))
 
         # Place black color strip in channel 1.
-        color_strip = context.scene.sequence_editor.sequences.new_effect(
+        color_strip = context.scene.sequence_editor.strips.new_effect(
             "background", "COLOR", 1, start_frame, frame_end=start_frame + 1
         )
         color_strip.color = (0, 0, 0)
 
         # Create required number of Metadata Strips to workaround the limit of 32 channels.
-        nr_of_metadata_strips = math.ceil(len(sequences) / 32)
+        nr_of_metadata_strips = math.ceil(len(strips) / 32)
         metadata_strips: List["bpy.types.Strip"] = []
         for i in range(nr_of_metadata_strips):
             channel = i + 2
-            metadata_strip = context.scene.sequence_editor.sequences.new_meta(
+            metadata_strip = context.scene.sequence_editor.strips.new_meta(
                 f"contactsheet_meta_{channel-1}", channel, start_frame
             )
             metadata_strips.append(metadata_strip)
             logger.debug("Created Metadata Strip: %s", metadata_strip.name)
 
-        # Move sequences in to Metadata Strips, place them on top of each other
+        # Move strips in to Metadata Strips, place them on top of each other
         # make them start at the same frame.
-        for idx, seq in enumerate(sequences):
+        for idx, seq in enumerate(strips):
             # Move to Metadata Strip.
             channel = idx + 1
             meta_index = math.floor(idx / 32)
@@ -118,10 +118,10 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
             seq.blend_type = "ALPHA_OVER"
 
         # Elongate all strips to the strip with the longest duration.
-        tmp_sequences = sorted(sequences, key=lambda s: s.frame_final_end)
-        tmp_sequences.insert(0, color_strip)
-        max_end: int = tmp_sequences[-1].frame_final_end
-        for strip in tmp_sequences:
+        tmp_strips = sorted(strips, key=lambda s: s.frame_final_end)
+        tmp_strips.insert(0, color_strip)
+        max_end: int = tmp_strips[-1].frame_final_end
+        for strip in tmp_strips:
             if strip.frame_final_end < max_end:
                 strip.frame_final_end = max_end
 
@@ -138,7 +138,7 @@ class CS_OT_make_contactsheet(bpy.types.Operator):
         self.set_sqe_area_settings(context)
 
         # Create content list for grid.
-        sqe_rects: List[SequenceRect] = [SequenceRect(seq) for seq in sequences]
+        sqe_rects: List[SequenceRect] = [SequenceRect(seq) for seq in strips]
         content: List[NestedRectangle] = [
             NestedRectangle(0, 0, srect.width, srect.height, child=srect)
             for srect in sqe_rects

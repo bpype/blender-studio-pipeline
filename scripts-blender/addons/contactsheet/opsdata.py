@@ -12,16 +12,16 @@ from .log import LoggerFactory
 logger = LoggerFactory.getLogger(name=__name__)
 
 
-def get_valid_cs_sequences(
+def get_valid_cs_strips(
     sequence_list: List["bpy.types.Strip"],
 ) -> List["bpy.types.Strip"]:
     """
-    Returns list of valid sequences out of input sequence list
+    Returns list of valid strips out of input sequence list
     """
-    valid_sequences = [
+    valid_strips = [
         s for s in sequence_list if s.type in ["MOVIE", "IMAGE"] and not s.mute
     ]
-    return valid_sequences
+    return valid_strips
 
 
 def get_sqe_editor(context: bpy.types.Context) -> Optional[bpy.types.Area]:
@@ -41,7 +41,7 @@ def fit_frame_range_to_strips(
         return (strip.frame_final_start, strip.frame_final_duration)
 
     if not strips:
-        strips = context.scene.sequence_editor.sequences_all
+        strips = context.scene.sequence_editor.strips_all
 
     if not strips:
         return (0, 0)
@@ -59,37 +59,37 @@ def get_top_level_valid_strips_continuous(
     context: bpy.types.Context,
 ) -> List["bpy.types.Strip"]:
 
-    sequences_tmp = get_valid_cs_sequences(
-        list(context.scene.sequence_editor.sequences_all)
+    strips_tmp = get_valid_cs_strips(
+        list(context.scene.sequence_editor.strips_all)
     )
 
-    sequences_tmp.sort(key=lambda s: (s.channel, s.frame_final_start), reverse=True)
-    sequences: List["bpy.types.Strip"] = []
+    strips_tmp.sort(key=lambda s: (s.channel, s.frame_final_start), reverse=True)
+    strips: List[bpy.types.Strip] = []
 
-    for strip in sequences_tmp:
+    for strip in strips_tmp:
 
-        occ_ranges = checksqe.get_occupied_ranges_for_strips(sequences)
+        occ_ranges = checksqe.get_occupied_ranges_for_strips(strips)
         s_range = range(strip.frame_final_start, strip.frame_final_end + 1)
 
         if not checksqe.is_range_occupied(s_range, occ_ranges):
-            sequences.append(strip)
+            strips.append(strip)
 
-    return sequences
+    return strips
 
 
 def poll_make_contactsheet(context: bpy.types.Context) -> bool:
 
-    if not context.scene.sequence_editor.sequences_all:
+    if not context.scene.sequence_editor.strips_all:
         return False
 
-    sequences = context.selected_sequences
+    strips = context.selected_strips
 
-    if not sequences:
-        valid_sequences = get_top_level_valid_strips_continuous(context)
+    if not strips:
+        valid_strips = get_top_level_valid_strips_continuous(context)
     else:
-        valid_sequences = get_valid_cs_sequences(sequences)
+        valid_strips = get_valid_cs_strips(strips)
 
-    return bool(valid_sequences)
+    return bool(valid_strips)
 
 
-# TODO: add function to actually get sequences, same structure in 3 places.
+# TODO: add function to actually get strips, same structure in 3 places.

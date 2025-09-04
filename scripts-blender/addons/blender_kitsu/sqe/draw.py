@@ -77,7 +77,7 @@ def draw_callback_px():
     sqe = context.scene.sequence_editor
     if not sqe:
         return
-    strips = sqe.sequences_all
+    strips = sqe.strips_all
 
     for strip in strips:
         # Get corners of the strip rectangle in terms of the grid's frames and channels (virtual, not px).

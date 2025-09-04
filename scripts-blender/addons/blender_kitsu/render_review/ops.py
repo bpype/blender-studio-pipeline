@@ -25,7 +25,7 @@ logger = LoggerFactory.getLogger()
 class RR_OT_sqe_create_review_session(bpy.types.Operator):
     """
     Review a sequence of shots or a single shot.
-    Review shot will load all available preview sequences (.jpg / .png) of each found rendering
+    Review shot will load all available preview strips (.jpg / .png) of each found rendering
     in to the sequence editor of the specified shot.
     Review sequence does it for each shot in that sequence.
     If user enabled use_blender_kitsu in the addon preferences,
@@ -58,7 +58,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
         except NoImageStripAvailableException:
             # if no preview files available create an empty image strip
-            # this assumes that when a folder is there exr sequences are available to inspect
+            # this assumes that when a folder is there exr strips are available to inspect
             logger.warning("%s found no preview sequence", directory.name)
             exr_files = opsdata.gather_files_by_suffix(
                 directory, output=list, search_suffixes=[".exr"]
@@ -78,7 +78,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         frame_start = frame_start or int(image_sequence[0].stem)
 
         # Create new image strip.
-        strip = context.scene.sequence_editor.sequences.new_image(
+        strip = context.scene.sequence_editor.strips.new_image(
             name=directory.name,
             filepath=image_sequence[0].as_posix(),
             channel=idx + 1,
@@ -136,7 +136,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
                 for strip in imported_strips:
                     strip.channel -= channel_offset
                     if strip.frame_final_duration != strip_ref.frame_final_duration:
-                        context.scene.sequence_editor.sequences.remove(strip)
+                        context.scene.sequence_editor.strips.remove(strip)
                         channel_offset += 1
                     else:
                         # ensure reference strip still exists
@@ -194,7 +194,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
         # scan for approved renders, will modify strip.rr.is_approved prop
         # which controls the custom gpu overlay
-        opsdata.update_sequence_statuses(context)
+        opsdata.update_strip_statuses(context)
 
         bpy.ops.sequencer.select_all(action='DESELECT')
 
@@ -298,7 +298,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         if not context.scene.sequence_editor:
             context.scene.sequence_editor_create()
 
-        ### Load preview sequences in vse.
+        ### Load preview strips in vse.
 
         # Compose frames found text.
         frames_found_text = opsdata.gen_frames_found_text(shot_folder)
@@ -308,7 +308,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
             if not video_path:
                 logger.warning("%s found no .mp4 preview sequence", shot_folder.name)
                 video_path = shot_folder
-            strip = context.scene.sequence_editor.sequences.new_movie(
+            strip = context.scene.sequence_editor.strips.new_movie(
                 name=shot_folder.name,
                 filepath=video_path.as_posix(),
                 channel=channel_idx + 1,
@@ -344,13 +344,13 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
     )
     bl_options = {"REGISTER", "UNDO"}
 
-    def sequences_enum_items(self, context):
-        return [("None", "None", "None")] + cache.get_sequences_enum_list(self, context)
+    def strips_enum_items(self, context):
+        return [("None", "None", "None")] + cache.get_strips_enum_list(self, context)
 
     sequence: bpy.props.EnumProperty(
         name="Sequence",
         description="Select which sequence to review",
-        items=sequences_enum_items,
+        items=strips_enum_items,
     )
 
     @staticmethod
@@ -634,7 +634,7 @@ class RR_OT_sqe_approve_render(bpy.types.Operator):
             opsdata.save_to_json(json_dict, metadata_path)
 
         # Scan for approved renders.
-        opsdata.update_sequence_statuses(context)
+        opsdata.update_strip_statuses(context)
         util.redraw_ui()
 
         # Log.
@@ -667,11 +667,11 @@ class RR_OT_sqe_approve_render(bpy.types.Operator):
         layout.row(align=True).label(text="Update Shot Frames?")
 
 
-class RR_OT_sqe_update_sequence_statuses(bpy.types.Operator):
-    bl_idname = "rr.update_sequence_statuses"
-    bl_label = "Update Sequence Statuses"
+class RR_OT_sqe_update_strip_statuses(bpy.types.Operator):
+    bl_idname = "rr.update_strip_statuses"
+    bl_label = "Update Strip Statuses"
     bl_description = (
-        "Scans sequence editor and updates flags for which ones are pushed "
+        "Scans sequence editor and updates flags for which strips are pushed "
         "to the edit and which one is the currently approved version "
         "by reading the metadata.json files"
     )
@@ -679,10 +679,10 @@ class RR_OT_sqe_update_sequence_statuses(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(context.scene.sequence_editor.sequences_all)
+        return bool(context.scene.sequence_editor.strips_all)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        approved_strips = opsdata.update_sequence_statuses(context)[0]
+        approved_strips = opsdata.update_strip_statuses(context)[0]
 
         if approved_strips:
             self.report(
@@ -752,7 +752,7 @@ class RR_OT_sqe_isolate_strip_exit(bpy.types.Operator):
     def execute(self, context: bpy.types.Context) -> Set[str]:
         for i in context.scene.rr.isolate_view:
             try:
-                strip = context.scene.sequence_editor.sequences[i.name]
+                strip = context.scene.sequence_editor.strips[i.name]
             except KeyError:
                 logger.error("Exit isolate view: Strip does not exist %s", i.name)
                 continue
@@ -777,22 +777,22 @@ class RR_OT_sqe_isolate_strip_enter(bpy.types.Operator):
         return bool(active_strip)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        sequences = list(context.scene.sequence_editor.sequences_all)
+        strips = list(context.scene.sequence_editor.strips_all)
 
         if context.scene.rr.isolate_view.items():
             bpy.ops.rr.sqe_isolate_strip_exit()
 
         # Mute all and save state to restore later.
-        for s in sequences:
+        for strip in strips:
             # Save this state to restore it later.
             item = context.scene.rr.isolate_view.add()
-            item.name = s.name
-            item.mute = s.mute
-            s.mute = True
+            item.name = strip.name
+            item.mute = strip.mute
+            strip.mute = True
 
         # Unmute selected.
-        for s in context.selected_sequences:
-            s.mute = False
+        for strip in context.selected_strips:
+            strip.mute = False
 
         return {"FINISHED"}
 
@@ -893,7 +893,7 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
         logger.info("Updated metadata in: %s", metadata_path.as_posix())
 
         # Scan for approved renders.
-        opsdata.update_sequence_statuses(context)
+        opsdata.update_strip_statuses(context)
 
         # Log.
         self.report(
@@ -989,7 +989,7 @@ classes = [
     RR_OT_sqe_inspect_exr_sequence,
     RR_OT_sqe_clear_exr_inspect,
     RR_OT_sqe_approve_render,
-    RR_OT_sqe_update_sequence_statuses,
+    RR_OT_sqe_update_strip_statuses,
     RR_OT_open_path,
     RR_OT_sqe_isolate_strip_enter,
     RR_OT_sqe_isolate_strip_exit,

@@ -35,7 +35,7 @@ class KITSU_OT_sqe_push_shot_meta(bpy.types.Operator):
     bl_label = "Push Shot Metadata"
     bl_options = {"INTERNAL"}
     bl_description = (
-        "Pushes metadata of all selected sequences to server. "
+        "Pushes metadata of all selected strips to server. "
         "This includes frame information, name, project, sequence and description"
     )
 
@@ -49,15 +49,15 @@ class KITSU_OT_sqe_push_shot_meta(bpy.types.Operator):
         logger.info("-START- Pushing Metadata")
 
         # Get strips.
-        selected_sequences = context.selected_sequences
-        if not selected_sequences:
-            selected_sequences = context.scene.sequence_editor.sequences_all
+        selected_strips = context.selected_strips
+        if not selected_strips:
+            selected_strips = context.scene.sequence_editor.strips_all
 
         # Sort strips.
-        selected_sequences = sorted(selected_sequences, key=lambda strip: strip.frame_final_start)
+        selected_strips = sorted(selected_strips, key=lambda strip: strip.frame_final_start)
 
         # Begin progress update.
-        context.window_manager.progress_begin(0, len(selected_sequences))
+        context.window_manager.progress_begin(0, len(selected_strips))
 
         # Clear cache.
         Cache.clear_all()
@@ -66,7 +66,7 @@ class KITSU_OT_sqe_push_shot_meta(bpy.types.Operator):
         sequence_ids: List[str] = []
 
         # Shots.
-        for idx, strip in enumerate(selected_sequences):
+        for idx, strip in enumerate(selected_strips):
             context.window_manager.progress_update(idx)
 
             if not checkstrip.is_valid_type(strip):
@@ -98,12 +98,12 @@ class KITSU_OT_sqe_push_shot_meta(bpy.types.Operator):
             succeeded.append(strip)
 
         # End progress update.
-        context.window_manager.progress_update(len(selected_sequences))
+        context.window_manager.progress_update(len(selected_strips))
         context.window_manager.progress_end()
 
         # Sequences.
 
-        # Begin second progress update for sequences.
+        # Begin second progress update for strips.
         context.window_manager.progress_begin(0, len(sequence_ids))
         for idx, seq_id in enumerate(sequence_ids):
             context.window_manager.progress_update(idx)
@@ -144,10 +144,10 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         # Needs to be logged in, active project.
-        sequences = context.selected_sequences
-        if not sequences:
+        strips = context.selected_strips
+        if not strips:
             return False
-        nr_of_shots = len(sequences)
+        nr_of_shots = len(strips)
         if nr_of_shots == 1:
             strip = context.scene.sequence_editor.active_strip
             return bool(
@@ -174,17 +174,17 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
         Cache.clear_all()
 
         # Get strips.
-        selected_sequences = context.selected_sequences
-        if not selected_sequences:
-            selected_sequences = context.scene.sequence_editor.sequences_all
+        selected_strips = context.selected_strips
+        if not selected_strips:
+            selected_strips = context.scene.sequence_editor.strips_all
 
         # Sort strips.
-        selected_sequences = sorted(selected_sequences, key=lambda strip: strip.frame_final_start)
+        selected_strips = sorted(selected_strips, key=lambda strip: strip.frame_final_start)
 
         # Begin progress update.
-        context.window_manager.progress_begin(0, len(selected_sequences))
+        context.window_manager.progress_begin(0, len(selected_strips))
 
-        for idx, strip in enumerate(selected_sequences):
+        for idx, strip in enumerate(selected_strips):
             context.window_manager.progress_update(idx)
 
             if not checkstrip.is_valid_type(strip):
@@ -248,7 +248,7 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
             strip.name = shot.name
 
         # End progress update.
-        context.window_manager.progress_update(len(selected_sequences))
+        context.window_manager.progress_update(len(selected_strips))
         context.window_manager.progress_end()
 
         # Clear cache.
@@ -279,21 +279,21 @@ class KITSU_OT_sqe_push_new_shot(bpy.types.Operator):
 
     def draw(self, context):
         project_active = cache.project_active_get()
-        selected_sequences = context.selected_sequences
+        selected_strips = context.selected_strips
         layout = self.layout
 
-        if not selected_sequences:
-            selected_sequences = context.scene.sequence_editor.sequences_all
+        if not selected_strips:
+            selected_strips = context.scene.sequence_editor.strips_all
 
         strips_to_submit = [
             s
-            for s in selected_sequences
+            for s in selected_strips
             if s.kitsu.initialized
             and not s.kitsu.linked
             and (s.kitsu.manual_shot_name or s.kitsu.sequence_name)
         ]
 
-        if len(selected_sequences) > 1:
+        if len(selected_strips) > 1:
             noun = "%i Shots" % len(strips_to_submit)
         else:
             noun = "this Shot"
@@ -359,7 +359,7 @@ class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
 
         # Clear cache.
         Cache.clear_all()
-        cache.reset_sequences_enum_list()
+        cache.reset_strips_enum_list()
 
         self.report(
             {"INFO"},
@@ -373,7 +373,7 @@ class KITSU_OT_sqe_push_new_sequence(bpy.types.Operator):
         if seq_tools.poll_multi_edit(context):
             context.window_manager.selected_sequence_name = sequence.name
         else:
-            context.active_sequence_strip.kitsu.sequence_name = sequence.name
+            context.active_strip.kitsu.sequence_name = sequence.name
 
         logger.info("Submitted new sequence: %s", sequence.name)
         return {"FINISHED"}
@@ -424,14 +424,14 @@ class KITSU_OT_sqe_init_strip(bpy.types.Operator):
         logger.info("-START- Initializing shots")
 
         # Get strips.
-        selected_sequences = context.selected_sequences
-        if not selected_sequences:
-            selected_sequences = context.scene.sequence_editor.sequences_all
+        selected_strips = context.selected_strips
+        if not selected_strips:
+            selected_strips = context.scene.sequence_editor.strips_all
 
         # Sort strips.
-        selected_sequences = sorted(selected_sequences, key=lambda strip: strip.frame_final_start)
+        selected_strips = sorted(selected_strips, key=lambda strip: strip.frame_final_start)
 
-        for strip in selected_sequences:
+        for strip in selected_strips:
             if not checkstrip.is_valid_type(strip):
                 continue
 
@@ -468,7 +468,7 @@ class KITSU_OT_sqe_init_strip(bpy.types.Operator):
 
 class KITSU_OT_sqe_link_sequence(bpy.types.Operator):
     """
-    Gets all sequences that are available in server for active production and let's user select. Invokes a search popup on click.
+    Gets all sequences that are available in server for active production and lets user select. Invokes a search popup on click.
     """
 
     bl_idname = "kitsu.sqe_link_sequence"
@@ -478,7 +478,7 @@ class KITSU_OT_sqe_link_sequence(bpy.types.Operator):
     bl_description = "Links selected sequence strip to an existing sequence on server"
 
     enum_prop: bpy.props.EnumProperty(
-        items=cache.get_sequences_enum_list,
+        items=cache.get_strips_enum_list,
     )  # type: ignore
 
     @classmethod
@@ -491,7 +491,7 @@ class KITSU_OT_sqe_link_sequence(bpy.types.Operator):
             prefs.session_auth(context)
             and cache.project_active_get()
             and strip
-            and context.selected_sequences
+            and context.selected_strips
             and checkstrip.is_valid_type(strip)
         )
 
@@ -553,7 +553,7 @@ class KITSU_OT_sqe_link_shot(bpy.types.Operator):
             prefs.session_auth(context)
             and cache.project_active_get()
             and strip
-            and context.selected_sequences
+            and context.selected_strips
             and checkstrip.is_valid_type(strip)
         )
 
@@ -638,9 +638,9 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
     def poll(cls, context: bpy.types.Context) -> bool:
         # Only if all selected strips are initialized but not linked
         # and they all have the same sequence name.
-        sel_shots = context.selected_sequences
+        sel_shots = context.selected_strips
         if not sel_shots:
-            cls.poll_message_set("No sequences are selected")
+            cls.poll_message_set("No strips are selected")
             return False
         nr_of_shots = len(sel_shots)
 
@@ -685,11 +685,11 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
         logger.info("-START- Multi Edit Shot")
 
         # Sort sequence after frame in.
-        selected_sequences = context.selected_sequences
-        selected_sequences = sorted(selected_sequences, key=lambda x: x.frame_final_start)
+        selected_strips = context.selected_strips
+        selected_strips = sorted(selected_strips, key=lambda x: x.frame_final_start)
         episode = cache.episode_active_get()
 
-        for idx, strip in enumerate(selected_sequences):
+        for idx, strip in enumerate(selected_strips):
             # Gen data for resolver.
             counter_number = shot_counter_start + (shot_counter_increment * idx)
             counter = str(counter_number).rjust(shot_counter_digits, "0")
@@ -743,7 +743,7 @@ class KITSU_OT_sqe_pull_shot_meta(bpy.types.Operator):
     bl_options = {"INTERNAL"}
     bl_options = {"REGISTER", "UNDO"}
     bl_description = (
-        "Pulls metadata of all selected sequences from server. "
+        "Pulls metadata of all selected strips from server. "
         "This includes name, sequence, project and description. "
         "Frame range information will not be pulled"
     )
@@ -757,16 +757,16 @@ class KITSU_OT_sqe_pull_shot_meta(bpy.types.Operator):
         failed = []
         logger.info("-START- Pulling shot metadata")
 
-        # Get sequences to process.
-        selected_sequences = context.selected_sequences
-        if not selected_sequences:
-            selected_sequences = context.scene.sequence_editor.sequences_all
+        # Get strips to process.
+        selected_strips = context.selected_strips
+        if not selected_strips:
+            selected_strips = context.scene.sequence_editor.strips_all
 
-        # Sort sequences.
-        selected_sequences = sorted(selected_sequences, key=lambda strip: strip.frame_final_start)
+        # Sort strips.
+        selected_strips = sorted(selected_strips, key=lambda strip: strip.frame_final_start)
 
         # Begin progress update.
-        context.window_manager.progress_begin(0, len(selected_sequences))
+        context.window_manager.progress_begin(0, len(selected_strips))
 
         # Clear cache once.
         Cache.clear_all()
@@ -775,7 +775,7 @@ class KITSU_OT_sqe_pull_shot_meta(bpy.types.Operator):
         sequence_ids: List[str] = []
 
         # Shots.
-        for idx, strip in enumerate(selected_sequences):
+        for idx, strip in enumerate(selected_strips):
             context.window_manager.progress_update(idx)
 
             if not checkstrip.is_valid_type(strip):
@@ -807,11 +807,11 @@ class KITSU_OT_sqe_pull_shot_meta(bpy.types.Operator):
             succeeded.append(strip)
 
         # End progress update.
-        context.window_manager.progress_update(len(selected_sequences))
+        context.window_manager.progress_update(len(selected_strips))
         context.window_manager.progress_end()
 
         # Sequences.
-        # Begin second progress update for sequences.
+        # Begin second progress update for strips.
         context.window_manager.progress_begin(0, len(sequence_ids))
         for idx, seq_id in enumerate(sequence_ids):
             context.window_manager.progress_update(idx)
@@ -852,14 +852,14 @@ class KITSU_OT_sqe_uninit_strip(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(context.selected_sequences)
+        return bool(context.selected_strips)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         failed: List[bpy.types.Strip] = []
         succeeded: List[bpy.types.Strip] = []
         logger.info("-START- Uninitializing strips")
 
-        for strip in context.selected_sequences:
+        for strip in context.selected_strips:
             if not checkstrip.is_valid_type(strip):
                 continue
 
@@ -904,14 +904,14 @@ class KITSU_OT_sqe_unlink_shot(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(context.selected_sequences)
+        return bool(context.selected_strips)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         failed: List[bpy.types.Strip] = []
         succeeded: List[bpy.types.Strip] = []
         logger.info("-START- Unlinking shots")
 
-        for strip in context.selected_sequences:
+        for strip in context.selected_strips:
             if not checkstrip.is_valid_type(strip):
                 continue
 
@@ -954,7 +954,7 @@ class KITSU_OT_sqe_push_del_shot(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return bool(prefs.session_auth(context) and context.selected_sequences)
+        return bool(prefs.session_auth(context) and context.selected_strips)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         if not self.confirm:
@@ -969,11 +969,11 @@ class KITSU_OT_sqe_push_del_shot(bpy.types.Operator):
         Cache.clear_all()
 
         # Begin progress update.
-        selected_sequences = context.selected_sequences
+        selected_strips = context.selected_strips
 
-        context.window_manager.progress_begin(0, len(selected_sequences))
+        context.window_manager.progress_begin(0, len(selected_strips))
 
-        for idx, strip in enumerate(selected_sequences):
+        for idx, strip in enumerate(selected_strips):
             context.window_manager.progress_update(idx)
 
             if not checkstrip.is_valid_type(strip):
@@ -998,7 +998,7 @@ class KITSU_OT_sqe_push_del_shot(bpy.types.Operator):
             succeeded.append(strip)
 
         # End progress update.
-        context.window_manager.progress_update(len(selected_sequences))
+        context.window_manager.progress_update(len(selected_strips))
         context.window_manager.progress_end()
 
         # Report.
@@ -1026,7 +1026,7 @@ class KITSU_OT_sqe_push_del_shot(bpy.types.Operator):
         layout = self.layout
         col = layout.column()
 
-        selshots = context.selected_sequences
+        selshots = context.selected_strips
         strips_to_delete = [s for s in selshots if s.kitsu.linked]
 
         if len(selshots) > 1:
@@ -1123,7 +1123,7 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
         return bool(prefs.session_auth(context) and context.scene.kitsu.task_type_thumbnail_id)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        nr_of_strips: int = len(context.selected_sequences)
+        nr_of_strips: int = len(context.selected_strips)
         do_multishot: bool = nr_of_strips > 1
         failed = []
         upload_queue: List[Path] = []  # Will be used as succeeded list
@@ -1140,18 +1140,18 @@ class KITSU_OT_sqe_push_render_still(bpy.types.Operator):
                 # ----RENDER AND SAVE THUMBNAILS ------.
 
                 # Begin first progress update.
-                selected_sequences = context.selected_sequences
-                if not selected_sequences:
-                    selected_sequences = context.scene.sequence_editor.sequences_all
+                selected_strips = context.selected_strips
+                if not selected_strips:
+                    selected_strips = context.scene.sequence_editor.strips_all
 
-                # Sort sequences.
-                selected_sequences = sorted(
-                    selected_sequences, key=lambda strip: strip.frame_final_start
+                # Sort strips.
+                selected_strips = sorted(
+                    selected_strips, key=lambda strip: strip.frame_final_start
                 )
 
-                context.window_manager.progress_begin(0, len(selected_sequences))
+                context.window_manager.progress_begin(0, len(selected_strips))
 
-                for idx, strip in enumerate(selected_sequences):
+                for idx, strip in enumerate(selected_strips):
                     context.window_manager.progress_update(idx)
 
                     if not checkstrip.is_valid_type(strip):
@@ -1329,19 +1329,19 @@ class KITSU_OT_sqe_push_render(bpy.types.Operator):
             # ----RENDER AND SAVE SQE ------.
 
             # Get strips.
-            selected_sequences = context.selected_sequences
-            if not selected_sequences:
-                selected_sequences = context.scene.sequence_editor.sequences_all
+            selected_strips = context.selected_strips
+            if not selected_strips:
+                selected_strips = context.scene.sequence_editor.strips_all
 
             # Sort strips.
-            selected_sequences = sorted(
-                selected_sequences, key=lambda strip: strip.frame_final_start
+            selected_strips = sorted(
+                selected_strips, key=lambda strip: strip.frame_final_start
             )
 
             # Begin first progress update.
-            context.window_manager.progress_begin(0, len(selected_sequences))
+            context.window_manager.progress_begin(0, len(selected_strips))
 
-            for idx, strip in enumerate(selected_sequences):
+            for idx, strip in enumerate(selected_strips):
                 context.window_manager.progress_update(idx)
 
                 if not checkstrip.is_valid_type(strip):
@@ -1524,7 +1524,7 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
         # Find the metadata strip of this strip that contains Kitsu information
         # about what sequence and shot this strip belongs to.
         shot_name = active_strip.name.split(bkglobals.DELIMITER)[0]
-        metadata_strip = context.scene.sequence_editor.sequences.get(shot_name)
+        metadata_strip = context.scene.sequence_editor.strips.get(shot_name)
         if not metadata_strip:
             # The metadata strip should've been created by sqe_create_review_session,
             # if the Kitsu integration is enabled in the add-on preferences,
@@ -1602,10 +1602,10 @@ class KITSU_OT_sqe_debug_duplicates(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Deselect all if something is selected.
-        if context.selected_sequences:
+        if context.selected_strips:
             bpy.ops.sequencer.select_all()
 
-        strip = context.scene.sequence_editor.sequences_all[strip_name]
+        strip = context.scene.sequence_editor.strips_all[strip_name]
         strip.select = True
         bpy.ops.sequencer.select()
         return {"FINISHED"}
@@ -1638,10 +1638,10 @@ class KITSU_OT_sqe_debug_not_linked(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Deselect all if something is selected.
-        if context.selected_sequences:
+        if context.selected_strips:
             bpy.ops.sequencer.select_all()
 
-        strip = context.scene.sequence_editor.sequences_all[strip_name]
+        strip = context.scene.sequence_editor.strips_all[strip_name]
         strip.select = True
         bpy.ops.sequencer.select()
 
@@ -1675,10 +1675,10 @@ class KITSU_OT_sqe_debug_multi_project(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Deselect all if something is selected.
-        if context.selected_sequences:
+        if context.selected_strips:
             bpy.ops.sequencer.select_all()
 
-        strip = context.scene.sequence_editor.sequences_all[strip_name]
+        strip = context.scene.sequence_editor.strips_all[strip_name]
         strip.select = True
         bpy.ops.sequencer.select()
 
@@ -1700,11 +1700,9 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        addon_prefs = prefs.addon_prefs_get(context)
         return bool(prefs.session_auth(context) and cache.project_active_get())
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        addon_prefs = prefs.addon_prefs_get(context)
         failed = []
         created = []
         succeeded = []
@@ -1712,24 +1710,23 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
         channel = context.scene.kitsu.pull_edit_channel
         active_project = cache.project_active_get()
         active_episode = cache.episode_active_get()
-        sequences = (
-            active_episode.get_sequences_all()
+        strips = (
+            active_episode.get_strips_all()
             if active_episode
-            else active_project.get_sequences_all()
+            else active_project.get_strips_all()
         )
         shot_strips = checksqe.get_shot_strips(context)
         occupied_ranges = checksqe.get_occupied_ranges(context)
         all_shots = active_project.get_shots_all()
-        selection = context.selected_sequences
+        selection = context.selected_strips
 
         logger.info("-START- Pulling Edit")
 
-        # Begin progress update.
         context.window_manager.progress_begin(0, len(all_shots))
         progress_idx = 0
 
         # Process sequence after sequence.
-        for seq in sequences:
+        for seq in strips:
             print("\n" * 2)
             logger.info("Processing Sequence %s", seq.name)
             shots = seq.get_all_shots()
@@ -1737,14 +1734,13 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
             # Extend context.scene.kitsu.sequence_colors property.
             opsdata.append_sequence_color(context, seq)
 
-            # Process all shots for sequence.
             for shot in shots:
                 context.window_manager.progress_update(progress_idx)
                 progress_idx += 1
 
-                # Can happen, propably when shot is missing frame information on
-                # kitsu.
                 if not shot.data:
+                    # Can happen, propably when shot is missing frame information on
+                    # kitsu.
                     logger.warning(
                         "Shot %s, is missing 'data' dictionary. Can't determine frame_in and frame_out. Skip.",
                         shot.name,
@@ -1755,7 +1751,6 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
                 frame_start = shot.data.get("frame_in", None)
                 frame_end = shot.data.get("frame_out", None)
 
-                # Continue if frame range information is missing.
                 if frame_start is None or frame_end is None:
                     failed.append(shot)
                     logger.error(
@@ -1786,8 +1781,6 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
                         continue
                 # TODO Refactor as this reuses code from KITSU_OT_sqe_create_metadata_strip
                 if not strip:
-                    # Create new strip.
-
                     strip = opsdata.create_metadata_strip(
                         context.scene, shot.name, channel, frame_start, frame_end
                     )
@@ -1804,7 +1797,6 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
                     logger.info("Shot %s use existing strip: %s", shot.name, strip.name)
                     existing.append(strip)
 
-                # Set blend alpha.
                 strip.blend_alpha = 0
 
                 # Pull shot meta and link shot.
@@ -1812,13 +1804,10 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
 
                 succeeded.append(shot)
 
-        # End progress update.
         context.window_manager.progress_update(len(all_shots))
         context.window_manager.progress_end()
 
-        # Restore selection.
-        if context.selected_sequences:
-            bpy.ops.sequencer.select_all()
+        bpy.ops.sequencer.select_all(action='DESELECT')
 
         for s in selection:
             s.select = True
@@ -1835,7 +1824,6 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
             report_str,
         )
 
-        # Log.
         logger.info("-END- Pulling Edit")
 
         return {"FINISHED"}
@@ -1873,14 +1861,10 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
     def _apply_strip_slip_from_shot(
         self, context: bpy.types.Context, strip: bpy.types.Strip, shot: Shot
     ) -> None:
-        # get offset
         offset = strip.kitsu_3d_start - int(shot.get_3d_start())
 
-        # Deselect everything.
-        if context.selected_sequences:
-            bpy.ops.sequencer.select_all()
+        bpy.ops.sequencer.select_all(action='DESELECT')
 
-        # Select strip and run slip op.
         strip.select = True
         bpy.ops.sequencer.slip(offset=offset)
 
@@ -1900,11 +1884,11 @@ class KITSU_OT_sqe_init_strip_start_frame(bpy.types.Operator):
         failed = []
         logger.info("-START- Initializing strip start frame")
 
-        selected_sequences = context.selected_sequences
-        if not selected_sequences:
-            selected_sequences = context.scene.sequence_editor.sequences_all
+        selected_strips = context.selected_strips
+        if not selected_strips:
+            selected_strips = context.scene.sequence_editor.strips_all
 
-        for strip in selected_sequences:
+        for strip in selected_strips:
             if not checkstrip.is_valid_type(strip):
                 continue
 
@@ -1952,19 +1936,17 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        addon_prefs = prefs.addon_prefs_get(context)
-        return bool(context.selected_sequences)
+        return bool(context.selected_strips)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        addon_prefs = prefs.addon_prefs_get(context)
         failed = []
         created = []
         occupied_ranges = checksqe.get_occupied_ranges(context)
         logger.info("-START- Creating Metadata Strips")
 
-        selected_sequences = context.selected_sequences
+        selected_strips = context.selected_strips
         # Check if metadata strip file actually exists.
-        for strip in selected_sequences:
+        for strip in selected_strips:
             # Get frame range information from current strip.
             strip_range = range(strip.frame_final_start, strip.frame_final_end)
             channel = strip.channel + 1
@@ -1984,7 +1966,7 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
 
             # Create new metadata strip.
             # TODO: frame range of metadata strip is 1000 which is problematic because it needs to fit
-            # on the first try, EDIT: seems to work maybe per python overlaps of sequences possible?
+            # on the first try, EDIT: seems to work maybe per python overlaps of strips possible?
 
             metadata_strip = opsdata.create_metadata_strip(
                 context.scene,
@@ -2015,7 +1997,7 @@ class KITSU_OT_sqe_create_metadata_strip(bpy.types.Operator):
         )
 
         # Deselect source strips after creating Metadata strips
-        for strip in selected_sequences:
+        for strip in selected_strips:
             if strip not in created:
                 strip.select = False
 
@@ -2035,10 +2017,10 @@ class KITSU_OT_sqe_fix_metadata_strips(bpy.types.Operator):
     def execute(self, context: Context):
         addon_prefs = prefs.addon_prefs_get(context)
 
-        if len(context.selected_sequences) == 0:
-            all_strips = context.scene.sequence_editor.sequences
+        if len(context.selected_strips) == 0:
+            all_strips = context.scene.sequence_editor.strips
         else:
-            all_strips = context.selected_sequences
+            all_strips = context.selected_strips
 
         offline_metadata_strips = [
             strip
@@ -2105,7 +2087,7 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
         sqe = context.scene.sequence_editor
         if not sqe:
             return False
-        return bool(sqe.sequences_all)
+        return bool(sqe.strips_all)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         addon_prefs = prefs.addon_prefs_get(context)
@@ -2116,13 +2098,13 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
         checked: List[bpy.types.Strip] = []
         excluded: List[bpy.types.Strip] = []
 
-        sequences = context.selected_sequences
-        if not sequences:
-            sequences = context.scene.sequence_editor.sequences_all
+        strips = context.selected_strips
+        if not strips:
+            strips = context.scene.sequence_editor.strips_all
 
         logger.info("-START- Scanning for media updates")
 
-        for strip in sequences:
+        for strip in strips:
             if not strip.type == "MOVIE":
                 continue
 
@@ -2217,8 +2199,8 @@ class KITSU_OT_sqe_scan_for_media_updates(bpy.types.Operator):
 
 def get_used_channels(self: Any, context: bpy.types.Context, edit_text: str = "") -> List[str]:
     used_channels = []
-    for seq in context.scene.sequence_editor.sequences_all:
-        used_channels.append(seq.channel)
+    for strip in context.scene.sequence_editor.strips_all:
+        used_channels.append(strip.channel)
 
     aval_channels = []
     for channel in range(1, 100):
@@ -2264,18 +2246,18 @@ class KITSU_OT_sqe_import_playblast(bpy.types.Operator):
         if not cache.project_active_get():
             cls.poll_message_set("No Kitsu Project Found check Add-on Preferences")
             return False
-        for strip in context.selected_sequences:
+        for strip in context.selected_strips:
             if strip.kitsu.shot_id == "":
                 cls.poll_message_set(f"Selected strip {strip.name} is not metadata strip'")
                 return False
-        if len(bpy.context.selected_sequences) == 0:
+        if len(context.selected_strips) == 0:
             cls.poll_message_set("Please select one or more metadata strips")
             return False
         return True
 
     def invoke(self, context, event):
         channels = [int(x) for x in get_used_channels(self, context)]
-        strip = context.selected_sequences[0]
+        strip = context.selected_strips[0]
         channel = min(channels, key=lambda x: abs(x - strip.channel))
         self.channel_selection = f"{channel}"
         return context.window_manager.invoke_props_dialog(self, width=500)
@@ -2288,9 +2270,9 @@ class KITSU_OT_sqe_import_playblast(bpy.types.Operator):
     def execute(self, context: Context) -> Set[str] | Set[int]:
         succeeded: Set[str] = set()
         failed: Set[str] = set()
-        sequences = context.scene.sequence_editor.sequences
+        strips = context.scene.sequence_editor.strips
         metadata_strips = [
-            strip for strip in context.selected_sequences if strip.kitsu.shot_id != ''
+            strip for strip in context.selected_strips if strip.kitsu.shot_id != ''
         ]
         for metadata_strip in metadata_strips:
             # TODO add try except if ID is not valid, do same for shot as image sequence.
@@ -2298,7 +2280,7 @@ class KITSU_OT_sqe_import_playblast(bpy.types.Operator):
             task_type_short_name = TaskType.by_id(self.task_type).get_short_name()
             filepath = shot.get_latest_playblast_file(context, task_type_short_name)
             if filepath:
-                playblast = sequences.new_movie(
+                playblast = strips.new_movie(
                     name=Path(filepath).name,
                     filepath=filepath,
                     frame_start=int(metadata_strip.frame_start),
@@ -2349,13 +2331,13 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
 
     channel_selection: bpy.props.StringProperty(
         name="Channel",
-        description="Choose an empty target channel to place image sequences onto",
+        description="Choose an empty target channel to place image strips onto",
         search=get_used_channels,
         search_options={'SORT'},
     )
     file_type: bpy.props.EnumProperty(
         name="File Type",
-        description="Choose an empty target channel to place image sequences onto",
+        description="Choose an empty target channel to place image strips onto",
         items=[
             ('.jpg', 'JPG', '', '', 0),
             ('.exr', 'EXR', '', '', 1),
@@ -2382,20 +2364,17 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
         if not cache.project_active_get():
             cls.poll_message_set("No Kitsu Project Found check Add-on Preferences")
             return False
-        for strip in context.selected_sequences:
+        for strip in context.selected_strips:
             if strip.kitsu.shot_id == "":
                 cls.poll_message_set(f"Selected strip {strip.name} is not metadata strip'")
                 return False
-        if len(bpy.context.selected_sequences) == 0:
+        if len(context.selected_strips) == 0:
             cls.poll_message_set("Please select a 'MOVIE' strip")
             return False
         return True
 
     def set_scene_colorspace(self, context):
-        if bpy.app.version_string.split('.')[0] == '3':
-            color_space_name = "Linear"
-        else:
-            color_space_name = "Linear Rec.709"
+        color_space_name = "Linear Rec.709"
 
         scene = context.scene
         if self.file_type == ".jpg":
@@ -2409,7 +2388,7 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
 
     def invoke(self, context, event):
         channels = [int(x) for x in get_used_channels(self, context)]
-        strip = context.selected_sequences[0]
+        strip = context.selected_strips[0]
         channel = min(channels, key=lambda x: abs(x - strip.channel))
         self.channel_selection = f"{channel}"
         return context.window_manager.invoke_props_dialog(self, width=500)
@@ -2456,13 +2435,13 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
             self.report({'ERROR'}, "No files found")
             return {'CANCELLED'}
 
-        len_strip = len(context.scene.sequence_editor.sequences_all)
+        num_strips = len(context.scene.sequence_editor.strips_all)
 
-        with bpy.context.temp_override(
-            window=bpy.context.window,
+        with context.temp_override(
+            window=context.window,
             area=areas[0],
             regions=[region for region in areas[0].regions if region.type == 'WINDOW'][0],
-            screen=bpy.context.window.screen,
+            screen=context.window.screen,
         ):
             bpy.ops.sequencer.image_strip_add(
                 directory=directory._str,
@@ -2474,11 +2453,11 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
                 channel=channel,
                 fit_method='FIT',
             )
-        if len_strip + 1 != len(context.scene.sequence_editor.sequences_all):
+        if num_strips + 1 != len(context.scene.sequence_editor.strips_all):
             print(f"Failed to import image sequence for {metadata_strip.name}")
             return
 
-        new_strip = context.selected_sequences[0]
+        new_strip = context.selected_strips[0]
 
         new_strip.animation_offset_end = metadata_strip.animation_offset_end
         new_strip.animation_offset_start = metadata_strip.animation_offset_start
@@ -2499,7 +2478,7 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
         return path.parent
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        # Get closest empty channel
+        # Get closest empty channel.
         succeeded = []
         failed = []
         channel = int(self.channel_selection)
@@ -2512,7 +2491,7 @@ class KITSU_OT_sqe_import_image_sequence(bpy.types.Operator):
             self.set_scene_colorspace(context)
 
         metadata_strips = [
-            strip for strip in context.selected_sequences if strip.kitsu.shot_id != ''
+            strip for strip in context.selected_strips if strip.kitsu.shot_id != ''
         ]
 
         for strip in metadata_strips:
@@ -2561,17 +2540,16 @@ class KITSU_OT_sqe_clear_update_indicators(bpy.types.Operator):
         sqe = context.scene.sequence_editor
         if not sqe:
             return False
-        return bool(sqe.sequences_all)
+        return bool(sqe.strips_all)
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        addon_prefs = prefs.addon_prefs_get(context)
         reset: List[bpy.types.Strip] = []
 
-        sequences = context.selected_sequences
-        if not sequences:
-            sequences = context.scene.sequence_editor.sequences_all
+        strips = context.selected_strips
+        if not strips:
+            strips = context.scene.sequence_editor.strips_all
 
-        for strip in sequences:
+        for strip in strips:
             if strip.kitsu.media_outdated:
                 strip.kitsu.media_outdated = False
                 reset.append(strip)

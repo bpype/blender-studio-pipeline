@@ -2,15 +2,19 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import sys
-import pathlib
-from typing import *
+# TODO: This code should be de-duplicated between here and Blender Kitsu, 
+# and moved to blender-studio-utils repo, then added to this repo as a submodule.
+
 import bpy
+import sys
+from pathlib import Path
 import typing
 import types
-import importlib
-from . import prefs, logging
-from pathlib import Path
+import importlib.util
+from . import prefs
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Wildcard:
@@ -41,8 +45,8 @@ would work.
 
 MatchingRulesType = typing.Dict[str, MatchCriteriaType]
 """
-Hooks are stored as `_asset_pipeline_rules' attribute on the function.
-The MatchingRulesType is the type definition of the `_asset_pipeline_rules` attribute.
+Hooks are stored as `_hook_rules' attribute on the function.
+The MatchingRulesType is the type definition of the `_hook_rules` attribute.
 """
 
 HookFunction = typing.Callable[[typing.Any], None]
@@ -61,6 +65,7 @@ def _match_hook_parameter(
         return match_query == hook_criteria
     if isinstance(hook_criteria, list):
         return match_query in hook_criteria
+    logger.error(f"Incorrect matching criteria {hook_criteria}, {match_query}")
     return False
 
 
@@ -76,7 +81,7 @@ class Hooks:
         **kwargs: typing.Optional[str],
     ) -> bool:
         assert not kwargs
-        rules = typing.cast(MatchingRulesType, getattr(hook, '_asset_pipeline_rules'))
+        rules = typing.cast(MatchingRulesType, getattr(hook, '_hook_rules'))
         return all(
             (
                 _match_hook_parameter(rules['merge_mode'], merge_mode),
@@ -93,29 +98,34 @@ class Hooks:
         self, merge_mode: str = None, merge_status: str = None, *args, **kwargs
     ) -> None:
         for hook in self._hooks:
-            if self.matches(hook, merge_mode=merge_mode, merge_status=merge_status):
+            if self.matches(
+                hook, merge_mode=merge_mode, merge_status=merge_status
+            ):
                 hook(*args, **kwargs)
 
-    def import_hook(self, path: List[str]) -> None:
-        logger = logging.get_logger()
-        with SystemPathInclude(path) as _include:
-            try:
-                import hooks as production_hooks
-
-                importlib.reload(production_hooks)
-                self.register_hooks(production_hooks)
-            except ModuleNotFoundError:
-                logger.warning(f"Did not find `hooks.py` configuration file at {path}")
-
     def load_hooks(self, context):
-        prod_hooks = get_production_hook_dir()
-        asset_hooks = get_asset_hook_dir()
-        for path in [prod_hooks.resolve().__str__(), asset_hooks.resolve().__str__()]:
-            self.import_hook([path])
+        hook_dirs = [get_production_hook_dir(), get_asset_hook_dir()] # TODO: This should be a function param.
+        for hook_dir in hook_dirs:
+            if not hook_dir.exists():
+                logger.debug(f"Hooks directory not found: {hook_dir}")
+                return
+            hook_file_path = hook_dir.resolve() / "hooks.py"
+            module_name = __package__ + ".production_hooks"
+            try:
+                spec = importlib.util.spec_from_file_location(module_name, hook_file_path)
+                hooks_module = importlib.util.module_from_spec(spec)
+                sys.modules[module_name] = hooks_module
+                spec.loader.exec_module(hooks_module)
+
+                self.register_hooks(hooks_module)
+            except FileNotFoundError:
+                logger.debug(f"No hook file found in optional location: {hook_file_path}")
+
+        return False
 
     def register(self, func: HookFunction) -> None:
-        if func not in self._hooks:
-            self._hooks.append(func)
+        logger.info(f"Registering hook: '{func.__name__}'")
+        self._hooks.append(func)
 
     def register_hooks(self, module: types.ModuleType) -> None:
         """
@@ -127,10 +137,9 @@ class Hooks:
                 continue
             if module_item.__module__ != module.__name__:
                 continue
-            if not hasattr(module_item, "_asset_pipeline_rules"):
+            if not hasattr(module_item, "_hook_rules"):
                 continue
             self.register(module_item)
-
 
 def get_production_hook_dir() -> Path:
     root_dir = Path(prefs.project_root_dir_get())
@@ -145,15 +154,14 @@ def get_production_hook_dir() -> Path:
 def get_asset_hook_dir() -> Path:
     return Path(bpy.data.filepath).parent
 
-
 def hook(
     merge_mode: MatchCriteriaType = None,
     merge_status: MatchCriteriaType = None,
 ) -> typing.Callable[[types.FunctionType], types.FunctionType]:
     """
-    Decorator to add custom logic when pushing/pulling an asset.
+    Decorator to add custom logic when performing certain actions.
 
-    Hooks are used to extend the configuration that would be not part of the core logic of the asset pipeline.
+    Hooks are used to extend the configuration that would be not part of the core logic of the tool.
     """
     rules = {
         'merge_mode': merge_mode,
@@ -161,43 +169,7 @@ def hook(
     }
 
     def wrapper(func: types.FunctionType) -> types.FunctionType:
-        setattr(func, '_asset_pipeline_rules', rules)
+        setattr(func, '_hook_rules', rules)
         return func
 
     return wrapper
-
-
-class SystemPathInclude:
-    """
-    Resource class to temporary include system paths to `sys.paths`.
-
-    Usage:
-        ```
-        paths = [pathlib.Path("/home/guest/my_python_scripts")]
-        with SystemPathInclude(paths) as t:
-            import my_module
-            reload(my_module)
-        ```
-
-    It is possible to nest multiple SystemPathIncludes.
-    """
-
-    def __init__(self, paths_to_add: List[pathlib.Path]):
-        # TODO: Check if all paths exist and are absolute.
-        self.__paths = paths_to_add
-        self.__original_sys_path: List[str] = []
-
-    def __enter__(self):
-        self.__original_sys_path = sys.path
-        new_sys_path = []
-        for path_to_add in self.__paths:
-            # Do not add paths that are already in the sys path.
-            path_to_add_str = str(path_to_add)
-            if path_to_add_str in self.__original_sys_path:
-                continue
-            new_sys_path.append(path_to_add_str)
-        new_sys_path.extend(self.__original_sys_path)
-        sys.path = new_sys_path
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        sys.path = self.__original_sys_path
