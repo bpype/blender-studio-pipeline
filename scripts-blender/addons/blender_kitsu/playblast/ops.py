@@ -265,7 +265,7 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
             # load movie strip file in sequence editor
             # in this case we make use of ops.sequencer.movie_strip_add because
             # it provides handy auto placing,would be hard to achieve with
-            # context.scene.sequence_editor.sequences.new_movie().
+            # context.scene.sequence_editor.strips.new_movie().
             override = context.copy()
             for window in bpy.context.window_manager.windows:
                 screen = window.screen

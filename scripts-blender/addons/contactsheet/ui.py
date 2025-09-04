@@ -38,13 +38,13 @@ class CS_PT_contactsheet(bpy.types.Panel):
         # Make contact sheet.
         row = layout.row(align=True)
 
-        sequences = context.selected_sequences
-        if not sequences:
-            valid_sequences = opsdata.get_top_level_valid_strips_continuous(context)
+        strips = context.selected_strips
+        if not strips:
+            valid_strips = opsdata.get_top_level_valid_strips_continuous(context)
         else:
-            valid_sequences = opsdata.get_valid_cs_sequences(sequences)
+            valid_strips = opsdata.get_valid_cs_strips(strips)
 
-        text = f"Make Contactsheet with {len(valid_sequences)} strips"
+        text = f"Make Contactsheet with {len(valid_strips)} strips"
 
         row.operator(CS_OT_make_contactsheet.bl_idname, icon="MESH_GRID", text=text)
         icon = "UNLOCKED" if context.scene.contactsheet.use_custom_rows else "LOCKED"

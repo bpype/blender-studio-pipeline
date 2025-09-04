@@ -93,7 +93,7 @@ start_frame = 1
 
 # Load image sequence in Sequence Editor.
 # Create new image strip.
-strip = bpy.context.scene.sequence_editor.sequences.new_image(
+strip = bpy.context.scene.sequence_editor.strips.new_image(
     filepath_list[0].parent.name,
     filepath_list[0].as_posix(),
     1,

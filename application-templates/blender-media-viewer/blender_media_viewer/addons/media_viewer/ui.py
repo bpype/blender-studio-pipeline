@@ -172,7 +172,7 @@ class MV_PT_review_settings(bpy.types.Panel):
         layout.row().label(text="Display Settings")
         layout.row().prop(
             context.window_manager.media_viewer,
-            "interpret_sequences",
+            "interpret_strips",
         )
         layout.row().prop(
             context.preferences.view,

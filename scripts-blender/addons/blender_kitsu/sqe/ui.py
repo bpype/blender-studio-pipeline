@@ -57,7 +57,7 @@ class KITSU_MT_sqe_advanced_delete(bpy.types.Menu):
     bl_label = "Advanced Delete"
 
     def draw(self, context: bpy.types.Context) -> None:
-        selshots = context.selected_sequences
+        selshots = context.selected_strips
         strips_to_unlink = [s for s in selshots if s.kitsu.linked]
 
         layout = self.layout
@@ -87,7 +87,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         if not context_core.is_edit_context():
             return False
         sqe = context.scene.sequence_editor
-        return bool(prefs.session_auth(context) or (sqe and sqe.sequences_all))
+        return bool(prefs.session_auth(context) or (sqe and sqe.strips_all))
 
     def draw(self, context: bpy.types.Context) -> None:
         active_project = cache.project_active_get()
@@ -144,7 +144,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
     @classmethod
     def poll_setup(cls, context: bpy.types.Context) -> bool:
-        return bool(context.selected_sequences)
+        return bool(context.selected_strips)
 
     def draw_setup(self, context: bpy.types.Context) -> None:
         """
@@ -153,7 +153,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         """
 
         strip = context.scene.sequence_editor.active_strip
-        selshots = context.selected_sequences
+        selshots = context.selected_strips
         nr_of_shots = len(selshots)
         noun = get_selshots_noun(nr_of_shots)
         project_active = cache.project_active_get()
@@ -266,7 +266,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
     @classmethod
     def poll_metadata(cls, context: bpy.types.Context) -> bool:
-        if context.selected_sequences == None or len(context.selected_sequences) != 1:
+        if context.selected_strips == None or len(context.selected_strips) != 1:
             return False
         strip = context.scene.sequence_editor.active_strip
         return strip.kitsu.initialized
@@ -347,7 +347,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
     def poll_offline_metadata(cls, context: bpy.types.Context) -> bool:
         offline_metadata_strips = [
             strip
-            for strip in context.scene.sequence_editor.sequences
+            for strip in context.scene.sequence_editor.strips
             if strip.kitsu.shot_id != '' and not Path(strip.filepath).is_file()
         ]
 
@@ -360,7 +360,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         box.label(text="Fix Metadata Strips", icon="ERROR")
         offline_metadata_strips = [
             strip
-            for strip in context.selected_sequences
+            for strip in context.selected_strips
             if strip.kitsu.shot_id != '' and not Path(strip.filepath).is_file()
         ]
         if len(offline_metadata_strips) == 0:
@@ -373,7 +373,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
     def poll_multi_edit(cls, context: bpy.types.Context) -> bool:
         if not prefs.session_auth(context):
             return False
-        sel_shots = context.selected_sequences
+        sel_shots = context.selected_strips
         nr_of_shots = len(sel_shots)
         unvalid = [s for s in sel_shots if s.kitsu.linked or not s.kitsu.initialized]
         return bool(not unvalid and nr_of_shots > 1)
@@ -386,7 +386,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
 
         addon_prefs = prefs.addon_prefs_get(context)
 
-        nr_of_shots = len(context.selected_sequences)
+        nr_of_shots = len(context.selected_strips)
         noun = get_selshots_noun(nr_of_shots)
 
         # Create box.
@@ -450,9 +450,9 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         if not prefs.session_auth(context):
             return False
 
-        selshots = context.selected_sequences
+        selshots = context.selected_strips
         if not selshots:
-            selshots = context.scene.sequence_editor.sequences_all
+            selshots = context.scene.sequence_editor.strips_all
 
         strips_to_meta = []
         strips_to_tb = []
@@ -472,13 +472,13 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         """
         Panel that shows operator to sync sequence editor metadata with backend.
         """
-        nr_of_shots = len(context.selected_sequences)
+        nr_of_shots = len(context.selected_strips)
         layout = self.layout
         strip = context.scene.sequence_editor.active_strip
 
-        selshots = context.selected_sequences
+        selshots = context.selected_strips
         if not selshots:
-            selshots = context.scene.sequence_editor.sequences_all
+            selshots = context.scene.sequence_editor.strips_all
 
         strips_to_meta = []
         strips_to_tb = []
@@ -576,8 +576,8 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         if not prefs.session_auth(context):
             return False
 
-        selshots = context.selected_sequences
-        all_shots = context.scene.sequence_editor.sequences_all
+        selshots = context.selected_strips
+        all_shots = context.scene.sequence_editor.strips_all
 
         if not selshots:  # Pull entire edit.
             return True
@@ -594,9 +594,9 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         Panel that shows operator to sync sequence editor metadata with backend.
         """
 
-        selshots = context.selected_sequences
+        selshots = context.selected_strips
         if not selshots:
-            selshots = context.scene.sequence_editor.sequences_all
+            selshots = context.scene.sequence_editor.strips_all
 
         strips_to_meta = []
 
@@ -619,7 +619,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
                 icon="ALIGN_LEFT",
             )
 
-        if not context.selected_sequences:
+        if not context.selected_strips:
             row = box.row()
             row.operator(
                 KITSU_OT_sqe_pull_edit.bl_idname,
@@ -632,7 +632,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         return prefs.addon_prefs_get(context).enable_debug
 
     def draw_debug(self, context: bpy.types.Context) -> None:
-        nr_of_shots = len(context.selected_sequences)
+        nr_of_shots = len(context.selected_strips)
         noun = get_selshots_noun(nr_of_shots)
 
         # Create box.
@@ -660,7 +660,7 @@ class KITSU_PT_sqe_shot_tools(bpy.types.Panel):
         )
 
     def draw_media(self, context: bpy.types.Context) -> None:
-        sel_metadata_strips = [strip for strip in context.selected_sequences if strip.kitsu.linked]
+        sel_metadata_strips = [strip for strip in context.selected_strips if strip.kitsu.linked]
 
         noun = get_selshots_noun(len(sel_metadata_strips), prefix=f"{len(sel_metadata_strips)}")
         playblast = "Playblast" if len(sel_metadata_strips) <= 1 else "Playblasts"
@@ -699,22 +699,22 @@ class KITSU_PT_sqe_general_tools(bpy.types.Panel):
     def poll(cls, context: bpy.types.Context) -> bool:
         if not context_core.is_edit_context():
             return False
-        selshots = context.selected_sequences
+        selshots = context.selected_strips
 
         sqe = context.scene.sequence_editor
         if not sqe:
             return False
 
         if not selshots:
-            selshots = context.scene.sequence_editor.sequences_all
+            selshots = context.scene.sequence_editor.strips_all
         movie_strips = [s for s in selshots if s.type == "MOVIE"]
         return bool(movie_strips)
 
     def draw(self, context: bpy.types.Context) -> None:
         active_strip = context.scene.sequence_editor.active_strip
-        selshots = context.selected_sequences
+        selshots = context.selected_strips
         if not selshots:
-            selshots = context.scene.sequence_editor.sequences_all
+            selshots = context.scene.sequence_editor.strips_all
 
         strips_to_update_media = []
 

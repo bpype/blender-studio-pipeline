@@ -43,14 +43,14 @@ def _resolve_pattern(pattern: str, var_lookup_table: Dict[str, str]) -> str:
         return result
 
 
-def _get_sequences(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
+def _get_strips(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, str]]:
     addon_prefs = bpy.context.preferences.addons[__package__].preferences
     project_active = cache.project_active_get()
 
     if not project_active or not addon_prefs.session.is_auth:
         return [("None", "None", "")]
 
-    enum_list = [(s.name, s.name, "") for s in project_active.get_sequences_all()]
+    enum_list = [(s.name, s.name, "") for s in project_active.get_strips_all()]
     return enum_list
 
 
@@ -145,7 +145,7 @@ def get_playblast_file(self: Any) -> str:
     kitsu_props.get("category")
 
     if context_core.is_sequence_context():
-        # Assuming sequences called 000_name, get 000
+        # Assuming strips called 000_name, get 000
         entity_name = sequence.name.split('_')[0]
         if episode:
             # If episode is present, append to the name

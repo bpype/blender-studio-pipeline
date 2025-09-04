@@ -116,18 +116,18 @@ class MV_OT_load_media_movie(bpy.types.Operator):
 
         else:
             # Clear all media in the sequence editor.
-            opsdata.del_all_sequences(context)
+            opsdata.del_all_strips(context)
             filepaths_import.extend(filepath_list)
 
         # Check so we don't get index errors later.
         if not filepath_list:
             return {"CANCELLED"}
 
-        # Import sequences.
+        # Import strips.
         for file in filepaths_import:
             frame_start = opsdata.get_last_strip_frame(context)
             # Create new movie strip.
-            strip_movie = context.scene.sequence_editor.sequences.new_movie(
+            strip_movie = context.scene.sequence_editor.strips.new_movie(
                 file.stem,
                 file.as_posix(),
                 3,
@@ -136,14 +136,14 @@ class MV_OT_load_media_movie(bpy.types.Operator):
             strip_movie.blend_type = "ALPHA_OVER"
             imported_strips.append(strip_movie)
 
-            strip_sound = context.scene.sequence_editor.sequences.new_sound(
+            strip_sound = context.scene.sequence_editor.strips.new_sound(
                 file.stem,
                 file.as_posix(),
                 2,
                 frame_start,
             )
 
-            strip_color = context.scene.sequence_editor.sequences.new_effect(
+            strip_color = context.scene.sequence_editor.strips.new_effect(
                 file.stem,
                 "COLOR",
                 1,
@@ -995,8 +995,8 @@ class MV_OT_next_media_file(bpy.types.Operator):
 
         elif opsdata.is_image(filepath):
             bpy.ops.media_viewer.set_media_area_type(area_type="IMAGE_EDITOR")
-            # Load media image handles image sequences.
-            bpy.ops.media_viewer.load_media_image(filepath=filepath.as_posix(), load_sequence=settings.interpret_sequences)
+            # Load media image handles image strips.
+            bpy.ops.media_viewer.load_media_image(filepath=filepath.as_posix(), load_sequence=settings.interpret_strips)
 
         elif opsdata.is_text(filepath) or opsdata.is_script(filepath):
             bpy.ops.media_viewer.set_media_area_type(area_type="TEXT_EDITOR")
@@ -1072,7 +1072,7 @@ class MV_OT_toggle_mute_audio(bpy.types.Operator):
         global is_muted
 
         strips = [
-            s for s in context.scene.sequence_editor.sequences_all if s.type == "SOUND"
+            s for s in context.scene.sequence_editor.strips_all if s.type == "SOUND"
         ]
 
         for strip in strips:
@@ -1595,7 +1595,7 @@ class MV_OT_flip_media_view(bpy.types.Operator):
         #TODO: flip annotation layer as well.
 
         if active_media_area == "SEQUENCE_EDITOR":
-            for strip in context.scene.sequence_editor.sequences_all:
+            for strip in context.scene.sequence_editor.strips_all:
                 if hasattr(strip, "use_flip_x"):
                     strip.use_flip_x = not strip.use_flip_x
 
@@ -1730,8 +1730,8 @@ def callback_filename_change(dummy: None):
         # Set area type.
         bpy.ops.media_viewer.set_media_area_type(area_type="IMAGE_EDITOR")
 
-        # Load media image handles image sequences.
-        bpy.ops.media_viewer.load_media_image(filepath=active_filepath.as_posix(), load_sequence=bpy.context.window_manager.media_viewer.interpret_sequences)
+        # Load media image handles image strips.
+        bpy.ops.media_viewer.load_media_image(filepath=active_filepath.as_posix(), load_sequence=bpy.context.window_manager.media_viewer.interpret_strips)
 
     elif opsdata.is_text(active_filepath) or opsdata.is_script(active_filepath):
 

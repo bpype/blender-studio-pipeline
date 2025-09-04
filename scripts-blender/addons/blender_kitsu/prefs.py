@@ -493,7 +493,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     seq_dir_name: bpy.props.StringProperty(
         name="Sequence Directory Name",
         description="Name of the sequence directory",
-        default="sequences"
+        default="strips"
     )
 
     asset_dir_name: bpy.props.StringProperty(
@@ -515,7 +515,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
     )
     use_video: bpy.props.BoolProperty(
         name="Use Video",
-        description="Load video versions of renders rather than image sequences for faster playback",
+        description="Load video versions of renders rather than image strips for faster playback",
     )
     use_video_latest_only: bpy.props.BoolProperty(
         default=True,

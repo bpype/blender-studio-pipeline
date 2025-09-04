@@ -107,28 +107,28 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         default="",
     )
 
-    def get_sequences_via_name(self):
+    def get_strips_via_name(self):
         return get_safely_string_prop(self, "sequence_name")
 
-    def set_sequences_via_name(self, input):
+    def set_strips_via_name(self, input):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_sequences_enum_list(self, bpy.context),
+            items=cache.get_strips_enum_list(self, bpy.context),
             name_prop='sequence_name',
             id_prop='sequence_id',
         )
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
 
     sequence_name: bpy.props.StringProperty(  # type: ignore
         name="Sequence",
         description="Sequence",
         default="",
-        get=get_sequences_via_name,
-        set=set_sequences_via_name,
+        get=get_strips_via_name,
+        set=set_strips_via_name,
         options=set(),
         search=get_sequence_search_list,
         search_options={'SORT'},
@@ -275,14 +275,14 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         default="",
     )
 
-    def get_sequences_via_name(self):
+    def get_strips_via_name(self):
         return get_safely_string_prop(self, "sequence_active_name")
 
-    def set_sequences_via_name(self, input):
+    def set_strips_via_name(self, input):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_sequences_enum_list(self, bpy.context),
+            items=cache.get_strips_enum_list(self, bpy.context),
             name_prop='sequence_active_name',
             id_prop='sequence_active_id',
         )
@@ -293,14 +293,14 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
 
     sequence_active_name: bpy.props.StringProperty(
         name="Sequence",
         description="Sequence",
         default="",  # type: ignore
-        get=get_sequences_via_name,
-        set=set_sequences_via_name,
+        get=get_strips_via_name,
+        set=set_strips_via_name,
         options=set(),
         search=get_sequence_search_list,
         search_options={'SORT'},
@@ -751,14 +751,14 @@ def _add_window_manager_props():
         default="",
     )
 
-    def get_sequences_via_name(self):
+    def get_strips_via_name(self):
         return get_safely_string_prop(self, "selected_sequence_name")
 
-    def set_sequences_via_name(self, input):
+    def set_strips_via_name(self, input):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_sequences_enum_list(self, bpy.context),
+            items=cache.get_strips_enum_list(self, bpy.context),
             name_prop='selected_sequence_name',
             id_prop='selected_sequence_id',
         )
@@ -769,14 +769,14 @@ def _add_window_manager_props():
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
 
     bpy.types.WindowManager.selected_sequence_name = bpy.props.StringProperty(
         name="Sequence",
         description="Name of Sequence the generated Shots will be assinged to",
         default="",  # type: ignore
-        get=get_sequences_via_name,
-        set=set_sequences_via_name,
+        get=get_strips_via_name,
+        set=set_strips_via_name,
         options=set(),
         search=get_sequence_search_list,
         search_options={'SORT'},
@@ -836,12 +836,12 @@ def update_sequence_colors_coll_prop(dummy: Any) -> None:
     sqe = bpy.context.scene.sequence_editor
     if not sqe:
         return
-    sequences = sqe.sequences_all
+    strips = sqe.strips_all
     sequence_colors = bpy.context.scene.kitsu.sequence_colors
     existings_seq_ids: List[str] = []
 
-    # Append missing sequences to scene.kitsu.seqeuence_colors.
-    for seq in sequences:
+    # Append missing strips to scene.kitsu.seqeuence_colors.
+    for seq in strips:
         if not seq.kitsu.sequence_id:
             continue
 

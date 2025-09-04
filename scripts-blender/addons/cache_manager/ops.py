@@ -505,7 +505,7 @@ class CM_OT_update_cache_colls_list(bpy.types.Operator):
 
 class CM_OT_assign_cachefile(bpy.types.Operator):
     """
-    Gets all sequences that are available in server for active production and let's user select. Invokes a search Popup (enum_prop) on click.
+    Gets all strips that are available in server for active production and let's user select. Invokes a search Popup (enum_prop) on click.
     """
 
     bl_idname = "cm.assign_cachefile"

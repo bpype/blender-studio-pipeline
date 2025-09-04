@@ -66,14 +66,14 @@ def edit_export_import_latest(
     if not scene.sequence_editor:
         scene.sequence_editor_create()
     seq_editor = scene.sequence_editor
-    movie_strip = seq_editor.sequences.new_movie(
+    movie_strip = seq_editor.strips.new_movie(
         latest_file.name,
         strip_filepath,
         strip_channel + 1,
         strip_frame_start,
         fit_method="ORIGINAL",
     )
-    sound_strip = seq_editor.sequences.new_sound(
+    sound_strip = seq_editor.strips.new_sound(
         latest_file.name,
         strip_filepath,
         strip_channel,

@@ -40,7 +40,7 @@ def get_occupied_ranges(context: bpy.types.Context) -> Dict[str, List[range]]:
     ranges: Dict[str, List[range]] = {}
 
     # Populate ranges.
-    for strip in context.scene.sequence_editor.sequences_all:
+    for strip in context.scene.sequence_editor.strips_all:
         ranges.setdefault(str(strip.channel), [])
         ranges[str(strip.channel)].append(
             range(strip.frame_final_start, strip.frame_final_end + 1)
@@ -54,14 +54,14 @@ def get_occupied_ranges(context: bpy.types.Context) -> Dict[str, List[range]]:
     return ranges
 
 
-def get_occupied_ranges_for_strips(sequences: List["bpy.types.Strip"]) -> List[range]:
+def get_occupied_ranges_for_strips(strips: List["bpy.types.Strip"]) -> List[range]:
     """
-    Scans input list of sequences and returns a list of ranges that represent the occupied frame ranges.
+    Scans input list of strips and returns a list of ranges that represent the occupied frame ranges.
     """
     ranges: List[range] = []
 
     # Populate ranges.
-    for strip in sequences:
+    for strip in strips:
         ranges.append(range(strip.frame_final_start, strip.frame_final_end + 1))
 
     # Sort ranges tuple list.

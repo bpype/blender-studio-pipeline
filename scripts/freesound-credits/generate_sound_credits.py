@@ -31,7 +31,7 @@ def get_sound_list():
     sound_list = []
 
     # Iterate through all the sound strips in the current scene
-    for s in bpy.context.scene.sequence_editor.sequences_all:
+    for s in bpy.context.scene.sequence_editor.strips_all:
         if s.type == 'SOUND':
             filename = pathlib.Path(s.sound.filepath).stem
             sound_id = filename.split('__')[0]
