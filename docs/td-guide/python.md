@@ -49,4 +49,4 @@ This documentation expects `python --version` to return a Python version that is
 The Blender Studio Pipeline depends on scripts that require packages from the PIP package manager. The following is a guide to installing the required packages on your system's Python. To avoid module clutter, consider setting up a virtual environment; see the [official Python documentation](https://docs.python.org/3/library/venv.html) for details.
 
 1. Ensure PIP is installed: `python -m ensurepip --upgrade`
-2. Install the required 'requests' package: `python -m pip install requests`
+2. Install the required 'requests' package for the current user: `python -m pip install --user requests`
