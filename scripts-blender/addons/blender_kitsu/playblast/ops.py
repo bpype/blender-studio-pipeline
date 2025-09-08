@@ -6,6 +6,7 @@ import webbrowser
 from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple, Any
 import time
+import gazu
 import bpy
 from bpy.app.handlers import persistent
 
@@ -197,7 +198,14 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         context.window_manager.progress_update(1)
 
         # Upload playblast
-        self._upload_playblast(context, output_path)
+        try:
+            self._upload_playblast(context, output_path)
+        except gazu.exception.NotAllowedException:
+            self.report(
+                {"ERROR"},
+                f"Failed to upload playblast. You don't have permission to add comments to this task",
+            )
+            return {"CANCELLED"}
 
         if not addon_prefs.version_control:
             basename = context_core.get_versioned_file_basename(Path(bpy.data.filepath).stem)
