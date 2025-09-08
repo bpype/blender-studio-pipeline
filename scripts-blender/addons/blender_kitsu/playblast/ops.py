@@ -440,7 +440,15 @@ class KITSU_OT_push_frame_range(bpy.types.Operator):
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
         self.frame_start = context.scene.frame_start
-        frame_in, _ = core.get_frame_range()
+        try:
+            frame_in, _ = core.get_frame_range()
+        except TypeError:
+            self.report(
+                {"ERROR"},
+                "Failed to pull frame range. Active shot has no frame count set on the server",
+            )
+            return {"CANCELLED"}
+
         if frame_in == self.frame_start:
             self.report(
                 {"INFO"},
@@ -464,7 +472,14 @@ class KITSU_OT_pull_frame_range(bpy.types.Operator):
         return bool(prefs.session_auth(context) and cache.shot_active_get())
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        frame_in, frame_out = core.get_frame_range()
+        try:
+            frame_in, frame_out = core.get_frame_range()
+        except TypeError:
+            self.report(
+                {"ERROR"},
+                "Failed to pull frame range. Active shot has no frame count set on the server",
+            )
+            return {"CANCELLED"}
 
         # Check if current frame range matches the one for active shot.
         if core.check_frame_range(context):
@@ -543,6 +558,9 @@ def draw_frame_range_warning(self, context):
     layout.label(text=f"   File Frame Range: {context.scene.frame_start}-{context.scene.frame_end}")
     if active_shot:
         kitsu_3d_start = active_shot.get_3d_start()
+        if not active_shot.nb_frames:
+            layout.label(text=f'Active shot has no frame count set on the server')
+            return
         layout.label(
             text=f'Server Frame Range: {kitsu_3d_start}-{kitsu_3d_start + int(active_shot.nb_frames) - 1}'
         )
