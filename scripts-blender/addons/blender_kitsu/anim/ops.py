@@ -299,7 +299,6 @@ class KITSU_OT_anim_enforce_naming_convention(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "rename_scene")
-        layout.prop(self, "rename_actions")
         layout.prop(self, "rename_output_col")
         layout.prop(self, "find_replace")
         if self.find_replace:
