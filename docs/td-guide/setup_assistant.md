@@ -1,6 +1,6 @@
 # Setup Assistant
 
-The `setup_assistant.py` script is a wizard that helps you set up a new Blender Studio Tools project. It guides you through connecting to your Kitsu server, creating project folders, and configuring everything you need. You can download it as part of the [project-tools release package](https://projects.blender.org/studio/blender-studio-tools/releases/download/project-tools/project-tools-main.zip).
+The `setup_assistant.py` script is a wizard that helps you set up a new Blender Studio Tools project. It guides you through connecting to your Kitsu server, creating project folders, and configuring everything you need. You can download it as part of the [project-tools release package](https://projects.blender.org/studio/blender-studio-tools/releases/download/project-tools/project-tools.zip).
 
 ## 🛠️ What Does the Script Do?
 
