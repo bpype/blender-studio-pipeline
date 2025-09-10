@@ -6,6 +6,7 @@ import webbrowser
 from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple, Any
 import time
+import gazu
 import bpy
 from bpy.app.handlers import persistent
 
@@ -197,7 +198,14 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
         context.window_manager.progress_update(1)
 
         # Upload playblast
-        self._upload_playblast(context, output_path)
+        try:
+            self._upload_playblast(context, output_path)
+        except gazu.exception.NotAllowedException:
+            self.report(
+                {"ERROR"},
+                f"Failed to upload playblast. You don't have permission to add comments to this task",
+            )
+            return {"CANCELLED"}
 
         if not addon_prefs.version_control:
             basename = context_core.get_versioned_file_basename(Path(bpy.data.filepath).stem)
@@ -440,7 +448,15 @@ class KITSU_OT_push_frame_range(bpy.types.Operator):
 
     def invoke(self, context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
         self.frame_start = context.scene.frame_start
-        frame_in, _ = core.get_frame_range()
+        try:
+            frame_in, _ = core.get_frame_range()
+        except TypeError:
+            self.report(
+                {"ERROR"},
+                "Failed to pull frame range. Active shot has no frame count set on the server",
+            )
+            return {"CANCELLED"}
+
         if frame_in == self.frame_start:
             self.report(
                 {"INFO"},
@@ -464,7 +480,14 @@ class KITSU_OT_pull_frame_range(bpy.types.Operator):
         return bool(prefs.session_auth(context) and cache.shot_active_get())
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        frame_in, frame_out = core.get_frame_range()
+        try:
+            frame_in, frame_out = core.get_frame_range()
+        except TypeError:
+            self.report(
+                {"ERROR"},
+                "Failed to pull frame range. Active shot has no frame count set on the server",
+            )
+            return {"CANCELLED"}
 
         # Check if current frame range matches the one for active shot.
         if core.check_frame_range(context):
@@ -543,6 +566,9 @@ def draw_frame_range_warning(self, context):
     layout.label(text=f"   File Frame Range: {context.scene.frame_start}-{context.scene.frame_end}")
     if active_shot:
         kitsu_3d_start = active_shot.get_3d_start()
+        if not active_shot.nb_frames:
+            layout.label(text=f'Active shot has no frame count set on the server')
+            return
         layout.label(
             text=f'Server Frame Range: {kitsu_3d_start}-{kitsu_3d_start + int(active_shot.nb_frames) - 1}'
         )

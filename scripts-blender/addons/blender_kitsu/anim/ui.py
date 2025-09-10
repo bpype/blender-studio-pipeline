@@ -11,6 +11,7 @@ from .. import prefs, cache, ui
 from .ops import (
     KITSU_OT_anim_quick_duplicate,
     KITSU_OT_anim_check_action_names,
+    KITSU_OT_anim_create_output_coll,
     KITSU_OT_anim_update_output_coll,
 )
 from ..generic.ops import KITSU_OT_open_path
@@ -53,10 +54,17 @@ class KITSU_PT_vi3d_anim_tools(bpy.types.Panel):
 
         # Update output collection.
         row = box.row(align=True)
-        row.operator(
-            KITSU_OT_anim_update_output_coll.bl_idname,
-            icon="FILE_REFRESH",
-        )
+        if not KITSU_OT_anim_update_output_coll.poll(context):
+            row.operator(
+                KITSU_OT_anim_create_output_coll.bl_idname,
+                icon="ADD",
+                text="Create Output Collection",
+            )
+        else:
+            row.operator(
+                KITSU_OT_anim_update_output_coll.bl_idname,
+                icon="FILE_REFRESH",
+            )
 
         # Quick duplicate.
         act_coll = context.view_layer.active_layer_collection.collection

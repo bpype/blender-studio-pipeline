@@ -299,7 +299,6 @@ class KITSU_OT_anim_enforce_naming_convention(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "rename_scene")
-        layout.prop(self, "rename_actions")
         layout.prop(self, "rename_output_col")
         layout.prop(self, "find_replace")
         if self.find_replace:
@@ -401,6 +400,42 @@ class KITSU_PG_anim_exclude_coll(bpy.types.PropertyGroup):
     )
 
 
+class KITSU_OT_anim_create_output_coll(bpy.types.Operator):
+    bl_idname = "kitsu.anim_create_output_coll"
+    bl_label = "Create Output Collection"
+    bl_options = {"REGISTER", "UNDO"}
+    bl_description = "Creates a new output collection for the current animation"
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        output_coll_name = cache.output_collection_name_get()
+        if bpy.data.collections.get(output_coll_name):
+            cls.poll_message_set("Output collection already exists")
+            return False
+
+        return True
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+        output_coll_name = cache.output_collection_name_get()
+        try:
+            bpy.data.collections.new(output_coll_name)
+        except Exception as e:
+            self.report(
+                {"ERROR"},
+                f"Failed to create output collection: {output_coll_name} | {e}",
+            )
+            return {"CANCELLED"}
+
+        output_coll = bpy.data.collections[output_coll_name]
+        context.scene.collection.children.link(output_coll)
+
+        self.report(
+            {"INFO"},
+            f"Created output collection: {output_coll_name}",
+        )
+        return {"FINISHED"}
+
+
 class KITSU_OT_anim_update_output_coll(bpy.types.Operator):
     bl_idname = "kitsu.anim_update_output_coll"
     bl_label = "Update Output Collection"
@@ -414,12 +449,13 @@ class KITSU_OT_anim_update_output_coll(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         output_coll_name = cache.output_collection_name_get()
-        try:
-            output_coll = bpy.data.collections[output_coll_name]
-        except KeyError:
-            output_coll = None
 
-        return bool(output_coll)
+        output_coll = bpy.data.collections.get(output_coll_name)
+        if not output_coll:
+            cls.poll_message_set(f"Missing output collection: {output_coll_name}")
+            return False
+
+        return True
 
     def invoke(self, context, event):
         output_coll_name = cache.output_collection_name_get()
@@ -483,6 +519,7 @@ class KITSU_OT_anim_update_output_coll(bpy.types.Operator):
 classes = [
     KITSU_OT_anim_quick_duplicate,
     KITSU_OT_anim_check_action_names,
+    KITSU_OT_anim_create_output_coll,
     KITSU_OT_anim_update_output_coll,
     KITSU_OT_anim_enforce_naming_convention,
     KITSU_OT_unlink_collection_with_string,
