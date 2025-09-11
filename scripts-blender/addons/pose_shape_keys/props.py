@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
-from bpy.types import PropertyGroup, Object, Action, ShapeKey
+import bpy, random
+from bpy.types import PropertyGroup, Object, Action, ActionSlot, ShapeKey
 from bpy.props import PointerProperty, IntProperty, CollectionProperty, StringProperty, BoolProperty
 from .ops import get_active_pose_key
 
@@ -98,11 +98,59 @@ class PoseShapeKey(PropertyGroup):
 
     name: StringProperty(name="Name", update=update_name)
 
+    def auto_slot(self, context):
+        if self.action and len(self.action.slots)==1:
+            self.action_slot = self.action.slots[0]
+
     action: PointerProperty(
         name="Action",
         type=Action,
         description="Action that contains the frame that should be used when applying the stored shape as a shape key",
+        update=auto_slot,
     )
+
+    def slot_name_from_handle(self, curr_value, _is_set) -> str:
+        try:
+            curr_value = int(curr_value)
+        except:
+            return ""
+        action_slot = next((s for s in self.action.slots if s.handle==curr_value), None)
+        if not action_slot:
+            return ""
+        return action_slot.name_display
+
+    def slot_name_to_handle(self, new_value, curr_value, _is_set)  -> str:
+        action_slot = next((s for s in self.action.slots if s.name_display==new_value and s.identifier.startswith("OB")), None)
+        if not action_slot:
+            return ""
+        return str(action_slot.handle)
+
+    action_slot_ui: StringProperty(
+        name="Acion Slot",
+        description="Slot of the Action to use for the Action Constraints",
+        get_transform=slot_name_from_handle,
+        set_transform=slot_name_to_handle,
+    )
+
+    @property
+    def unique_id(self) -> int:
+        if not self.action and 'unique_id' not in self:
+            return 0
+        if 'unique_id' in self and self['unique_id'] != 0:
+            return self.get('unique_id')
+        else:
+            self['unique_id'] = random.randint(0, 100_000_000)
+        return self['unique_id']
+
+    @property
+    def action_slot(self) -> ActionSlot | None:
+        return self.action.slots.get("OB"+self.action_slot_ui)
+
+    @action_slot.setter
+    def action_slot(self, slot):
+        if slot:
+            self.action_slot_ui = slot.name_display
+
     frame: IntProperty(
         name="Frame",
         description="Frame that should be used within the selected action when applying the stored shape as a shape key",

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from bpy.types import Panel, UIList, Menu
+from bpy.types import Panel, UIList, Menu, UILayout
 from bl_ui.properties_data_mesh import DATA_PT_shape_keys
 from bpy.props import EnumProperty
 
@@ -68,15 +68,16 @@ class MESH_PT_pose_keys(Panel):
         if not active_posekey:
             return
 
-        action_split = layout.row().split(factor=0.4, align=True)
-        action_split.alignment = 'RIGHT'
-        action_split.label(text="Action")
-        row = action_split.row(align=True)
+        row = default_ui_split(layout, "Action")
         icon = 'FORWARD'
         if active_posekey.action:
             icon = 'FILE_REFRESH'
         row.operator('object.posekey_auto_init', text="", icon=icon)
         row.prop(active_posekey, 'action', text="")
+
+        if active_posekey.action:
+            default_ui_split(layout, "Slot").prop_search(active_posekey, "action_slot_ui", active_posekey.action, 'slots', text="")
+
         layout.prop(active_posekey, 'frame')
 
         layout.separator()
@@ -242,6 +243,13 @@ class POSEKEYS_UL_target_shape_keys(UIList):
         mute_row = split.row()
         mute_row.alignment = 'RIGHT'
         mute_row.prop(key_block, 'mute', emboss=False, text="")
+
+
+def default_ui_split(layout: UILayout, label: str) -> UILayout:
+    split = layout.row().split(factor=0.4, align=True)
+    split.alignment = 'RIGHT'
+    split.label(text=label)
+    return split.row(align=True)
 
 
 @classmethod

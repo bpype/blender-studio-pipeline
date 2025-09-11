@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "pose_shape_keys"
-version = "1.0.0"
+version = "1.1.0"
 name = "Pose Shape Keys"
 tagline = "Preserve your shape keys through weight changes, and much more"
 maintainer = "Demeter Dzadik <demeter@blender.org>"
@@ -9,7 +9,7 @@ type = "add-on"
 website = "https://studio.blender.org/tools/addons/pose_shape_keys"
 tags = ["Rigging"]
 
-blender_version_min = "4.2.0"
+blender_version_min = "5.0.0"
 
 license = [
   "SPDX:GPL-3.0-or-later",
