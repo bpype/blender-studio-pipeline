@@ -1073,6 +1073,10 @@ class ASSETPIPE_OT_save_asset_hook(bpy.types.Operator):
             example_hooks_dir = (
                 Path(__file__).parent.joinpath("hook_examples").joinpath('prod_hooks.py')
             )
+            hook_dir = get_production_hook_dir()
+            if not hook_dir:
+                self.report({'ERROR'}, f"Production directory must be specified in the add-on preferences.")
+                return {'CANCELLED'}
             save_hook_path = get_production_hook_dir().joinpath('hooks.py').resolve()
         else:  # if self.mode == 'ASSET'
             example_hooks_dir = (

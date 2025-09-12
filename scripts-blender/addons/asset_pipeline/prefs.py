@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
+import bpy, os
 from . import constants
 from .logging import get_logger
 from . import __package__ as base_package
@@ -78,7 +78,10 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
     )
 
     def draw(self, context):
-        self.layout.prop(self, "project_root_dir")
+        row = self.layout.row()
+        if not os.path.exists(self.project_root_dir):
+            row.alert = True
+        row.prop(self, "project_root_dir")
         self.layout.prop(self, "custom_task_layers_dir")
         self.layout.prop(self, "save_images_path")
         self.layout.prop(self, "logger_level")

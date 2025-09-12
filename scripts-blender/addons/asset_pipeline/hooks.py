@@ -106,7 +106,7 @@ class Hooks:
     def load_hooks(self, context):
         hook_dirs = [get_production_hook_dir(), get_asset_hook_dir()] # TODO: This should be a function param.
         for hook_dir in hook_dirs:
-            if not hook_dir.exists():
+            if not hook_dir or not hook_dir.exists():
                 logger.debug(f"Hooks directory not found: {hook_dir}")
                 return
             hook_file_path = hook_dir.resolve() / "hooks.py"
@@ -143,10 +143,11 @@ class Hooks:
 
 def get_production_hook_dir() -> Path:
     root_dir = Path(prefs.project_root_dir_get())
-    asset_dir = root_dir.joinpath("svn/pro/")
-    if not asset_dir.exists():
-        raise Exception(f"Directory {str(asset_dir)} doesn't exist")
-    hook_dir = asset_dir.joinpath("config/asset_pipeline")
+    prod_dir = root_dir.joinpath("svn/pro/")
+    if not prod_dir.exists():
+        logger.warning(f"Production directory {str(prod_dir)} not found. Production hooks will not work.")
+        return
+    hook_dir = prod_dir.joinpath("config/asset_pipeline")
     hook_dir.mkdir(parents=True, exist_ok=True)
     return hook_dir
 
