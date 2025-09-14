@@ -116,6 +116,7 @@ class OBJECT_OT_pose_key_auto_init(Operator):
         pose_key = get_active_pose_key(obj)
         arm_ob = get_deforming_armature(obj)
         pose_key.action = arm_ob.animation_data.action
+        pose_key.action_slot = arm_ob.animation_data.action_slot
         pose_key.frame = context.scene.frame_current
         self.report({'INFO'}, "Initialized Pose Key data.")
         return {'FINISHED'}
@@ -1181,6 +1182,9 @@ def set_pose_of_active_pose_key(context):
     if pose_key.action:
         # Set Action and Frame to get the right pose
         arm_ob.animation_data.action = pose_key.action
+        if not pose_key.action_slot and len(pose_key.action.slots)>0:
+            pose_key.action_slot = pose_key.action.slots[0]
+        arm_ob.animation_data.action_slot = pose_key.action_slot
         context.scene.frame_current = pose_key.frame
 
 

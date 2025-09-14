@@ -202,6 +202,6 @@ def bind_modifier(context, obj, modifier_name):
 
 def is_modifier_bound(modifier) -> bool | None:
     if modifier.type == 'CORRECTIVE_SMOOTH':
-        return modifier.is_bind
+        return modifier.rest_source == 'BIND' and modifier.is_bind
     elif hasattr(modifier, 'is_bound'):
         return modifier.is_bound
