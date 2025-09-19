@@ -485,35 +485,24 @@ def get_task_types_enum_for_current_context(
 
     items = []
     if context_core.is_shot_context():
-        items = [
-            (t.id, t.name, "")
-            for t in TaskType.all_shot_task_types()
-            if t.id in _project_active.task_types
-        ]
+        items = [t for t in TaskType.all_shot_task_types() if t.id in _project_active.task_types]
 
     if context_core.is_asset_context():
-        items = [
-            (t.id, t.name, "")
-            for t in TaskType.all_asset_task_types()
-            if t.id in _project_active.task_types
-        ]
+        items = [t for t in TaskType.all_asset_task_types() if t.id in _project_active.task_types]
 
     if context_core.is_sequence_context():
         items = [
-            (t.id, t.name, "")
-            for t in TaskType.all_sequence_task_types()
-            if t.id in _project_active.task_types
+            t for t in TaskType.all_sequence_task_types() if t.id in _project_active.task_types
         ]
 
     if context_core.is_edit_context():
-        items = [
-            (t.id, t.name, "")
-            for t in TaskType.all_edit_task_types()
-            if t.id in _project_active.task_types
-        ]
+        items = [t for t in TaskType.all_edit_task_types() if t.id in _project_active.task_types]
+
+    sorted_items = sorted(items, key=lambda t: t.priority, reverse=False)
+    tuple_items = [(t.id, t.name, "") for t in sorted_items]
 
     _task_types_enum_list.clear()
-    _task_types_enum_list.extend(items)
+    _task_types_enum_list.extend(tuple_items)
 
     return _task_types_enum_list
 

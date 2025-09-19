@@ -514,7 +514,6 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         set=set_task_type_via_name,
         options=set(),
         search=get_task_type_search_list,
-        search_options={'SORT'},
     )
 
     category: bpy.props.EnumProperty(  # type: ignore
