@@ -14,8 +14,10 @@ def list_dir_blend_files(p: Path) -> list[Path]:
 def open_template_as_homefile(task_type_name: str) -> None:
     """Open Template File as Homefile so it has no filepath."""
     file_path = get_template_for_task_type(task_type_name)
-    if not file_path.exists():
-        raise FileNotFoundError(f"Template file '{file_path}' does not exist.")
+    if not file_path or not file_path.exists():
+        print(f"Template file '{file_path}' does not exist, reverting to startup file.")
+        bpy.ops.wm.read_homefile()
+        return
     bpy.ops.wm.read_homefile(filepath=file_path.as_posix())
 
 
