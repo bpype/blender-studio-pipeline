@@ -853,6 +853,7 @@ class TaskType(Entity):
         for key, value in bkglobals.SHOT_TASK_MAPPING.items():
             if value == self.name:
                 return key
+        return self.short_name
 
     def __bool__(self) -> bool:
         return bool(self.id)
