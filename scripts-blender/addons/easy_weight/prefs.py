@@ -109,12 +109,6 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         update=update_falloff_shape,
     )
 
-    show_hotkeys: BoolProperty(
-        name="Show Hotkeys",
-        description="Reveal the hotkey list. You may customize or disable these hotkeys",
-        default=False,
-    )
-
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
@@ -122,33 +116,17 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
 
         col = layout.column()
         col.prop(self, 'auto_clean_weights')
-        col.prop(self, 'always_show_zero_weights')
+        if bpy.app.version < (5, 0, 0):
+            col.prop(self, 'always_show_zero_weights')
         col.prop(self, 'always_auto_normalize')
         col.prop(self, 'always_multipaint')
         col.prop(self, 'always_xray')
 
         main_col = layout.column(align=True)
-        hotkey_col = self.draw_fake_dropdown(main_col, self, 'show_hotkeys', "Hotkeys")
-        if self.show_hotkeys:
-            type(self).draw_hotkey_list(hotkey_col, context)
-
-    # NOTE: This function is copied from CloudRig's prefs.py. TODO: No longer needed since like 4.2 or so, could just use layout.panel(), but then bump the minimum blender version.
-    def draw_fake_dropdown(self, layout, prop_owner, prop_name, dropdown_text):
-        row = layout.row()
-        split = row.split(factor=0.20)
-        split.use_property_split = False
-        prop_value = prop_owner.path_resolve(prop_name)
-        icon = 'TRIA_DOWN' if prop_value else 'TRIA_RIGHT'
-        split.prop(prop_owner, prop_name, icon=icon, emboss=False, text=dropdown_text)
-        split.prop(prop_owner, prop_name, icon='BLANK1', emboss=False, text="")
-        split = layout.split(factor=0.012)
-        split.row()
-        dropdown_row = split.row()
-        dropdown_col = dropdown_row.column()
-        row = dropdown_col.row()
-        row.use_property_split = False
-
-        return dropdown_col
+        hotkey_header, hotkey_panel = main_col.panel("EasyWeight Hotkeys", default_closed=False)
+        hotkey_header.label(text="Hotkeys")
+        if hotkey_panel:
+            type(self).draw_hotkey_list(hotkey_panel, context)
 
     @classmethod
     def draw_hotkey_list(cls, layout, context):
