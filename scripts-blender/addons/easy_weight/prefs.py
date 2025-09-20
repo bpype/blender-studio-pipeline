@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
+import bpy, os
 from bpy.props import BoolProperty
 from bpy.app.handlers import persistent
 
@@ -15,18 +15,18 @@ def ensure_brush_assets():
     # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file 
     # until they are first accessed, so let's do that when needed. We also can't check 
     # whether these brushes exist without looping over all of them.
-    for brush_name in 'Blur', 'Paint':
-        for brush in bpy.data.brushes:
-            if not brush.use_paint_weight:
-                continue
-        else:
-            # Link the brush from the `datafiles` folder.
-            blend_path = (Path(bpy.utils.resource_path('LOCAL')) / "datafiles/assets/brushes/essentials_brushes-mesh_weight.blend").as_posix()
+    for brush_name in ('Blur', 'Paint'):
+        brush = next((brush for brush in bpy.data.brushes if brush.use_paint_weight and brush.name==brush_name), None)
+        if not brush:
+            # Append the brush from the `datafiles` folder.
+            blend_path = os.path.abspath((Path(bpy.utils.resource_path('LOCAL')) / "datafiles/assets/brushes/essentials_brushes-mesh_weight.blend").as_posix())
             with bpy.data.libraries.load(blend_path, link=True) as (data_from, data_to):
                 data_to.brushes = [brush_name]
-            if brush_name == 'Paint':
-                brush = bpy.data.brushes.get(('Paint', blend_path))
-                brush.blend = 'ADD'
+            brush = bpy.data.brushes.get((brush_name, blend_path))
+            if not brush:
+                brush = bpy.data.brushes.get(brush_name)
+        if brush_name == 'Paint' and brush:
+            brush.blend = 'ADD'
 
 def get_available_wp_brushes():
     for brush in bpy.data.brushes:
