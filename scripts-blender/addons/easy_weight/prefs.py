@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
+import bpy, os
 from bpy.props import BoolProperty
 from bpy.app.handlers import persistent
 
@@ -15,18 +15,18 @@ def ensure_brush_assets():
     # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file 
     # until they are first accessed, so let's do that when needed. We also can't check 
     # whether these brushes exist without looping over all of them.
-    for brush_name in 'Blur', 'Paint':
-        for brush in bpy.data.brushes:
-            if not brush.use_paint_weight:
-                continue
-        else:
-            # Link the brush from the `datafiles` folder.
-            blend_path = (Path(bpy.utils.resource_path('LOCAL')) / "datafiles/assets/brushes/essentials_brushes-mesh_weight.blend").as_posix()
+    for brush_name in ('Blur', 'Paint'):
+        brush = next((brush for brush in bpy.data.brushes if brush.use_paint_weight and brush.name==brush_name), None)
+        if not brush:
+            # Append the brush from the `datafiles` folder.
+            blend_path = os.path.abspath((Path(bpy.utils.resource_path('LOCAL')) / "datafiles/assets/brushes/essentials_brushes-mesh_weight.blend").as_posix())
             with bpy.data.libraries.load(blend_path, link=True) as (data_from, data_to):
                 data_to.brushes = [brush_name]
-            if brush_name == 'Paint':
-                brush = bpy.data.brushes.get(('Paint', blend_path))
-                brush.blend = 'ADD'
+            brush = bpy.data.brushes.get((brush_name, blend_path))
+            if not brush:
+                brush = bpy.data.brushes.get(brush_name)
+        if brush_name == 'Paint' and brush:
+            brush.blend = 'ADD'
 
 def get_available_wp_brushes():
     for brush in bpy.data.brushes:
@@ -109,12 +109,6 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         update=update_falloff_shape,
     )
 
-    show_hotkeys: BoolProperty(
-        name="Show Hotkeys",
-        description="Reveal the hotkey list. You may customize or disable these hotkeys",
-        default=False,
-    )
-
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
@@ -122,33 +116,17 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
 
         col = layout.column()
         col.prop(self, 'auto_clean_weights')
-        col.prop(self, 'always_show_zero_weights')
+        if bpy.app.version < (5, 0, 0):
+            col.prop(self, 'always_show_zero_weights')
         col.prop(self, 'always_auto_normalize')
         col.prop(self, 'always_multipaint')
         col.prop(self, 'always_xray')
 
         main_col = layout.column(align=True)
-        hotkey_col = self.draw_fake_dropdown(main_col, self, 'show_hotkeys', "Hotkeys")
-        if self.show_hotkeys:
-            type(self).draw_hotkey_list(hotkey_col, context)
-
-    # NOTE: This function is copied from CloudRig's prefs.py. TODO: No longer needed since like 4.2 or so, could just use layout.panel(), but then bump the minimum blender version.
-    def draw_fake_dropdown(self, layout, prop_owner, prop_name, dropdown_text):
-        row = layout.row()
-        split = row.split(factor=0.20)
-        split.use_property_split = False
-        prop_value = prop_owner.path_resolve(prop_name)
-        icon = 'TRIA_DOWN' if prop_value else 'TRIA_RIGHT'
-        split.prop(prop_owner, prop_name, icon=icon, emboss=False, text=dropdown_text)
-        split.prop(prop_owner, prop_name, icon='BLANK1', emboss=False, text="")
-        split = layout.split(factor=0.012)
-        split.row()
-        dropdown_row = split.row()
-        dropdown_col = dropdown_row.column()
-        row = dropdown_col.row()
-        row.use_property_split = False
-
-        return dropdown_col
+        hotkey_header, hotkey_panel = main_col.panel("EasyWeight Hotkeys", default_closed=False)
+        hotkey_header.label(text="Hotkeys")
+        if hotkey_panel:
+            type(self).draw_hotkey_list(hotkey_panel, context)
 
     @classmethod
     def draw_hotkey_list(cls, layout, context):

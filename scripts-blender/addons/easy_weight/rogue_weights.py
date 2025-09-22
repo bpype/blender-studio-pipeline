@@ -100,9 +100,9 @@ def find_weight_island_vertices(
     return island
 
 
-def find_any_vertex_in_group(mesh: Mesh, vgroup: VertexGroup, excluded_indicies=[]) -> MeshVertex:
+def find_any_vertex_in_group(mesh: Mesh, vgroup: VertexGroup, excluded_indicies=[]) -> MeshVertex | None:
     """Return the index of the first vertex we find which is part of the
-    vertex group and optinally, has a specified selection state."""
+    vertex group and optionally, has a specified selection state."""
 
     # TODO: This is probably our performance bottleneck atm.
     # We should build an acceleration structure for this similar to build_vert_connection_map_new,

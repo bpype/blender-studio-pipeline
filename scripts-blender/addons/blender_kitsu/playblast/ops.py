@@ -211,8 +211,10 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
             basename = context_core.get_versioned_file_basename(Path(bpy.data.filepath).stem)
 
             version_filename = basename + "-" + kitsu_scene_props.playblast_version + ".blend"
-            version_filepath = Path(bpy.data.filepath).parent.joinpath(version_filename).as_posix()
-            bpy.ops.wm.save_as_mainfile(filepath=version_filepath, copy=True)
+            version_directory = Path(bpy.data.filepath).parent.joinpath("version_backups")
+            version_directory.mkdir(exist_ok=True)
+            version_filename = version_directory.joinpath(version_filename).as_posix()
+            bpy.ops.wm.save_as_mainfile(filepath=version_filename, copy=True)
 
         context.window_manager.progress_update(2)
         context.window_manager.progress_end()
