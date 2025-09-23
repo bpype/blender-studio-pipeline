@@ -248,7 +248,8 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
 
         asset_file_path_str = asset.get_filepath(context)
 
-        asset_collection = bpy.data.collections.new(asset.get_collection_name())
+        asset_collection: bpy.types.Collection = bpy.data.collections.new(asset.get_collection_name())
+        asset_collection.asset_mark()
         context.scene.collection.children.link(asset_collection)
 
         # Attempt to set new collection as active may fail based on template setup (multiple view layers etc)

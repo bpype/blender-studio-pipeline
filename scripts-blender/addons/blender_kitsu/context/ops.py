@@ -311,6 +311,7 @@ class KITSU_OT_con_set_asset(bpy.types.Operator):
         else:
             relative_path = Path(bpy.data.filepath).relative_to(project_root)
         blender_asset = context.scene.kitsu.asset_col
+        blender_asset.asset_mark()
         kitsu_asset = cache.asset_active_get()
         if not kitsu_asset:
             self.report({"ERROR"}, "Failed to find active Kitsu Asset")
