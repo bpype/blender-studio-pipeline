@@ -65,6 +65,17 @@ def enable_blender_kitsu_addon():
     bpy.ops.preferences.addon_enable(module="bl_ext.system.blender_kitsu")
 
 
+def set_asset_library(asset_lib_name):
+    asset_libs = bpy.context.preferences.filepaths.asset_libraries
+    asset_lib_path = Path(__file__).parents[2].joinpath("svn/pro/assets").as_posix()
+
+    if asset_libs.get(asset_lib_name) is None:
+        asset_lib = asset_libs.new(name=asset_lib_name, directory=asset_lib_path)
+        asset_lib.import_method = 'LINK'
+        asset_lib.use_relative_path = True
+        print(f"Added new asset library: {asset_lib_name} at {asset_lib_path}")
+
+
 def main():
     project_config = get_project_config()
 
@@ -76,6 +87,7 @@ def main():
     print_header("Kitsu Project Paths", 1)
     set_blender_kitsu_paths(project_config, addon_prefs)
     set_blender_kitsu_generic_prefs(project_config["generic_prefs"], addon_prefs)
+    set_asset_library(project_config["login_data"]["project_name"])
     print_header("Writing Preferences", 1)
     bpy.ops.wm.save_userpref()
     bpy.ops.wm.quit_blender()
