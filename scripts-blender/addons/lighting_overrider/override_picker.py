@@ -84,7 +84,7 @@ class LOR_OT_override_picker(bpy.types.Operator):
 
         col = layout.column()
         col.prop(context.scene, 'override')
-        self.override = context.scene['override']
+        self.override = context.scene.override
 
         if self.batch_override:
             row = layout.row()
@@ -93,14 +93,16 @@ class LOR_OT_override_picker(bpy.types.Operator):
 
 
     def invoke(self, context, event):
-
-        if not bpy.ops.ui.copy_data_path_button.poll():
+        active_property = bpy.context.property
+        if not active_property:
             return {'PASS_THROUGH'}
 
-        clip = context.window_manager.clipboard
-        bpy.ops.ui.copy_data_path_button(full_path=True)
-        rna_path = context.window_manager.clipboard
-        context.window_manager.clipboard = clip
+        datablock, data_path, index = active_property
+        try:
+            rna_path = datablock.path_from_module(data_path, index)
+        except:
+            print("Couldn't get a rna path from active property!")
+            return {'CANCELLED'}
 
         if rna_path.endswith('name'):
             print("Warning: Don't override datablock names.")
@@ -198,7 +200,7 @@ class LOR_OT_override_picker(bpy.types.Operator):
         wm = context.window_manager
         state = wm.invoke_props_dialog(self)
         if state in {'FINISHED', 'CANCELLED'}:
-            del context.scene['override']
+            del bpy.types.Scene.override
             return state
         else:
             return state
@@ -210,7 +212,7 @@ class LOR_OT_override_picker(bpy.types.Operator):
         path_elements = utils.parse_rna_path_to_elements(self.rna_path)
 
         if context.scene.override==self.init_val:
-            del context.scene['override']
+            del bpy.types.Scene.override
             return {'CANCELLED'}
 
         utils.mute_animation_on_rna_path(self.rna_path)
@@ -237,7 +239,7 @@ class LOR_OT_override_picker(bpy.types.Operator):
             data_block.update_tag()
 
         if not self.batch_override:
-            del context.scene['override']
+            del bpy.types.Scene.override
             return {'FINISHED'}
 
         for ob in context.selected_objects:
@@ -261,12 +263,12 @@ class LOR_OT_override_picker(bpy.types.Operator):
             rna_overrides.add_rna_override(context, add_info)
         utils.kick_evaluation(list(context.selected_objects))
 
-        del context.scene['override']
+        del bpy.types.Scene.override
         utils.kick_evaluation()
         return {'FINISHED'}
 
     def cancel(self, context):
-        del context.scene['override']
+        del bpy.types.Scene.override
         return
 
 
