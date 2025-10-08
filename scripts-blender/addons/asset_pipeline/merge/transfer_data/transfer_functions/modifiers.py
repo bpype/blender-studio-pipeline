@@ -140,7 +140,8 @@ def transfer_modifier_props(context, source_mod, target_mod):
         for key, value in source_mod.items():
             typ = type(getattr(target_mod, f'["{key}"]'))
             if typ in (int, float, bool, str):
-                value = typ(value)
+                if not (typ is str and type(target_mod[key]) is int): # skip conversion for enum props
+                    value = typ(value)
             target_mod[key] = value
 
         # Transfer geo node bake settings
