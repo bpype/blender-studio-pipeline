@@ -6,22 +6,8 @@ The implementation of CloudRig's [Component Types](cloudrig-types) are found in 
 
 To start making your own component types, just copy this folder, and rename some things:
 - The file name should be unique, as it defines the namespace for the parameters in Blender's RNA. So it might be a good idea to prefix all your files with some identifier.
-- Change the class's `ui_name` property to something unique to show in the UI, eg. "My Component". This should be artist-friendly, and should be Title Case.
-
-Other than that, there are a couple things you should not change:
-- Your class should always inherit from at least `Component_Base`, or any of its subclasses.
-- `class Params(PropertyGroup)` is the class that defines the parameters of this component type. 
-    - It must be named exactly `Params`.
-    - CloudRig will register this PropertyGroup under `PoseBone.cloudrig_component.params.my_component`.
-        - The `my_component` part of this RNA path is determined by the filename.
-- `RIG_COMPONENT_CLASS` is the variable referencing your component class.
-    - This should not be removed or renamed, or your component type won't be found by CloudRig's registration code.
-
-And here are some classes and functions to be aware of:
-- `__init__()` works as normal. Your class will be instantiated by the `CloudRigGenerator` class, which in turn is instantiated by the Generate button in the UI.
-- `create_bone_infos(self, context)` is your main entry point. From here, you can access the parameters of this instance via `self.params`.
-- You need BoneSets in order to create BoneInfos. You inherit 3 Bone Sets from `Component_Base`: `Deform Bones`, `Mechanism Bones`, `Original Bones`. Bone Sets are stored in a name:BoneSet dictionary under `self.bone_sets`, but these three also have shorthands: `self.bones_def`, `self.bones_mch`, `self.bones_org`.
-- BoneSets allow users to customize the bone collections, bone color, and wire width of a set of bones. You can define additional bone sets in `define_bone_sets()`. Note that this function runs during add-on registration, since bone sets are PropertyGroups that need to be registered in RNA.
+- Change the class's `ui_name` property to something unique to show in the UI. Preferably stick to Title Case.
+- See the template code and comments for further details.
 
 ### Conventions
 - Do as I say, not as I do.
@@ -31,9 +17,15 @@ And here are some classes and functions to be aware of:
 - Use `self.add_log()` to create entries in the Generation Log interface to warn riggers about any suspiciously mis-configured things.
 - Functions should be defined top to bottom in roughly the order they run.
 - Functions that override an inherited one should specify in the docstring what they are overriding from. (And once Blender's Python version supports the @override decorator, use that.)
+- Follow CloudRig's bone naming style
+    - Bone names should be derived from adding prefixes to metarig bone names, to ensure uniqueness.
+    - As few prefixes as possible, but as many as needed. For animator-facing controls, I really advise limiting to 1 short prefix.
+    - Avoid using the same prefix for different purposes; search the codebase before adding new ones.
+    - Do not hard-code some bone to be called "Torso" or anything else, because then you can't have more than 1 instance of this component in the rig. 
+    - Don not alter suffixes (".L"/".R"), so avoid adding .001. Instead, see `increment_name()`.
 
 ## Modules
-Here are descriptions of each python module (file) in CloudRig.
+Below are descriptions of each python module in CloudRig.
 
 <details>
 <summary> generation </summary>
