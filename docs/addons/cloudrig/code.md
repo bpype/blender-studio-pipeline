@@ -1,12 +1,11 @@
 # Contribute
-This project has grown large enough that external contributors would be fairly welcome. Just [get in contact with Demeter](https://blender.chat/direct/mets) before you start coding.
-
+This project has grown large enough that external contributors would be fairly welcome. Just [get in contact with Demeter](https://blender.chat/direct/mets) before you start coding. You can also [open an issue](https://projects.blender.org/Mets/CloudRig/issues) to discuss design and functionality before you start coding.
 
 ### Adding a new Component/Parameter
-The implementation of CloudRig's [Component Types](cloudrig-types) are found in the `rig_components` folder of the repository. Here, you will also find `cloud_template.py`, which is intended to show the bare minimum boilerplate code. If you un-comment the last line of this file and Reload Scripts in Blender, you'll see it show up as a component type option in the UI and you can try generating it.
+The implementation of CloudRig's [Component Types](cloudrig-types) are found in the `rig_components` folder of the repository. Here, you will also find `external_components/my_component.py`, which is a template for you to create your own component types. Simply un-comment the last line of this file and Reload Scripts in Blender, to see it show up as a component type option. Generating it will create a bone and a constraint.
 
-To make your own component type, just copy this file, and rename some things:
-- The file name must start with `cloud_`. For example's sake, let's say it's `cloud_my_component.py`.
+To start making your own component types, just copy this folder, and rename some things:
+- The file name should be unique, as it defines the namespace for the parameters in Blender's RNA. So it might be a good idea to prefix all your files with some identifier.
 - Change the class's `ui_name` property to something unique to show in the UI, eg. "My Component". This should be artist-friendly, and should be Title Case.
 
 Other than that, there are a couple things you should not change:
@@ -16,15 +15,13 @@ Other than that, there are a couple things you should not change:
     - CloudRig will register this PropertyGroup under `PoseBone.cloudrig_component.params.my_component`.
         - The `my_component` part of this RNA path is determined by the filename.
 - `RIG_COMPONENT_CLASS` is the variable referencing your component class.
-    - This should not be removed or renamed, or your component type won't be registered by CloudRig.
+    - This should not be removed or renamed, or your component type won't be found by CloudRig's registration code.
 
 And here are some classes and functions to be aware of:
 - `__init__()` works as normal. Your class will be instantiated by the `CloudRigGenerator` class, which in turn is instantiated by the Generate button in the UI.
 - `create_bone_infos(self, context)` is your main entry point. From here, you can access the parameters of this instance via `self.params`.
 - You need BoneSets in order to create BoneInfos. You inherit 3 Bone Sets from `Component_Base`: `Deform Bones`, `Mechanism Bones`, `Original Bones`. Bone Sets are stored in a name:BoneSet dictionary under `self.bone_sets`, but these three also have shorthands: `self.bones_def`, `self.bones_mch`, `self.bones_org`.
 - BoneSets allow users to customize the bone collections, bone color, and wire width of a set of bones. You can define additional bone sets in `define_bone_sets()`. Note that this function runs during add-on registration, since bone sets are PropertyGroups that need to be registered in RNA.
-
-Note: If you want to make a contribution, you should probably [open an issue](https://projects.blender.org/Mets/CloudRig/issues) first, to discuss the design and functionality.
 
 ### Conventions
 - Do as I say, not as I do.
@@ -66,9 +63,19 @@ This is the file that gets loaded with all generated rigs. This script is not pr
 </details>
 
 <details>
-<summary> metarigs </summary>
+<summary> metarigs & versioning </summary>
 
 The `__init__.py` here implements the metarigs and component samples UI lists that appear in the Object->Add->Armature UI. Metarigs and Samples are technically the same thing, and both are loaded from MetaRigs.blend.
+
+**versioning.py**
+
+Metarig versioning.
+
+All metarigs store a version number, and this module adds an app handler that runs on .blend file load, to check for metarigs whose version is lower than the metarig version of the add-on. If it finds any, it will automatically do its best to upgrade the metarig's component types and parameters to the latest correct names and values.
+
+For example, the `cloud_copy` and `cloud_tweak` bone types used to be a single component type with an enum to switch between the two behaviours. When that split was implemented, the old enum value was still accessible, and was used to assign the new correct component type, so users didn't have to do anything.
+
+Be careful that versioning multiple changes to a single property should be done with care, or not at all, since if the versioning code is trying to write to a property that no longer exists, it will fail.
 
 </details>
 
@@ -175,15 +182,5 @@ Where the add-on registers itself into Blender's RNA system. I implement a patte
 **manual.py**
 
 Makes sure right clicking on CloudRig properties and then clicking on Open Manual goes to the relevant page on this wiki.
-
-**versioning.py**
-
-Metarig versioning.
-
-All metarigs store a version number, and this module adds an app handler that runs on .blend file load, to check for metarigs whose version is lower than the metarig version of the add-on. If it finds any, it will automatically do its best to upgrade the metarig's component types and parameters to the latest correct names and values.
-
-For example, the `cloud_copy` and `cloud_tweak` bone types used to be a single component type with an enum to switch between the two behaviours. When that split was implemented, the old enum value was still accessible, and was used to assign the new correct component type, so users didn't have to do anything.
-
-Be careful that versioning multiple changes to a single property should be done with care, or not at all, since if the versioning code is trying to write to a property that no longer exists, it will fail.
 
 </details>
