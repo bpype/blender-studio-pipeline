@@ -21,7 +21,7 @@ class EASYWEIGHT_OT_focus_deform_bones(Operator):
     def execute(self, context):
         # Deselect all bones
         for pb in context.selected_pose_bones[:]:
-            pb.bone.select = False
+            pb.select = False
 
         # Reveal and select all deforming pose bones.
         deform_groups = get_deforming_vgroups(context.active_object)
@@ -30,7 +30,7 @@ class EASYWEIGHT_OT_focus_deform_bones(Operator):
             pb = rig.pose.bones.get(vg.name)
             if not pb:
                 continue
-            reveal_bone(pb.bone, select=True)
+            reveal_bone(pb, select=True)
 
         self.report({'INFO'}, "Un-hid and selected all deforming bones.")
         return {'FINISHED'}
