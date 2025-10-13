@@ -2,69 +2,68 @@
 This project has grown large enough that external contributors would be fairly welcome. Just [get in contact with Demeter](https://blender.chat/direct/mets) before you start coding.
 
 
-### Adding a new component type or parameter
-If you have an idea for a new component type or parameter, that is welcome. Here are some notes:
-- Open an Issue to discuss the design first.
-- Consider if the functionality should just be just a parameter on an existing component type or an entire new type on its own. Usually both are possible, but when one functionality requires multiple parameters that don't make sense on any of the current component types, that's when it should be split out into a new component type.
-- No redundant or double functionality. If the new functionality is very similar to that of another component type, let's try to find a way to make them share the relevant code. Maybe that means putting in extra work to also make this functionality work with a bunch of other component types, and a new parameter can be added all the way up in cloud_base.
-- Provide clear and convincing explanation of why this functionality is useful, ideally showing a character where the functionality was used where no other solution would've worked as well.
-- If I can press it, it should do something. If it doesn't do anything, don't let me press it. (see forced_params dictionary in some component classes)
+### Adding a new Component/Parameter
+The implementation of CloudRig's [Component Types](cloudrig-types) are found in the `rig_components` folder of the repository. Here, you will also find `cloud_template.py`, which is intended to show the bare minimum boilerplate code. If you un-comment the last line of this file and Reload Scripts in Blender, you'll see it show up as a component type option in the UI and you can try generating it.
 
-To get started, check out cloud_template.py. This is what I start with when I start implementing a new component type. That is to say, it's the most basic skeleton code of a CloudRig component type. Note that it inherits a lot of shared functionality from Component_Base.
+To make your own component type, just copy this file, and rename some things:
+- The file name must start with `cloud_`. For example's sake, let's say it's `cloud_my_component.py`.
+- Change the class's `ui_name` property to something unique to show in the UI, eg. "My Component". This should be artist-friendly, and should be Title Case.
 
-- Implement all the parameters and code. There is a regular __init__() and then the generator will call `create_bone_infos()` as your entry point.
-- Add a component sample in MetaRigs.blend, named according to the convention you'll find in there.
-- Add documentation in the wiki's Cloudrig-Types page, again sticking to the conventions established there.
+Other than that, there are a couple things you should not change:
+- Your class should always inherit from at least `Component_Base`, or any of its subclasses.
+- `class Params(PropertyGroup)` is the class that defines the parameters of this component type. 
+    - It must be named exactly `Params`.
+    - CloudRig will register this PropertyGroup under `PoseBone.cloudrig_component.params.my_component`.
+        - The `my_component` part of this RNA path is determined by the filename.
+- `RIG_COMPONENT_CLASS` is the variable referencing your component class.
+    - This should not be removed or renamed, or your component type won't be registered by CloudRig.
+
+And here are some classes and functions to be aware of:
+- `__init__()` works as normal. Your class will be instantiated by the `CloudRigGenerator` class, which in turn is instantiated by the Generate button in the UI.
+- `create_bone_infos(self, context)` is your main entry point. From here, you can access the parameters of this instance via `self.params`.
+- You need BoneSets in order to create BoneInfos. You inherit 3 Bone Sets from `Component_Base`: `Deform Bones`, `Mechanism Bones`, `Original Bones`. Bone Sets are stored in a name:BoneSet dictionary under `self.bone_sets`, but these three also have shorthands: `self.bones_def`, `self.bones_mch`, `self.bones_org`.
+- BoneSets allow users to customize the bone collections, bone color, and wire width of a set of bones. You can define additional bone sets in `define_bone_sets()`. Note that this function runs during add-on registration, since bone sets are PropertyGroups that need to be registered in RNA.
+
+Note: If you want to make a contribution, you should probably [open an issue](https://projects.blender.org/Mets/CloudRig/issues) first, to discuss the design and functionality.
 
 ### Conventions
-Suggestions for more conventions are welcome, if you find things that could be more consistent. But what's already written down here is unlikely to change. I myself don't always manage to stick to these conventions, but I should. If you'd like to understand a part of the code but can't, feel free to let me know.
-
-- Ideally every file should have fully type annotated functions with clear and verbose docstrings.
-- PEP 585 type annotations should be used, with native types like `list`. Avoid the older PEP 484 that used classes like `typing.List`.
-- Avoid all short variable names.
-- Careful when naming a variable `bone`. It's fine, but it should be `ebone` for EditBone, `pbone` for PoseBone, `bone_info` for BoneInfo instances, and `bone_name` if it's just a string.
-- All component types start with `cloud_`
-- Always use the Troubleshooting module and the `add_log()` function to warn riggers about potential issues, big or small.
+- Do as I say, not as I do.
+- Avoid code comments that instruct linters and auto-formatters.
+- Use PEP 585 or even more modern type annotations. Avoid older styles like PEP 484.
+- Don't abbreviate too much. Avoid one-letter variable names completely.
+- Use `self.add_log()` to create entries in the Generation Log interface to warn riggers about any suspiciously mis-configured things.
 - Functions should be defined top to bottom in roughly the order they run.
-- Functions that override an inherited one should specify in the docstring what module they are overriding the function from.
-- Always be conscious of whether calls like `bpy.data.objects.get()` should receive a `(string, library)` tuple or not.
-- Code is formatted with Black.
-
+- Functions that override an inherited one should specify in the docstring what they are overriding from. (And once Blender's Python version supports the @override decorator, use that.)
 
 ## Modules
 Here are descriptions of each python module (file) in CloudRig.
-
 
 <details>
 <summary> generation </summary>
 
 - #### cloud_generator.py
-This module holds the generation operator, which is an important code entry point. From there, you can walk through the entire generation process.
+This module holds the generation operator, and the top level of the generation process.
 
 - #### actions_component.py
 The [Actions](actions) generator feature is implemented here. UI is implemented in ui/actions_ui.py.
 
 - #### naming.py
-Houses CloudNameManager, which is instantiated by the generator and referenced from all rigs via self.naming, and provides string operators useful in creating and mirroring bone names.
+String operators useful in creating and mirroring bone names. `CloudNameManager` is instantiated by the generator. Component types have a `self.naming` shorthand to this.
 
 - #### test_animation.py
 The "Generate Test Action" feature is implemented here. This is drawn in the Generation tab of a metarig, and it works with FK Chain components to save you time in creating an animation where you rotate all the joints to test deformations.
 
 - #### troubleshooting.py
 
-All troubleshooting features:
 - The drawing, storage and functionality of the Generation Log UI seen on metarigs.
-- The CloudLogManager class which is instantiated by the generator as self.logger. Components have wrapper functions to auto-fill some parameters, those being `self.add_log()` and `self.raise_generation_error()`. These functions add entries to the log storage.
-- All Quick Fix operators that help quickly troubleshoot various problems.
-- Bug and stack trace reporting functions (opening the Issues page on this repo and pre-filling it with useful information)
+- The `CloudLogManager` class which is instantiated by the generator (`self.logger`). Components have wrapper functions to auto-fill some parameters, those being `self.add_log()` and `self.raise_generation_error()`. These functions add entries to the log UI.
+- All Quick Fix operators that help quickly fix minor problems.
+- Bug reporting and stack tracing functions.
 
 - #### cloudrig.py
-This is the file that gets loaded with all generated rigs. This script is not procedurally generated. Instead, a nested dictionary is written to a custom property during generation, called 'ui_data'. This is mostly created in `utils/ui.py/add_ui_data()`, and then used by cloudrig.py to draw all the UI elements.
-
-These UI elements are in the sidebar under the CloudRig panel, and contain settings like custom properties, IK/FK switching, parent switching, snapping and baking.
+This is the file that gets loaded with all generated rigs. This script is not procedurally generated. Instead, a nested dictionary is written to a custom property during generation, called `ui_data`. This is mostly created by calls to `utils/ui.py/add_ui_data()`, and then used by cloudrig.py to draw the sidebar for animators, containing settings like IK/FK switching, parent switching, snapping and baking, and custom properties.
 
 </details>
-
 
 <details>
 <summary> metarigs </summary>
@@ -100,7 +99,7 @@ Operators to help with authoring metarigs and speed up workflow.
 Like metarigs, most widgets are appended from a Widgets.blend file. This is used
 
 - #### bone_gizmos.py
-Bone Gizmos is an experimental/abandoned addon of mine, and this module allows components to interface with this addon.
+Bone Gizmos is an experimental/abandoned add-on of mine, and this module allows components to interface with this add-on.
 
 - #### animation.py
 Functions used by [cloud_fk_chain](cloudrig-types#cloud_fk_chain) and the [Generate Test Animation](generator-parameters) feature.
@@ -160,7 +159,7 @@ Entry points are of course `__init__()` and `create_bone_infos()`.
 <summary> utils </summary>
 
 - **curve.py**: Utility functions used by curve-based components, particularly to help with curve symmetry.
-- **lattice.py**: Some utilities used by cloud_lattice, taken from our Lattice Magic addon.
+- **lattice.py**: Some utilities used by the `cloud_lattice` component, taken from my Lattice Magic add-on.
 - **maths.py**: Any pure math, even if it is only used in one place, goes here. That means this module should never import anything from any other part of CloudRig.
 - **misc.py**: Code that hasn't been organized yet. Ideally this module shouldn't exist, since it's not clear what is in it.
 - **post_gen.py**: Code that could be useful to run from post-generation scripts. Not actually used anywhere in the add-on.
@@ -170,15 +169,21 @@ Entry points are of course `__init__()` and `create_bone_infos()`.
 <details>
 <summary> Repo root </summary>
 
-- **__init__.py**
-Where the add-on registers itself into Blender's RNA system. I implement a pattern where each sub-folder's __init__.py should import its contents and put them in a "modules" list. The listed modules will be traversed recursively here, and any registerable classes they might store in a "registry" list will be registered, and their register() and unregister() functions will be called as appropriate.
-- **manual.py**
+**`__init__.py`**
+Where the add-on registers itself into Blender's RNA system. I implement a pattern where each sub-folder's `__init__.py` should import its contents and put them in a "modules" list. The listed modules will be traversed recursively here, and any registerable classes they might store in a "registry" list will be registered, and their register() and unregister() functions will be called as appropriate.
+
+**manual.py**
+
 Makes sure right clicking on CloudRig properties and then clicking on Open Manual goes to the relevant page on this wiki.
-- **versioning.py**
+
+**versioning.py**
+
 Metarig versioning.
 
-All metarigs store a version number, and this module adds an app handler that runs whenever a new blend file is loaded, to check for metarigs whose version is lower than the current one. If it finds any, it will automatically do its best to upgrade the metarig's [component types and parameters](cloudrig-types) to the latest correct names and values.
+All metarigs store a version number, and this module adds an app handler that runs on .blend file load, to check for metarigs whose version is lower than the metarig version of the add-on. If it finds any, it will automatically do its best to upgrade the metarig's component types and parameters to the latest correct names and values.
 
-For example, the cloud_copy and cloud_tweak bone types used to be a single component type with an enum to switch between the two behaviours. When that split was implemented, the old enum value is still accessible, and is used to assign the new correct component type accordingly.
+For example, the `cloud_copy` and `cloud_tweak` bone types used to be a single component type with an enum to switch between the two behaviours. When that split was implemented, the old enum value was still accessible, and was used to assign the new correct component type, so users didn't have to do anything.
+
+Be careful that versioning multiple changes to a single property should be done with care, or not at all, since if the versioning code is trying to write to a property that no longer exists, it will fail.
 
 </details>
