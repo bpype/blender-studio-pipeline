@@ -151,7 +151,9 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             with context.temp_override(**override):
                 bpy.ops.object.material_slot_add()
                 brushstrokes_object.material_slots[0].material = preset_material
+        settings.silent_switch = True
         settings.context_material = preset_material
+        settings.silent_switch = False
         brushstrokes_object['BSBST_material'] = settings.context_material
 
         # transfer preset modifiers to new brushstrokes TODO: refactor to deduplicate
