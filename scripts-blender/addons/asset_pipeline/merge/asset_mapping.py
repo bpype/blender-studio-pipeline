@@ -141,28 +141,39 @@ class AssetTransferMapping:
         coll_map: Dict[bpy.types.Collection, bpy.types.Collection] = {}
 
         for local_task_layer_col in self._local_top_col.children:
-            if local_task_layer_col.asset_id_owner not in self._local_tls:
-                # Replace source object suffix with target suffix to get target object.
-                external_col_name = merge_get_target_name(local_task_layer_col.name)
-                local_col = bpy.data.collections.get(external_col_name)
-                if local_col:
-                    coll_map[local_task_layer_col] = local_col
-                else:
-                    self.logger.debug(
-                        f"Failed to find match collection {local_task_layer_col.name} for {external_col_name}"
-                    )
-                    self._no_match_source_colls.add(local_task_layer_col)
+            # Map the children, for user remapping, which happens later.
+            for child in local_task_layer_col.children_recursive:
+                external_child_name = merge_get_target_name(child.name)
+                external_child = bpy.data.collections.get(external_child_name)
+                if external_child:
+                    coll_map[child] = external_child
+            if local_task_layer_col.asset_id_owner in self._local_tls:
+                continue
+            external_col_name = merge_get_target_name(local_task_layer_col.name)
+            local_col = bpy.data.collections.get(external_col_name)
+            if local_col:
+                coll_map[local_task_layer_col] = local_col
+            else:
+                self.logger.debug(
+                    f"Failed to find match collection {local_task_layer_col.name} for {external_col_name}"
+                )
+                self._no_match_source_colls.add(local_task_layer_col)
 
         external_top_col_name = merge_get_target_name(self._local_top_col.name)
         external_top_col = bpy.data.collections.get(external_top_col_name)
 
-        # TODO Refactor
+        # This detects when a new task layer collection is added under the top 
+        # level collection of the asset. (It must have an asset_id_owner!)
+        # It's marked for addition to the combined result, which happens later.
         for external_col in external_top_col.children:
             local_col_name = merge_get_target_name(external_col.name)
             local_col = bpy.data.collections.get(local_col_name)
             if not local_col and external_col.asset_id_owner not in self._local_tls:
                 self.external_col_to_add.add(external_col)
 
+        # Inverse of the above: When a task layer collection owned externally
+        # is no longer present in the external version of the asset,
+        # then it should be removed from the combined result, which happens later.
         for local_col in self._local_top_col.children:
             external_col_name = merge_get_target_name(local_col.name)
             external_col = bpy.data.collections.get(external_col_name)
