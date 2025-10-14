@@ -98,11 +98,7 @@ class LOR_OT_override_picker(bpy.types.Operator):
             return {'PASS_THROUGH'}
 
         datablock, data_path, index = active_property
-        try:
-            rna_path = datablock.path_from_module(data_path, index)
-        except:
-            print("Couldn't get a rna path from active property!")
-            return {'CANCELLED'}
+        rna_path = datablock.path_resolve(data_path, False).path_from_module()
 
         if rna_path.endswith('name'):
             print("Warning: Don't override datablock names.")
