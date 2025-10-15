@@ -86,30 +86,33 @@ def poll_weight_paint_mode(operator, context, with_rig=False, with_groups=False)
     return True
 
 
-def reveal_bone(bone: Bone or EditBone or PoseBone, select=True):
+def reveal_bone(pose_bone: PoseBone, select=True):
     """Reveall and optionally select a bone, regardless of current
     selection or visibility states.
     """
-    if type(bone) == PoseBone:
-        bone = bone.bone
-    armature = bone.id_data
+    arm_obj = pose_bone.id_data
 
-    if hasattr(armature, 'layers'):
+    if hasattr(arm_obj, 'layers'):
         # Blender 3.6 and below: Bone Layers.
-        enabled_layers = [i for i in range(32) if armature.layers[i]]
+        enabled_layers = [i for i in range(32) if arm_obj.layers[i]]
 
         # If none of this bone's layers are enabled, enable the first one.
-        bone_layers = [i for i in range(32) if bone.layers[i]]
+        bone_layers = [i for i in range(32) if pose_bone.layers[i]]
         if not any([i in enabled_layers for i in bone_layers]):
-            armature.layers[bone_layers[0]] = True
+            arm_obj.layers[bone_layers[0]] = True
     else:
         # Blender 4.0 and above: Bone Collections.
-        ensure_visible_bone_collection(bone)
+        ensure_visible_bone_collection(pose_bone)
 
-    bone.hide = False
+    if bpy.app.version < (5, 0, 0):
+        pose_bone.bone.hide = False
+        if select:
+            pose_bone.bone.select = True
+    else:
+        pose_bone.hide = False
 
-    if select:
-        bone.select = True
+        if select:
+            pose_bone.select = True
 
 
 def ensure_visible_bone_collection(bone: Bone or EditBone or PoseBone):

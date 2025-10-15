@@ -7,6 +7,8 @@
 ## FIXED
 
 - Fix issue when multiple windows and scenes by getting rid of `bpy.context` in multiple places [#420](https://projects.blender.org/studio/blender-studio-tools/pulls/420)
+- Fix version specific Grease Pencil availability
+- Fix resetting brushstroke material to preset when creating a new brushstroke layer
 
 ## 1.1.2 - 2025-07-04
 

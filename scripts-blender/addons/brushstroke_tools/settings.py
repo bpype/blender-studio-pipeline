@@ -263,7 +263,7 @@ class BSBST_Settings(bpy.types.PropertyGroup):
         gpv3 = bpy.context.preferences.experimental.use_grease_pencil_version3
     except:
         v0, v1, v3 = bpy.app.version
-        gpv3 = v0 >= 4 and v1 >= 3
+        gpv3 = v0 >= 4 or (v0 == 4 and v1 >= 3)
     curve_mode: bpy.props.EnumProperty(default='CURVES',
                                        items= [('CURVE', 'Legacy', 'Use legacy curve type (Limited Support)', 'CURVE_DATA', 0),\
                                                ('CURVES', 'Curves', 'Use hair curves (Fully supported)', 'CURVES_DATA', 1),
