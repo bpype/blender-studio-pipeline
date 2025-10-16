@@ -91,7 +91,7 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
                     or "right" in name
                 ):
                     righties += 1
-                if (
+                elif (
                     ".l" in name
                     or "_l" in name
                     or "l_" in name
@@ -182,7 +182,7 @@ def symmetrize_vertex_group(
     if not opp_vgroup:
         opp_vgroup = obj.vertex_groups.new(name=opp_name)
 
-    skip_func = None
+    is_dst_side = None
     if vgroup != opp_vgroup:
         # Clear weights of the opposite group from all vertices.
         opp_vgroup.remove(range(len(obj.data.vertices)))
@@ -198,12 +198,16 @@ def symmetrize_vertex_group(
         def zero_or_less(x):
             return x <= 0
 
-        skip_func = zero_or_more if right_to_left else zero_or_less
+        # Determine the function which determines whether an X coordinate is on 
+        # the destination side.
+        is_dst_side = zero_or_more if right_to_left else zero_or_less
+        dst_side_verts = [i for i, v in enumerate(obj.data.vertices) if is_dst_side(v.co.x)]
+        vgroup.remove(dst_side_verts)
 
     # Write the new, mirrored weights
     for src_idx, dst_idx in symmetry_mapping.items():
         vert = obj.data.vertices[src_idx]
-        if skip_func != None and skip_func(vert.co.x):
+        if is_dst_side != None and is_dst_side(vert.co.x):
             continue
         try:
             src_weight = vgroup.weight(src_idx)

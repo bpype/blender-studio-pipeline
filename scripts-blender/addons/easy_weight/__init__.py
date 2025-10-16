@@ -20,7 +20,7 @@ import importlib
 bl_info = {
     "name": "Easy Weight",
     "author": "Demeter Dzadik",
-    "version": (1, 0, 8),
+    "version": (1, 0, 9),
     "blender": (4, 2, 0),
     "location": "Weight Paint->W key & Sidebar->Easy Weight",
     "description": "Operators to make weight painting easier.",
