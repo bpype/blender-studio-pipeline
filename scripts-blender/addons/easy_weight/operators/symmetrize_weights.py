@@ -76,7 +76,7 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
         elif self.groups == 'ALL':
             vgroups = obj.vertex_groups[:]
 
-        symmetry_mapping = get_symmetry_mapping(obj=obj)
+        vert_symm_map = get_vert_symm_map(obj=obj)
 
         if self.direction == 'AUTOMATIC':
             self.direction = 'LEFT_TO_RIGHT'
@@ -105,7 +105,7 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
             symmetrize_vertex_group(
                 obj=obj,
                 vg_name=vgroup.name,
-                symmetry_mapping=symmetry_mapping,
+                vert_symm_map=vert_symm_map,
                 right_to_left=self.direction == 'RIGHT_TO_LEFT',
             )
 
@@ -115,7 +115,7 @@ class EASYWEIGHT_OT_symmetrize_groups(Operator):
         return {'FINISHED'}
 
 
-def get_symmetry_mapping(*, obj: Object, axis='X', symmetrize_pos_to_neg=False) -> dict[int, int]:
+def get_vert_symm_map(*, obj: Object, axis='X', symmetrize_pos_to_neg=False) -> dict[int, int]:
     """
     Create a mapping of vertex indicies, such that the index on one side maps
     to the index on the opposite side of the mesh on a given axis.
@@ -167,11 +167,11 @@ def get_symmetry_mapping(*, obj: Object, axis='X', symmetrize_pos_to_neg=False) 
 
 
 def symmetrize_vertex_group(
-    *, obj: Object, vg_name: str, symmetry_mapping: dict[int, int], right_to_left=False
+    *, obj: Object, vg_name: str, vert_symm_map: dict[int, int], right_to_left=False
 ):
     """
-    Symmetrize weights of a single group. The symmetry_mapping should first be
-    calculated with get_symmetry_mapping().
+    Symmetrize weights of a single group. The vert_symm_map should first be
+    calculated with get_vert_symm_map().
     """
 
     vgroup = obj.vertex_groups.get(vg_name)
@@ -205,7 +205,7 @@ def symmetrize_vertex_group(
         vgroup.remove(dst_side_verts)
 
     # Write the new, mirrored weights
-    for src_idx, dst_idx in symmetry_mapping.items():
+    for src_idx, dst_idx in vert_symm_map.items():
         vert = obj.data.vertices[src_idx]
         if is_dst_side != None and is_dst_side(vert.co.x):
             continue
