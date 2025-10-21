@@ -30,18 +30,15 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
         settings.brushstroke_method = self.method
 
         if settings.curve_mode == 'GP':
-            bpy.ops.object.grease_pencil_add(type='EMPTY')
-            context.object.name = name
-            context.object.data.name = name
-            brushstrokes_object = context.object
-            context.collection.objects.unlink(brushstrokes_object)
-        else:
-            if settings.curve_mode == 'CURVE':
-                brushstrokes_data = bpy.data.curves.new(name, type='CURVE')
-                brushstrokes_data.dimensions = '3D'
-            elif settings.curve_mode == 'CURVES':
-                brushstrokes_data = bpy.data.hair_curves.new(name)
-            brushstrokes_object = bpy.data.objects.new(name, brushstrokes_data)
+            brushstrokes_data = bpy.data.grease_pencils.new(name)
+            bs_layer = brushstrokes_data.layers.new('Brushstrokes')
+            bs_layer.frames.new(1)
+        elif settings.curve_mode == 'CURVE':
+            brushstrokes_data = bpy.data.curves.new(name, type='CURVE')
+            brushstrokes_data.dimensions = '3D'
+        elif settings.curve_mode == 'CURVES':
+            brushstrokes_data = bpy.data.hair_curves.new(name)
+        brushstrokes_object = bpy.data.objects.new(name, brushstrokes_data)
 
         # link to surface object's collections (fall back to active collection if all are linked data)
         utils.link_to_collections_by_ref(brushstrokes_object, surface_object, unlink=False)
@@ -55,18 +52,15 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
     def new_flow_object(self, context, name, surface_object):
         settings = context.scene.BSBST_settings
         if settings.curve_mode == 'GP':
-            bpy.ops.object.grease_pencil_add(type='EMPTY')
-            context.object.name = name
-            context.object.data.name = name
-            flow_object = context.object
-            context.collection.objects.unlink(flow_object)
-        else:
-            if settings.curve_mode == 'CURVE':
-                flow_data = bpy.data.curves.new(name, type='CURVE')
-                flow_data.dimensions = '3D'
-            elif settings.curve_mode == 'CURVES':
-                flow_data = bpy.data.hair_curves.new(name)
-            flow_object = bpy.data.objects.new(name, flow_data)
+            flow_data = bpy.data.grease_pencils.new(name)
+            fl_layer = flow_data.layers.new('Flow')
+            fl_layer.frames.new(1)
+        elif settings.curve_mode == 'CURVE':
+            flow_data = bpy.data.curves.new(name, type='CURVE')
+            flow_data.dimensions = '3D'
+        elif settings.curve_mode == 'CURVES':
+            flow_data = bpy.data.hair_curves.new(name)
+        flow_object = bpy.data.objects.new(name, flow_data)
 
         # link to surface object's collections (fall back to active collection if all are linked data)
         utils.link_to_collections_by_ref(flow_object, surface_object, unlink=False)
