@@ -35,11 +35,17 @@ def on_weight_paint_enter():
     armature = get_armature_of_meshob(obj)
     if not armature:
         return
-    print("Entering WP mode: ", context.active_object.name, armature.name)
     # Save all object visibility related info so it can be restored later.
     wp_toggle['arm_disabled'] = armature.hide_viewport
     wp_toggle['arm_hide'] = armature.hide_get()
     wp_toggle['arm_coll_assigned'] = False
+
+    rig_objs = [mod.object for mod in obj.modifiers if mod.type=='ARMATURE']
+
+    if any((rig for rig in context.selected_objects if rig in rig_objs)):
+        # If an armature is selected, don't auto-select anything.
+        return
+
     armature.hide_viewport = False
     armature.hide_set(False)
 
