@@ -5,6 +5,7 @@
 import os
 import bpy
 from pathlib import Path
+from bpy_extras import anim_utils
 
 def executions_script_source_exists(context):
     meta_settings = context.scene.LOR_Settings
@@ -154,14 +155,15 @@ def mute_fcurve(db, path):
         return
     if not db.animation_data.action:
         return
-    
-    fcurve = db.animation_data.action.fcurves.find(path)
+
+    channelbag = anim_utils.action_get_channelbag_for_slot(db.animation_data.action, db.animation_data.action_slot)
+    fcurve = channelbag.fcurves.find(path)
     c = 0
     while fcurve or c<=4:
         if fcurve:
             fcurve.mute = True
         c += 1
-        fcurve = db.animation_data.action.fcurves.find(path, index=c)
+        fcurve = channelbag.fcurves.find(path, index=c)
     return
 
 def mute_driver(db, path):
