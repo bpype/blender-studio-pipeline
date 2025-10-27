@@ -4,6 +4,8 @@ labels:
   - "Type/Report"
   - "Status/Needs Triage"
   - "Priority/Normal"
+assignees:
+  - Mets
 body:
   - type: markdown
     attributes:
@@ -15,7 +17,6 @@ body:
       label: "Description"
       hide_label: true
       value: |
-        @Mets
         Character: 
         Blender Version: 
 
