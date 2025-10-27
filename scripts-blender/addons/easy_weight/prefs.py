@@ -2,37 +2,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy, os
+import bpy
 from bpy.props import BoolProperty
-from bpy.app.handlers import persistent
 
 from .weight_cleaner import start_cleaner, stop_cleaner
-from .utils import get_addon_prefs
 from .prefs_to_disk import PrefsFileSaveLoadMixin, update_prefs_on_file
-from pathlib import Path
-
-def ensure_brush_assets():
-    # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file 
-    # until they are first accessed, so let's do that when needed. We also can't check 
-    # whether these brushes exist without looping over all of them.
-    for brush_name in ('Blur', 'Paint'):
-        brush = next((brush for brush in bpy.data.brushes if brush.use_paint_weight and brush.name==brush_name), None)
-        if not brush:
-            # Append the brush from the `datafiles` folder.
-            blend_path = os.path.abspath((Path(bpy.utils.resource_path('LOCAL')) / "datafiles/assets/brushes/essentials_brushes-mesh_weight.blend").as_posix())
-            with bpy.data.libraries.load(blend_path, link=True) as (data_from, data_to):
-                data_to.brushes = [brush_name]
-            brush = bpy.data.brushes.get((brush_name, blend_path))
-            if not brush:
-                brush = bpy.data.brushes.get(brush_name)
-        if brush_name == 'Paint' and brush:
-            brush.blend = 'ADD'
 
 def get_available_wp_brushes():
     for brush in bpy.data.brushes:
         if brush.use_paint_weight:
             yield brush
-
 
 class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -202,14 +181,6 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
 
 EASYWEIGHT_KEYMAPS = []
 
-@persistent
-def set_brush_prefs_on_file_load(scene):
-    if bpy.app.version >= (4, 3, 0):
-        ensure_brush_assets()
-    prefs = get_addon_prefs()
-    prefs.global_front_faces_only = prefs.global_front_faces_only
-    prefs.global_accumulate = prefs.global_accumulate
-    prefs.global_falloff_shape_sphere = prefs.global_falloff_shape_sphere
 
 
 def register_hotkey(
@@ -248,7 +219,6 @@ def register():
         key_cat='Weight Paint',
         op_kwargs={'name': 'EASYWEIGHT_MT_PIE_easy_weight'},
     )
-    bpy.app.handlers.load_post.append(set_brush_prefs_on_file_load)
     EASYWEIGHT_addon_preferences.register_autoload_from_file()
 
 
@@ -259,4 +229,3 @@ def unregister_hotkeys():
 
 def unregister():
     unregister_hotkeys()
-    bpy.app.handlers.load_post.remove(set_brush_prefs_on_file_load)

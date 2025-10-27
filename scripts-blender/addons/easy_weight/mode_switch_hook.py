@@ -1,6 +1,7 @@
-import bpy
+import bpy, os
 from bpy.types import Object
 from .utils import get_addon_prefs
+from pathlib import Path
 
 mode_history = []
 suspend_hook = False
@@ -69,6 +70,8 @@ def on_weight_paint_enter():
         context.view_layer.objects.active = obj
         bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
 
+    set_brush_prefs()
+
     return armature.visible_get()
 
 
@@ -123,6 +126,22 @@ def get_armature_of_meshob(obj: Object):
     for mod in obj.modifiers:
         if mod.type == 'ARMATURE':
             return mod.object
+
+
+def set_brush_prefs():
+    if bpy.app.version >= (4, 3, 0):
+        # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file 
+        # until they are first accessed, so let's do that when needed. We also can't check 
+        # whether these brushes exist without looping over all of them.
+        for brush_name in ('Blur', 'Paint'):
+            brush = next((brush for brush in bpy.data.brushes if brush.use_paint_weight and brush.name==brush_name), None)
+            if brush_name == 'Paint' and brush:
+                brush.blend = 'ADD'
+    prefs = get_addon_prefs()
+    prefs.global_front_faces_only = prefs.global_front_faces_only
+    prefs.global_accumulate = prefs.global_accumulate
+    prefs.global_falloff_shape_sphere = prefs.global_falloff_shape_sphere
+
 
 @bpy.app.handlers.persistent
 def detect_mode_switch(scene=None, depsgraph=None):
