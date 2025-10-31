@@ -11,6 +11,7 @@ To start making your own component types, just copy this folder, and rename some
 
 ### Conventions
 - Do as I say, not as I do.
+- All functions inside rig components should be "private", ie. start with `__` OR, if they are overridden or called by child classes, use a prefix separated by `__` that signifies the root class. Eg., `def fk_chain__make_root_bone()` signifies that this function was originally defined in the fk_chain component, and is overridden by at least one child class.
 - Avoid code comments that instruct linters and auto-formatters.
 - Use PEP 585 or even more modern type annotations. Avoid older styles like PEP 484.
 - Don't abbreviate too much. Avoid one-letter variable names completely.

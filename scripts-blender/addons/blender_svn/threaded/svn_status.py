@@ -228,7 +228,7 @@ def update_file_list_svn_status(context, file_statuses: Dict[str, Tuple[str, str
     new_files_on_repo = set()
     for filepath_str, status_info in file_statuses.items():
         svn_path = Path(filepath_str)
-        svn_path_str = str(filepath_str)
+        svn_path_str = svn_path.as_posix()
         suffix = svn_path.suffix
         if (
             (suffix.startswith(".r") and suffix[2:].isdecimal())

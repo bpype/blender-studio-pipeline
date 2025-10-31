@@ -16,6 +16,7 @@ from . import vars, opsdata, util
 from .. import prefs, cache
 from ..sqe import opsdata as seq_opsdata
 from ..logger import LoggerFactory
+from ..shot_builder.file_save import set_default_sequencer_scene
 
 from .exception import NoImageStripAvailableException
 
@@ -96,6 +97,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         return strip
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
+        set_default_sequencer_scene()
         # Clear existing strips and markers
         context.scene.sequence_editor_clear()
         context.scene.timeline_markers.clear()
@@ -360,6 +362,7 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
         on previous UI changing operations, because Blender."""
 
         context = bpy.context
+        set_default_sequencer_scene()
 
         for window in context.window_manager.windows:
             screen = window.screen

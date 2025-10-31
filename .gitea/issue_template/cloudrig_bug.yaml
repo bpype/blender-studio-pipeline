@@ -4,6 +4,8 @@ labels:
   - "Type/Report"
   - "Status/Needs Triage"
   - "Priority/Normal"
+assignees:
+  - Mets
 body:
   - type: markdown
     attributes:
@@ -12,7 +14,7 @@ body:
 
           ### Please provide a .blend file with bug reports.  
           If your issue is about a metarig that fails to generate, please use the "Report Bug" button in the interface:  
-          Select your metarig and go to Properties->Object Data->CloudRig->Generation Log, and click on "Report Bug".
+          Select your metarig and go to Edit->Preferences->Add-ons->CloudRig->Report Bug.
 
           ### Please make sure you use the CloudRig version that corresponds to your Blender version.
   - type: textarea
@@ -21,15 +23,12 @@ body:
       label: "Description"
       hide_label: true
       value: |
-               **System Information**
-               Operating system:
-
                Blender Version: 
                CloudRig Version: 
 
-               **Short description of error**
-
-               **Exact steps for others to reproduce the error**
+               **Steps to reproduce the error**
                Based on the default human metarig or a simplified attached .blend file.
-
-               @Mets
+  - type: markdown
+    id: stacktrace
+    attributes:
+      label: "Stack Trace"

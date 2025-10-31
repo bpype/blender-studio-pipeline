@@ -286,6 +286,9 @@ class SVN_repository(PropertyGroup):
 
     @property
     def is_valid_svn(self):
+        if not hasattr(self, 'directory'):
+            # This can happen on Windows during Reload Scripts.
+            return False
         dir_path = Path(self.directory)
         # TODO: This property is checked pretty often, so we run `svn info` pretty often. Might not be a big deal, but maybe it's a bit overkill?
         root_dir, base_url = get_svn_info(self.directory)

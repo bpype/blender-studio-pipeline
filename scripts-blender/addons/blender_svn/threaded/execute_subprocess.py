@@ -39,6 +39,10 @@ def execute_svn_command(
     So any file paths that are part of the command should be relative to the
     SVN root.
     """
+    if not hasattr(context.scene, 'svn'):
+        # This can happen on Windows during Reload Scripts.
+        return ""
+
     repo = context.scene.svn.get_repo(context)
     if "svn" not in command:
         command.insert(0, "svn")
