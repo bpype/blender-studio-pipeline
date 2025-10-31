@@ -211,7 +211,7 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
 
     def get_shot_folder_dict(
         self,
-        render_dir: str,
+        render_dir: Path,
         max_versions_per_shot=32,
     ) -> OrderedDict[str, List[Path]]:
         shot_version_folders: List[Path] = []
@@ -219,9 +219,11 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         # If render is sequence folder user wants to review whole sequence.
         if opsdata.is_sequence_dir(render_dir):
             for shot_dir in render_dir.iterdir():
+                if not shot_dir.is_dir():
+                    continue
                 # TODO: Handle case when directory is empty
                 shot_version_folders.extend(list(shot_dir.iterdir()))
-        else:
+        elif render_dir.is_dir():
             # TODO: Handle case when directory is empty
             shot_version_folders.extend(list(render_dir.iterdir()))
 
@@ -229,6 +231,12 @@ class RR_OT_sqe_create_review_session(bpy.types.Operator):
         for shot_main_folder in shot_version_folders:
             shot_name = opsdata.get_shot_name_from_dir(shot_main_folder)
             for shot_folder in shot_main_folder.iterdir():
+                # Make sure that we don't include any folder that doesn't follow
+                # the folder shot version timestamp format.
+                try:
+                    datetime.strptime(shot_folder.name, "%Y-%m-%d_%H%M%S")
+                except ValueError:
+                    continue
                 if shot_name not in shot_version_folders_dict:
                     shot_version_folders_dict[shot_name] = [shot_folder]
                 else:
