@@ -151,17 +151,12 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
                 kitsu_props.shot_active_name = shot.name
 
             # Detect and load shot task type.
-            kitsu_task_type_name = self._find_in_mapping(
-                item_task_type, task_mapping, "shot task type"
-            )
-            if not kitsu_task_type_name:
-                return {"CANCELLED"}
+            task_type = self._find_type_entity(item_task_type, task_mapping, TaskType)
 
-            task_type = TaskType.by_name(kitsu_task_type_name)
             if not task_type:
                 self.report(
                     {"ERROR"},
-                    f"Failed to find task type: '{kitsu_task_type_name}' on server",
+                    f"Failed to find task type: '{item_task_type}' on server",
                 )
                 return {"CANCELLED"}
 
@@ -172,17 +167,12 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
             kitsu_props.category = "ASSET"
 
             # Detect and load asset type.
-            kitsu_asset_type_name = self._find_in_mapping(
-                item_group, bkglobals.ASSET_TYPE_MAPPING, "asset type"
-            )
-            if not kitsu_asset_type_name:
-                return {"CANCELLED"}
+            asset_type = self._find_type_entity(item_group, bkglobals.ASSET_TYPE_MAPPING, AssetType)
 
-            asset_type = AssetType.by_name(kitsu_asset_type_name)
             if not asset_type:
                 self.report(
                     {"ERROR"},
-                    f"Failed to find asset type: '{kitsu_asset_type_name}' on server",
+                    f"Failed to find asset type: '{item_group}' on server",
                 )
                 return {"CANCELLED"}
 
@@ -197,17 +187,14 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
             # If split == 1 then filepath has no task type in name, skip asset task_type
             if len(filepath.stem.split(bkglobals.DELIMITER)) > 1:
                 # Detect and load asset task_type.
-                kitsu_task_type_name = self._find_in_mapping(
-                    item_task_type, bkglobals.ASSET_TASK_MAPPING, "task type"
+                task_type = self._find_type_entity(
+                    item_task_type, bkglobals.ASSET_TASK_MAPPING, TaskType
                 )
-                if not kitsu_task_type_name:
-                    return {"CANCELLED"}
 
-                task_type = TaskType.by_name(kitsu_task_type_name)
                 if not task_type:
                     self.report(
                         {"ERROR"},
-                        f"Failed to find task type: '{kitsu_task_type_name}' on server",
+                        f"Failed to find task type: '{item_task_type}' on server",
                     )
                     return {"CANCELLED"}
 
@@ -217,16 +204,27 @@ class KITSU_OT_con_detect_context(bpy.types.Operator):
         self.report({"INFO"}, f"Context Successfully Set!")
         return {"FINISHED"}
 
-    def _find_in_mapping(
-        self, key: str, mapping: Dict[str, str], entity_type: str
+    def _find_type_entity(
+        self, key: str, mapping: Dict[str, str], entity_type: TaskType | AssetType
     ) -> Optional[str]:
-        if not key in mapping:
-            self.report(
-                {"ERROR"},
-                f"Failed to find {entity_type}: '{key}' in {entity_type} remapping",
-            )
-            return None
-        return mapping[key]
+
+        # Attempt to find by mapping
+        if key in mapping:
+            task_type = entity_type.by_name(mapping[key])
+            if task_type:
+                return task_type
+
+        # Try fetching name directly
+        task_type = entity_type.by_name(key)
+        if task_type:
+            return task_type
+
+        # Fallback to task shortname
+        task_type = entity_type.by_short_name(key)
+        if task_type:
+            return task_type
+
+        return None
 
 
 class KITSU_OT_con_set_asset(bpy.types.Operator):

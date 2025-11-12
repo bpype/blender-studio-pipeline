@@ -534,6 +534,17 @@ class AssetType(Entity):
         type_dict = gazu.asset.get_asset_type(type_id)
         return cls.from_dict(type_dict)
 
+    @classmethod
+    def by_short_name(cls, task_short_name: str) -> Optional[TaskType]:
+        # Can return None if task type does not exist.
+        task_type_dicts = [
+            task for task in gazu.asset.all_asset_types() if task["short_name"] == task_short_name
+        ]
+        if len(task_type_dicts) == 1:
+            task_type_dict = task_type_dicts[0]
+            return cls.from_dict(task_type_dict)
+        return None
+
     def __bool__(self) -> bool:
         return bool(self.id)
 
@@ -815,6 +826,17 @@ class TaskType(Entity):
         task_type_dict = gazu.task.get_task_type_by_name(task_type_name)
 
         if task_type_dict:
+            return cls.from_dict(task_type_dict)
+        return None
+
+    @classmethod
+    def by_short_name(cls, task_short_name: str) -> Optional[TaskType]:
+        # Can return None if task type does not exist.
+        task_type_dicts = [
+            task for task in gazu.task.all_task_types() if task["short_name"] == task_short_name
+        ]
+        if len(task_type_dicts) == 1:
+            task_type_dict = task_type_dicts[0]
             return cls.from_dict(task_type_dict)
         return None
 
