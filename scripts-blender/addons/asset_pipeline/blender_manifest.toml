@@ -17,3 +17,5 @@ license = [
 copyright = [
   "2024-25 Nick Alberelli & Blender Studio"
 ]
+[permissions]
+files = "Read/Write other .blend files during asset publishing"
