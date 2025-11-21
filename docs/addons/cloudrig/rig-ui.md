@@ -15,12 +15,13 @@ Inserts a keyframe on the current frame for all (except bone collection) propert
 #### Reset Armature
 <img src="/media/addons/cloudrig/reset_armature.png" width=400>
 Powerful reset operator with a pop-up to specify what you want to reset:
-    - Unassign Action: Only appears if the armature has an Action assigned.
-    - Unhide Bones: Only appears if any bones are hidden. Unhides them all.
-    - Viewport Display: If enabled, resets the rig object's "Show Names", "Show Axes", and "In Front" options.
-    - Selected Only: Only appears if any bones are selected. If enabled, only selected bones will be affected by subsequent settings.
-    - Transforms: If enabled, resets Location/Rotatoin/Scale of bones.
-    - Custom Properties: If enabled, resets custom properties of bones to their default values.
+
+- Unassign Action: Only appears if the armature has an Action assigned.
+- Unhide Bones: Only appears if any bones are hidden. Unhides them all.
+- Viewport Display: If enabled, resets the rig object's "Show Names", "Show Axes", and "In Front" options.
+- Selected Only: Only appears if any bones are selected. If enabled, only selected bones will be affected by subsequent settings.
+- Transforms: If enabled, resets Location/Rotatoin/Scale of bones.
+- Custom Properties: If enabled, resets custom properties of bones to their default values.
 
 #### UI Edit Mode
 This option is aimed at riggers; It is only available on Metarigs, and only with the add-on installed. It allows the rigger to create their own interface for custom properties, or in fact any properties, nested into panels, labels, and rows. To learn how to use this feature, see the [Properties UI](properties-ui) page.
@@ -28,11 +29,11 @@ This option is aimed at riggers; It is only available on Metarigs, and only with
 #### IK/FK Switch
 If your rig containts any IK/FK components, their IK/FK switch properties will appear here. Next to each slider (that supports it), is a Snap & Bake operator. This lets you either perform a simple IK/FK snapping operation, where the bones of one control scheme are snapped to the bones of the other, while the IK/FK property itself gets inverted, OR perform the same operation across a specified frame range while inserting keyframes, aka. baking.
 
-<img src="/media/addons/cloudrig/snap_bake_popup.png" width=600>
+<img src="/media/addons/cloudrig/snap_bake_popup.png" width=400>
 
 #### IK
 
-<img src="/media/addons/cloudrig/sidebar_ik_settings.png" width=600>
+<img src="/media/addons/cloudrig/sidebar_ik_settings.png" width=400>
 
 May contain various IK related properties. They will come with the same Snap & Bake operator as described above, when possible. Common ones are:
 - Spine Squash: Squashing factor of the Cartoon Spine rig.
@@ -45,7 +46,7 @@ Mostly houses the FK Hinge sliders, which when enabled cause an FK chain to not 
 
 ## Hotkeys
 
-<img src="/media/addons/cloudrig/hotkeys_no_addon.png" width=600>
+<img src="/media/addons/cloudrig/hotkeys_no_addon.png" width=400>
 
 When CloudRig is not installed, this panel will show a limited set of hotkeys available for animators. If CloudRig is installed, this will show the same hotkey list as in the add-on preferences.
 
