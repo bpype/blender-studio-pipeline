@@ -51,15 +51,14 @@ Enabling this mode reveals (among other things) the "**Add Property to UI**" but
 Whether you're adding a new UI element or editing an existing one, you will see this same pop-up:
 <img src="/media/addons/cloudrig/props_ui_add_prop_simple.png" width=800>
 
-- **Bone icon**: Toggle whether you want to use a convenient bone selector, or type in the data path of a property owner.
-    - **Property Bone**: Select the bone that should contain the property that you want to add to the UI.
-    - **Property Owner**: Type in a data path to anything, eg. `pose.bones["Spine"].constraints["Stretch To"]` will point at the Stretch To constraint on the Spine bone.
+- **Bone icon**: When enabled, it lets you easily select a **bone** as the property owner, rather than having to type in the RNA Path of the bone like `pose.bones["Root"]`.
+- **Collection icon**: When enabled, it lets you easily select a **bone collection** as the property owner, rather than having to type in the RNA Path of the collection like `data.collections_all["IK Controls"]`.
+- **Property Owner**: When neither of the previous two options are enabled, you can type in the RNA Path to any property. For example, `pose.bones["Spine"].constraints["Stretch To"]` will point at the Stretch To constraint on the Spine bone.
 - **Property Name**: Name of the property on the selected property owner. 
     - To continue the above constraint example, you could type `influence` in this field, to simply add the constraint's influence slider to the UI.
     - If the chosen property owner has Custom Properties, a drop-down selector will be shown of existing ones.
         - **Plus icon**: Instead of using the drop-down selector, type in anything, allowing you to create a new property.
         - **List icon**: Instead of selecting a single property, add ALL custom properties of the selected owner.
-    - If the property exists, a preview of how it will look is shown.
 
 ***The remaining settings are optional***:
 - **Hierarchy icon**: Toggle whether you want to add a UI element to a sub-panel, or a child element to an existing element.
@@ -70,7 +69,9 @@ Whether you're adding a new UI element or editing an existing one, you will see 
 - **Row ID**: When two UI elements share a panel, a label, and a Row ID, they will be displayed next to each other. Handy for left/right properties, or for grouping bone collections.
 - **Display Name**: For when you change your mind about the name of a property, but that property has already been used in animations. Changing the name of the property would break those animations, but you can always change the display name without any consequence.
 - **Value Names**: Only for Integer and Boolean properties, you can enter a comma-separated list of strings here, eg. `-, Default, Fancy`. This will make it so that "Default" is displayed when the value is 1, and "Fancy" will be displayed when the value is 2. You still need to enter a string for the value 0, even if your property will not use it, which is why I started with a `-,` in this example.
-- **True/False Icon**: Only for Boolean properties, you can choose a custom icon for each state.
+- **True/False Icon**: Only for Boolean properties. You can choose a custom icon for each state.
+- **Draw as Slider**: Only for Integer/Float properties. Whether the property should be displayed as a slider.
+- **Expand Enum**: Only for Enum properties. Whether all enum values should be displayed in a row, rather than as a dropdown list.
 - **Operator**: You can choose a single operator to be displayed next to this property.
     - Selecting an operator will display all available options for that operator, and you can specify them all.
     - **Operator Icon**: You can also choose an icon to use for this operator.
@@ -119,7 +120,7 @@ In this case, I just wanted to edit the Value Names of the property. Now it will
 You can see a preview of this near the top of the pop-up panel, but you will only see it in the real UI once you confirm by clicking OK.
 
 #### Some things to note:
-- Enum Properties are not possible to create as Custom Properties, which is why I use an Integer instead.
+- Enum Properties are also possible to create, but you [need to use Python](https://projects.blender.org/blender/blender/pulls/114362#issuecomment-1751765).
 - The "Row ID" and "Display Name" fields were filled in automatically when we added the property to the UI.
 
 ## Drivers

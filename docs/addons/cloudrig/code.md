@@ -2,7 +2,7 @@
 This project has grown large enough that external contributors would be fairly welcome. Just [get in contact with Demeter](https://blender.chat/direct/mets) before you start coding. You can also [open an issue](https://projects.blender.org/Mets/CloudRig/issues) to discuss design and functionality before you start coding.
 
 ### Adding a new Component/Parameter
-The implementation of CloudRig's [Component Types](cloudrig-types) are found in the `rig_components` folder of the repository. Here, you will also find `external_components/my_component.py`, which is a template for you to create your own component types. Simply un-comment the last line of this file and Reload Scripts in Blender, to see it show up as a component type option. Generating it will create a bone and a constraint.
+The implementation of CloudRig's [Component Types](cloudrig-types) are found in the `rig_components` folder of the repository. [Here](https://projects.blender.org/Mets/CloudRig/src/branch/master/CloudRig/rig_components/external_components/minimal_component.py), you will also find `external_components/minimal_component.py`, which is a template for you to create your own component types. Simply un-comment the last line of this file and [Reload Scripts](https://docs.blender.org/manual/en/5.0/advanced/operators.html#bpy-ops-script-reload) in Blender, to see it show up as a component type option. Generating it will create a bone and a constraint.
 
 To start making your own component types, just copy this folder, and rename some things:
 - The file name should be unique, as it defines the namespace for the parameters in Blender's RNA. So it might be a good idea to prefix all your files with some identifier.

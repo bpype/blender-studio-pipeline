@@ -200,6 +200,7 @@ export default defineConfig({
               {text: 'Introduction', link: '/addons/cloudrig/introduction'},
               {text: 'Component Types', link: '/addons/cloudrig/cloudrig-types'},
               {text: 'Generator Parameters', link: '/addons/cloudrig/generator-parameters'},
+              {text: 'Rig UI', link: '/addons/cloudrig/rig-ui'},
               {text: 'Properties UI', link: '/addons/cloudrig/properties-ui'},
               {text: 'Organizing Bones', link: '/addons/cloudrig/organizing-bones'},
               {text: 'Actions', link: '/addons/cloudrig/actions'},

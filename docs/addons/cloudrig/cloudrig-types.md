@@ -1,4 +1,9 @@
 # Component Types
+Component types are rig generation behaviours that can be assigend to Pose Bones. For example, to generate a leg rig, you would assign the [Limb: Biped Leg](#limb-biped-leg) component type to your character's thigh bones.
+
+Each component type has many parameters to customize the set of features that will be in the generated rig. You can keep re-generating the rig to try out different parameters. Also make sure to mouse hover each parameter and read the tooltips.
+
+If you find any parameters which aren't documented here, or which behave differently than they should, please [report a bug](https://projects.blender.org/Mets/CloudRig/issues/new/choose).
 
 ## Overview
 
@@ -14,12 +19,14 @@ These are CloudRig's component types. Most component types are built on top of o
             - [Chain: Physics](#chain-physics)
             - [Feather](#feather)
             - [Spine: IK/FK](#spine-ik-fk)
-            - [Spine: Squashy](#spine-squashy)
+            - [Spine: Cartoon](#spine-cartoon)
+            - [Spine: Squashy (Deprecated!)](#spine-squashy)
             - [Shoulder](#shoulder)
             - [Chain: IK](#chain-ik)
                 - [Chain: Finger](#chain-finger)
                 - [Limb: Generic](#limb-generic)
                     - [Limb: Biped Leg](#limb-biped-leg)
+        - [Chain: Sohere](#chain-sphere)
     - [Curve: With Hooks](#curve-with-hooks)
         - [Curve: Spline IK](#curve-spline-ik)
     - [Lattice](#lattice)
@@ -30,8 +37,8 @@ These are CloudRig's component types. Most component types are built on top of o
 
 ## Assigning Components
 You can assign a component to a bone in the metarig. For chain components, the connected children will be part of the same component, as long as they aren't assigned a component of their own. You can assign components to bones in two places in the UI:
-- Properties -> Bone -> CloudRig Component -> Component Type. This panel only appears when the 'CloudRig' toggle is enabled in the armature settings.
-- Properties -> Armature -> CloudRig -> Rig Components. This is a list that shows the hierarchy of all your rig components, and allows you to re-order siblings in the generation order. Hit the + button to assign a component to the active bone.
+- **Properties -> Bone -> CloudRig Component -> Component Type**. This panel only appears when the 'CloudRig' toggle is enabled in the Armature properties.
+- **Properties -> Armature -> CloudRig -> Rig Components**. This is a list that shows the hierarchy of all your rig components, and allows you to re-order siblings in the generation order. Hit the + button to assign a component to the active bone.
 
 <img src="/media/addons/cloudrig/assigning_components.png" width=800>
 
@@ -50,20 +57,19 @@ You can add these in the 3D View via Add (Shift+A)->Armature->CloudRig Samples:
 
 <img src="/media/addons/cloudrig/add_sample.png" width=500>
 
-## Shared Parameters
+## Shared Features
 All CloudRig component types share some basic functionality, like letting you choose a parent for the component's root, and even specify a parent switching set-up for it.
 
 
+- #### Advanced Mode
+    Technically a user preference, enabling this lets you see options that are deemed not important enough for beginner users, as well as parameters which are forced to a certain value and cannot be changed.
+- #### [Constraint Relinking](constraint-relinking)
+    On any component, you can add constraints to the metarig bones. On generation, these constraints will be moved to the generated bones that make the most sense for a given component type.
+
 <details>
-<summary> Details & Parameters </summary>
+<summary> Shared Parameters </summary>
 
 <img src="/media/addons/cloudrig/shared_parameters.png" width=600>
-
-- #### Advanced Mode
-    This is technically a user preference, but it relates to component parameters. Some component parameters are rarely necessary or only if you want to really fine tune stuff. So, these options are hidden until this option is enabled, to ease the new user experience.
-- #### [Constraint Relinking](constraint-relinking)
-    On any component, you can add constraints to the metarig bones. On generation, these constraints will be moved to the generated bones that make the most sense for a given component type. This is just to allow you to add some constraints when needed, without using Bone Tweak components.
-    For example, you can add Copy Rotation constraints to the metarig bones of an FK Chain component. That constraint can target the generated rig's bones, even though it's a different armature object. During generation, that constraint will be moved to the corresponding FK control.
 
 - #### Root Parent
     If specified, parent the root of this component to the chosen bone. You're choosing from the generated rig's bones here.
@@ -71,11 +77,13 @@ All CloudRig component types share some basic functionality, like letting you ch
         - Use an Armature constraint instead of normal parenting: This constraint takes bendy bone curvature into account, but it also means the parenting transforms will affect the bone's local matrix. If you want to use the bone's local transformations to drive something, you essentially won't be able to.
         - Create parent helper bone: This fixes the local matrix issue by creating a parent helper bone for the aforementioned Armature constraint.
 - #### Parent Switching
-    This option lets you create a parent switcher by entering the UI names of each parent on the left side, and the corresponding parent bone on the right side. The bone names are chosen from the generated rig.
+    This option lets you create a parent switcher by entering the bone names of each parent on the left side, and optionally, a UI name on the right side. The bone names are chosen from the generated rig.
     The chosen bones will be the available parents for this component's root bone, and a selector will be added to the rig UI.
     Different component types may implement parent switching differently. The specific behaviour is explained underneath the checkbox when it is enabled.
-- #### Custom Property Storage
-    This setting will appear for components that need to create custom properties. Custom Properties are used for things like IK/FK switching.
+- #### Appearance
+    This panel lets you customize the custom shapes of bones. By default, you can choose from CloudRig's library of custom shapes, but you can expand this list by specifying your own .blend file of custom shapes in the add-on preferences. You can also switch to choosing from the objects of the current .blend file. Only mesh objects whose names start with "WGT-" will appear in the list.
+- #### Storage Bone
+    For components that need to create custom properties, this parameter lets you choose where those custom properties are created, eg. for IK/FK switching. This can matter for animator convenience when managing keyframes on these properties.
     - "Default": A bone named "Properties" will be created to store custom properties.
     - "Custom": If you want to store the custom properties on an arbitrary bone, this option lets you select one. The selected bone has to be higher in the metarig hierarchy than this component, else you'll get a warning.
     - "Generated": Component types implement their own behaviours for creating a custom property storage bone in a place that makes most sense for that component type. For example, the Biped Leg component will put the properties bone behind the foot control.
@@ -108,8 +116,10 @@ Scaling the stretch controls uniformally gives the connected bendy bones more vo
     Bendy bones will not affect the curvature of their neighbours, unless their shared stretch control is scaled up on its local Y axis.
 - #### Smooth Spline
     Bendy bones will have a wider effect on the curvature of their neighbours, to easily get smoother curves. Works best when Deform Segments is 1, but that is not a requirement. Works fine with Sharp Sections, but it will only take effect once a stretch control is scaled up along its local Y axis.
-- #### Preserve Volume
+- #### Squash & Stretch
     When enabled, deform bones will become fatter when squashed, and slimmer when stretched.
+- #### Volume Variation
+    When Squash & Stretch is enabled, this slider defines the strength of the squashing effect.
 - #### Create Shape Key Helpers
     Create helper bones that can be used to read the rotational difference between deform bones. Useful for driving corrective shape keys. These helpers will be prefixed "SKH" for "Shape Key Helper".
 - #### Create Deform Controls
@@ -148,16 +158,16 @@ Extends the functionality of the Toon Chain. In addition to stretch controls, th
     Create a root control for this rig component. This is required for the Hinge Toggle.
 - #### Hinge
     Set up a hinge toggle. This will add an option to the rig UI. When FK Hinge is enabled, the FK chain doesn't inherit rotation from its parent.
-- #### Position Along Bone
-    How far (0-1) the FK control should be along the length of the bones. A value of 0.5 can make it easier to create smooth curves.
+- #### Create Curl Control
+    Create a control that lets you easily curl this FK chain. Can be useful for tails and fingers and such. Requires a root bone for space calculations.
+- #### Counter-Rotate Stretch Controls
+    Amount by which the STR controls should "resist" the rotation they inherit from FK bones. A value of 0.5 is useful for smooth chains.
 - #### Inherit Scale
-    Sets the scale inheritance type for FK controls.
+    Sets the scale inheritance type for FK controls. The "Propagate" option will use the rotation mode of the metarig bones for the corresponding FK controls.
 - #### Rotation Mode
-    Rotation Mode for the FK controls.
+    Rotation Mode for the FK controls. The same "Propagate" option is available here.
 - #### Duplicate First FK
     Create an extra parent control for the first FK control.
-- #### Display FK in Center
-    Display the FK controls in the center of the bone rather than at the head of the bone. Only affects display, no functional difference. Purely up to preference.
 
 
 <img src="/media/addons/cloudrig/test_animation.gif" width=500>
@@ -214,8 +224,19 @@ Builds on the FK Chain component with additional option for creating an IK-like 
 
 </details>
 
+## Spine: Cartoon
+A spine set-up of any length (although at least 3 bones) perfect for cartoony characters, with squash and stretch. This spine rig was developed for the [Storm](https://studio.blender.org/characters/storm) character rig.
+
+<details>
+<summary> Parameters </summary>
+
+- #### World-Align Torso
+    Flatten the torso control to align with the closest world axis.
+
+</details>
 
 ## Spine: Squashy
+*As of Blender 5.0, this component type is deprecated, and will soon be removed. The new [Spine: Caroon](#spine-cartoon) component should be used instead, which is similar and hopefully better.*
 Also builds on the FK Chain component, but instead of an ability to have the spine be lead by the hip movements, this set-up allows the torso to be squashed, and the animator can control the amount of volume preservation. Useful for more cartoony stuff.
 
 <details>
@@ -254,7 +275,7 @@ This rig adds IK/FK switching and snapping and IK Stretch settings to the rig UI
 - #### World-Aligned IK Master
     Align the IK master control with the nearest world axis. Not recommended for arms when your resting pose is an A-pose.
 - #### Flatten Bone Chain
-    Although not a parameter, this button will flatten your chain along a plane with as little changes as possible, to ensure predictable IK behaviour.
+    Although not a parameter, this button will modify your metarig's IK chain to ensure a "perfect IK chain"; The chain will be flattened along a plane, and its bone rolls will be calculated to point towards the elbow. This way, when the rig is generated, the IK chain will not affect the rest pose at all.
 
 </details>
 
@@ -313,6 +334,19 @@ Extends the functionality of the Generic Limb component with footroll. This requ
 </details>
 
 
+## Chain: Sphere
+A chain rig that's designed to move geometry along the surface of a sphere. Think the eyelid on a giant eyeball.
+
+<details>
+<summary> Parameters </summary>
+
+- #### Sphere Bone
+    The bone that represents the center of the sphere. Could be an eye bone, or the head bone of a character with a spherical head.
+- #### Shrinkwrap Mesh
+    Optional mesh object to which Shrinkwrap Constraints will stick the control bones to.
+
+</details>
+
 ## Curve: With Hooks
 Create hook controls for an existing Curve object. Multiple splines within a single curve object are supported. Each spline will have its own root control.
 
@@ -355,11 +389,15 @@ Extends the functionality of the Curve With Hooks component, where instead of ad
     - Preserve: Preserve the Deform checkbox of the bones as set in the metarig.
     - Create: Create DEF- bones that are a separate chain with the Deform checkbox enabled.
 - #### Subdivide Bones
-    When Deform Setup is set to Create, this value defines how many deforming bones to generate along each original bone in the metarig. More bones results in a smoother curvature. However, the Spline IK constraint only supports a chain of up to 255 bones.
+    When **Deform Setup is set to Create**, this value defines how many deforming bones to generate along each original bone in the metarig. More bones results in a smoother curvature. However, the Spline IK constraint only supports a chain of up to 255 bones.
+- #### Bendy Segments
+    When **Deform Setup is set to Create**, this can be used to enable Bendy Bone segments on the deform bones. These will NOT perfectly follow the spline's curvature, but can help smooth things out in some cases.
 - #### Match Controls to Bones
     When enabled, control bones will be created at the locations of the meta chain's bones. When disabled, control bones will be distributed an equal distance from each other along the chain.
 - #### Number of Hooks
-    When the above setting is disabled, this specifies how many controls should be placed along the chain.
+    When "Match Controls to Bones" is disabled, this specifies how many controls should be placed along the chain.
+- #### Create FK Chain
+    Create an FK chain of controls, on top of the hook controls.
 
 </details>
 
@@ -412,13 +450,11 @@ Constraints will be [relinked](constraint-relinking) to the copied bone.
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/cloud_bone_parameters.png" width=500>
-
 - #### Create Custom Pivot
     Create a parent control whose local translation is not propagated to the main control, but its rotation and scale are.
 - #### Create Deform Bone
     Create a second bone with the DEF- prefix and the Deform property enabled, so you can use it as a deform bone.
-- #### Ensure Free Transformation
+- #### Move Constraints to Parent
     If this bone has any constraints, move them to a parent bone prefixed with "CON", unless the constraint name starts with "KEEP".
 
 - #### Custom Properties: UI Sub-panel
@@ -450,10 +486,10 @@ This component type lets you tweak aspects of a single bone that is expected to 
 <details>
 <summary> Parameters </summary>
 
-<img src="/media/addons/cloudrig/cloud_tweak_parameters.png" width=500>
-
 - #### Additive Constraints
-    If true, the constraints on this bone will be added on top of the target bone's already existing constraints, and then [relinked](constraint-relinking). Otherwise, the original constraints will be overwritten.
+    When enabled, the constraints on this bone will be added on top of the target bone's already existing constraints, and then [relinked](constraint-relinking). Otherwise, the original constraints will be overwritten.
+- #### Move Constraints to Parent
+    When enabled, any constraints on the tweaked bone will be moved to a parent helper bone that is created, prefixed "CON-" for constraint holder. This can be useful when your constraints would lock the bone, or affect its local transform matrix.
 - #### Tweak Parameters
     The bone's properties are split into these categories:
     - Transforms

@@ -48,7 +48,7 @@ After generating your rig, you will find a list of potential issues here, in the
 
 
 ## Rig UI
-Once generated, select your generated rig, and press the N key to bring up the Sidebar. You should see a CloudRig tab, which contains the rig UI. This is where the animators will be able to find rig settings and a collection selector.
+Once generated, select your generated rig, and press the N key to bring up the Sidebar. You should see a CloudRig tab, which contains [the rig UI](rig-ui). This is where the animators will be able to find rig settings and a collection selector.
 <img src="/media/addons/cloudrig/rig_ui.png" width=400>
 
 CloudRig provides a way to add arbitrary custom properties to this UI as well, in case you want to allow animators to customize a character's outfits, materials, etc, with a nice and clean UI. Check out the [Properties UI](properties-ui) page to see how that works.
