@@ -26,7 +26,7 @@ These are CloudRig's component types. Most component types are built on top of o
                 - [Chain: Finger](#chain-finger)
                 - [Limb: Generic](#limb-generic)
                     - [Limb: Biped Leg](#limb-biped-leg)
-        - [Chain: Sohere](#chain-sphere)
+        - [Chain: Sphere](#chain-sphere)
     - [Curve: With Hooks](#curve-with-hooks)
         - [Curve: Spline IK](#curve-spline-ik)
     - [Lattice](#lattice)
@@ -236,7 +236,7 @@ A spine set-up of any length (although at least 3 bones) perfect for cartoony ch
 </details>
 
 ## Spine: Squashy
-*As of Blender 5.0, this component type is deprecated, and will soon be removed. The new [Spine: Caroon](#spine-cartoon) component should be used instead, which is similar and hopefully better.*
+*As of Blender 5.0, this component type is deprecated, and will soon be removed. The new [Spine: Cartoon](#spine-cartoon) component should be used instead, which is similar and hopefully better.*
 Also builds on the FK Chain component, but instead of an ability to have the spine be lead by the hip movements, this set-up allows the torso to be squashed, and the animator can control the amount of volume preservation. Useful for more cartoony stuff.
 
 <details>
