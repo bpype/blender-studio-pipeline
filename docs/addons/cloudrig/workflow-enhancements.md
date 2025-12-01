@@ -4,6 +4,7 @@ CloudRig includes several quality of life features, each with a default hotkey. 
 <img src="/media/addons/cloudrig/hotkeys_ui.png">
 
 ## MetaRig Swapping / Generation
+<img src="/media/addons/cloudrig/header_menu.png">
 - **Shift+T** swaps between a metarig and its generated rig, syncing bone collections, visibility, and selection.
 - **Shift+T** on a mesh object enters pose mode on its deforming armature, if any.
 - **Ctrl+Alt+R** regenerates the active metarig/rig. If there is only one metarig in the scene, it doesn't need to be active.
@@ -35,6 +36,7 @@ Bone deletion and symmetry.
 - **Toggle Armature X-Mirror**: Toggle symmetrical armature editing.
 - **Toggle Pose X-Mirror**: Toggle symmetrical posing.
 - **Delete**: Deletes selected bones and their drivers. Works in Pose Mode. Indicates X-Mirror status to prevent accidental deletions.
+- **Dissolve**: Dissolve selected bone heads and tails. Connected chains remain connected. Works in Pose Mode. Indicates X-Mirror status to prevent accidental deletions.
 - **(Enhanced) Symmetrize**: Works in Pose Mode. Symmetrizes Actions of Action Constraints. Attempts to symmetrize drivers.
 
 ## Bone Parenting Pie (P)
