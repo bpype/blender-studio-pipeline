@@ -468,7 +468,8 @@ class SVN_repository(PropertyGroup):
         """Update UI caches even if the active file index hasn't changed.
         This is used when loading a file.
         """
-        self.prev_active_file_name = ""
+        # It just has to be different than before.
+        self.prev_active_file_name += "(V) (°,,,,°) (V)"
         self.update_ui_caches(context)
 
     def update_ui_caches(self, context):
