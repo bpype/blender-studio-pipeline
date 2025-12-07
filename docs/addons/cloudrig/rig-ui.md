@@ -27,9 +27,12 @@ Powerful reset operator with a pop-up to specify what you want to reset:
 This option is aimed at riggers; It is only available on Metarigs, and only with the add-on installed. It allows the rigger to create their own interface for custom properties, or in fact any properties, nested into panels, labels, and rows. To learn how to use this feature, see the [Properties UI](properties-ui) page.
 
 #### IK/FK Switch
-If your rig containts any IK/FK components, their IK/FK switch properties will appear here. Next to each slider (that supports it), is a Snap & Bake operator. This lets you either perform a simple IK/FK snapping operation, where the bones of one control scheme are snapped to the bones of the other, while the IK/FK property itself gets inverted, OR perform the same operation across a specified frame range while inserting keyframes, aka. baking.
+If your rig containts any IK/FK components, their IK/FK switch properties will appear here.  
+While you can simply use the slider to switch between FK and IK control schemes, this will not automatically preserve the existing pose.  
+Next to each slider (that supports it), is a **Snap & Bake** operator. This lets you snap the bones of the IK controls to the FK controls or vice versa.  This will always insert a keyframe on all transforms of the affected bones, as well as the slider.  
+You can also do this over a frame range by enabling the **Bake** option.
 
-<img src="/media/addons/cloudrig/snap_bake_popup.png" width=400>
+<img src="/media/addons/cloudrig/snap_bake_popup.jpg" width=400>
 
 #### IK
 
