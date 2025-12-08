@@ -11,7 +11,7 @@ If you find any parameters which aren't documented here, or which behave differe
 
 These are CloudRig's component types. Most component types are built on top of others, meaning they inherit each other's functionalities. The image above and the table of contents below shows this inheritance hierarchy.
 
-- [Shared Parameters](#shared-parameters)
+- [Shared Features](#shared-features)
     - [Chain: Toon](#chain-toon)
         - [Chain: Face Grid](#chain-face-grid)
             - [Chain: Eyelid](#chain-eyelid)
@@ -44,11 +44,11 @@ You can assign a component to a bone in the metarig. For chain components, the c
 
 ## Copy/Mirror Components
 
-<img src="/media/addons/cloudrig/cloudrig_operators_menu.png" width=400>
+<img src="/media/addons/cloudrig/header_menu.jpg">
 
 You can copy and mirror component types using the operators found in the CloudRig header menu.  
-"Copy Component" will copy the component type and parameters of the active bone to all selected bones.
-"Symmetrize Components" will copy the component type and parameters of all selected bones to the bones with the opposite name, eg. "Hand.L"->"Hand.R". Any component parameters that reference bones or objects will also be mirrored if possible.
+- **Copy Component**: With 2 or more bones selected, copy the CloudRig Component (type + all parameters) from the active bone to all selected bones.
+- **Symmetrize Components**: Mirror the CloudRig Component (type + all parameters) from the selected bones to their opposite sides. This will also flip bone names found among the parameters.
 
 
 ## Component Samples
@@ -81,7 +81,7 @@ All CloudRig component types share some basic functionality, like letting you ch
     The chosen bones will be the available parents for this component's root bone, and a selector will be added to the rig UI.
     Different component types may implement parent switching differently. The specific behaviour is explained underneath the checkbox when it is enabled.
 - #### Appearance
-    This panel lets you customize the custom shapes of bones. By default, you can choose from CloudRig's library of custom shapes, but you can expand this list by specifying your own .blend file of custom shapes in the add-on preferences. You can also switch to choosing from the objects of the current .blend file. Only mesh objects whose names start with "WGT-" will appear in the list.
+    This panel lets you customize the custom shapes of bones. By default, you can choose from CloudRig's library of custom shapes, but you can expand this list by specifying your own .blend file of custom shapes in CloudRig's add-on preferences. You can also switch to choosing from the objects of the current .blend file. Only mesh objects whose names start with "WGT-" will appear in the list.
 - #### Storage Bone
     For components that need to create custom properties, this parameter lets you choose where those custom properties are created, eg. for IK/FK switching. This can matter for animator convenience when managing keyframes on these properties.
     - "Default": A bone named "Properties" will be created to store custom properties.

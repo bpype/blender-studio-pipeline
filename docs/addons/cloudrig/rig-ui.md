@@ -1,8 +1,10 @@
 # Rig UI
 
-Every rig generated with CloudRig will create a Text datablock called `cloudrig.py` which is a chunky piece of code responsible for the CloudRig sidebar panel. This allows this panel to work even if the CloudRig add-on itself isn't installed, which makes it easy to distribute rigs without hassle. Do note though, that while the script auto-executes when opening a .blend file that contains it, it does not auto-execute when linking or appending, so after those you need to save and reload your .blend.
+Every CloudRig rig comes with a sidebar panel chock full of functionality which is available even when CloudRig isn't intsalled. This is made possible by a Text datablock called `cloudrig.py` which is a chunky piece of code stored in the .blend file, and attached to the rig object.
+- Blender may ask for permission to execute the script.
+- The script will not execute automatically when the rig is linked or appended. The file has to be saved and reloaded.
 
-This page, useful for both animators and riggers, describes the features included in the "CloudRig" Sidebar (N) panel. Keep in mind that the contents are procedurally generated based on the metarig, so your UI will look different from the screenshots.
+This page describes the features included in the CloudRig panel. The UI is drawn dynamically based on what components are in the rig, so your UI may look different from the screenshots.
 
 ## Settings
 This panel contains a couple of operators, and houses built-in CloudRig features like IK/FK switching and snapping. It can also contain arbitrary properties and operators as defined by the rigger using the "UI Edit Mode" functionality, see below.
@@ -13,7 +15,7 @@ This panel contains a couple of operators, and houses built-in CloudRig features
 Inserts a keyframe on the current frame for all (except bone collection) properties drawn anywhere in the Settings panel and all of its subpanels.
 
 #### Reset Armature
-<img src="/media/addons/cloudrig/reset_armature.png" width=400>
+<img src="/media/addons/cloudrig/reset_armature.jpg" width=400>
 Powerful reset operator with a pop-up to specify what you want to reset:
 
 - Unassign Action: Only appears if the armature has an Action assigned.
@@ -24,7 +26,7 @@ Powerful reset operator with a pop-up to specify what you want to reset:
 - Custom Properties: If enabled, resets custom properties of bones to their default values.
 
 #### UI Edit Mode
-This option is aimed at riggers; It is only available on Metarigs, and only with the add-on installed. It allows the rigger to create their own interface for custom properties, or in fact any properties, nested into panels, labels, and rows. To learn how to use this feature, see the [Properties UI](properties-ui) page.
+This option is aimed at riggers; It is only available on Metarigs, and only with CloudRig installed. It allows the rigger to create their own interface for custom properties, or in fact any properties, nested into panels, labels, and rows. To learn how to use this feature, see the [Properties UI](properties-ui) page.
 
 #### IK/FK Switch
 If your rig containts any IK/FK components, their IK/FK switch properties will appear here.  
@@ -51,7 +53,7 @@ Mostly houses the FK Hinge sliders, which when enabled cause an FK chain to not 
 
 <img src="/media/addons/cloudrig/hotkeys_no_addon.png" width=400>
 
-When CloudRig is not installed, this panel will show a limited set of hotkeys available for animators. If CloudRig is installed, this will show the same hotkey list as in the add-on preferences.
+When CloudRig is not installed, this panel will show a limited set of hotkeys available for animators. If CloudRig is installed, this will show the same hotkey list as in the CloudRig add-on preferences.
 
 ## Bone Collections
 This shows a slightly tweaked version of Blender's built-in Bone Collections list. For the extra capabilities, see [Organizing Bones](organizing-bones#bone-collections).
