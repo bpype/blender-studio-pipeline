@@ -140,8 +140,7 @@ Implements the [UI Editor](properties-ui#ui-editing-workflow).
 <details>
 <summary> rig_components </summary>
 
-All the [component types](cloudrig-types) in the feature set.
-Also has cloud_template which is the base I use when starting a new component type.
+All the [component types](cloudrig-types) in CloudRig.
 
 All component types inherit from `cloud_base.py/Component_Base`.
 Entry points are of course `__init__()` and `create_bone_infos()`.
