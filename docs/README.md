@@ -3,7 +3,7 @@
 ## Installation
 To setup the environment to work on Blender Studio Tools Docs.
 
-* Make sure you have NodeJS installed
+* Make sure you have [NodeJS](https://nodejs.org/en/download) installed.
 * `cd blender-studio-tools/docs/`
 * `npm install`
 
