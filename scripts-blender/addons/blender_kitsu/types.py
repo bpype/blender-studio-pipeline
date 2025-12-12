@@ -305,7 +305,7 @@ class Project(Entity):
     ) -> Optional[Sequence]:
         return Sequence.by_name(self, seq_name, episode=episode)
 
-    def get_strips_all(self) -> List[Sequence]:
+    def get_sequences_all(self) -> List[Sequence]:
         strips = [
             Sequence.from_dict(s) for s in gazu.shot.all_sequences_for_project(asdict(self))
         ]
@@ -426,10 +426,8 @@ class Episode(Entity):
         assets = [Asset.from_dict(at) for at in gazu.asset.all_assets_for_episode(asdict(self))]
         return sorted(assets, key=lambda x: x.name)
 
-    def get_strips_all(self) -> List[Sequence]:
-        strips = [
-            Sequence.from_dict(s) for s in gazu.shot.all_strips_for_episode(asdict(self))
-        ]
+    def get_sequences_all(self) -> List[Sequence]:
+        strips = [Sequence.from_dict(s) for s in gazu.shot.all_sequences_for_episode(asdict(self))]
         return sorted(strips, key=lambda x: x.name)
 
 
