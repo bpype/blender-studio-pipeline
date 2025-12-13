@@ -114,14 +114,14 @@ class KITSU_property_group_sequence(bpy.types.PropertyGroup):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_strips_enum_list(self, bpy.context),
+            items=cache.get_sequences_enum_list(self, bpy.context),
             name_prop='sequence_name',
             id_prop='sequence_id',
         )
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
 
     sequence_name: bpy.props.StringProperty(  # type: ignore
         name="Sequence",
@@ -282,7 +282,7 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_strips_enum_list(self, bpy.context),
+            items=cache.get_sequences_enum_list(self, bpy.context),
             name_prop='sequence_active_name',
             id_prop='sequence_active_id',
         )
@@ -293,7 +293,7 @@ class KITSU_property_group_scene(bpy.types.PropertyGroup):
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
 
     sequence_active_name: bpy.props.StringProperty(
         name="Sequence",
@@ -757,7 +757,7 @@ def _add_window_manager_props():
         key = set_kitsu_entity_id_via_enum_name(
             self=self,
             input_name=input,
-            items=cache.get_strips_enum_list(self, bpy.context),
+            items=cache.get_sequences_enum_list(self, bpy.context),
             name_prop='selected_sequence_name',
             id_prop='selected_sequence_id',
         )
@@ -768,7 +768,7 @@ def _add_window_manager_props():
         return
 
     def get_sequence_search_list(self, context, edit_text):
-        return get_enum_item_names(cache.get_strips_enum_list(self, bpy.context))
+        return get_enum_item_names(cache.get_sequences_enum_list(self, bpy.context))
 
     bpy.types.WindowManager.selected_sequence_name = bpy.props.StringProperty(
         name="Sequence",

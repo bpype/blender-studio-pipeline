@@ -352,7 +352,8 @@ def reset_strips_enum_list() -> None:
     _seq_cache_proj_id = ""
     _seq_cache_episode_id = ""
 
-def get_strips_enum_list(
+
+def get_sequences_enum_list(
     self: bpy.types.Operator, context: bpy.types.Context
 ) -> List[Tuple[str, str, str]]:
     global _sequence_enum_list
@@ -375,11 +376,11 @@ def get_strips_enum_list(
 
     if episode_active:
         _sequence_enum_list.extend(
-            [(s.id, s.name, s.description or "") for s in episode_active.get_strips_all()]
+            [(s.id, s.name, s.description or "") for s in episode_active.get_sequences_all()]
         )
     else:
         _sequence_enum_list.extend(
-            [(s.id, s.name, s.description or "") for s in project_active.get_strips_all()]
+            [(s.id, s.name, s.description or "") for s in project_active.get_sequences_all()]
         )
     return _sequence_enum_list
 

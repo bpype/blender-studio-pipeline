@@ -50,7 +50,7 @@ def _get_strips(self: Any, context: bpy.types.Context) -> List[Tuple[str, str, s
     if not project_active or not addon_prefs.session.is_auth:
         return [("None", "None", "")]
 
-    enum_list = [(s.name, s.name, "") for s in project_active.get_strips_all()]
+    enum_list = [(s.name, s.name, "") for s in project_active.get_sequences_all()]
     return enum_list
 
 

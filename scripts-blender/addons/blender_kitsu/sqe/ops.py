@@ -478,7 +478,7 @@ class KITSU_OT_sqe_link_sequence(bpy.types.Operator):
     bl_description = "Links selected sequence strip to an existing sequence on server"
 
     enum_prop: bpy.props.EnumProperty(
-        items=cache.get_strips_enum_list,
+        items=cache.get_sequences_enum_list,
     )  # type: ignore
 
     @classmethod
@@ -1711,9 +1711,9 @@ class KITSU_OT_sqe_pull_edit(bpy.types.Operator):
         active_project = cache.project_active_get()
         active_episode = cache.episode_active_get()
         strips = (
-            active_episode.get_strips_all()
+            active_episode.get_sequences_all()
             if active_episode
-            else active_project.get_strips_all()
+            else active_project.get_sequences_all()
         )
         shot_strips = checksqe.get_shot_strips(context)
         occupied_ranges = checksqe.get_occupied_ranges(context)

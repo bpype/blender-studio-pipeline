@@ -355,7 +355,7 @@ class RR_OT_setup_review_workspace(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def strips_enum_items(self, context):
-        return [("None", "None", "None")] + cache.get_strips_enum_list(self, context)
+        return [("None", "None", "None")] + cache.get_sequences_enum_list(self, context)
 
     sequence: bpy.props.EnumProperty(
         name="Sequence",
