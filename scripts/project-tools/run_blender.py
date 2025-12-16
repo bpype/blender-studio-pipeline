@@ -32,6 +32,9 @@ parser.add_argument(
     help="Only update the local install of Blender/extensions, don't launch Blender.",
     action='store_true'
 )
+parser.add_argument(
+    '--run-local', help="Skip checking for updates and run the local Blender.", action='store_true'
+)
 
 parser.add_argument(
     "--python",
@@ -379,6 +382,11 @@ if __name__ == '__main__':
             logger.fatal("Can't run Blender! The supplied path does not exist!")
             sys.exit(1)
         run_blender(blender_path)
+
+    if args.run_local:
+        logger.info("Running local Blender without checking for updates.")
+        launch_blender()
+        sys.exit(0)
 
     logger.info('Updating Extensions')
     update_extensions()
