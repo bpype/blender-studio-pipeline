@@ -201,11 +201,7 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Collect Empty Actions
-        self.empty_actions = []
-        for action in bpy.data.actions:
-            if len(action.fcurves) == 0:
-                self.empty_actions.append(action)
-
+        self.empty_actions = self.collect_empty_fcurves()
         # Find rig of each asset collection.
         asset_rigs: List[Tuple[bpy.types.Collection, bpy.types.Armature]] = []
         for coll in asset_colls:
@@ -271,6 +267,26 @@ class KITSU_OT_anim_check_action_names(bpy.types.Operator):
             "cleanup_empty_actions",
             text=f"Delete {len(self.empty_actions)} Empty Action Data-Blocks",
         )
+
+    def get_action_slot_fcurves(self, action: bpy.types.Action) -> List[bpy.types.FCurve]:
+        fcurves = []
+        for layer in action.layers:
+            for strip in layer.strips:
+                for slot in action.slots:
+                    channelbag = strip.channelbag(slot)
+                    fcurves.extend(channelbag.fcurves)
+        return fcurves
+
+    def collect_empty_fcurves(self) -> List[bpy.types.FCurve]:
+        empty_actions = []
+        for action in bpy.data.actions:
+            if bpy.app.version >= (4, 4, 0):
+                if len(self.get_action_slot_fcurves(action)) == 0:
+                    empty_actions.append(action)
+            else:
+                if len(action.fcurves) == 0:
+                    empty_actions.append(action)
+        return empty_actions
 
 
 class KITSU_OT_anim_enforce_naming_convention(bpy.types.Operator):
