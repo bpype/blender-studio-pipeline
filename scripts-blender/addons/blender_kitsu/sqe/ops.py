@@ -1499,10 +1499,10 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        active_strip = context.scene.sequence_editor.active_strip
-        if not hasattr(active_strip, 'filepath'):
-            cls.poll_message_set("Selected Strip is not a Video")
-            return False
+        for strip in context.selected_strips:
+            if not hasattr(strip, 'filepath'):
+                cls.poll_message_set("Selected Strip is not a Video")
+                return False
 
         return bool(prefs.session_auth(context))
 
@@ -1519,32 +1519,42 @@ class KITSU_OT_sqe_push_shot(bpy.types.Operator):
         layout.prop(self, 'comment')
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        active_strip = context.scene.sequence_editor.active_strip
+        strips = context.selected_strips
 
-        # Find the metadata strip of this strip that contains Kitsu information
-        # about what sequence and shot this strip belongs to.
-        shot_name = active_strip.name.split(bkglobals.DELIMITER)[0]
-        metadata_strip = context.scene.sequence_editor.strips.get(shot_name)
-        if not metadata_strip:
-            # The metadata strip should've been created by sqe_create_review_session,
-            # if the Kitsu integration is enabled in the add-on preferences,
-            # the Kitsu add-on is enabled, and valid Kitsu credentials were entered.
-            self.report({"ERROR"}, f"Could not find Kitsu metadata strip: {shot_name}.")
-            return {"CANCELLED"}
+        for index, strip in enumerate(strips):
+            # Issue with logger prints in this operator, using report instead.
+            self.report({"INFO"}, f"Uploading strip {index + 1}/{len(strips)}: {strip.name}")
 
-        if not self.task_status:
-            self.report({"ERROR"}, "Failed to create playblast. Missing task status")
-            return {"CANCELLED"}
+            # Find the metadata strip of this strip that contains Kitsu information
+            # about what sequence and shot this strip belongs to.
+            shot_name = strip.name.split(bkglobals.DELIMITER)[0]
+            metadata_strip = context.scene.sequence_editor.strips.get(shot_name)
+            if not metadata_strip:
+                # The metadata strip should've been created by sqe_create_review_session,
+                # if the Kitsu integration is enabled in the add-on preferences,
+                # the Kitsu add-on is enabled, and valid Kitsu credentials were entered.
+                self.report({"ERROR"}, f"Could not find Kitsu metadata strip: {shot_name}.")
+                continue
 
-        # Set the Kitsu sequence and shot information in the context
-        cache.sequence_active_set_by_id(context, metadata_strip.kitsu.sequence_id)
-        cache.shot_active_set_by_id(context, metadata_strip.kitsu.shot_id)
+            if not self.task_status:
+                self.report(
+                    {"ERROR"}, f"Failed to create playblast. Missing task status for {shot_name}"
+                )
+                continue
 
-        # Upload render
-        self.report({"INFO"}, f"Trying to upload render for {shot_name}")
-        self._upload_render(context, Path(bpy.path.abspath(active_strip.filepath)))
+            # Set the Kitsu sequence and shot information in the context
+            cache.sequence_active_set_by_id(context, metadata_strip.kitsu.sequence_id)
+            cache.shot_active_set_by_id(context, metadata_strip.kitsu.shot_id)
 
-        self.report({"INFO"}, f"Uploaded render for {shot_name}")
+            # Upload render
+            self.report({"INFO"}, f"Trying to upload render for {shot_name}")
+            self._upload_render(context, Path(bpy.path.abspath(strip.filepath)))
+
+        if len(strips) == 1:
+            self.report({"INFO"}, f"Uploaded render for {shot_name}")
+
+        else:
+            self.report({"INFO"}, f"Uploaded renders for {len(strips)} shots")
         return {'FINISHED'}
 
     def _upload_render(self, context: bpy.types.Context, filepath: Path) -> None:

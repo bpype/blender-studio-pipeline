@@ -81,6 +81,8 @@ class RR_PT_render_review(bpy.types.Panel):
         sqe = context.scene.sequence_editor
         if not sqe:
             return
+
+        render_strips = [strip for strip in context.selected_strips if strip.rr.is_render]
         active_strip = sqe.active_strip
         if active_strip and active_strip.rr.is_render:
             # Create box.
@@ -114,9 +116,15 @@ class RR_PT_render_review(bpy.types.Panel):
             # Approve render & udpate approved.
             row = box.row(align=True)
 
-            text = "Push To Edit & Approve Render"
-            if active_strip.rr.is_pushed_to_edit:
-                text = "Approve Render"
+            if len(render_strips) <= 1:
+                text = "Push To Edit & Approve Render"
+                if active_strip.rr.is_pushed_to_edit:
+                    text = "Approve Render"
+            else:
+                text = f"Push To Edit & Approve {len(render_strips)} Renders"
+                if all(strip.rr.is_pushed_to_edit for strip in render_strips):
+                    text = f"Approve {len(render_strips)} Renders"
+
             row.operator(RR_OT_sqe_approve_render.bl_idname, icon="CHECKMARK", text=text)
             row.operator(RR_OT_sqe_update_strip_statuses.bl_idname, text="", icon="FILE_REFRESH")
 
@@ -127,13 +135,27 @@ class RR_PT_render_review(bpy.types.Panel):
                 shot_previews_dir = Path(opsdata.get_shot_previews_path(active_strip)).as_posix()
 
             row = box.row(align=True)
-            row.operator(RR_OT_sqe_push_to_edit.bl_idname, icon="EXPORT")
+
+            if len(render_strips) <= 1:
+                text = "Push To Edit"
+            else:
+                text = f"Push {len(render_strips)} Renders To Edit"
+            row.operator(RR_OT_sqe_push_to_edit.bl_idname, icon="EXPORT", text=text)
+
             row.operator(RR_OT_open_path.bl_idname, icon="FILEBROWSER", text="").filepath = (
                 shot_previews_dir
             )
 
             # Push strip to Kitsu.
-            box.row().operator('kitsu.sqe_push_shot', icon='URL')
+
+            if len(render_strips) <= 1:
+                box.row().operator('kitsu.sqe_push_shot', icon='URL')
+            else:
+                box.row().operator(
+                    'kitsu.sqe_push_shot',
+                    icon='URL',
+                    text=f'Push {len(render_strips)} Shots to Kitsu',
+                )
 
 
 def RR_topbar_file_new_draw_handler(self: Any, context: bpy.types.Context) -> None:

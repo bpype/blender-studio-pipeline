@@ -592,69 +592,79 @@ class RR_OT_sqe_approve_render(bpy.types.Operator):
         return True
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        active_strip = context.scene.sequence_editor.active_strip
 
-        if not active_strip.rr.is_pushed_to_edit:
+        if not all(strip.rr.is_pushed_to_edit for strip in self.render_strips):
+            logger.info("Some strips are not pushed to edit, pushing them now.")
             bpy.ops.rr.sqe_push_to_edit()
 
-        strip_dir = opsdata.get_strip_folder(active_strip)
-        frames_root_dir = opsdata.get_frames_root_dir(active_strip)
-        shot_frames_backup_path = opsdata.get_shot_frames_backup_path(active_strip)
-        metadata_path = opsdata.get_shot_frames_metadata_path(active_strip)
+        for idx, strip in enumerate(self.render_strips):
+            logger.info(f"Processing strip {idx + 1}/{len(self.render_strips)}: {strip.name}")
+            active_strip = strip
 
-        # Create Shot Frames path if not exists yet.
-        if frames_root_dir.exists():
-            # Delete backup if exists.
-            if shot_frames_backup_path.exists():
-                shutil.rmtree(shot_frames_backup_path)
+            strip_dir = opsdata.get_strip_folder(active_strip)
+            frames_root_dir = opsdata.get_frames_root_dir(active_strip)
+            shot_frames_backup_path = opsdata.get_shot_frames_backup_path(active_strip)
+            metadata_path = opsdata.get_shot_frames_metadata_path(active_strip)
 
-            # Rename current to backup.
-            frames_root_dir.rename(shot_frames_backup_path)
-            logger.info(
-                "Created backup: %s > %s",
-                frames_root_dir.name,
-                shot_frames_backup_path.name,
+            # Create Shot Frames path if not exists yet.
+            if frames_root_dir.exists():
+                # Delete backup if exists.
+                if shot_frames_backup_path.exists():
+                    shutil.rmtree(shot_frames_backup_path)
+
+                # Rename current to backup.
+                frames_root_dir.rename(shot_frames_backup_path)
+                logger.info(
+                    "Created backup: %s > %s",
+                    frames_root_dir.name,
+                    shot_frames_backup_path.name,
+                )
+            else:
+                frames_root_dir.mkdir(parents=True)
+                logger.info("Created dir in Shot Frames: %s", frames_root_dir.as_posix())
+
+            # Copy dir.
+            opsdata.copytree_verbose(
+                strip_dir,
+                frames_root_dir,
+                dirs_exist_ok=True,
             )
+            logger.info("Copied: %s \nTo: %s", strip_dir.as_posix(), frames_root_dir.as_posix())
+
+            # Update metadata json.
+            if not metadata_path.exists():
+                metadata_path.touch()
+                opsdata.save_to_json(
+                    {"source_current": strip_dir.as_posix(), "source_backup": ""},
+                    metadata_path,
+                )
+                logger.info("Created metadata.json: %s", metadata_path.as_posix())
+            else:
+                json_dict = opsdata.load_json(metadata_path)
+                # Source backup will get value from old source current.
+                json_dict["source_backup"] = json_dict["source_current"]
+                # Source current will get value from strip dir.
+                json_dict["source_current"] = strip_dir.as_posix()
+
+                opsdata.save_to_json(json_dict, metadata_path)
+
+            # Scan for approved renders.
+            opsdata.update_strip_statuses(context)
+            util.redraw_ui()
+
+            logger.info("Updated metadata in: %s", metadata_path.as_posix())
+            logger.info("Completed!: %s", strip.name)
+
+        if len(self.render_strips) == 1:
+            # Log.
+            self.report({"INFO"}, f"Updated {frames_root_dir.name} in Shot Frames")
         else:
-            frames_root_dir.mkdir(parents=True)
-            logger.info("Created dir in Shot Frames: %s", frames_root_dir.as_posix())
-
-        # Copy dir.
-        opsdata.copytree_verbose(
-            strip_dir,
-            frames_root_dir,
-            dirs_exist_ok=True,
-        )
-        logger.info("Copied: %s \nTo: %s", strip_dir.as_posix(), frames_root_dir.as_posix())
-
-        # Update metadata json.
-        if not metadata_path.exists():
-            metadata_path.touch()
-            opsdata.save_to_json(
-                {"source_current": strip_dir.as_posix(), "source_backup": ""},
-                metadata_path,
-            )
-            logger.info("Created metadata.json: %s", metadata_path.as_posix())
-        else:
-            json_dict = opsdata.load_json(metadata_path)
-            # Source backup will get value from old source current.
-            json_dict["source_backup"] = json_dict["source_current"]
-            # Source current will get value from strip dir.
-            json_dict["source_current"] = strip_dir.as_posix()
-
-            opsdata.save_to_json(json_dict, metadata_path)
-
-        # Scan for approved renders.
-        opsdata.update_strip_statuses(context)
-        util.redraw_ui()
-
-        # Log.
-        self.report({"INFO"}, f"Updated {frames_root_dir.name} in Shot Frames")
-        logger.info("Updated metadata in: %s", metadata_path.as_posix())
+            self.report({"INFO"}, f"Updated {len(self.render_strips)} renders in Shot Frames")
 
         return {"FINISHED"}
 
     def invoke(self, context, event):
+        self.render_strips = [strip for strip in context.selected_strips if strip.rr.is_render]
         active_strip = context.scene.sequence_editor.active_strip
         frames_root_dir = opsdata.get_frames_root_dir(active_strip)
         width = 200 + len(frames_root_dir.as_posix()) * 5
@@ -662,20 +672,29 @@ class RR_OT_sqe_approve_render(bpy.types.Operator):
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
-        active_strip = context.scene.sequence_editor.active_strip
-        strip_dir = opsdata.get_strip_folder(active_strip)
-        frames_root_dir = opsdata.get_frames_root_dir(active_strip)
 
-        layout.separator()
-        layout.row(align=True).label(text="From Farm Output:", icon="RENDER_ANIMATION")
-        layout.row(align=True).label(text=strip_dir.as_posix())
+        if len(self.render_strips) == 1:
+            active_strip = self.render_strips[0]
+            strip_dir = opsdata.get_strip_folder(active_strip)
+            frames_root_dir = opsdata.get_frames_root_dir(active_strip)
 
-        layout.separator()
-        layout.row(align=True).label(text="To Shot Frames:", icon="FILE_TICK")
-        layout.row(align=True).label(text=frames_root_dir.as_posix())
+            layout.separator()
+            layout.row(align=True).label(text="From Farm Output:", icon="RENDER_ANIMATION")
+            layout.row(align=True).label(text=strip_dir.as_posix())
 
-        layout.separator()
-        layout.row(align=True).label(text="Update Shot Frames?")
+            layout.separator()
+            layout.row(align=True).label(text="To Shot Frames:", icon="FILE_TICK")
+            layout.row(align=True).label(text=frames_root_dir.as_posix())
+
+            layout.separator()
+            layout.row(align=True).label(text="Update Shot Frames?")
+
+        else:
+            layout.separator()
+            layout.row(align=True).label(
+                text=f"Push & Approve {len(self.render_strips)} selected renders?",
+            )
+            layout.separator()
 
 
 class RR_OT_sqe_update_strip_statuses(bpy.types.Operator):
@@ -827,94 +846,125 @@ class RR_OT_sqe_push_to_edit(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         addon_prefs = prefs.addon_prefs_get(context)
-        active_strip = context.scene.sequence_editor.active_strip
 
         if not addon_prefs.shot_playblast_root_dir:
             cls.poll_message_set("No shot playblast root dir set")
             return False
 
-        if not active_strip:
-            cls.poll_message_set("No active strip")
-            return False
+        for strip in context.selected_strips:
+            if not strip:
+                cls.poll_message_set("No active strip")
+                return False
 
-        if not active_strip.rr.is_render:
-            cls.poll_message_set("Selected sequence strip is not an imported render")
-            return False
+            if not strip.rr.is_render:
+                cls.poll_message_set("Selected sequence strip is not an imported render")
+                return False
 
-        if active_strip.rr.is_pushed_to_edit:
-            cls.poll_message_set("Selected sequence strip is already pushed to edit")
-            return False
+            if all(strip.rr.is_pushed_to_edit for strip in context.selected_strips):
+                cls.poll_message_set("All selected sequence strips are already pushed to edit")
+                return False
+
+        if len(context.selected_strips) == 1:
+            if strip.rr.is_pushed_to_edit:
+                cls.poll_message_set("Selected sequence strip is already pushed to edit")
+                return False
         return True
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        active_strip = context.scene.sequence_editor.active_strip
 
-        render_dir = opsdata.get_strip_folder(active_strip)
-        shot_previews_dir = opsdata.get_shot_previews_path(active_strip)
-        metadata_path = shot_previews_dir / "metadata.json"
+        unpushed_strips = [
+            strip for strip in context.selected_strips if not strip.rr.is_pushed_to_edit
+        ]
 
-        # -------------GET MP4 OR CREATE WITH FFMPEG ---------------
-        # Trying to get render_mp4_path will throw error if no jpg files are available.
-        try:
-            mp4_path = Path(opsdata.get_farm_output_mp4_path(active_strip))
-        except NoImageStripAvailableException:
-            # No jpeg files available.
-            self.report({"ERROR"}, f"No preview files available in {render_dir.as_posix()}")
-            return {"CANCELLED"}
+        skipped_count = len(
+            [strip for strip in context.selected_strips if strip.rr.is_pushed_to_edit]
+        )
+        print(f"Skipping {skipped_count} items that are already pushed to edit.")
 
-        # If mp4 path does not exist, use ffmpeg to create preview file.
-        if not mp4_path.exists():
-            preview_files = opsdata.get_best_preview_sequence(render_dir)
-            fffmpeg_command = f"ffmpeg -start_number {int(preview_files[0].stem)} -framerate {vars.FPS} -i {render_dir.as_posix()}/%06d{preview_files[0].suffix} -c:v libx264 -preset medium -crf 23 -pix_fmt yuv420p {mp4_path.as_posix()}"
-            logger.info("Creating .mp4 with ffmpeg")
-            subprocess.call(fffmpeg_command, shell=True)
-            logger.info("Created .mp4: %s", mp4_path.as_posix())
+        for strip in unpushed_strips:
+            print(f"Pushing to Edit strip {strip.name}")
+            active_strip = strip
+
+            render_dir = opsdata.get_strip_folder(active_strip)
+            shot_previews_dir = opsdata.get_shot_previews_path(active_strip)
+            metadata_path = shot_previews_dir / "metadata.json"
+
+            # -------------GET MP4 OR CREATE WITH FFMPEG ---------------
+            # Trying to get render_mp4_path will throw error if no jpg files are available.
+            try:
+                mp4_path = Path(opsdata.get_farm_output_mp4_path(active_strip))
+            except NoImageStripAvailableException:
+                # No jpeg files available.
+                self.report({"ERROR"}, f"No preview files available in {render_dir.as_posix()}")
+                return {"CANCELLED"}
+
+            # If mp4 path does not exist, use ffmpeg to create preview file.
+            if not mp4_path.exists():
+                preview_files = opsdata.get_best_preview_sequence(render_dir)
+                fffmpeg_command = f"ffmpeg -start_number {int(preview_files[0].stem)} -framerate {vars.FPS} -i {render_dir.as_posix()}/%06d{preview_files[0].suffix} -c:v libx264 -preset medium -crf 23 -pix_fmt yuv420p {mp4_path.as_posix()}"
+                logger.info("Creating .mp4 with ffmpeg")
+                subprocess.call(fffmpeg_command, shell=True)
+                logger.info("Created .mp4: %s", mp4_path.as_posix())
+            else:
+                logger.info("Found existing .mp4 file: %s", mp4_path.as_posix())
+
+            # --------------COPY MP4 TO Shot Previews ----------------.
+
+            # Create edit path if not exists yet.
+            if not shot_previews_dir.exists():
+                shot_previews_dir.mkdir(parents=True)
+                logger.info("Created dir in Shot Previews: %s", shot_previews_dir.as_posix())
+
+            # Get edit_filepath.
+            edit_filepath = self.get_edit_filepath(active_strip)
+
+            # Copy mp4 to edit filepath.
+            shutil.copy2(mp4_path.as_posix(), edit_filepath.as_posix())
+            logger.info("Copied: %s \nTo: %s", mp4_path.as_posix(), edit_filepath.as_posix())
+
+            # ----------------UPDATE METADATA.JSON ------------------.
+
+            # Create metadata json.
+            if not metadata_path.exists():
+                metadata_path.touch()
+                logger.info("Created metadata.json: %s", metadata_path.as_posix())
+                opsdata.save_to_json({}, metadata_path)
+
+            # Udpate metadata json.
+            json_obj = opsdata.load_json(metadata_path)
+            json_obj[edit_filepath.name] = mp4_path.as_posix()
+            opsdata.save_to_json(
+                json_obj,
+                metadata_path,
+            )
+            logger.info("Updated metadata in: %s", metadata_path.as_posix())
+
+            # Scan for approved renders.
+            opsdata.update_strip_statuses(context)
+
+        if len(context.selected_strips) == 1:
+            # Log.
+            self.report(
+                {"INFO"},
+                f"Pushed to edit: {edit_filepath.as_posix()}",
+            )
         else:
-            logger.info("Found existing .mp4 file: %s", mp4_path.as_posix())
-
-        # --------------COPY MP4 TO Shot Previews ----------------.
-
-        # Create edit path if not exists yet.
-        if not shot_previews_dir.exists():
-            shot_previews_dir.mkdir(parents=True)
-            logger.info("Created dir in Shot Previews: %s", shot_previews_dir.as_posix())
-
-        # Get edit_filepath.
-        edit_filepath = self.get_edit_filepath(active_strip)
-
-        # Copy mp4 to edit filepath.
-        shutil.copy2(mp4_path.as_posix(), edit_filepath.as_posix())
-        logger.info("Copied: %s \nTo: %s", mp4_path.as_posix(), edit_filepath.as_posix())
-
-        # ----------------UPDATE METADATA.JSON ------------------.
-
-        # Create metadata json.
-        if not metadata_path.exists():
-            metadata_path.touch()
-            logger.info("Created metadata.json: %s", metadata_path.as_posix())
-            opsdata.save_to_json({}, metadata_path)
-
-        # Udpate metadata json.
-        json_obj = opsdata.load_json(metadata_path)
-        json_obj[edit_filepath.name] = mp4_path.as_posix()
-        opsdata.save_to_json(
-            json_obj,
-            metadata_path,
-        )
-        logger.info("Updated metadata in: %s", metadata_path.as_posix())
-
-        # Scan for approved renders.
-        opsdata.update_strip_statuses(context)
-
-        # Log.
-        self.report(
-            {"INFO"},
-            f"Pushed to edit: {edit_filepath.as_posix()}",
-        )
+            self.report(
+                {"INFO"},
+                f"Pushed {len(context.selected_strips)} renders to edit",
+            )
         return {"FINISHED"}
 
     def draw(self, context: bpy.types.Context) -> None:
         layout = self.layout
+        if len(context.selected_strips) > 1:
+            layout.separator()
+            layout.row(align=True).label(
+                text=f"Push {len(context.selected_strips)} selected renders to Shot Previews?",
+            )
+            layout.separator()
+            return
+
         active_strip = context.scene.sequence_editor.active_strip
         edit_filepath = self.get_edit_filepath(active_strip)
 
