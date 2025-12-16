@@ -2567,6 +2567,36 @@ class KITSU_OT_sqe_clear_update_indicators(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class KITSU_OT_sqe_set_selected_strip_source_latest(bpy.types.Operator):
+    bl_idname = "kitsu.sqe_set_selected_strip_source_latest"
+    bl_label = "Set Selected Strip Source to Latest"
+    bl_description = "Sets the source media of selected strips to the latest version on disk"
+    bl_options = {"REGISTER", "UNDO"}
+
+    # TODO this operator is a stop gap to improve batch functionality
+    # Strip source adjustment should be handled in a core function
+    # to allow for batch operations without invoking operators
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        sqe = context.scene.sequence_editor
+        if not sqe:
+            return False
+        return bool(sqe.active_strip)
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+        strips = context.selected_strips
+        if not strips:
+            strips = [context.scene.sequence_editor.active_strip]
+
+        for strip in strips:
+            bpy.ops.kitsu.sqe_change_strip_source('EXEC_DEFAULT', go_latest=True, strip=strip.name)
+
+        self.report({"INFO"}, f"Attempted to set {len(strips)} strips source to latest version")
+
+        return {"FINISHED"}
+
+
 class KITSU_OT_sqe_change_strip_source(bpy.types.Operator):
     bl_idname = "kitsu.sqe_change_strip_source"
     bl_label = "Change Strip Media Source"
@@ -2578,6 +2608,7 @@ class KITSU_OT_sqe_change_strip_source(bpy.types.Operator):
 
     direction: bpy.props.EnumProperty(items=[("UP", "UP", ""), ("DOWN", "DOWN", "")])
     go_latest: bpy.props.BoolProperty(name="Got to latest", default=False)
+    strip: bpy.props.StringProperty(name="Strip", default="")
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
@@ -2588,6 +2619,10 @@ class KITSU_OT_sqe_change_strip_source(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
         strip = context.scene.sequence_editor.active_strip
+
+        # Override active strip if passed in as operator option
+        if self.strip:
+            strip = context.scene.sequence_editor.strips_all.get(self.strip)
 
         # Check if it has valid filepath key.
         if not strip.filepath:
@@ -2723,6 +2758,7 @@ classes = [
     KITSU_OT_sqe_add_sequence_color,
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
+    KITSU_OT_sqe_set_selected_strip_source_latest,
     KITSU_OT_sqe_clear_update_indicators,
     KITSU_OT_sqe_import_image_sequence,
     KITSU_OT_sqe_import_playblast,

@@ -34,6 +34,7 @@ from ..sqe.ops import (
     KITSU_OT_sqe_add_sequence_color,
     KITSU_OT_sqe_scan_for_media_updates,
     KITSU_OT_sqe_change_strip_source,
+    KITSU_OT_sqe_set_selected_strip_source_latest,
     KITSU_OT_sqe_clear_update_indicators,
     KITSU_OT_sqe_import_image_sequence,
     KITSU_OT_sqe_import_playblast,
@@ -735,6 +736,14 @@ class KITSU_PT_sqe_general_tools(bpy.types.Panel):
             text=f"Check media update for {len(strips_to_update_media)} {'strip' if len(strips_to_update_media) == 1 else 'strips'}",
         )
         row.operator(KITSU_OT_sqe_clear_update_indicators.bl_idname, text="", icon="X")
+
+        if len(context.selected_strips) > 1:
+            row = box.row(align=True)
+            row.operator(
+                KITSU_OT_sqe_set_selected_strip_source_latest.bl_idname,
+                text=f"Set latest media for {len(strips_to_update_media)} strips",
+                icon="FILE_PARENT",
+            )
 
         # Up down source operator.
         if len(sel_strips) == 1 and active_strip and active_strip.type == "MOVIE":
