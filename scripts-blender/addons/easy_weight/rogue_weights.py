@@ -312,9 +312,15 @@ class EASYWEIGHT_OT_focus_smallest_island(Operator):
             rig = context.pose_object
             if rig:
                 for pb in rig.pose.bones:
-                    pb.bone.select = False
+                    if bpy.app.version < (5, 0, 0):
+                        pb.bone.select = False
+                    else:
+                        pb.select = False
                 if self.vgroup in rig.pose.bones:
-                    rig.pose.bones[self.vgroup].bone.select = True
+                    if bpy.app.version < (5, 0, 0):
+                        rig.pose.bones[self.vgroup].bone.select = True
+                    else:
+                        rig.pose.bones[self.vgroup].select = True
 
         mesh.use_paint_mask_vertex = True
 
