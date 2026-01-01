@@ -1,13 +1,24 @@
 # Workflow Enhancements
 CloudRig includes several quality of life features, each with a default hotkey. If these interfere with your workflow, you can easily rebind or disable them in the preferences.
 
-<img src="/media/addons/cloudrig/hotkeys_ui.png">
+<img src="/media/addons/cloudrig/hotkeys_ui.jpg">
 
 ## MetaRig Swapping / Generation
 <img src="/media/addons/cloudrig/header_menu.jpg">
 
 - **Toggle Meta/Generated Rig** (`Shift+T`): Toggle visibilty and selection state between a metarig and its generated rig, syncing visibility of bone collections and bone selection. This can be used while a mesh object is selected, to hop to Pose Mode on its deforming armature.
 - **(Re-)Generate Rig** (`Ctrl+Alt+R`): Generates or Re-generates the active rig, or the active metarig's rig. If there is only one metarig in the scene, it doesn't need to be active.
+
+## Rig Preview
+<video src="/media/addons/cloudrig/rig_preview_overlay.mp4" controls></video>
+
+While editing a metarig, you can see a live preview of the rig which will be generated. In the Overlay pop-over, you'll find settings for how many components should be shown, and whether to use dashed lines. Drawing all visible components on a complex metarig can introduce lag when posing.
+
+
+## Scale Custom Shapes (Ctrl+Alt+Shift+S)
+Simply hit this key combination to scale the visual sizes of bones. This works well together with the Rig Preview, so you don't need to re-generate the rig all the time to see your changes.  
+The operator can also be found under 3D View Header -> Pose -> Transform -> Scale Custom Shapes.
+
 
 ## Better Duplicate & Extrude
 - **E** (Extrude) and **Shift+D** (Duplicate) increment bone names:
