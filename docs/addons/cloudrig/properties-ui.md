@@ -17,7 +17,7 @@ You can then use [Drivers](https://docs.blender.org/manual/en/latest/animation/d
  - You can reset any property in Blender to its default by mouse hovering it and hitting Backspace.
  - You can enter a Description for properties, which will be shown when they are mouse hovered.
 
-## What can CloudRig do?
+## CloudRig's UI Editor
 
 If you find Blender's built-in way of displaying custom properties a bit ugly, limited, and disorganized, that's when CloudRig can offer a bit of help. You can see an example of this on the Cloud Human Metarig.
 
@@ -120,21 +120,21 @@ In this case, I just wanted to edit the Value Names of the property. Now it will
 You can see a preview of this near the top of the pop-up panel, but you will only see it in the real UI once you confirm by clicking OK.
 
 #### Some things to note:
-- Enum Properties are also possible to create, but you [need to use Python](https://projects.blender.org/blender/blender/pulls/114362#issuecomment-1751765).
+- Drop-down selectors (Enum Properties) are also possible to create, but you [need to use Python](https://projects.blender.org/blender/blender/pulls/114362#issuecomment-1751765).
 - The "Row ID" and "Display Name" fields were filled in automatically when we added the property to the UI.
 
 ## Drivers
 
-Of course at the end of the day, these properties don't do anything on their own. They need to be hooked up to things using Drivers. You can do this by right-clicking on properties and using the "Copy as New Driver", "Paste Driver", and "Edit Driver" options. You can learn more from the [Drivers](https://docs.blender.org/manual/en/latest/animation/drivers/usage.html) page of the Blender Manual.
+Of course at the end of the day, these properties don't do anything on their own. They need to be hooked up to things using Drivers. You can do this by right-clicking on properties and using the "Copy as New Driver", "Paste Driver", and "Edit Driver" options. You can learn more from the [Drivers](https://studio.blender.org/training/blender-fundamentals-45-lts/blender_4-5_lts_rigging_drivers/) section of my rigging fundamentals tutorial.
 
 ## Example Use Case: Bone Collections
 
 Besides outfit swapping, you can also use this system to make a grid UI of Bone Collections, like so:  
 <img src="/media/addons/cloudrig/props_ui_bone_collections.png" width=600>
 
-Which is done like this:
+Which is made super convenient by using the Collection toggle in the top-right, which lets you select collections by name, and assigns sensible defaults so you don't need to do anything else:
 
-<img src="/media/addons/cloudrig/props_ui_bone_collections_edit.png" width=600>
+<img src="/media/addons/cloudrig/props_ui_bone_collections_edit.jpg" width=600>
 
 ## Example Use Case: Custom Operator
 

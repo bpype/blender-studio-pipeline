@@ -3,11 +3,11 @@ CloudRig implements a Generation Log, which shows a list of potential issues det
 
 <img src="/media/addons/cloudrig/generation_log.png" width=600>
 
-If rig generation fails, you will also find the error message here, along with a Bug Report button.
+If rig generation fails, you will also find the error message here. Some failures are considered "expected", ie. you did something wrong, and the error message will tell you what it was. Unexpected failures and uncertain cases will show a [Bug Report](https://projects.blender.org/Mets/CloudRig/issues/new/choose) button, which I recommend you use. Fatal errors in the generation code are always fixed in the next version, if reported.
 
 Many issues will have a button to let you fix them as quick as possible.
 
-Feel free to submit suggestions for issues that this system currently doesn't detect.
+Feel free to submit suggestions for issues that this system currently doesn't detect and warn about!
 
 ### Bone Naming
 Certain bone naming conventions are reserved for CloudRig's generation process. Please follow these guidelines to avoid issues that may be difficult to troubleshoot:
