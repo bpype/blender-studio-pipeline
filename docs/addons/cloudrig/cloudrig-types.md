@@ -286,16 +286,7 @@ This rig adds IK/FK switching and snapping and IK Stretch settings to the rig UI
 Changes the IK Chain component with some specific behaviours useful for fingers. The fingers should bend in their local +X axis.
 The IK settings of finger rigs are organized into a sub-sub-panel in the rig UI, because there are usually a lot of fingers, resulting in a lot of UI sliders.
 
-<details>
-<summary> Parameters </summary>
-
-- #### Create IK Switch Control
-    Instead of using a UI slider for FK/IK switching, create a control in the viewport for the switching.
-    Whether the IK constraint should use a pole target control, and whether such bone should even be created.
-
-</details>
-
-
+This component has no additional parameters.
 
 ## Limb: Generic
 Extends the IK Chain component with cartoony rubber-hose functionality. This requires a chain of exactly 3 bones.
