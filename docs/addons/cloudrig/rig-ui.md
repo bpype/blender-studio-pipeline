@@ -18,12 +18,12 @@ Inserts a keyframe on the current frame for all (except bone collection) propert
 <img src="/media/addons/cloudrig/reset_armature.jpg" width=400>
 Powerful reset operator with a pop-up to specify what you want to reset:
 
-- Unassign Action: Only appears if the armature has an Action assigned.
-- Unhide Bones: Only appears if any bones are hidden. Unhides them all.
-- Viewport Display: If enabled, resets the rig object's "Show Names", "Show Axes", and "In Front" options.
-- Selected Only: Only appears if any bones are selected. If enabled, only selected bones will be affected by subsequent settings.
-- Transforms: If enabled, resets Location/Rotatoin/Scale of bones.
-- Custom Properties: If enabled, resets custom properties of bones to their default values.
+- **Unassign Action**: Only appears if the armature has an Action assigned.
+- **Unhide Bones**: Only appears if any bones are hidden. Unhides them all.
+- **Viewport Display**: If enabled, resets the rig object's "Show Names", "Show Axes", and "In Front" options.
+- **Selected Only**: Only appears if any bones are selected. If enabled, only selected bones will be affected by subsequent settings.
+- **Transforms**: If enabled, resets Location/Rotatoin/Scale of bones.
+- **Custom Properties**: If enabled, resets custom properties of bones to their default values.
 
 #### UI Edit Mode
 This option is aimed at riggers; It is only available on Metarigs, and only with CloudRig installed. It allows the rigger to create their own interface for custom properties, or in fact any properties, nested into panels, labels, and rows. To learn how to use this feature, see the [Properties UI](properties-ui) page.
@@ -31,10 +31,10 @@ This option is aimed at riggers; It is only available on Metarigs, and only with
 #### IK/FK Switch
 If your rig containts any IK/FK components, their IK/FK switch properties will appear here.  
 While you can simply use the slider to switch between FK and IK control schemes, this will not automatically preserve the existing pose.  
+<img src="/media/addons/cloudrig/snap_bake_popup.jpg" width=400>
 Next to each slider (that supports it), is a **Snap & Bake** operator. This lets you snap the bones of the IK controls to the FK controls or vice versa.  This will always insert a keyframe on all transforms of the affected bones, as well as the slider.  
 You can also do this over a frame range by enabling the **Bake** option.
 
-<img src="/media/addons/cloudrig/snap_bake_popup.jpg" width=400>
 
 #### IK
 

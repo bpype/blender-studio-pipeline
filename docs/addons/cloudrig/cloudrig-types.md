@@ -80,6 +80,8 @@ All CloudRig component types share some basic functionality, like letting you ch
     This option lets you create a parent switcher by entering the bone names of each parent on the left side, and optionally, a UI name on the right side. The bone names are chosen from the generated rig.
     The chosen bones will be the available parents for this component's root bone, and a selector will be added to the rig UI.
     Different component types may implement parent switching differently. The specific behaviour is explained underneath the checkbox when it is enabled.
+- #### Base Name
+    This option will be available for any rig component that offers you to be more specific with naming its bones and custom properties. For example, for an arm rig, you might not have a bone named "Arm", since they would be named "UpperArm", "Forearm", "Wrist". If you wanted the IK/FK Switch in the Rig UI to show as "Arm IK/FK" rather than "UpperArm IK/FK", the Base Name option lets you achieve just that.
 - #### Appearance
     This panel lets you customize the custom shapes of bones. By default, you can choose from CloudRig's library of custom shapes, but you can expand this list by specifying your own .blend file of custom shapes in CloudRig's add-on preferences. You can also switch to choosing from the objects of the current .blend file. Only mesh objects whose names start with "WGT-" will appear in the list.
 - #### Storage Bone
@@ -284,16 +286,7 @@ This rig adds IK/FK switching and snapping and IK Stretch settings to the rig UI
 Changes the IK Chain component with some specific behaviours useful for fingers. The fingers should bend in their local +X axis.
 The IK settings of finger rigs are organized into a sub-sub-panel in the rig UI, because there are usually a lot of fingers, resulting in a lot of UI sliders.
 
-<details>
-<summary> Parameters </summary>
-
-- #### Create IK Switch Control
-    Instead of using a UI slider for FK/IK switching, create a control in the viewport for the switching.
-    Whether the IK constraint should use a pole target control, and whether such bone should even be created.
-
-</details>
-
-
+This component has no additional parameters.
 
 ## Limb: Generic
 Extends the IK Chain component with cartoony rubber-hose functionality. This requires a chain of exactly 3 bones.
