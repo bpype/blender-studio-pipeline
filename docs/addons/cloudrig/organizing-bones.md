@@ -42,7 +42,7 @@ You also have the ability to organize collections as you would with a normal arm
 
 Then you can create your collections and assign bones as you would on any armature. Then you need to mark the collection as protected, using the shield icon. These collection, and which bones are assigned to them, will be fully preserved when you regenerate the rig.
 
-Note that this does **not** mean that you can now create arbitrary bones on the generated rig and expect them to stick around. The only way to do that is to add [Bone Copy](cloudrig-types#bone-copy) components in the MetaRig.
+Note that this does **not** mean that you can now create arbitrary bones on the generated rig and expect them to stick around. For that, you still need to add bones in the metarig.
 
 <img src="/media/addons/cloudrig/pasted_sel_sets.png" width=400>
 

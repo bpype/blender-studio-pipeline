@@ -39,7 +39,7 @@ If you want to start from a fresh armature, all you need to do is enable CloudRi
 
 
 ## Actions & Face Rigging
-If you want to rig faces with CloudRig, you will probably want to use a combnination of component types such as [Bone Copy](cloudrig-types#bone-copy), [Chain: Eyelid](cloudrig-types#chain-eyelid) and [Aim](cloudrig-types#aim). But the real magic will happen in the [Action system](actions). You can get an example of this by playing with the included Sintel metarig.
+If you want to rig faces with CloudRig, you will probably want to use a combnination of component types such as [Single Control](cloudrig-types#single-control), [Chain: Eyelid](cloudrig-types#chain-eyelid) and [Aim](cloudrig-types#aim). But the real magic will happen in the [Action system](actions). You can get an example of this by playing with the included Sintel metarig.
 
 
 ## Generation Log
@@ -60,7 +60,7 @@ If you don't like the collections that CloudRig assigns the generated bones to b
 
 ## Making Tweaks
 If you're rigging a character with specific needs, you will most likely end up needing a fine level of control over the rig. There are three primary ways to do this:
-- The [Bone Copy](cloudrig-types#bone-copy) component lets you copy bones to the generated rig with all their constraints, bone shape, and other settings.
+- The [Single Control](cloudrig-types#single-control) component lets you create controls on the generated rig with all their constraints, bone shape, other settings, and a separate deform bone.
 - The [Bone Tweak](cloudrig-types#bone-tweak) component lets you tweak individual aspects of a bone that CloudRig generates for you, as long as the bone name matches.
 - The [Post-Generation Script](generator-parameters#post-generation-script) feature lets you run a script whenever you generate the rig, allowing you to make completely arbitrary procedural changes, but this does require familiarity with Python.
 
