@@ -430,8 +430,8 @@ This rig creates an aim control for a single bone. Can be useful for cameras, ey
     Create a deform bone for this rig. May not be always needed, for example if you just want to object-parent something to the aim rig, like a camera.
 - #### Create Root
     Create a root bone for this rig.
-- #### Create Sub-Control
-    Create a secondary control and deform bone attached to the aim control. Useful for fake eye highlights.
+- #### Create Highlight Control
+    Create a secondary control and deform bone attached to the aim control. Useful for eye highlights. The extent to which it follows the eye's rotation can be controlled in the Rig UI under the Face panel.
 
 </details>
 

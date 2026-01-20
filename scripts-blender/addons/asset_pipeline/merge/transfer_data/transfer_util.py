@@ -195,6 +195,30 @@ def disable_modifiers(objs: set, mod_types: set[str]):
                 obj.modifiers[mod_name].show_viewport = True
 
 @contextlib.contextmanager
+def enable_modifiers(obj, modifiers):
+    modifiers_to_disable = []
+
+    fcurves_to_enable = []
+
+    for mod in modifiers:
+        if obj.animation_data:
+            fcurve = obj.animation_data.drivers.find(f'modifiers["{mod.name}"].show_viewport')
+            if fcurve and not fcurve.mute:
+                fcurves_to_enable.append(fcurve)
+                fcurve.mute = True
+        if not mod.show_viewport:
+            modifiers_to_disable.append(mod)
+            mod.show_viewport = True
+    
+    yield
+
+    for fc in fcurves_to_enable:
+        fc.mute = False
+    
+    for mod in modifiers_to_disable:
+        mod.show_viewport = False
+
+@contextlib.contextmanager
 def simplify(scene):
     """Disable subdivision surface modifiers globally using the scene's Simplify setting.
     Important for binding modifiers, but also probably doesn't hurt for general performance.

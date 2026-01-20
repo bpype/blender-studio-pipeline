@@ -11,6 +11,7 @@ from ..transfer_util import (
     find_ownership_data,
     activate_shapekey,
     disable_modifiers,
+    enable_modifiers,
 )
 from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
 from ...task_layer import get_transfer_data_owner
@@ -174,10 +175,20 @@ def bind_modifier(context, obj, modifier_name):
     modifier = obj.modifiers.get(modifier_name)
     assert modifier
     bind_op = BIND_OPS.get(modifier.type)
+
+    def is_target_missing(modifier) -> bool:
+        if modifier.type == 'CORRECTIVE_SMOOTH':
+            return False
+        if hasattr(modifier, 'object'):
+            return not bool(modifier.object)
+        elif hasattr(modifier, 'target'):
+            return not bool(modifier.target)
+        else:
+            return False
+
     if (
         not bind_op or 
-        (hasattr(modifier, 'target') and not modifier.target) or 
-        not modifier.show_viewport or 
+        is_target_missing(modifier) or
         (modifier.type=='CORRECTIVE_SMOOTH' and modifier.rest_source=='ORCO')
     ):
         return
@@ -190,15 +201,16 @@ def bind_modifier(context, obj, modifier_name):
         if modifier.type != 'CORRECTIVE_SMOOTH':
             modifiers_to_disable.append('CORRECTIVE_SMOOTH')
         with disable_modifiers(objs, modifiers_to_disable):
-            for i in range(2):
-                context.view_layer.update()
-                with override_obj_visibility(obj=obj, scene=context.scene):
+            with override_obj_visibility(obj=obj, scene=context.scene):
+                with enable_modifiers(obj, [modifier]):
                     with context.temp_override(object=obj, active_object=obj):
-                        bind_op(modifier=modifier.name)
-                        word = "Bound" if is_modifier_bound(modifier) else "Un-bound"
-                        logger.debug(f"{word} {modifier_name} on {obj.name}")
-                        if is_modifier_bound(modifier):
-                            return
+                        for i in range(2):
+                            context.view_layer.update()
+                            bind_op(modifier=modifier.name)
+                            word = "Bound" if is_modifier_bound(modifier) else "Un-bound"
+                            logger.debug(f"{word} {modifier_name} on {obj.name}")
+                            if is_modifier_bound(modifier):
+                                return
 
 
 def is_modifier_bound(modifier) -> bool | None:

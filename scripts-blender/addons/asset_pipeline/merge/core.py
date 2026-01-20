@@ -24,6 +24,9 @@ from .transfer_data.transfer_functions.transfer_function_util.active_indexes imp
     transfer_active_uv_layer_index,
     transfer_active_color_attribute_index,
 )
+from .transfer_data.transfer_functions.transfer_function_util.armature import (
+    reset_armature,
+)
 from pathlib import Path
 from .. import constants, logging
 import time
@@ -201,6 +204,9 @@ def merge_task_layer(
     profiles.add((imported_time - start_time), "IMPORT")
 
     local_col = bpy.data.collections[f"{col_base_name}.{local_suffix}"]
+    for obj in bpy.data.objects:
+        if obj.type == 'ARMATURE':
+            reset_armature(obj)
 
     # External col may come from publish, ensure it is not marked as asset so it purges correctly
     external_col.asset_clear()
