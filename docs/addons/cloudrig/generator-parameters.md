@@ -30,6 +30,8 @@ When enabled, custom shape properties (like translation, rotation, scale, wire w
 #### With Shapes
 When disabled, only the properties or custom shapes will be preserved on the generated rig, but the shape object assignments will be reset.
 
+### Base Wire Width
+Defaults to 0.5, this value is added to the Wire Width of all bones in the generated rig. You can reduce it to 0 if you find the lines too thick, but this is not recommended for the sake of users with poor eyesight.
 
 # Rig Components
 
