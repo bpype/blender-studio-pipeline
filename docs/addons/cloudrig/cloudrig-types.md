@@ -31,7 +31,8 @@ These are CloudRig's component types. Most component types are built on top of o
         - [Curve: Spline IK](#curve-spline-ik)
     - [Lattice](#lattice)
     - [Aim](#aim)
-    - [Bone Copy](#bone-copy)
+    - [Raw Copy](#raw-copy)
+    - [Single Control](#single-control)
         - [Chain Intersection](#chain-intersection)
     - [Bone Tweak](#bone-tweak)
 
@@ -429,14 +430,20 @@ This rig creates an aim control for a single bone. Can be useful for cameras, ey
     Create a deform bone for this rig. May not be always needed, for example if you just want to object-parent something to the aim rig, like a camera.
 - #### Create Root
     Create a root bone for this rig.
-- #### Create Sub-Control
-    Create a secondary control and deform bone attached to the aim control. Useful for fake eye highlights.
+- #### Create Highlight Control
+    Create a secondary control and deform bone attached to the aim control. Useful for eye highlights. The extent to which it follows the eye's rotation can be controlled in the Rig UI under the Face panel.
 
 </details>
 
 
-## Bone Copy
-This component type lets you copy a connected chain of bones over to the generated rig. Often used just to copy a single bone. Useful for face controls or any other arbitrary control you want to add.
+# Raw Copy
+This component type is implicitly assigned to all metarig bones - Any bone that isn't part of any other component will be treated as a Raw Copy component. You can also assign it explicitly if you want to deliberately interrupt a chain, or if you simply prefer to explicitly indicate that a bone should be simply copied to the generated rig.
+
+As the name implies, a Raw Copy bone will be copied into the generated rig with almost no additional processing. The exception to this is that [Constraint Relinking](constraint-relinking) (and driver relinking) will still be performed on the bone, so any constraints or drivers pointing at the metarig will point at the generated rig instead.
+
+
+## Single Control
+This component type lets you create a single control with some helper bones. Useful for creating face controls or any other arbitrary control you want to add.
 
 Constraints will be [relinked](constraint-relinking) to the copied bone.
 
@@ -459,7 +466,7 @@ Constraints will be [relinked](constraint-relinking) to the copied bone.
 
 
 ## Chain Intersection
-This component is an extension of Bone Copy with a special interaction with Face Grid components.
+This component is an extension of "Single Control" with a special interaction with Face Grid components.
 
 <details>
 <summary> Details </summary>

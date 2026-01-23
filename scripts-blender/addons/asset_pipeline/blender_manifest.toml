@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "blender_studio_asset_pipeline"
-version = "0.3.0"
+version = "0.3.1"
 name = "Blender Studio Asset Pipeline"
 tagline = "Asset data merger for studio collaboration"
 maintainer = "Demeter Dzadik <demeter@blender.org>"

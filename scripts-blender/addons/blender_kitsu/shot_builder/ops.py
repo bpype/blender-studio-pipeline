@@ -276,7 +276,7 @@ class KITSU_OT_build_new_asset(KITSU_OT_build_new_file_baseclass):
                 )
                 return {"FINISHED"}
 
-        self.report({"INFO"}, f"Successfully Built Shot:`{asset.name}`")
+        self.report({"INFO"}, f"Successfully Built Asset:`{asset.name}`")
         return {"FINISHED"}
 
 

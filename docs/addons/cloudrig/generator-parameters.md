@@ -13,7 +13,7 @@ You may specify a text datablock stored in this .blend file, to be executed as a
 This option only appears when your metarig contains [FK Chain](cloudrig-types#chain-fk) components. If this option is enabled, a test Action will be generated with keyframes defined by the generated rig's hierarchy and the parameters of each FK Chain component. The purpose of this Action is to help you in a common weight painting workflow, where the character is rotated on each of their joints to test deformations. If you want to make manual tweaks to this action, make sure to disable this option, so that your keyframe tweaks don't get overwritten when you regenerate the rig.
 
 ### Root Bone
-Name of the root bone. While optional, some rig features such as FK Hinge require the rig to have a root bone. This is not a bone selector, because this option will actually affect the metarig, by creating a bone with the specified name, and assigning the [Bone Copy](cloudrig-types#bone-copy) component type to it. After that, you're free to fully customize this root bone, with two caveats: 
+Name of the root bone. While optional, some rig features such as FK Hinge require the rig to have a root bone. This is not a bone selector, because this option will actually affect the metarig, by creating a bone with the specified name. After that, you're free to fully customize this root bone, with two caveats: 
 1) If you want to rename the bone, you also have to change the name in this input box. 
 2) You cannot parent this bone to another bone. The parenting will be cleared. This bone should be the true root.
 
@@ -30,6 +30,8 @@ When enabled, custom shape properties (like translation, rotation, scale, wire w
 #### With Shapes
 When disabled, only the properties or custom shapes will be preserved on the generated rig, but the shape object assignments will be reset.
 
+### Base Wire Width
+Defaults to 0.5, this value is added to the Wire Width of all bones in the generated rig. You can reduce it to 0 if you find the lines too thick, but this is not recommended for the sake of users with poor eyesight.
 
 # Rig Components
 

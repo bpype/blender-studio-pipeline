@@ -17,7 +17,7 @@ You can find Action Set-ups when selecting a CloudRig metarig and then going to 
 You can add a slot, select an Action, and input all the information about when this action will activate. This is very similar to setting up an individual Action constraint.
 
 These are the steps one might take to set up a blinking and eye opening action:
-- On the metarig, create bones named "Blink.L" and "Blink.R" and assign the [Bone Copy](cloudrig-types#bone-copy) component type. Assign colors, widgets, etc as you wish.
+- On the metarig, create bones named "Blink.L" and "Blink.R". You can assign the [Raw Copy](cloudrig-types#raw-copy) component type. Assign colors, widgets, etc as you wish.
 - Generate the rig.
 - On the generated rig, pose and keyframe your blink pose on frame 20.
 - Then, select all the bones you keyed, reset their transforms, and insert a key on frame 10.
