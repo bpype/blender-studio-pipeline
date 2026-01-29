@@ -14,6 +14,7 @@ class FILEBROWSER_PT_SVN_files(FileBrowserPanel, Panel):
     bl_region_type = 'TOOLS'
     bl_category = "Bookmarks"
     bl_label = "SVN Files"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
@@ -37,6 +38,7 @@ class FILEBROWSER_PT_SVN_log(FileBrowserPanel, Panel):
     bl_category = "Bookmarks"
     bl_parent_id = "FILEBROWSER_PT_SVN_files"
     bl_label = "Revision History"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):

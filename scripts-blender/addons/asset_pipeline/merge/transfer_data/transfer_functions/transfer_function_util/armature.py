@@ -31,7 +31,8 @@ def reset_armature(
     for pbone in pose_bones:
         if bone_visibility:
             pbone.hide = False
-            pbone.bone.hide = False
+            if pbone.bone:
+                pbone.bone.hide = False
 
         if transforms:
             pbone.location = (0, 0, 0)

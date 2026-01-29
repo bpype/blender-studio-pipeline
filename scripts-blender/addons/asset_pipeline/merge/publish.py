@@ -107,7 +107,7 @@ def find_all_published(current_file: Path, publish_type: str) -> list[Path]:
     publish_dir = current_file.parent.joinpath(publish_type)
     if not publish_dir.exists():
         return
-    published_files = list(publish_dir.glob('*.blend'))
+    published_files = list(publish_dir.glob('*-v[0-9][0-9][0-9].blend'))
     published_files.sort(key=find_file_version)
     return published_files
 
