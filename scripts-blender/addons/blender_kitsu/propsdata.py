@@ -106,6 +106,7 @@ def get_playblast_dir(self: Any) -> str:
     episode = cache.episode_active_get()
     sequence = cache.sequence_active_get()
     shot = cache.shot_active_get()
+    asset = cache.asset_active_get()
     delimiter = bkglobals.DELIMITER
 
     # Start building path
@@ -122,8 +123,13 @@ def get_playblast_dir(self: Any) -> str:
 
     task_type_name_suffix = get_task_type_name_file_suffix()
 
+    entity_name = shot.name if context_core.is_shot_context() else asset.name
+
     playblast_dir = (
-        playblast_dir / sequence.name / shot.name / f"{shot.name}{delimiter}{task_type_name_suffix}"
+        playblast_dir
+        / sequence.name
+        / entity_name
+        / f"{entity_name}{delimiter}{task_type_name_suffix}"
     )
     return playblast_dir.as_posix()
 
@@ -135,6 +141,7 @@ def get_playblast_file(self: Any) -> str:
     task_type_name_suffix = get_task_type_name_file_suffix()
     version = self.playblast_version
     shot = cache.shot_active_get()
+    asset = cache.asset_active_get()
     episode = cache.episode_active_get()
     sequence = cache.sequence_active_get()
     delimiter = bkglobals.DELIMITER
@@ -152,6 +159,8 @@ def get_playblast_file(self: Any) -> str:
             entity_name = f"{episode.name}_{entity_name}"
     elif context_core.is_shot_context():
         entity_name = shot.name
+    elif context_core.is_asset_context():
+        entity_name = asset.name
     else:
         entity_name = ''
 
