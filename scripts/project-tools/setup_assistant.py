@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2022 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
+from dataclasses import dataclass
 import json
 import requests
 import sys
@@ -13,7 +14,7 @@ import argparse
 import getpass
 
 # Example usage:
-# ./setup_assistant.py -u http://localhost/api -e admin@example.com -p mysecretpassword -r /home/nicka/test_projects/
+# ./setup_assistant.py -u http://localhost/api -e admin@example.com -p mysecretpassword -r /home/nicka/test_projects/ -P linux
 
 BUILDS_INDEX = "https://builder.blender.org/download/daily/?format=json&v=1"
 
@@ -239,9 +240,7 @@ def get_project_parent_path(project_name: str, project_root_arg: str = None) -> 
         print(f"Project path '{project_name}' already exists in '{project_parent_path}'.")
         print(f"Are you sure this is what you want? ")
         while True:
-            use_path = (
-                input(f"Use '{project_parent_path} '? (y/n): ").strip().lower()
-            )
+            use_path = input(f"Use '{project_parent_path} '? (y/n): ").strip().lower()
             if use_path == "n":
                 return get_project_parent_path(project_name)
             elif use_path == "y":
@@ -249,6 +248,7 @@ def get_project_parent_path(project_name: str, project_root_arg: str = None) -> 
             else:
                 print("Invalid input. Please enter 'y' or 'n'.")
     return project_path
+
 
 def make_project_folder(project_name: str, project_root_arg: str = None) -> Path:
     """
@@ -319,11 +319,11 @@ def print_header(text: str, level: int = 1):
         print(stars)
 
 
-def run_background_script(script_path: Path):
+def run_background_script(script_path: Path, *args: str):
     """
-    Run a Python script using subprocess and handle errors.
+    Run a Python script with optional arguments using subprocess and handle errors.
     """
-    result = subprocess.run([sys.executable, str(script_path)])
+    result = subprocess.run([sys.executable, str(script_path), *args])
     if result.returncode != 0:
         print(f"Failed to run {script_path}: {result.returncode}")
         sys.exit(result.returncode)
@@ -384,8 +384,12 @@ def ensure_kitsu_project_short_name(project: dict, access_token: str):
 
 
 def check_version_control():
-    print("The Blender Studio Tools project is designed to work with version control software (SVN/GIT-LFS) to manage versioning project files such as Assets & Shots.")
-    print("If you are not using version control the Blender Kitsu add-on will create version files on your disk to provide versioning functionality.")
+    print(
+        "The Blender Studio Tools project is designed to work with version control software (SVN/GIT-LFS) to manage versioning project files such as Assets & Shots."
+    )
+    print(
+        "If you are not using version control the Blender Kitsu add-on will create version files on your disk to provide versioning functionality."
+    )
     while True:
         answer = (
             input("Are you using a version control software (SVN/GIT-LFS)? (y/n): ").strip().lower()
@@ -396,6 +400,17 @@ def check_version_control():
             return False
         else:
             print("Invalid input. Please enter 'y' or 'n'.")
+
+
+@dataclass
+class Arguments(argparse.Namespace):
+    """Define argument types parsed with argparse"""
+
+    url: str
+    user: str
+    password: str
+    root: str
+    platform: list[str] | None
 
 
 def main():
@@ -409,7 +424,15 @@ def main():
     parser.add_argument(
         "-r", "--root", type=str, help="Root directory where project folder will be created"
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "-P",
+        "--platform",
+        type=str,
+        nargs="+",
+        choices=["windows", "darwin", "linux"],
+        help="Platform where Blender will be run on",
+    )
+    args = parser.parse_args(namespace=Arguments)
 
     # Login to Kitsu User to get API Token
     print_header("Blender Studio Tools Setup Assistant", 2)
@@ -470,7 +493,8 @@ def main():
 
     # Download Blender
     update_blender_script = project_path.joinpath("svn/tools/update_blender.py")
-    run_background_script(update_blender_script)
+    update_blender_args = ["--platform"] + args.platform if args.platform else []
+    run_background_script(update_blender_script, *update_blender_args)
 
     # Download Blender Studio Extensions
     update_extensions_script = project_path.joinpath("svn/tools/update_extensions.py")

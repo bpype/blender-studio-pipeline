@@ -3,14 +3,20 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import argparse
+from dataclasses import dataclass
 import email.utils
 import glob
 import hashlib
 import os
 import pathlib
+from typing import TypedDict, cast
 import requests
 import shutil
 import json
+
+# Example usage:
+# ./update_blender.py --platform windows linux
 
 BUILDS_INDEX = "https://builder.blender.org/download/daily/?format=json&v=1"
 BUILDS_INDEX_ARCHIVE = "https://builder.blender.org/download/daily/archive/?format=json&v=1"
@@ -28,12 +34,23 @@ platforms_dict = {
     "linux": "xz",
 }
 
+
+class BlenderBuildData(TypedDict):
+    branch: str
+    risk_id: str
+    version: str
+    platform: str
+    file_extension: str
+    url: str
+    architecture: str
+
+
 # Get all urls for the blender builds
-def get_all_download_urls(build_index_url, exit_if_missing):
-    download_info = []
-    found_plaforms = set()
+def get_all_download_urls(build_index_url: str, exit_if_missing: bool):
+    download_info: list[tuple[str, str, str]] = []
+    found_plaforms: set[str] = set()
     reqs = requests.get(build_index_url)
-    available_downloads = json.loads(reqs.text)
+    available_downloads = cast(list[BlenderBuildData], json.loads(reqs.text))
     check_version = build_index_url == BUILDS_INDEX_ARCHIVE
     target_version = None
 
@@ -80,14 +97,16 @@ def get_all_download_urls(build_index_url, exit_if_missing):
     if len(missing_platforms) != 0:
         if exit_if_missing:
             print(f"The following platforms were not found for download: {missing_platforms}")
-            print(f"Exiting! Either remove the missing platforms from the platforms_dict or look into why they are not available")
+            print(
+                "Exiting! Either remove the missing platforms from the platforms_dict or look into why they are not available"
+            )
             exit(1)
         else:
             return None
     return download_info
 
 
-def download_file(url, out_folder):
+def download_file(url: str, out_folder: pathlib.Path):
     print("Downloading: " + url)
     local_filename = out_folder / url.split('/')[-1]
     # NOTE the stream=True parameter below
@@ -135,7 +154,9 @@ def update_blender(download_info):
         sha = requests.get(url_sha).text.strip().lower()
         arch = info[2]
 
-        current_platform_file = glob.glob(f"{download_folder_path}/*{platform}.{arch}*{file_extension}")
+        current_platform_file = glob.glob(
+            f"{download_folder_path}/*{platform}.{arch}*{file_extension}"
+        )
         if len(current_platform_file) > 1:
             print(
                 f"Platform {platform} has multiple downloaded files in the artifacts directory, exiting!"
@@ -195,7 +216,27 @@ def update_blender(download_info):
             print("Nothing downloaded, everything was up to date")
 
 
+@dataclass
+class Arguments(argparse.Namespace):
+    """Define argument types parsed with argparse"""
+
+    platform: list[str] | None
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Update blender script, downloads Blender for the given platforms"
+    )
+    parser.add_argument(
+        "-P",
+        "--platform",
+        type=str,
+        nargs="+",
+        choices=["windows", "darwin", "linux"],
+        help="Download Blender for the specified platforms",
+    )
+    args = parser.parse_args(namespace=Arguments)
+
     if BLENDER_BRANCH == "main":
         download_info = get_all_download_urls(BUILDS_INDEX, True)
     else:
@@ -203,4 +244,12 @@ if __name__ == "__main__":
         if not download_info:
             # We are not able to get the builds we want from the latest snapshots, check if we can from the archive.
             download_info = get_all_download_urls(BUILDS_INDEX_ARCHIVE, True)
+
+    if not download_info:
+        raise ValueError("No download info")
+
+    # Filter platforms if passed as argument
+    if args.platform:
+        download_info = [info for info in download_info if info[0] in args.platform]
+
     update_blender(download_info)

@@ -69,3 +69,4 @@ ENV/
 node_modules/
 docs/.vitepress/cache
 *.local
+pyrightconfig.json
