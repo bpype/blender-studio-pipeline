@@ -153,12 +153,13 @@ After setup, make sure the `svn` and `shared` directories are available on artis
 
 You can also provide setup options as command-line arguments:
 
-| Argument         | Description                                   |
-|------------------|-----------------------------------------------|
-| `-u`, `--url`    | Kitsu server URL (e.g., `http://localhost/api`) |
-| `-e`, `--user`   | Kitsu username or email                       |
-| `-p`, `--password` | Kitsu password                              |
-| `-r`, `--root`   | Folder where your new project will be created |
+| Argument           | Description                                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `-u`, `--url`      | Kitsu server URL (e.g., `http://localhost/api`)                                                                                    |
+| `-e`, `--user`     | Kitsu username or email                                                                                                            |
+| `-p`, `--password` | Kitsu password                                                                                                                     |
+| `-r`, `--root`     | Folder where your new project will be created                                                                                      |
+| `-P`, `--platform` | (Optional) Specify one or multiple platforms for which Blender will be downloaded (if not given, all platforms will be downloaded) |
 
 Example:
 
@@ -166,5 +167,14 @@ Example:
 ./setup_assistant.py --url http://localhost/api --user admin@example.com --password mysecretpassword --root /mnt/projects
 ```
 
-If you make a mistake in your arguments, the script will prompt you to correct them during execution.
+With specific Blender platforms:
 
+```bash
+# Single platform
+./setup_assistant.py ... --platform darwin # MacOS
+
+# Multiple platforms
+./setup_assistant.py ... --platform linux windows
+```
+
+If you make a mistake in your arguments, the script will prompt you to correct them during execution.
