@@ -456,8 +456,8 @@ Constraints will be [relinked](constraint-relinking) to the copied bone.
     Create a parent control whose local translation is not propagated to the main control, but its rotation and scale are.
 - #### Create Deform Bone
     Create a second bone with the DEF- prefix and the Deform property enabled, so you can use it as a deform bone.
-- #### Move Constraints to Parent
-    If this bone has any constraints, move them to a parent bone prefixed with "CON", unless the constraint name starts with "KEEP".
+- #### Ensure Free Transforms
+    Move any transform property drivers or constraints on the tweaked bone to a parent helper bone prefixed "CON-". This can be useful when your drivers/constraints would lock the bone, or affect its local transform matrix.
 
 - #### Custom Properties: UI Sub-panel
     Choose which sub-panel the custom properties should be displayed in. If empty, the properties won't appear in the rig UI.
@@ -490,8 +490,8 @@ This component type lets you tweak aspects of a single bone that is expected to 
 
 - #### Additive Constraints
     When enabled, the constraints on this bone will be added on top of the target bone's already existing constraints, and then [relinked](constraint-relinking). Otherwise, the original constraints will be overwritten.
-- #### Move Constraints to Parent
-    When enabled, any constraints on the tweaked bone will be moved to a parent helper bone that is created, prefixed "CON-" for constraint holder. This can be useful when your constraints would lock the bone, or affect its local transform matrix.
+- #### Ensure Free Transforms
+    Move any transform property drivers or constraints on the tweaked bone to a parent helper bone prefixed "CON-". This can be useful when your drivers/constraints would lock the bone, or affect its local transform matrix.
 - #### Tweak Parameters
     The bone's properties are split into these categories:
     - Transforms
