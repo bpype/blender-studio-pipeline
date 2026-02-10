@@ -273,6 +273,8 @@ This rig adds IK/FK switching and snapping and IK Stretch settings to the rig UI
 
 - #### Create IK Pole
     Whether the IK constraint should use a pole target control, and whether such bone should even be created.
+- #### Pole Parent Switching
+    Whether the IK Pole's parent switching options should be unified with that of the IK Master, or be completely independent instead.
 - #### IK At Tail
     Put the IK control at the tail of the last bone, rather than at its head.
 - #### World-Aligned IK Master
