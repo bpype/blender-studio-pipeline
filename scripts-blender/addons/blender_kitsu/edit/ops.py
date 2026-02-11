@@ -244,10 +244,10 @@ class KITSU_OT_edit_export_import_latest(bpy.types.Operator):
             return strip.filepath
         if hasattr(strip, "sound"):
             return strip.sound.filepath
-
     def compare_strip_to_path(self, strip: Strip, compare_path: Path) -> bool:
-        strip_path = Path(bpy.path.abspath(self.get_filepath(strip)))
-        return bool(compare_path.absolute() == strip_path.absolute())
+        strip_path = self.get_filepath(strip)
+        return Path(bpy.path.abspath(strip_path)).resolve() == Path(bpy.path.abspath(str(compare_path))).resolve()
+        
 
     def compare_strip_to_paths(self, strip: Strip, compare_paths: List[Path]) -> bool:
         for compare_path in compare_paths:
