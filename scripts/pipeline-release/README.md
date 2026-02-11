@@ -16,5 +16,8 @@ A Gitea API token is required to generate a pipeline release.
 This folder contains a command line tool that doesn't require installation to use properly. To run `pipeline_release` without installation follow the steps below.
 1. Clone this repository with `git clone https://projects.blender.org/studio/blender-studio-tools.git`
 2. Run `cd blender-studio-tools/scripts/pipeline_release` to enter directory
-3. Run program with `python -m pipeline_release` 
+3. Run program with `python -m pipeline_release`
+
+## Options
+- `--local`: Create addon zip in the `dist/` directory instead of uploading to the release server.
 

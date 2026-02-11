@@ -62,11 +62,14 @@ git pull --rebase origin # Pull to update to latest commit
 
 3. Run Package Local Script
 ```bash
-./package_local.py ~/data/your_project_name/shared/artifacts/extensions # Linux/Mac
+./pipeline_release.py --local # Linux/Mac
 ```
 ```bash
-python package_local.py %HOMEPATH%\data\your_project_name\shared\artifacts\extensions # Windows
+python pipeline_release.py --local # Windows
 ```
+
+4. Copy Output to Artifacts
+Copy the output to `~/data/your_project_name/shared/artifacts/extensions/` to distrubte the add-ons to your project.
 
 
 ::: info Gentoo Users
