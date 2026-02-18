@@ -11,6 +11,7 @@ from . import (
     render_review,
     lookdev,
     bkglobals,
+    backups,
     types,
     cache,
     models,
@@ -83,11 +84,11 @@ def register():
     context.register()
     # tasks.register()
     playblast.register()
+    backups.register()
     anim.register()
     shot_builder.register()
     render_review.register()
     edit.register()
-
     LoggerLevelManager.configure_levels()
     logger.info("Registered blender-kitsu")
 
@@ -107,6 +108,7 @@ def unregister():
     shot_builder.unregister()
     render_review.unregister()
     edit.unregister()
+    backups.unregister()
     LoggerLevelManager.restore_levels()
 
 

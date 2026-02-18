@@ -50,8 +50,34 @@ def edit_export_is_valid_name(file_pattern: str, filename: str) -> bool:
 def edit_export_import_latest(
     context: bpy.types.Context, shot
 ) -> list[bpy.types.Strip]:  # TODO add info to shot
-    """Loads latest export from editorial department"""
-    addon_prefs = prefs.addon_prefs_get(context)
+    """Loads latest export from editorial department.
+
+    There are two items to consider when calculating
+    the strip frame start:
+
+    1. The `shot.get_3d_start()` a.k.a `data["3d_start"]` set on kitsu 
+       (the first frame of an animation file). 
+       See:
+        - `shot_builder_frame_offset`
+        - `KITSU_OT_push_frame_range`
+        - `bpy.types.Strip.kitsu_3d_start`
+       
+    2. The first frame where this shot appears in the edit
+       (set on kitsu as frame_in). This is the frame in the
+       editorial movie the shot starts at.
+       
+    NOTE: We need to -1 from the shot frame_in because the first frame of a movie is 1, not 0.
+
+    Example 1: The first shot has frame_in=1 on Kitsu and
+    every shot file starts on frame 101. Subtracting gives
+    100, so we subtract 1 more to get the correct movie
+    start frame of 101.
+
+    Example 2: The second shot has frame_in=51. It appears
+    at frame 51 in the editorial movie. The movie is offset
+    by -50 frames so the shot starts on frame 101 as
+    expected.
+    """
     strip_channel = 1
     latest_file = edit_export_get_latest(context)
     if not latest_file:
@@ -59,8 +85,8 @@ def edit_export_import_latest(
     # Check if Kitsu server returned empty shot
     if shot.id == '':
         return None
-    strip_filepath = latest_file.as_posix()
-    strip_frame_start = addon_prefs.shot_builder_frame_offset
+    strip_filepath = bpy.path.relpath(latest_file.as_posix())
+    strip_frame_start = shot.get_3d_start() - (shot.data.get("frame_in") - 1)
 
     scene = context.scene
     if not scene.sequence_editor:
@@ -79,17 +105,4 @@ def edit_export_import_latest(
         strip_channel,
         strip_frame_start,
     )
-    new_strips = [movie_strip, sound_strip]
-
-    # Update shift frame range prop.
-    frame_in = shot.data.get("frame_in")
-    frame_3d_start = shot.get_3d_start()
-    frame_3d_offset = frame_3d_start - addon_prefs.shot_builder_frame_offset
-    edit_export_offset = addon_prefs.edit_export_frame_offset
-
-    # Set sequence strip start kitsu data.
-    for strip in new_strips:
-        strip.frame_start = (
-            -frame_in + (strip_frame_start * 2) + frame_3d_offset + edit_export_offset
-        )
-    return new_strips
+    return [movie_strip, sound_strip]

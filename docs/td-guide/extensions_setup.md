@@ -18,6 +18,16 @@ download_file(
 )
 ```
 
+## Automatically Installing Extensions
+A helper script is provided to easily generate a `sha256sum` for a given add-on and place it in the correct directory.
+
+```bash
+cd  ~/data/your_project_name/svn/tools
+python deploy_custom_addon.py 
+```
+
+You will be prompted to provide the path to the custom add-on you want to deploy. Once your file is verified to exist and is a .zip file, it will be copied to the `shared/artifacts/extensions` folder for distribution. 
+
 ## Manually Installing Extensions
 To manually install extensions without using any scripts, simply drop the .zip file and the sha256 file of the extension into the project's `shared/artifacts/extensions` folder.
 If the zip doesn't already have a sha256 file, you can generate it yourself with the `sha256sum` program.
@@ -52,11 +62,14 @@ git pull --rebase origin # Pull to update to latest commit
 
 3. Run Package Local Script
 ```bash
-./package_local.py ~/data/your_project_name/shared/artifacts/extensions # Linux/Mac
+./pipeline_release.py --local # Linux/Mac
 ```
 ```bash
-python package_local.py %HOMEPATH%\data\your_project_name\shared\artifacts\extensions # Windows
+python pipeline_release.py --local # Windows
 ```
+
+4. Copy Output to Artifacts
+Copy the output to `~/data/your_project_name/shared/artifacts/extensions/` to distrubte the add-ons to your project.
 
 
 ::: info Gentoo Users

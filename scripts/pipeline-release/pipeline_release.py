@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import argparse
 import os
 from pathlib import Path
 import shutil
@@ -27,7 +28,33 @@ RELEASE_DESCRIPTION = "Latest Release of Blender Studio Pipeline Add-Ons"
 ZIP_NAME = "blender_studio_add-ons_latest"
 
 
-def main():
+parser = argparse.ArgumentParser(description="Release Blender Studio add-ons")
+parser.add_argument(
+    '--local',
+    help="Create addon zip in dist directory instead of uploading to release",
+    action='store_true'
+)
+
+
+def main(local=False):
+    if local:
+        create_local_addon_zip()
+    else:
+        release_to_server()
+
+
+def create_local_addon_zip():
+    """Create addon zip in dist directory above this file."""
+    dist_dir = Path(__file__).parent.parent.joinpath("dist")
+    dist_dir.mkdir(exist_ok=True)
+    release_files = create_latest_addons_zip(ZIP_NAME, dist_dir)
+    for file in release_files:
+        print(f"Created: {file}")
+    print("Addon zip created locally in dist directory")
+
+
+def release_to_server():
+    """Upload addon zip to release server."""
     get_api_token()
     latest_release = get_release()
     temp_dir = Path(tempfile.mkdtemp(prefix=ZIP_NAME + "_"))
@@ -150,6 +177,7 @@ def get_api_token() -> None:
     api_token_file = Path(__file__).parent.joinpath("api_token.env")
     if not api_token_file.exists():
         print("API Token File not Found")
+        print("You can use --local to create addon zip locally instead")
         sys.exit(1)
     API_TOKEN = open(api_token_file, 'r').read().strip()
     # Don't use send_get_request() so we can print custom error message to user
@@ -157,6 +185,7 @@ def get_api_token() -> None:
     if response.status_code != 200:
         print("API Token is invalid")
         print(f"Error: {response.status_code}: '{response.reason}'")
+        print("You can use --local to create addon zip locally instead")
         sys.exit(1)
 
 
@@ -253,4 +282,5 @@ def send_post_request(url: str, data: dict) -> Response:
 
 
 if __name__ == "__main__":
-    main()
+    args = parser.parse_args()
+    main(local=args.local)

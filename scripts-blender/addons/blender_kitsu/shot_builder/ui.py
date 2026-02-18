@@ -57,7 +57,7 @@ def register():
 
 def unregister():
     bpy.types.TOPBAR_MT_file_new.remove(topbar_file_new_draw_handler)
-    bpy.types.TOPBAR_MT_editor_menus.append(topbar_kitsu_menu_draw_handler)
+    bpy.types.TOPBAR_MT_editor_menus.remove(topbar_kitsu_menu_draw_handler)
 
     for cls in classes:
         bpy.utils.unregister_class(cls)

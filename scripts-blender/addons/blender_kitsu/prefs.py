@@ -434,12 +434,6 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         set=set_edit_export_file_pattern,
     )
 
-    edit_export_frame_offset: bpy.props.IntProperty(  # type: ignore
-        name="Edit Export Offset",
-        description="Shift Editorial Export by this frame-range after import",
-        default=-101,
-    )
-
     shot_builder_frame_offset: bpy.props.IntProperty(  # type: ignore
         name="Start Frame Offset",
         description="All Shots built by 'Shot_builder' should begin at this frame, unless the shot has already been submitted to Kitsu Server",
@@ -600,7 +594,6 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         file_pattern_row = box.row(align=True)
         file_pattern_row.alert = not self.is_edit_export_pattern_valid
         file_pattern_row.prop(self, "edit_export_file_pattern", text="Export File Pattern")
-        box.row().prop(self, "edit_export_frame_offset")
 
         # Render Review
         self.draw_render_review(col)

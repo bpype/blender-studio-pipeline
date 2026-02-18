@@ -33,7 +33,7 @@ from ..playblast.core import (
 )
 from ..context import core as context_core
 from ..playblast import opsdata, core
-
+from ..backups.core import save_disk_version_backup_file
 logger = LoggerFactory.getLogger()
 
 
@@ -208,14 +208,8 @@ class KITSU_OT_playblast_create(bpy.types.Operator):
             return {"CANCELLED"}
 
         if not addon_prefs.version_control:
-            basename = context_core.get_versioned_file_basename(Path(bpy.data.filepath).stem)
-
-            version_filename = basename + "-" + kitsu_scene_props.playblast_version + ".blend"
-            version_directory = Path(bpy.data.filepath).parent.joinpath("version_backups")
-            version_directory.mkdir(exist_ok=True)
-            version_filename = version_directory.joinpath(version_filename).as_posix()
-            bpy.ops.wm.save_as_mainfile(filepath=version_filename, copy=True)
-
+            save_disk_version_backup_file(kitsu_scene_props.playblast_version)
+            
         context.window_manager.progress_update(2)
         context.window_manager.progress_end()
 

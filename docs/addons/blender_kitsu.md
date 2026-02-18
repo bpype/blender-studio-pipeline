@@ -238,6 +238,43 @@ The animation tools will show up when you selected a `Task Type` with the name `
 **Duplicate Collection**: Blender Studio Pipeline specific operator. <br/>
 **Check Action Names**: Blender Studio Pipeline specific operator. <br/>
 
+##### Backup Disk Versions
+In the **Advanced Settings** section of the Add-On Preferences, you'll find the `Use Version Control` option. When **disabled** (default), Blender will automatically save a backup `.blend1` file to a folder called `version_backups` each time you:
+- Create a Playblast (via `Create Playblast` operator)
+- Manually save a backup version (via `Save Backup Version` operator)
+
+###### Folder Structure
+
+When using Backup Disk Versions, your project structure will look like this:
+
+```
+
+shots/
+└── SQ01/
+│ └── SH01/
+│     ├── SH01-anim.blend  (main file)
+│     └── version_backups/
+│         ├── SH01-anim-v001.blend1
+│         ├── SH01-anim-v002.blend1
+│         ├── SH01-anim-v002_001.blend1
+│         ├── SH01-anim-v003.blend1
+│         └── ...
+```
+
+
+**Create Playblast** - Creates a viewport render and uploads to Kitsu
+- Automatically saves a backup of the current version (unless `Use Version Control` is enabled)
+- The backup is named using your current playblast version (e.g., `SH01-anim-v004.blend1` when playblast version is `v004`)
+
+**Save Incremental Backup** - Manually save a backup without creating a playblast
+- Creates an incremental version (e.g., if the latest is `v004`, this creates `v004_001`)
+
+**Open Backups Folder** - Opens the `version_backups` folder in your system file browser
+- Quick access to browse and manage your backup files
+
+Backups need to be manually restored.
+
+
 ##### Lookdev Tools
 The lookdev tools will show up when you selected a `Task Type` with the name `Lighting` | `Rendering` | `Compositing`. <br/>
 
