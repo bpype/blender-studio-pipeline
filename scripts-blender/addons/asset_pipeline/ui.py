@@ -18,7 +18,7 @@ from bpy.types import UILayout, Context, Panel
 class ASSETPIPE_PT_sync(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Asset Management"
 
     def draw_collection_selection(self, layout: UILayout, context: Context) -> None:
@@ -96,7 +96,7 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
 class ASSETPIPE_PT_publish(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Publish"
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
@@ -117,7 +117,7 @@ class ASSETPIPE_PT_publish(Panel):
 class ASSETPIPE_PT_working_files(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Working Files"
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
@@ -135,7 +135,7 @@ class ASSETPIPE_PT_working_files(Panel):
 class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Tools"
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
@@ -160,7 +160,7 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
 class ASSETPIPE_PT_sync_advanced(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Advanced"
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
@@ -193,7 +193,7 @@ class ASSETPIPE_PT_sync_advanced(bpy.types.Panel):
 class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Ownership Inspector"
 
     def draw(self, context: bpy.types.Context) -> None:
