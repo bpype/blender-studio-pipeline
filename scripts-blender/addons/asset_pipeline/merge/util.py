@@ -5,7 +5,7 @@
 from typing import Any, Tuple, Generator, List
 from .. import constants
 import bpy
-
+from bpy.types import bpy_prop_collection
 
 ####################################
 ############# ID Stuff #############
@@ -57,7 +57,7 @@ def get_fundamental_id_type(datablock: bpy.types.ID) -> Any:
     return type(datablock).mro()[-4]
 
 
-def get_storage_of_id(datablock: bpy.types.ID) -> 'bpy_prop_collection':
+def get_storage_of_id(datablock: bpy.types.ID) -> bpy_prop_collection:
     """Return the storage collection property of the datablock.
     Eg. for an object, returns bpy.data.objects.
     """

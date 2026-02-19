@@ -272,6 +272,7 @@ def merge_task_layer(
     merge_remove_suffix_from_hierarchy(local_col)
     profiles.add((time.time() - start_time), "MERGE")
 
+
 def import_data_from_lib(
     libpath: Path,
     data_category: str,

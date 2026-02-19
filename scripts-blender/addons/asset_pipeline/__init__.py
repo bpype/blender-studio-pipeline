@@ -3,50 +3,82 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import importlib
+from bpy.utils import register_class, unregister_class
+from types import ModuleType
 
-from . import ui, ops, props, prefs
+from . import (
+    ui,
+    ops,
+    opscore,
+    props,
+    prefs,
+    merge,
+    asset_catalog,
+    config,
+    hooks,
+    images,
+    logging,
+    utils,
+)
 
-bl_info = {
-    "name": "Asset Pipeline",
-    "author": "Nick Alberelli",
-    "description": "Asset data merger for studio collaboration",
-    "blender": (4, 1, 0),
-    "version": (0, 3, 0),
-    "location": "View3D",
-    "warning": "",
-    "doc_url": "",
-    "tracker_url": "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts-blender/addons/asset_pipeline",
-    "category": "Generic",
-}
-
-
-def reload() -> None:
-    global ui
-    global ops
-    global props
-    global prefs
-    importlib.reload(ui)
-    importlib.reload(ops)
-    importlib.reload(props)
-    importlib.reload(prefs)
-
-
-_need_reload = "ui" in locals()
-if _need_reload:
-    reload()
+modules = [
+    ui,
+    ops,
+    opscore,
+    props,
+    prefs,
+    merge,
+    asset_catalog,
+    config,
+    hooks,
+    images,
+    logging,
+    utils,
+]
 
 # ----------------REGISTER--------------.
 
 
-def register() -> None:
-    ui.register()
-    ops.register()
-    props.register()
-    prefs.register()
+def recurive_register(modules: list[ModuleType], register: bool):
+    """Recursively register or unregister modules by looking for either
+    un/register() functions or lists named `registry` which should be a list of
+    registerable classes.
+    """
+    register_func = register_class if register else unregister_class
+
+    for m in modules:
+        un = "un"
+        if register:
+            importlib.reload(m)
+            un = ""
+
+        if hasattr(m, 'registry'):
+            for c in m.registry:
+                try:
+                    register_func(c)
+                except Exception as e:
+                    print(f"{__package__}: Failed to {un}register class: {c.__name__}")
+                    print(e)
+
+        if hasattr(m, 'modules'):
+            recurive_register(m.modules, register)
+
+        if register and hasattr(m, 'register'):
+            m.register()
+        elif hasattr(m, 'unregister'):
+            m.unregister()
 
 
-def unregister() -> None:
-    ui.unregister()
-    ops.unregister()
-    props.unregister()
-    prefs.unregister()
+def register():
+    """Very first entry point called by Blender when enabling the add-on."""
+    recurive_register(modules, True)
+
+
+def unregister():
+    """Called by Blender when disabling the add-on."""
+
+    # We want to save add-on prefs to file so they don't get lost when the add-on is disabled.
+    # This should be done before unregistering anything, otherwise things can fail.
+    # prefs.update_prefs_on_file()
+
+    recurive_register(modules, False)

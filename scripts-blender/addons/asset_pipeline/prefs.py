@@ -5,15 +5,7 @@
 import bpy, os
 from . import constants
 from .logging import get_logger
-from . import __package__ as base_package
-
-def get_addon_prefs(context=None):
-    if not context:
-        context = bpy.context
-    if bpy.app.version >= (4, 2, 0) and base_package.startswith('bl_ext'):
-        return context.preferences.addons[base_package].preferences
-    else:
-        return context.preferences.addons[base_package.split(".")[0]].preferences
+from .utils import get_addon_prefs
 
 def project_root_dir_get():
     prefs = get_addon_prefs()
@@ -90,14 +82,6 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "is_advanced_mode")
 
 
-classes = (ASSET_PIPELINE_addon_preferences,)
-
-
-def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
-
-
-def unregister():
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+registry = [
+    ASSET_PIPELINE_addon_preferences,
+]

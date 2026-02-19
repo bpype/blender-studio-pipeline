@@ -1108,7 +1108,7 @@ class ASSETPIPE_OT_save_asset_hook(bpy.types.Operator):
         return {'FINISHED'}
 
 
-classes = [
+registry = [
     ASSETPIPE_OT_prepare_sync,
     ASSETPIPE_OT_sync_push,
     ASSETPIPE_OT_sync_pull,
@@ -1127,13 +1127,3 @@ classes = [
     ASSETPIPE_OT_open_publish,
     ASSETPIPE_OT_open_file,
 ]
-
-
-def register():
-    for i in classes:
-        bpy.utils.register_class(i)
-
-
-def unregister():
-    for i in classes:
-        bpy.utils.unregister_class(i)

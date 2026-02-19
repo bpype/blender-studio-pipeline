@@ -216,32 +216,29 @@ def refresh_asset_catalog(_):
     config.verify_task_layer_json_data()
 
 
-classes = (
+registry = [
     AssetTransferData,
     AssetTransferDataTemp,
     TaskLayerSettings,
     AssetPipeline,
-)
+]
 
 
 def register():
-    for i in classes:
-        bpy.utils.register_class(i)
     bpy.types.Object.transfer_data_ownership = bpy.props.CollectionProperty(type=AssetTransferData)
     bpy.types.Scene.asset_pipeline = bpy.props.PointerProperty(type=AssetPipeline)
     bpy.types.ID.asset_id_owner = bpy.props.StringProperty(name="Owner", default="NONE")
-    bpy.types.ID.asset_id_surrender = bpy.props.BoolProperty(
-        name="Surrender Ownership", default=False
-    )
+    bpy.types.ID.asset_id_surrender = bpy.props.BoolProperty(name="Surrender Ownership", default=False)
+
     bpy.app.handlers.load_post.append(set_asset_collection_name_post_file_load)
     bpy.app.handlers.load_post.append(refresh_asset_catalog)
 
 
 def unregister():
-    for i in classes:
-        bpy.utils.unregister_class(i)
     del bpy.types.Object.transfer_data_ownership
     del bpy.types.Scene.asset_pipeline
     del bpy.types.ID.asset_id_owner
+    del bpy.types.ID.asset_id_surrender
+
     bpy.app.handlers.load_post.remove(set_asset_collection_name_post_file_load)
     bpy.app.handlers.load_post.remove(refresh_asset_catalog)

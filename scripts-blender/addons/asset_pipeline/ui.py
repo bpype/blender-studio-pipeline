@@ -235,21 +235,11 @@ class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
         draw_transfer_data(context, transfer_data, box)
 
 
-classes = (
+registry = [
     ASSETPIPE_PT_sync,
     ASSETPIPE_PT_sync_advanced,
     ASSETPIPE_PT_working_files,
     ASSETPIPE_PT_sync_tools,
     ASSETPIPE_PT_publish,
     ASSETPIPE_PT_ownership_inspector,
-)
-
-
-def register():
-    for i in classes:
-        bpy.utils.register_class(i)
-
-
-def unregister():
-    for i in classes:
-        bpy.utils.unregister_class(i)
+]
