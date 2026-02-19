@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from ..transfer_util import find_ownership_data
-from ...task_layer import get_transfer_data_owner
-from ...naming import merge_get_basename
 from .... import constants, logging
+from ...naming import merge_get_basename
+from ...task_layer import get_transfer_data_owner
+from ..transfer_util import find_ownership_data
 
 
 def parent_clean(obj):
@@ -24,10 +24,7 @@ def parent_clean(obj):
 
 
 def parent_is_missing(transfer_data_item):
-    if (
-        transfer_data_item.type == constants.PARENT_KEY
-        and transfer_data_item.id_data.parent == None
-    ):
+    if transfer_data_item.type == constants.PARENT_KEY and transfer_data_item.id_data.parent == None:
         return True
 
 

@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
 import contextlib
-
 from typing import Optional
+
+import bpy
 
 
 def get_visibility_driver(obj) -> Optional[bpy.types.FCurve]:

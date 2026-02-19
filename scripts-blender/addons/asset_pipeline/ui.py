@@ -2,17 +2,18 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from pathlib import Path
+
 import bpy
 from addon_utils import check as check_addon
+from bpy.types import Context, Panel, UILayout
 
-from pathlib import Path
-from .merge.transfer_data.transfer_ui import draw_transfer_data
-from .merge.task_layer import draw_task_layer_selection
-from .config import verify_task_layer_json_data
-from .prefs import get_addon_prefs
 from . import constants
+from .config import verify_task_layer_json_data
 from .merge.publish import is_staged_publish
-from bpy.types import UILayout, Context, Panel
+from .merge.task_layer import draw_task_layer_selection
+from .merge.transfer_data.transfer_ui import draw_transfer_data
+from .prefs import get_addon_prefs
 
 
 class ASSETPIPE_PT_sync(bpy.types.Panel):

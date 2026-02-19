@@ -2,15 +2,17 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
 from typing import Dict, Set
+
+import bpy
+
+from .. import constants, logging
 from .naming import (
     merge_get_target_name,
     task_layer_prefix_basename_get,
 )
-from .util import get_storage_of_id
 from .shared_ids import get_shared_ids
-from .. import constants, logging
+from .util import get_storage_of_id
 
 
 class AssetTransferMapping:
@@ -72,7 +74,7 @@ class AssetTransferMapping:
 
     def _check_id_conflict(self, external_id, local_id):
         if local_id.asset_id_owner not in self._local_tls:
-            # If the local ID was not owned by any task layer of the current file 
+            # If the local ID was not owned by any task layer of the current file
             # in the first place, there cannot be a conflict.
             return
         if external_id.asset_id_owner != local_id.asset_id_owner and (
@@ -162,7 +164,7 @@ class AssetTransferMapping:
         external_top_col_name = merge_get_target_name(self._local_top_col.name)
         external_top_col = bpy.data.collections.get(external_top_col_name)
 
-        # This detects when a new task layer collection is added under the top 
+        # This detects when a new task layer collection is added under the top
         # level collection of the asset. (It must have an asset_id_owner!)
         # It's marked for addition to the combined result, which happens later.
         for external_col in external_top_col.children:
@@ -250,14 +252,14 @@ class AssetTransferMapping:
         td_type_key = transfer_data_item.type
         transfer_data_dict = self._get_transfer_data_dict(transfer_data_item)
 
-        if not source_obj in self.transfer_data_map:
+        if source_obj not in self.transfer_data_map:
             self.transfer_data_map[source_obj] = {
                 "target_obj": target_obj,
                 "td_types": {td_type_key: [transfer_data_dict]},
             }
             return
 
-        if not td_type_key in self.transfer_data_map[source_obj]["td_types"]:
+        if td_type_key not in self.transfer_data_map[source_obj]["td_types"]:
             self.transfer_data_map[source_obj]["td_types"][td_type_key] = [transfer_data_dict]
             return
         else:
@@ -267,9 +269,7 @@ class AssetTransferMapping:
         """Verifies if Transfer Data Item is valid/can be mapped"""
 
         # If item is locally owned and is part of local file
-        if transfer_data_item.owner in self._local_tls and source_obj.name.endswith(
-            constants.LOCAL_SUFFIX
-        ):
+        if transfer_data_item.owner in self._local_tls and source_obj.name.endswith(constants.LOCAL_SUFFIX):
             self._transfer_data_map_item_add(source_obj, target_obj, transfer_data_item)
 
         # If item is externally owned and is not part of local file
@@ -307,11 +307,7 @@ class AssetTransferMapping:
                 if source_obj.type != 'MESH':
                     continue
 
-                active_uv_name = (
-                    source_obj.data.uv_layers.active.name
-                    if source_obj.data.uv_layers.active
-                    else ''
-                )
+                active_uv_name = source_obj.data.uv_layers.active.name if source_obj.data.uv_layers.active else ''
                 active_color_attribute_name = source_obj.data.color_attributes.active_color_name
                 index_map[source_obj] = {
                     'active_uv_name': active_uv_name,

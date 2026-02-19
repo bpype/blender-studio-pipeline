@@ -1,5 +1,4 @@
 from . import (
-    transfer_function_util,
     attributes,
     constraints,
     custom_props,
@@ -7,6 +6,7 @@ from . import (
     modifiers,
     parent,
     shape_keys,
+    transfer_function_util,
     vertex_groups,
 )
 

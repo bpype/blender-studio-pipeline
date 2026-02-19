@@ -2,10 +2,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy, os
+import os
+
+import bpy
+
 from . import constants
 from .logging import get_logger
 from .utils import get_addon_prefs
+
 
 def project_root_dir_get():
     prefs = get_addon_prefs()

@@ -2,18 +2,25 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from __future__ import annotations
+
+import os
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .props import AssetTransferData
+
 import bpy
+from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Context
 
-from pathlib import Path
-import os
-
-from . import constants, config, opscore, logging
+from . import config, constants, logging, opscore
 from .asset_catalog import get_asset_catalog_items, get_asset_id
 from .config import verify_task_layer_json_data
-from .hooks import Hooks, get_production_hook_dir, get_asset_hook_dir
+from .hooks import Hooks, get_asset_hook_dir, get_production_hook_dir
 from .images import save_images
-from .merge import publish, task_layer, naming
+from .merge import naming, publish, task_layer
 from .prefs import get_addon_prefs
 
 
@@ -27,12 +34,12 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
     _json_path = None
     _asset_pipe = None
 
-    create_files: bpy.props.BoolProperty(
+    create_files: BoolProperty(
         name="Create Files for Unselected Task Layers", default=True
     )
 
     # Only Active/Stage Publish Types are avaliable
-    publish_type: bpy.props.EnumProperty(
+    publish_type: EnumProperty(
         name="Publish Type",
         items=constants.PUBLISH_TYPES[:2],
     )
@@ -181,7 +188,10 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
             first_file_name = Path(bpy.data.filepath).name
         else:
             first_file_name = (
-                self._name + constants.FILE_DELIMITER + local_tls[0].lower().replace(" ", "_") + ".blend"
+                self._name
+                + constants.FILE_DELIMITER
+                + local_tls[0].lower().replace(" ", "_")
+                + ".blend"
             )
 
         first_file = os.path.join(asset_directory, first_file_name)
@@ -192,7 +202,12 @@ class ASSETPIPE_OT_create_new_asset(bpy.types.Operator):
         return first_file
 
     def _task_layer_file_create(self, context, task_layer_key, asset_directory):
-        name = self._name + constants.FILE_DELIMITER + task_layer_key.lower().replace(" ", "_") + ".blend"
+        name = (
+            self._name
+            + constants.FILE_DELIMITER
+            + task_layer_key.lower().replace(" ", "_")
+            + ".blend"
+        )
         self._asset_pipe.set_local_task_layers([task_layer_key])
         self._task_layer_collections_set(
             context, self._asset_pipe.asset_collection, [task_layer_key]
@@ -281,7 +296,7 @@ class ASSETPIPE_OT_sync_pull(bpy.types.Operator):
     _task_layer_key: str = ""
     _sync_target: Path = None
 
-    save: bpy.props.BoolProperty(
+    save: BoolProperty(
         name="Save File & Images",
         default=True,
         description="Save Current File and Images before Push",
@@ -337,7 +352,7 @@ class ASSETPIPE_OT_sync_push(bpy.types.Operator):
     _task_layer_key: str = ""
     _sync_target: Path = None
 
-    pull: bpy.props.BoolProperty(
+    pull: BoolProperty(
         name="Pull before Pushing",
         default=True,
         description="Pull in any new data from the Published file before Pushing",
@@ -401,7 +416,7 @@ class ASSETPIPE_OT_open_file(bpy.types.Operator):
     bl_label = "Open File"
     bl_description = """Open an Asset Pipeline File, will not prompt to save current file"""
 
-    filepath: bpy.props.StringProperty(name="Filepath")
+    filepath: StringProperty(name="Filepath")
 
     def execute(self, context: Context):
         bpy.ops.wm.open_mainfile(filepath=self.filepath)
@@ -424,11 +439,11 @@ class ASSETPIPE_OT_open_publish(bpy.types.Operator):
     bl_label = "Open Latest Publish"
     bl_description = """Open the current Published File used for Push/Pull/Sync."""
 
-    publish_types: bpy.props.EnumProperty(
+    publish_types: EnumProperty(
         name="Type",
         items=get_publish_type_enum,
     )
-    save_file: bpy.props.BoolProperty(
+    save_file: BoolProperty(
         name="Save Changes before Closing?",
         default=False,
         description="Save the file before opening Published File",
@@ -479,7 +494,7 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
     bl_label = "Publish New Version"
     bl_description = """Create a new Published Version in the Publish Area"""
 
-    publish_types: bpy.props.EnumProperty(
+    publish_types: EnumProperty(
         name="Type",
         items=constants.PUBLISH_TYPES,
     )
@@ -594,7 +609,7 @@ class ASSETPIPE_OT_update_local_task_layers(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
         asset_pipe = context.scene.asset_pipeline
-        new_local_tl = [tl.name for tl in asset_pipe.all_task_layers if tl.is_local == True]
+        new_local_tl = [tl.name for tl in asset_pipe.all_task_layers if tl.is_local]
         local_tl = [tl.name for tl in asset_pipe.local_task_layers]
         if new_local_tl == local_tl:
             cls.poll_message_set("Local Task Layers already match current selection")
@@ -616,7 +631,7 @@ class ASSETPIPE_OT_update_local_task_layers(bpy.types.Operator):
     def execute(self, context: bpy.types.Context):
         asset_pipe = context.scene.asset_pipeline
         all_task_layers = asset_pipe.all_task_layers
-        local_tl = [tl.name for tl in all_task_layers if tl.is_local == True]
+        local_tl = [tl.name for tl in all_task_layers if tl.is_local]
         asset_pipe.set_local_task_layers(local_tl)
         return {'FINISHED'}
 
@@ -649,7 +664,9 @@ class ASSETPIPE_OT_revert_file(bpy.types.Operator):
 class ASSETPIPE_OT_fix_prefixes(bpy.types.Operator):
     bl_idname = "assetpipe.fix_prefixes"
     bl_label = "Fix Modifier Prefixes"
-    bl_description = """Fix Prefixes for Modifiers so they match Transferable Data Owner on selected object(s)"""
+    bl_description = (
+        """Fix Prefixes for Modifiers so they match Transferable Data Owner on selected object(s)"""
+    )
     bl_options = {'REGISTER', 'UNDO'}
 
     _updated_prefix = False
@@ -686,10 +703,7 @@ class ASSETPIPE_OT_fix_prefixes(bpy.types.Operator):
                 self._updated_prefix = True
 
         if not self._updated_prefix:
-            self.report(
-                {'WARNING'},
-                f"No Prefixes found to update",
-            )
+            self.report({'WARNING'}, "No Prefixes found to update")
 
         return {'FINISHED'}
 
@@ -720,10 +734,7 @@ class ASSETPIPE_OT_update_surrendered_object(bpy.types.Operator):
     def execute(self, context: bpy.types.Context):
         obj = context.active_object
         if obj.asset_id_owner == self._old_owner:
-            self.report(
-                {'ERROR'},
-                f"Object Owner was not updated",
-            )
+            self.report({'ERROR'}, "Object Owner was not updated")
             return {'CANCELLED'}
         obj.asset_id_surrender = False
         return {'FINISHED'}
@@ -735,7 +746,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
     bl_description = """Claim Surrended Transferable Data Owner"""
     bl_options = {'REGISTER', 'UNDO'}
 
-    transfer_data_item_name: bpy.props.StringProperty(name="Transferable Data Item Name")
+    transfer_data_item_name: StringProperty(name="Transferable Data Item Name")
 
     _surrendered_transfer_data = None
     _old_owner = ""
@@ -767,10 +778,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(bpy.types.Operator):
     def execute(self, context: bpy.types.Context):
         asset_pipe = context.scene.asset_pipeline
         if self._surrendered_transfer_data.owner == self._old_owner:
-            self.report(
-                {'ERROR'},
-                f"Transferable Data Owner was not updated",
-            )
+            self.report({'ERROR'}, "Transferable Data Owner was not updated")
             return {'CANCELLED'}
         self._surrendered_transfer_data.surrender = False
         task_layer.get_transfer_data_owner(asset_pipe, self._surrendered_transfer_data.type)
@@ -784,13 +792,13 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
     bl_description = """Re-Assign Ownership in a batch operation"""
     bl_options = {'REGISTER', 'UNDO'}
 
-    name_filter: bpy.props.StringProperty(
+    name_filter: StringProperty(
         name="Filter by Name",
         description="Filter Object or Transferable Data items by name",
         default="",
     )
 
-    data_source: bpy.props.EnumProperty(
+    data_source: EnumProperty(
         name="Objects",
         items=(
             ('SELECT', "Selected", "Update Selected Objects Only"),
@@ -798,7 +806,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         ),
     )
 
-    data_type: bpy.props.EnumProperty(
+    data_type: EnumProperty(
         name="Ownership Type",
         items=(
             (
@@ -814,7 +822,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         ),
     )
 
-    filter_owners: bpy.props.EnumProperty(
+    filter_owners: EnumProperty(
         name="Owner Filter",
         items=(
             ('LOCAL', "If Locally Owned", "Only data that is owned locally"),
@@ -823,7 +831,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         ),
     )
 
-    avaliable_owners: bpy.props.EnumProperty(
+    avaliable_owners: EnumProperty(
         name="Avaliable Owners",
         items=(
             ('LOCAL', "Local Task Layers", "Only show local task layers as options"),
@@ -834,16 +842,16 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
             ),
         ),
     )
-    transfer_data_type: bpy.props.EnumProperty(
+    transfer_data_type: EnumProperty(
         name="Type Filter", items=constants.TRANSFER_DATA_TYPES_ENUM_ITEMS
     )
-    owner_selection: bpy.props.StringProperty(name="Set Owner")
+    owner_selection: StringProperty(name="Set Owner")
 
     def update_set_surrender(self, context):
         if self.set_surrender:
             self.claim_surrender = False
 
-    set_surrender: bpy.props.BoolProperty(
+    set_surrender: BoolProperty(
         name="Set Surrender", default=False, update=update_set_surrender
     )
 
@@ -851,11 +859,11 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
         if self.claim_surrender:
             self.set_surrender = False
 
-    claim_surrender: bpy.props.BoolProperty(
+    claim_surrender: BoolProperty(
         name="Claim Surrender", default=False, update=update_claim_surrender
     )
 
-    def _filter_by_name(self, context, unfiltered_list: []):
+    def _filter_by_name(self, context, unfiltered_list: list[AssetTransferData]=[]):
         if self.name_filter == "":
             return unfiltered_list
         return [item for item in unfiltered_list if self.name_filter in item.name]
@@ -986,7 +994,7 @@ class ASSETPIPE_OT_batch_ownership_change(bpy.types.Operator):
             data=self,
             data_owner_name='owner_selection',
             current_data_owner=self.owner_selection,
-            show_all_task_layers=self.avaliable_owners=='ALL',
+            show_all_task_layers=self.avaliable_owners == 'ALL',
             text="Set To",
         )
 
@@ -1059,7 +1067,7 @@ class ASSETPIPE_OT_save_asset_hook(bpy.types.Operator):
     bl_description = """Save new hook file based on example file. Production hooks are used across all assets. Asset hooks are only used in the current asset.
     - Production hooks: 'svn/pro/config' directory.
     - Asset hooks are stored at the root of the asset's directory'"""
-    mode: bpy.props.EnumProperty(
+    mode: EnumProperty(
         name="Hooks Mode",
         description="Choose to either save production level or asset level hooks",
         items=[
@@ -1075,7 +1083,9 @@ class ASSETPIPE_OT_save_asset_hook(bpy.types.Operator):
             )
             hook_dir = get_production_hook_dir()
             if not hook_dir:
-                self.report({'ERROR'}, f"Production directory must be specified in the add-on preferences.")
+                self.report(
+                    {'ERROR'}, "Production directory must be specified in the add-on preferences."
+                )
                 return {'CANCELLED'}
             save_hook_path = get_production_hook_dir().joinpath('hooks.py').resolve()
         else:  # if self.mode == 'ASSET'

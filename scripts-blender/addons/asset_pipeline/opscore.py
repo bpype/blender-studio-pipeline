@@ -23,16 +23,6 @@ from .asset_catalog import get_asset_id
 from . import prefs
 
 
-def sync_poll(cls, context):
-    if any([img.is_dirty for img in bpy.data.images]):
-        cls.poll_message_set("Please save unsaved Images")
-        return False
-    if bpy.data.is_dirty:
-        cls.poll_message_set("Please save current .blend file")
-        return False
-    return True
-
-
 def sync_invoke(self, context):
     logger = logging.get_logger()
     logger.info("Loading Transfer Data")

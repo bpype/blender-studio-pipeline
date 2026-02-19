@@ -2,24 +2,24 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from typing import Dict, List, Tuple
+
 import bpy
 from mathutils import Vector, kdtree
-from typing import Dict, Tuple, List
+
+from .... import constants, logging
 from ..transfer_util import (
     transfer_data_clean,
-    transfer_data_item_is_missing,
     transfer_data_item_init,
+    transfer_data_item_is_missing,
 )
 from .transfer_function_util.proximity_core import (
     is_obdata_identical,
 )
-from .... import constants, logging
 
 
 def vertex_groups_clean(obj):
-    transfer_data_clean(
-        obj=obj, data_list=obj.vertex_groups, td_type_key=constants.VERTEX_GROUP_KEY
-    )
+    transfer_data_clean(obj=obj, data_list=obj.vertex_groups, td_type_key=constants.VERTEX_GROUP_KEY)
 
 
 def vertex_group_is_missing(transfer_data_item):
@@ -173,9 +173,7 @@ def get_source_vert_influences(
     parts = [1 / (dist / distance_total) for idx, dist in distances]
     parts_sum = sum(parts)
 
-    influences = [
-        (idx, 1 if dist == 0 else part / parts_sum) for part, dist in zip(parts, distances)
-    ]
+    influences = [(idx, 1 if dist == 0 else part / parts_sum) for part, dist in zip(parts, distances)]
 
     return influences
 

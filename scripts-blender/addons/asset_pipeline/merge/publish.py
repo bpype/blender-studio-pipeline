@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from pathlib import Path
-from .. import constants
+
 import bpy
+
+from .. import constants
 
 
 def find_file_version(published_file: Path) -> int:
@@ -27,9 +29,7 @@ def find_file_version(published_file: Path) -> int:
     return int(name_without_ext.split(constants.FILE_DELIMITER)[1].replace("v", ""))
 
 
-def get_next_published_file(
-    current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY
-) -> Path:
+def get_next_published_file(current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY) -> Path:
     """Returns the path where the next published file version should be saved to
 
     Args:
@@ -49,9 +49,7 @@ def get_next_published_file(
     else:
         new_version_number = find_file_version(last_publish) + 1
     new_version = "{0:0=3d}".format(new_version_number)
-    return publish_dir.joinpath(
-        base_name + constants.FILE_DELIMITER + "v" + new_version + ".blend"
-    )
+    return publish_dir.joinpath(base_name + constants.FILE_DELIMITER + "v" + new_version + ".blend")
 
 
 def get_asset_catalogues():
@@ -112,9 +110,7 @@ def find_all_published(current_file: Path, publish_type: str) -> list[Path]:
     return published_files
 
 
-def find_latest_publish(
-    current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY
-) -> Path:
+def find_latest_publish(current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY) -> Path:
     """Returns the path to the latest published file in a given folder
 
     Args:
@@ -140,9 +136,7 @@ def find_sync_target(current_file: Path) -> Path:
     Returns:
        Path: Path to latest active or staged publish file
     """ """"""
-    latest_staged = find_latest_publish(
-        current_file, publish_type=constants.STAGED_PUBLISH_KEY
-    )
+    latest_staged = find_latest_publish(current_file, publish_type=constants.STAGED_PUBLISH_KEY)
     if latest_staged:
         return latest_staged
     return find_latest_publish(current_file, publish_type=constants.ACTIVE_PUBLISH_KEY)
@@ -158,6 +152,4 @@ def is_staged_publish(current_file: Path) -> bool:
     Returns:
         bool: True if staged file exists
     """
-    return bool(
-        find_latest_publish(current_file, publish_type=constants.STAGED_PUBLISH_KEY)
-    )
+    return bool(find_latest_publish(current_file, publish_type=constants.STAGED_PUBLISH_KEY))

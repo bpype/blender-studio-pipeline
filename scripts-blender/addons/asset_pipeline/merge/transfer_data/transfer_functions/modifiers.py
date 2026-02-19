@@ -3,19 +3,20 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
-from .transfer_function_util.visibility import override_obj_visibility
+
+from .... import constants, logging
+from ...naming import task_layer_prefix_basename_get, task_layer_prefix_name_get
+from ...task_layer import get_transfer_data_owner
 from ..transfer_util import (
-    transfer_data_clean,
-    transfer_data_item_is_missing,
-    find_ownership_data,
     activate_shapekey,
     disable_modifiers,
     enable_modifiers,
+    find_ownership_data,
+    transfer_data_clean,
+    transfer_data_item_is_missing,
 )
-from ...naming import task_layer_prefix_name_get, task_layer_prefix_basename_get
-from ...task_layer import get_transfer_data_owner
-from .... import constants, logging
+from .transfer_function_util.drivers import cleanup_drivers, transfer_drivers
+from .transfer_function_util.visibility import override_obj_visibility
 
 BIND_OPS = {
     'SURFACE_DEFORM': bpy.ops.object.surfacedeform_bind,
@@ -25,9 +26,7 @@ BIND_OPS = {
 
 
 def modifiers_clean(obj):
-    cleaned_names = transfer_data_clean(
-        obj=obj, data_list=obj.modifiers, td_type_key=constants.MODIFIER_KEY
-    )
+    cleaned_names = transfer_data_clean(obj=obj, data_list=obj.modifiers, td_type_key=constants.MODIFIER_KEY)
 
     # Remove Drivers that match the cleaned item's name
     for name in cleaned_names:
@@ -80,9 +79,7 @@ def transfer_modifier(context, modifier_name, target_obj, source_obj):
     if not source_mod:
         # This happens if a modifier's transfer data is still around, but the modifier
         # itself was removed.
-        logger.debug(
-            f"Modifer Transfer cancelled, '{modifier_name}' not found on '{source_obj.name}'"
-        )
+        logger.debug(f"Modifer Transfer cancelled, '{modifier_name}' not found on '{source_obj.name}'")
         if target_mod:
             target_obj.modifiers.remove(target_mod)
         return
@@ -96,9 +93,10 @@ def transfer_modifier(context, modifier_name, target_obj, source_obj):
     if is_modifier_bound(source_mod):
         bind_modifier(context, target_obj, modifier_name)
 
+
 def place_modifier_in_stack(source_obj, target_obj, modifier_name):
     """Modifiers will try to be placed below the modifier they were below on the source object.
-    This is not very foolproof, since re-ordering multiple modifiers or renaming plus re-ordering, 
+    This is not very foolproof, since re-ordering multiple modifiers or renaming plus re-ordering,
     or removing plus re-ordering, all in one step, could make it hard to determine the ideal order.
     In such cases, user may need to fix the order and sync a 2nd time.
     """
@@ -116,14 +114,14 @@ def place_modifier_in_stack(source_obj, target_obj, modifier_name):
 
         for idx, mod_of_tgt in enumerate(target_obj.modifiers):
             if name_anchor == task_layer_prefix_basename_get(mod_of_tgt.name):
-                idx_new = min(len(target_obj.modifiers)-1, idx+1)
+                idx_new = min(len(target_obj.modifiers) - 1, idx + 1)
                 break
 
     if idx_tgt != idx_new:
         target_obj.modifiers.move(idx_tgt, idx_new)
         msg = f"  Moved {modifier_name} to index {idx_new}"
         if name_anchor:
-            msg +=  f"(after {name_anchor})"
+            msg += f"(after {name_anchor})"
         logger.debug(msg)
 
 
@@ -141,7 +139,7 @@ def transfer_modifier_props(context, source_mod, target_mod):
         for key, value in source_mod.items():
             typ = type(getattr(target_mod, f'["{key}"]'))
             if typ in (int, float, bool, str):
-                if not (typ is str and type(target_mod[key]) is int): # skip conversion for enum props
+                if not (typ is str and type(target_mod[key]) is int):  # skip conversion for enum props
                     value = typ(value)
             target_mod[key] = value
 
@@ -153,7 +151,7 @@ def transfer_modifier_props(context, source_mod, target_mod):
             for prop in props:
                 value = getattr(source_bake, prop)
                 setattr(target_bake, prop, value)
-        
+
         # refresh node modifier UI
         if target_mod.node_group:
             target_mod.node_group.interface_update(context)
@@ -187,16 +185,16 @@ def bind_modifier(context, obj, modifier_name):
             return False
 
     if (
-        not bind_op or 
-        is_target_missing(modifier) or
-        (modifier.type=='CORRECTIVE_SMOOTH' and modifier.rest_source=='ORCO')
+        not bind_op
+        or is_target_missing(modifier)
+        or (modifier.type == 'CORRECTIVE_SMOOTH' and modifier.rest_source == 'ORCO')
     ):
         return
 
     objs = [obj]
     if hasattr(modifier, 'target') and modifier.target:
         objs.append(modifier.target)
-    with activate_shapekey(objs, "BIND-"+modifier_name):
+    with activate_shapekey(objs, "BIND-" + modifier_name):
         modifiers_to_disable = ['LATTICE', 'ARMATURE', 'SHRINKWRAP', 'SMOOTH']
         if modifier.type != 'CORRECTIVE_SMOOTH':
             modifiers_to_disable.append('CORRECTIVE_SMOOTH')

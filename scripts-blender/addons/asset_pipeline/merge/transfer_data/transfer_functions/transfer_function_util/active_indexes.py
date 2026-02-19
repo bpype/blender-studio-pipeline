@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+
 def transfer_active_color_attribute_index(target_obj, active_color_name):
     # active_color_name = source_obj.data.color_attributes.active_color_name
     if active_color_name is None or active_color_name == "":

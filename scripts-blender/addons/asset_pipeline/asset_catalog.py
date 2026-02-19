@@ -4,8 +4,9 @@
 
 import os
 from pathlib import Path
-import bpy
 from typing import List
+
+import bpy
 
 asset_file_cache = None
 cat_data_cache = None

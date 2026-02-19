@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
+
 from ... import constants
 from ..task_layer import draw_task_layer_selection
 
@@ -31,9 +32,9 @@ def draw_transfer_data_type(
 
         if transfer_data_item.surrender:
             # Disable entire row if the item is surrendered
-            main_row.operator(
-                "assetpipe.update_surrendered_transfer_data"
-            ).transfer_data_item_name = transfer_data_item.name
+            main_row.operator("assetpipe.update_surrendered_transfer_data").transfer_data_item_name = (
+                transfer_data_item.name
+            )
 
         draw_task_layer_selection(
             context,
@@ -43,9 +44,7 @@ def draw_transfer_data_type(
         surrender_icon = "ORPHAN_DATA" if transfer_data_item.surrender else "HEART"
         surrender_row = main_row.row()
         surrender_row.enabled = transfer_data_item.owner in asset_pipe.local_task_layers
-        surrender_row.prop(
-            transfer_data_item, "surrender", text="", icon=surrender_icon
-        )
+        surrender_row.prop(transfer_data_item, "surrender", text="", icon=surrender_icon)
 
 
 def draw_transfer_data(

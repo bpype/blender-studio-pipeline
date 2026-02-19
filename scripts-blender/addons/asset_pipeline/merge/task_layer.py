@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from .. import constants
-from .. import config
+
+from .. import config, constants
 
 
-def get_default_task_layer_owner(td_type: str, name="") -> [str, bool]:
+def get_default_task_layer_owner(td_type: str, name="") -> tuple[str, bool] | None:
     if td_type == constants.ATTRIBUTE_KEY:
         if name in config.ATTRIBUTE_DEFAULTS:
             return (

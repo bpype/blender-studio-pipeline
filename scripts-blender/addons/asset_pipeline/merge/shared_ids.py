@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from bpy_extras.id_map_utils import get_id_reference_map, get_all_referenced_ids
-from .util import get_fundamental_id_type
+from bpy_extras.id_map_utils import get_all_referenced_ids, get_id_reference_map
+
 from .. import constants
+from .util import get_fundamental_id_type
 
 
 def get_shared_ids(collection: bpy.types.Collection) -> list[bpy.types.ID]:
@@ -22,8 +23,7 @@ def get_shared_ids(collection: bpy.types.Collection) -> list[bpy.types.ID]:
     return [
         id
         for id in all_ids_of_coll
-        if (isinstance(id, bpy.types.NodeTree) or isinstance(id, bpy.types.Image))
-        and id.library is None
+        if (isinstance(id, bpy.types.NodeTree) or isinstance(id, bpy.types.Image)) and id.library is None
     ]
 
 

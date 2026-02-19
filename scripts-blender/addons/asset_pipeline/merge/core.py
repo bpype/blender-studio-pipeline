@@ -2,34 +2,36 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import time
+from pathlib import Path
+
 import bpy
+
+from .. import constants, logging
 from ..merge.naming import task_layer_prefix_transfer_data_update
 from .asset_mapping import AssetTransferMapping
-from .transfer_data.transfer_core import (
-    init_transfer_data,
-    transfer_data_is_missing,
-    apply_transfer_data,
-    transfer_data_clean,
-)
-from .transfer_data.transfer_util import (
-    transfer_data_add_entry,
-    simplify,
-)
 from .naming import (
+    get_id_type_name,
     merge_add_suffix_to_hierarchy,
     merge_remove_suffix_from_hierarchy,
-    get_id_type_name,
+)
+from .transfer_data.transfer_core import (
+    apply_transfer_data,
+    init_transfer_data,
+    transfer_data_clean,
+    transfer_data_is_missing,
 )
 from .transfer_data.transfer_functions.transfer_function_util.active_indexes import (
-    transfer_active_uv_layer_index,
     transfer_active_color_attribute_index,
+    transfer_active_uv_layer_index,
 )
 from .transfer_data.transfer_functions.transfer_function_util.armature import (
     reset_armature,
 )
-from pathlib import Path
-from .. import constants, logging
-import time
+from .transfer_data.transfer_util import (
+    simplify,
+    transfer_data_add_entry,
+)
 
 
 def ownership_transfer_data_cleanup(
@@ -157,9 +159,7 @@ def remap_user(source_datablock: bpy.types.ID, target_datablock: bpy.types.ID) -
         target_datablock (bpy.types.ID): datablock that will replace the source
     """
     logger = logging.get_logger()
-    logger.debug(
-        f"Remapping {source_datablock.rna_type.name}: {source_datablock.name} to {target_datablock.name}"
-    )
+    logger.debug(f"Remapping {source_datablock.rna_type.name}: {source_datablock.name} to {target_datablock.name}")
     source_datablock.user_remap(target_datablock)
     source_datablock.name += "_Users_Remapped"
 
@@ -246,9 +246,7 @@ def merge_task_layer(
     for _, index_map_item in map.index_map.items():
         target_obj = index_map_item.get('target_obj')
         transfer_active_uv_layer_index(target_obj, index_map_item.get('active_uv_name'))
-        transfer_active_color_attribute_index(
-            target_obj, index_map_item.get('active_color_attribute_name')
-        )
+        transfer_active_color_attribute_index(target_obj, index_map_item.get('active_color_attribute_name'))
     index_time = time.time()
     profiles.add((index_time - obj_remap_time), "INDEXES")
 

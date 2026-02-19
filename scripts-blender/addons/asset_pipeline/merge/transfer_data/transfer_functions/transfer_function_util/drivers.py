@@ -4,9 +4,8 @@
 
 import bpy
 
-def copy_driver(
-    from_fcurve: bpy.types.FCurve, target: bpy.types.ID, data_path=None, index=None
-) -> bpy.types.FCurve:
+
+def copy_driver(from_fcurve: bpy.types.FCurve, target: bpy.types.ID, data_path=None, index=None) -> bpy.types.FCurve:
     """Copy an existing FCurve containing a driver to a new ID, by creating a copy
     of the existing driver on the target ID.
 
@@ -23,7 +22,7 @@ def copy_driver(
     if not target.animation_data:
         target.animation_data_create()
 
-    new_fc = target.animation_data.drivers.from_existing(src_driver = from_fcurve)
+    new_fc = target.animation_data.drivers.from_existing(src_driver=from_fcurve)
 
     if data_path:
         new_fc.data_path = data_path
@@ -58,9 +57,7 @@ def find_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> list[b
     return found_drivers
 
 
-def transfer_drivers(
-    source_id: bpy.types.ID, target_id: bpy.types.ID, target_type: str, target_name: str
-) -> None:
+def transfer_drivers(source_id: bpy.types.ID, target_id: bpy.types.ID, target_type: str, target_name: str) -> None:
     """Transfers Drivers from one ID to another, will copy and new drivres from source to from
     source to target, and will remove any drivers on the target that are not in the source.
 
