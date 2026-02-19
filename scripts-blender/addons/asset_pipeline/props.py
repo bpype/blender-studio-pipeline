@@ -155,7 +155,7 @@ class AssetPipeline(bpy.types.PropertyGroup):
     task_layer_config_type: EnumProperty(
         name="Task Layer Preset",
         items=get_task_layer_presets,
-    )  # type: ignore
+    )
 
     temp_file: StringProperty(name="Pre-Sync Backup")
     source_file: StringProperty(name="File that started Sync")
@@ -199,7 +199,7 @@ class AssetPipeline(bpy.types.PropertyGroup):
         search=get_asset_catalogs_search,
         search_options={'SORT'},
         description="Select Asset Library Catalog for the current Asset, this value will be updated each time you Push to an 'Active' Publish",
-    )  # type: ignore
+    )
 
 
 @bpy.app.handlers.persistent

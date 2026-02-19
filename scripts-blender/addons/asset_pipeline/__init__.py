@@ -3,28 +3,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import importlib
-from bpy.utils import register_class, unregister_class
 from types import ModuleType
 
+from bpy.utils import register_class, unregister_class
+
 from . import (
-    ui,
-    ops,
-    opscore,
-    props,
-    prefs,
-    merge,
     asset_catalog,
+    blender_log,
     config,
     hooks,
     images,
     logging,
+    merge,
+    operators,
+    prefs,
+    props,
+    ui,
     utils,
 )
 
 modules = [
     ui,
-    ops,
-    opscore,
+    operators,
     props,
     prefs,
     merge,
@@ -34,6 +34,7 @@ modules = [
     images,
     logging,
     utils,
+    blender_log,
 ]
 
 # ----------------REGISTER--------------.
@@ -57,7 +58,9 @@ def recurive_register(modules: list[ModuleType], register: bool):
                 try:
                     register_func(c)
                 except Exception as e:
-                    print(f"{__package__}: Failed to {un}register class: {c.__name__}")
+                    print(
+                        f"{__package__}: Failed to {un}register class: {c.__name__}"
+                    )
                     print(e)
 
         if hasattr(m, 'modules'):
