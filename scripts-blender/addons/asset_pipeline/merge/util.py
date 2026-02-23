@@ -2,10 +2,12 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Any, Tuple, Generator, List
-from .. import constants
-import bpy
+from typing import Any, Generator, List, Tuple
 
+import bpy
+from bpy.types import bpy_prop_collection
+
+from .. import constants
 
 ####################################
 ############# ID Stuff #############
@@ -57,7 +59,7 @@ def get_fundamental_id_type(datablock: bpy.types.ID) -> Any:
     return type(datablock).mro()[-4]
 
 
-def get_storage_of_id(datablock: bpy.types.ID) -> 'bpy_prop_collection':
+def get_storage_of_id(datablock: bpy.types.ID) -> bpy_prop_collection:
     """Return the storage collection property of the datablock.
     Eg. for an object, returns bpy.data.objects.
     """
@@ -68,7 +70,9 @@ def get_storage_of_id(datablock: bpy.types.ID) -> 'bpy_prop_collection':
     for typ, _typ_str, container_str in id_info:
         if fundamental_type == typ:
             return getattr(bpy.data, container_str)
-    assert False, "Failed to find the type of this ID: " + str(datablock) + "with fundamental type: " + str(fundamental_type)
+    assert False, (
+        "Failed to find the type of this ID: " + str(datablock) + "with fundamental type: " + str(fundamental_type)
+    )
 
 
 def traverse_collection_tree(

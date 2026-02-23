@@ -3,25 +3,25 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
+
+from .... import constants, logging
+from ...naming import task_layer_prefix_name_get
+from ...task_layer import get_transfer_data_owner
 from ..transfer_util import (
+    find_ownership_data,
     transfer_data_clean,
     transfer_data_item_is_missing,
-    find_ownership_data,
 )
-from ...naming import task_layer_prefix_name_get
-from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
-from ...task_layer import get_transfer_data_owner
-from .... import constants, logging
+from .transfer_function_util.drivers import cleanup_drivers, transfer_drivers
 
 
 def constraints_clean(obj):
-    cleaned_names = transfer_data_clean(
-        obj=obj, data_list=obj.constraints, td_type_key=constants.CONSTRAINT_KEY
-    )
+    cleaned_names = transfer_data_clean(obj=obj, data_list=obj.constraints, td_type_key=constants.CONSTRAINT_KEY)
 
     # Remove Drivers that match the cleaned item's name
     for name in cleaned_names:
         cleanup_drivers(obj, 'constraints', name)
+
 
 def constraint_is_missing(transfer_data_item):
     return transfer_data_item_is_missing(

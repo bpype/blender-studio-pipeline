@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from .attributes import transfer_attribute
-from ..transfer_util import find_ownership_data
-from ...task_layer import get_transfer_data_owner
+
 from .... import constants
+from ...task_layer import get_transfer_data_owner
+from ..transfer_util import find_ownership_data
+from .attributes import transfer_attribute
 from .transfer_function_util.proximity_core import (
     is_obdata_identical,
 )
@@ -30,10 +31,7 @@ def materials_clean(obj):
 
 
 def materials_is_missing(transfer_data_item):
-    if (
-        transfer_data_item.type == constants.MATERIAL_SLOT_KEY
-        and len(transfer_data_item.id_data.material_slots) == 0
-    ):
+    if transfer_data_item.type == constants.MATERIAL_SLOT_KEY and len(transfer_data_item.id_data.material_slots) == 0:
         return True
 
 

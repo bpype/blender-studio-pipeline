@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import bmesh
 import bpy
 import mathutils
-import bmesh
 import numpy as np
 
 
@@ -32,9 +32,7 @@ def closest_tri_on_face(tris_dict, face, p):
     dist = []
     tris = []
     for tri in tris_dict[face]:
-        point = mathutils.geometry.closest_point_on_tri(
-            p, *[tri[i].vert.co for i in range(3)]
-        )
+        point = mathutils.geometry.closest_point_on_tri(p, *[tri[i].vert.co for i in range(3)])
         tris.append(tri)
         points.append(point)
         dist.append((point - p).length)
@@ -50,15 +48,13 @@ def closest_edge_on_face_to_line(face, p1, p2, skip_edges=None):
         if skip_edges:
             if edge in skip_edges:
                 continue
-        res = mathutils.geometry.intersect_line_line(
-            p1, p2, *[edge.verts[i].co for i in range(2)]
-        )
+        res = mathutils.geometry.intersect_line_line(p1, p2, *[edge.verts[i].co for i in range(2)])
         if not res:
             continue
         (p_traversal, p_edge) = res
-        frac_1 = (edge.verts[1].co - edge.verts[0].co).dot(
-            p_edge - edge.verts[0].co
-        ) / (edge.verts[1].co - edge.verts[0].co).length ** 2.0
+        frac_1 = (edge.verts[1].co - edge.verts[0].co).dot(p_edge - edge.verts[0].co) / (
+            edge.verts[1].co - edge.verts[0].co
+        ).length ** 2.0
         frac_2 = (p2 - p1).dot(p_traversal - p1) / (p2 - p1).length ** 2.0
         if (frac_1 >= 0 and frac_1 <= 1) and (frac_2 >= 0 and frac_2 <= 1):
             return edge
@@ -83,35 +79,24 @@ def edge_data_split(edge, data_layer, data_suffix: str):
     return False
 
 
-def interpolate_data_from_face(
-    bm_source, tris_dict, face, p, data_layer_source, data_suffix=''
-):
+def interpolate_data_from_face(bm_source, tris_dict, face, p, data_layer_source, data_suffix=''):
     """Returns interpolated value of a data layer within a face closest to a point."""
 
     (tri, point) = closest_tri_on_face(tris_dict, face, p)
     if not tri:
         return None
-    weights = mathutils.interpolate.poly_3d_calc(
-        [tri[i].vert.co for i in range(3)], point
-    )
+    weights = mathutils.interpolate.poly_3d_calc([tri[i].vert.co for i in range(3)], point)
 
     if not data_suffix:
-        cols_weighted = [
-            weights[i] * np.array(data_layer_source[tri[i].index]) for i in range(3)
-        ]
+        cols_weighted = [weights[i] * np.array(data_layer_source[tri[i].index]) for i in range(3)]
         col = sum(np.array(cols_weighted))
     else:
-        cols_weighted = [
-            weights[i] * np.array(getattr(data_layer_source[tri[i].index], data_suffix))
-            for i in range(3)
-        ]
+        cols_weighted = [weights[i] * np.array(getattr(data_layer_source[tri[i].index], data_suffix)) for i in range(3)]
         col = sum(np.array(cols_weighted))
     return col
 
 
-def transfer_corner_data(
-    obj_source, obj_target, data_layer_source, data_layer_target, data_suffix=''
-):
+def transfer_corner_data(obj_source, obj_target, data_layer_source, data_layer_target, data_suffix=''):
     """
     Transfers interpolated face corner data from data layer of a source object to data layer of a
     target object, while approximately preserving data seams (e.g. necessary for UV Maps).
@@ -167,9 +152,7 @@ def transfer_corner_data(
 
                     # set new source face to other face belonging to edge
                     face_source_int = (
-                        edge.link_faces[1]
-                        if edge.link_faces[1] is not face_source_int
-                        else edge.link_faces[0]
+                        edge.link_faces[1] if edge.link_faces[1] is not face_source_int else edge.link_faces[0]
                     )
 
                     # avoid looping behaviour
@@ -178,9 +161,7 @@ def transfer_corner_data(
                         break
 
             # interpolate data from selected face
-            col = interpolate_data_from_face(
-                bm_source, tris_dict, face_source_int, p, data_layer_source, data_suffix
-            )
+            col = interpolate_data_from_face(bm_source, tris_dict, face_source_int, p, data_layer_source, data_suffix)
             if col is None:
                 continue
             if not data_suffix:
@@ -214,9 +195,7 @@ def is_curve_identical(curve_a: bpy.types.Curve, curve_b: bpy.types.Curve) -> bo
     return True
 
 
-def is_obdata_identical(
-    a: bpy.types.Object or bpy.types.Mesh, b: bpy.types.Object or bpy.types.Mesh
-) -> bool:
+def is_obdata_identical(a: bpy.types.Object or bpy.types.Mesh, b: bpy.types.Object or bpy.types.Mesh) -> bool:
     """Checks if two objects have matching topology (efficiency over exactness)"""
     if type(a) == bpy.types.Object:
         a = a.data

@@ -2,11 +2,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
-from ..naming import merge_get_basename, task_layer_prefix_basename_get
-from ..task_layer import get_transfer_data_owner
 import contextlib
+
+import bpy
+
 from ...props import AssetTransferData
+from ..naming import merge_get_basename
+from ..task_layer import get_transfer_data_owner
+
 
 def find_ownership_data(
     transfer_data: bpy.types.CollectionProperty,
@@ -47,9 +50,7 @@ def transfer_data_add_entry(
     return transfer_data_item
 
 
-def transfer_data_clean(
-    obj: bpy.types.Object, data_list: bpy.types.CollectionProperty, td_type_key: str
-):
+def transfer_data_clean(obj: bpy.types.Object, data_list: bpy.types.CollectionProperty, td_type_key: str):
     """Removes data if a transfer_data_item doesn't exist but the data does exist
     Args:
         obj (bpy.types.Object): Object containing Transferable Data
@@ -83,9 +84,7 @@ def transfer_data_item_is_missing(
     Returns:
         bool: Returns True if transfer_data_item is missing
     """
-    if transfer_data_item.type == td_type_key and not data_list.get(
-        transfer_data_item["name"]
-    ):
+    if transfer_data_item.type == td_type_key and not data_list.get(transfer_data_item["name"]):
         return True
 
 
@@ -178,6 +177,7 @@ def activate_shapekey(objs: set, sk_name: str):
         for obj, val in old_values.items():
             obj.data.shape_keys.key_blocks[sk_name].value = val
 
+
 @contextlib.contextmanager
 def disable_modifiers(objs: set, mod_types: set[str]):
     mods_to_enable = {obj: [] for obj in objs}
@@ -194,6 +194,7 @@ def disable_modifiers(objs: set, mod_types: set[str]):
             for mod_name in mod_names:
                 obj.modifiers[mod_name].show_viewport = True
 
+
 @contextlib.contextmanager
 def enable_modifiers(obj, modifiers):
     modifiers_to_disable = []
@@ -209,14 +210,15 @@ def enable_modifiers(obj, modifiers):
         if not mod.show_viewport:
             modifiers_to_disable.append(mod)
             mod.show_viewport = True
-    
+
     yield
 
     for fc in fcurves_to_enable:
         fc.mute = False
-    
+
     for mod in modifiers_to_disable:
         mod.show_viewport = False
+
 
 @contextlib.contextmanager
 def simplify(scene):
@@ -225,7 +227,7 @@ def simplify(scene):
     """
     orig_simplify = scene.render.use_simplify
     levels = scene.render.simplify_subdivision
-    
+
     scene.render.use_simplify = True
     scene.render.simplify_subdivision = 0
 

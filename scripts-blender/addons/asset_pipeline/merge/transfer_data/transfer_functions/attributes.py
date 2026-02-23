@@ -2,21 +2,22 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import bmesh
 import bpy
 import mathutils
-import bmesh
 import numpy as np
+
+from .... import constants, logging
+from ...naming import merge_get_basename
+from ...task_layer import get_transfer_data_owner
+from ..transfer_util import find_ownership_data
 from .transfer_function_util.proximity_core import (
-    tris_per_face,
     closest_face_to_point,
     closest_tri_on_face,
     is_obdata_identical,
     transfer_corner_data,
+    tris_per_face,
 )
-from ..transfer_util import find_ownership_data
-from ...naming import merge_get_basename
-from ...task_layer import get_transfer_data_owner
-from .... import constants, logging
 
 
 def attributes_get_editable(attributes):
@@ -59,10 +60,7 @@ def attribute_is_missing(transfer_data_item):
         return
     attributes = attributes_get_editable(obj.data.attributes)
     attribute_names = [attribute.name for attribute in attributes]
-    if (
-        transfer_data_item.type == constants.ATTRIBUTE_KEY
-        and not transfer_data_item["name"] in attribute_names
-    ):
+    if transfer_data_item.type == constants.ATTRIBUTE_KEY and transfer_data_item["name"] not in attribute_names:
         return True
 
 
@@ -76,9 +74,7 @@ def init_attributes(scene, obj):
         # Only add new ownership transfer_data_item if vertex group doesn't have an owner
         ownership_data = find_ownership_data(transfer_data, atttribute.name, td_type_key)
         if not ownership_data:
-            task_layer_owner, auto_surrender = get_transfer_data_owner(
-                asset_pipe, td_type_key, atttribute.name
-            )
+            task_layer_owner, auto_surrender = get_transfer_data_owner(asset_pipe, td_type_key, atttribute.name)
             asset_pipe.add_temp_transfer_data(
                 name=atttribute.name,
                 owner=task_layer_owner,
@@ -116,17 +112,13 @@ def transfer_attribute(
         return
 
     if not is_obdata_identical(source_obj, target_obj):
-        proximity_transfer_single_attribute(
-            source_obj, target_obj, source_attribute, target_attribute
-        )
+        proximity_transfer_single_attribute(source_obj, target_obj, source_attribute, target_attribute)
         return
 
     for source_data_item in source_attribute.data.items():
         index = source_data_item[0]
         source_data = source_data_item[1]
-        keys = set(source_data.bl_rna.properties.keys()) - set(
-            bpy.types.Attribute.bl_rna.properties.keys()
-        )
+        keys = set(source_data.bl_rna.properties.keys()) - set(bpy.types.Attribute.bl_rna.properties.keys())
         for key in list(keys):
             target_data = target_attribute.data[index]
             setattr(target_data, key, getattr(source_data, key))
@@ -189,9 +181,7 @@ def proximity_transfer_single_attribute(
         return
 
     domain = source_attribute.domain
-    if (
-        domain == 'POINT'
-    ):  # TODO: deduplicate interpolated point domain proximity transfer
+    if domain == 'POINT':  # TODO: deduplicate interpolated point domain proximity transfer
         bm_source = bmesh.new()
         bm_source.from_mesh(source_obj.data)
         bm_source.faces.ensure_lookup_table()
@@ -207,25 +197,16 @@ def proximity_transfer_single_attribute(
             (tri, point) = closest_tri_on_face(tris_dict, face, p)
             if not tri:
                 continue
-            weights = mathutils.interpolate.poly_3d_calc(
-                [tri[i].vert.co for i in range(3)], point
-            )
+            weights = mathutils.interpolate.poly_3d_calc([tri[i].vert.co for i in range(3)], point)
 
             if data_sfx in ['color']:
                 vals_weighted = [
-                    weights[i]
-                    * (
-                        np.array(
-                            getattr(source_attribute.data[tri[i].vert.index], data_sfx)
-                        )
-                    )
+                    weights[i] * (np.array(getattr(source_attribute.data[tri[i].vert.index], data_sfx)))
                     for i in range(3)
                 ]
             else:
                 vals_weighted = [
-                    weights[i]
-                    * (getattr(source_attribute.data[tri[i].vert.index], data_sfx))
-                    for i in range(3)
+                    weights[i] * (getattr(source_attribute.data[tri[i].vert.index], data_sfx)) for i in range(3)
                 ]
             setattr(target_attribute.data[i], data_sfx, sum(np.array(vals_weighted)))
         return

@@ -58,7 +58,7 @@ def reset_armature(
                 if not property_settings:
                     continue
                 property_settings = property_settings.as_dict()
-                if not 'default' in property_settings:
+                if 'default' not in property_settings:
                     continue
             except TypeError:
                 # Some properties don't support UI data, and so don't have a default value. (like addon PropertyGroups)

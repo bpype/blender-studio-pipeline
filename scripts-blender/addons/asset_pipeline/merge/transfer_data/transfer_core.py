@@ -2,32 +2,32 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
 import time
+from typing import List
+
+import bpy
+
+from ... import constants, logging
 from .transfer_functions import (
     attributes,
     constraints,
     custom_props,
+    materials,
     modifiers,
     parent,
     shape_keys,
     vertex_groups,
-    materials,
 )
-from typing import List
-from ... import constants, logging
 from .transfer_util import (
-    transfer_data_add_entry,
     find_ownership_data,
-    link_objs_to_collection,
     isolate_collection,
+    link_objs_to_collection,
+    transfer_data_add_entry,
 )
 
 
 # TODO use logging module here
-def copy_transfer_data_ownership(
-    td_type_key: str, target_obj: bpy.types.Object, transfer_data_dict: dict
-) -> None:
+def copy_transfer_data_ownership(td_type_key: str, target_obj: bpy.types.Object, transfer_data_dict: dict) -> None:
     """Copy Transferable Data item to object if non entry exists
 
     Args:
@@ -198,9 +198,7 @@ def apply_transfer_data_items(
             )
     if td_type_key == constants.PARENT_KEY:
         for transfer_data_dict in transfer_data_dicts:
-            logger.debug(		
-                    f"Transferring Parent Relationship from {source_obj.name} to {target_obj.name}."		
-                )
+            logger.debug(f"Transferring Parent Relationship from {source_obj.name} to {target_obj.name}.")
             parent.transfer_parent(
                 target_obj=target_obj,
                 source_obj=source_obj,
@@ -229,8 +227,6 @@ def apply_transfer_data(context: bpy.types.Context, transfer_data_map) -> None:
             with link_objs_to_collection(set([target_obj, source_obj]), td_col):
                 for td_type_key, td_dicts in td_types.items():
                     start_time = time.time()
-                    apply_transfer_data_items(
-                        context, source_obj, target_obj, td_type_key, td_dicts
-                    )
+                    apply_transfer_data_items(context, source_obj, target_obj, td_type_key, td_dicts)
                     profiler.add(time.time() - start_time, td_type_key)
     bpy.data.collections.remove(td_col)

@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
-from . import prefs, constants
+from . import constants
+from .utils import get_addon_prefs
 
 
 def get_logger(name="asset_pipeline"):
     logger = logging.getLogger(name)
-    addon_prefs = prefs.get_addon_prefs()
+    addon_prefs = get_addon_prefs()
     logging_level = int(addon_prefs.logger_level)
     # Return logger if it has already been setup
     if len(logger.handlers) > 0:

@@ -4,8 +4,10 @@
 
 import bpy
 from bpy.types import Collection
-from .transfer_data.transfer_functions.shape_keys import shape_key_set_active
+
 from .. import prefs
+from .transfer_data.transfer_functions.shape_keys import shape_key_set_active
+
 
 class Preserve:
     def __init__(self, local_col: Collection) -> None:
@@ -60,15 +62,13 @@ class Preserve:
                 indexes['vertex_group'] = obj.vertex_groups.active.name
 
             if (
-                getattr(obj.data, "color_attributes", None) and 
-                getattr(obj.data.color_attributes, "active_color", None) and
-                len(obj.data.color_attributes) > 0
+                getattr(obj.data, "color_attributes", None)
+                and getattr(obj.data.color_attributes, "active_color", None)
+                and len(obj.data.color_attributes) > 0
             ):
                 indexes['color_attribute'] = obj.data.color_attributes.active_color_name
 
-            if getattr(obj.data, "attributes", None) and getattr(
-                obj.data.attributes, "active", None
-            ):
+            if getattr(obj.data, "attributes", None) and getattr(obj.data.attributes, "active", None):
                 indexes['attribute'] = obj.data.attributes.active.name
 
             if getattr(obj.data, "shape_keys", None) and getattr(obj, "active_shape_key", None):

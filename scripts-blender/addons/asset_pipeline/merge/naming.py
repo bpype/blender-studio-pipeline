@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from bpy_extras.id_map_utils import get_id_reference_map, get_all_referenced_ids
-from .util import get_storage_of_id
-from .. import constants, config
-from .util import data_type_from_transfer_data_key
+from bpy_extras.id_map_utils import get_all_referenced_ids, get_id_reference_map
+
+from .. import config, constants
+from .util import data_type_from_transfer_data_key, get_storage_of_id
 
 
 def merge_get_target_suffix(suffix: str) -> str:
@@ -44,12 +44,8 @@ def merge_get_target_name(name: str) -> str:
 
 def merge_get_basename(name: str) -> str:
     """Returns the name of an asset without its suffix"""
-    if name.endswith(constants.LOCAL_SUFFIX) or name.endswith(
-        constants.EXTERNAL_SUFFIX
-    ):
-        return constants.MERGE_DELIMITER.join(
-            name.split(constants.MERGE_DELIMITER)[:-1]
-        )
+    if name.endswith(constants.LOCAL_SUFFIX) or name.endswith(constants.EXTERNAL_SUFFIX):
+        return constants.MERGE_DELIMITER.join(name.split(constants.MERGE_DELIMITER)[:-1])
     return name
 
 
@@ -66,23 +62,16 @@ def merge_remove_suffix_from_hierarchy(collection: bpy.types.Collection) -> None
     for action in bpy.data.actions:
         datablocks.add(action)
     for db in datablocks:
-        if db == None:
+        if db is None:
             # Not sure why this would happen.
-            raise Exception(
-                f"None value in datablock list"
-            )
+            raise Exception("None value in datablock list")
         if db.library:
             # Don't rename linked datablocks.
             continue
-        try:
-            db.name = merge_get_basename(db.name)
-        except:
-            pass
+        db.name = merge_get_basename(db.name)
 
 
-def merge_add_suffix_to_hierarchy(
-    collection: bpy.types.Collection, suffix_base: str
-) -> None:
+def merge_add_suffix_to_hierarchy(collection: bpy.types.Collection, suffix_base: str) -> None:
     """Add a suffix to the names of all datablocks referenced by a collection,
     itself included.
 
@@ -97,27 +86,21 @@ def merge_add_suffix_to_hierarchy(
     datablocks = get_all_referenced_ids(collection, ref_map)
     datablocks.add(collection)
     for db in datablocks:
-        if db == None:
+        if db is None:
             # Not sure why this would happen.
             continue
         if len(db.name) > 59:
-            raise Exception(
-                f"Datablock name too long, must be max 59 characters: {db.name}"
-            )
+            raise Exception(f"Datablock name too long, must be max 59 characters: {db.name}")
         if db.library:
             # Don't rename linked datablocks.
             continue
         collision_db = get_storage_of_id(db).get(db.name + suffix)
         if collision_db:
             collision_db.name += f'{constants.MERGE_DELIMITER}OLD'
-        try:
-            new_name = db.name + suffix
-            db.name = new_name
-            assert (
-                db.name == new_name
-            ), "This should never happen here, unless some add-on suffix is >3 characters. Avoid!"
-        except:
-            pass
+
+        new_name = db.name + suffix
+        db.name = new_name
+        assert db.name == new_name, "Failed to rename datablock. Should never happen!"
 
 
 def asset_prefix_name_get(name: str) -> str:
@@ -134,9 +117,7 @@ def asset_prefix_name_get(name: str) -> str:
     asset_pipe = bpy.context.scene.asset_pipeline
     if name.startswith(asset_pipe.prefix + constants.NAME_DELIMITER):
         return name
-    prefix = (
-        asset_pipe.prefix + constants.NAME_DELIMITER if asset_pipe.prefix != "" else ""
-    )
+    prefix = asset_pipe.prefix + constants.NAME_DELIMITER if asset_pipe.prefix != "" else ""
     return prefix + name
 
 
@@ -170,7 +151,7 @@ def task_layer_prefix_basename_get(name: str) -> str:
     for task_layer_key in config.TASK_LAYER_TYPES:
         prefix = config.TASK_LAYER_TYPES[task_layer_key] + constants.NAME_DELIMITER
         if name.startswith(prefix):
-            return name[len(prefix):]
+            return name[len(prefix) :]
     return name
 
 

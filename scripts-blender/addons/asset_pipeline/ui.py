@@ -2,23 +2,24 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from pathlib import Path
+
 import bpy
 from addon_utils import check as check_addon
+from bpy.types import Context, Panel, UILayout
 
-from pathlib import Path
-from .merge.transfer_data.transfer_ui import draw_transfer_data
-from .merge.task_layer import draw_task_layer_selection
-from .config import verify_task_layer_json_data
-from .prefs import get_addon_prefs
 from . import constants
+from .config import verify_task_layer_json_data
 from .merge.publish import is_staged_publish
-from bpy.types import UILayout, Context, Panel
+from .merge.task_layer import draw_task_layer_selection
+from .merge.transfer_data.transfer_ui import draw_transfer_data
+from .prefs import get_addon_prefs
 
 
 class ASSETPIPE_PT_sync(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Asset Management"
 
     def draw_collection_selection(self, layout: UILayout, context: Context) -> None:
@@ -96,7 +97,7 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
 class ASSETPIPE_PT_publish(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Publish"
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
@@ -117,7 +118,7 @@ class ASSETPIPE_PT_publish(Panel):
 class ASSETPIPE_PT_working_files(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Working Files"
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
@@ -135,7 +136,7 @@ class ASSETPIPE_PT_working_files(Panel):
 class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Tools"
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
@@ -160,7 +161,7 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
 class ASSETPIPE_PT_sync_advanced(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Advanced"
     bl_parent_id = "ASSETPIPE_PT_sync"
     bl_options = {'DEFAULT_CLOSED'}
@@ -193,7 +194,7 @@ class ASSETPIPE_PT_sync_advanced(bpy.types.Panel):
 class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Assset Pipeline'
+    bl_category = 'Asset Pipeline'
     bl_label = "Ownership Inspector"
 
     def draw(self, context: bpy.types.Context) -> None:
@@ -235,21 +236,11 @@ class ASSETPIPE_PT_ownership_inspector(bpy.types.Panel):
         draw_transfer_data(context, transfer_data, box)
 
 
-classes = (
+registry = [
     ASSETPIPE_PT_sync,
     ASSETPIPE_PT_sync_advanced,
     ASSETPIPE_PT_working_files,
     ASSETPIPE_PT_sync_tools,
     ASSETPIPE_PT_publish,
     ASSETPIPE_PT_ownership_inspector,
-)
-
-
-def register():
-    for i in classes:
-        bpy.utils.register_class(i)
-
-
-def unregister():
-    for i in classes:
-        bpy.utils.unregister_class(i)
+]

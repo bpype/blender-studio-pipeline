@@ -161,8 +161,10 @@ Extends the functionality of the Toon Chain. In addition to stretch controls, th
     Create a root control for this rig component. This is required for the Hinge Toggle.
 - #### Hinge
     Set up a hinge toggle. This will add an option to the rig UI. When FK Hinge is enabled, the FK chain doesn't inherit rotation from its parent.
-- #### Create Curl Control
+- #### Curl Control
     Create a control that lets you easily curl this FK chain. Can be useful for tails and fingers and such. Requires a root bone for space calculations.
+- #### Curl Each
+    Make each FK control inherit rotation from its parent. This can be combined with the "Curl Control" parameter above, but it will change its behaviour and isn't really recommended.
 - #### Counter-Rotate Stretch Controls
     Amount by which the STR controls should "resist" the rotation they inherit from FK bones. A value of 0.5 is useful for smooth chains.
 - #### Inherit Scale
@@ -326,6 +328,8 @@ Extends the functionality of the Generic Limb component with footroll. This requ
     Whether to create a foot roll setup.
 - #### Heel Pivot
     If you are using foot roll, you can specify a bone whose location will be used as the pivot point for when the foot is rolled backwards.
+- #### Forefoot Control
+    Create an additional IK control at the ball of the foot.
 
 </details>
 

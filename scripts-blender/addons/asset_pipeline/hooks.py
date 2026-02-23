@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# TODO: This code should be de-duplicated between here and Blender Kitsu, 
+# TODO: This code should be de-duplicated between here and Blender Kitsu,
 # and moved to blender-studio-utils repo, then added to this repo as a submodule.
 
 import bpy
@@ -55,7 +55,7 @@ HookFunction = typing.Callable[[typing.Any], None]
 def _match_hook_parameter(
     hook_criteria: MatchCriteriaType, match_query: typing.Optional[str]
 ) -> bool:
-    if hook_criteria == None:
+    if hook_criteria is None:
         return True
     if hook_criteria == DoNotMatch:
         return match_query is None
@@ -98,13 +98,14 @@ class Hooks:
         self, merge_mode: str = None, merge_status: str = None, *args, **kwargs
     ) -> None:
         for hook in self._hooks:
-            if self.matches(
-                hook, merge_mode=merge_mode, merge_status=merge_status
-            ):
+            if self.matches(hook, merge_mode=merge_mode, merge_status=merge_status):
                 hook(*args, **kwargs)
 
     def load_hooks(self, context):
-        hook_dirs = [get_production_hook_dir(), get_asset_hook_dir()] # TODO: This should be a function param.
+        hook_dirs = [
+            get_production_hook_dir(),
+            get_asset_hook_dir(),
+        ]  # TODO: This should be a function param.
         for hook_dir in hook_dirs:
             if not hook_dir or not hook_dir.exists():
                 logger.debug(f"Hooks directory not found: {hook_dir}")
@@ -141,11 +142,14 @@ class Hooks:
                 continue
             self.register(module_item)
 
+
 def get_production_hook_dir() -> Path:
     root_dir = Path(prefs.project_root_dir_get())
     prod_dir = root_dir.joinpath("svn/pro/")
     if not prod_dir.exists():
-        logger.warning(f"Production directory {str(prod_dir)} not found. Production hooks will not work.")
+        logger.warning(
+            f"Production directory {str(prod_dir)} not found. Production hooks will not work."
+        )
         return
     hook_dir = prod_dir.joinpath("config/asset_pipeline")
     hook_dir.mkdir(parents=True, exist_ok=True)
@@ -154,6 +158,7 @@ def get_production_hook_dir() -> Path:
 
 def get_asset_hook_dir() -> Path:
     return Path(bpy.data.filepath).parent
+
 
 def hook(
     merge_mode: MatchCriteriaType = None,

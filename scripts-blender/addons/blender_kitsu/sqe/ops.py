@@ -703,9 +703,23 @@ class KITSU_OT_sqe_multi_edit_strip(bpy.types.Operator):
             # Run shot name resolver.
             shot = opsdata.resolve_pattern(shot_pattern, var_lookup_table)
 
+            if not shot:
+                failed.append(strip)
+                logger.error(
+                    "Strip: %s failed to resolve shot name from pattern: %s",
+                    strip.name,
+                    shot_pattern,
+                )
+                continue
+
             # Set metadata.
             strip.kitsu.sequence_name = sequence
-            strip.kitsu.sequence_id = context.window_manager.selected_sequence_id
+            strip.kitsu.manual_shot_name = shot
+
+            selected_sequence_id = context.window_manager.selected_sequence_id
+            if selected_sequence_id:
+                strip.kitsu.sequence_id = selected_sequence_id
+
             strip.kitsu.shot_name = shot
             strip.name = shot
 

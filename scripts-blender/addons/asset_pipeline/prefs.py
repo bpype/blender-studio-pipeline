@@ -2,18 +2,15 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy, os
+import os
+
+import bpy
+from bpy.props import BoolProperty, EnumProperty, StringProperty
+
 from . import constants
 from .logging import get_logger
-from . import __package__ as base_package
+from .utils import get_addon_prefs
 
-def get_addon_prefs(context=None):
-    if not context:
-        context = bpy.context
-    if bpy.app.version >= (4, 2, 0) and base_package.startswith('bl_ext'):
-        return context.preferences.addons[base_package].preferences
-    else:
-        return context.preferences.addons[base_package.split(".")[0]].preferences
 
 def project_root_dir_get():
     prefs = get_addon_prefs()
@@ -23,21 +20,21 @@ def project_root_dir_get():
 class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    project_root_dir: bpy.props.StringProperty(  # type: ignore
+    project_root_dir: StringProperty(
         name="Project Root Directory",
         description="Root Directory of the Project, this should be the root directory `your_project_name/ that contains the SVN, Shared and Local folders`",
         default="/data/our_project/",
         subtype="DIR_PATH",
     )
 
-    custom_task_layers_dir: bpy.props.StringProperty(  # type: ignore
+    custom_task_layers_dir: StringProperty(
         name="Custom Task Layers",
         description="Specify directory to add additonal Task Layer Presets to use as templates when cerating new assets",
         default="",
         subtype="DIR_PATH",
     )
 
-    save_images_path: bpy.props.StringProperty(  # type: ignore
+    save_images_path: StringProperty(
         name="Save Images Path",
         description="Path to save un-saved images to, if left blank images will save in a called 'images' folder relative to the asset",
         default="",
@@ -48,7 +45,7 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         logger = get_logger()
         logger.handlers.clear()
 
-    logger_level: bpy.props.EnumProperty(  # type: ignore
+    logger_level: EnumProperty(
         name="Logging Level",
         description="Changes the level of detail of print statements in blender's console",
         default=1,
@@ -56,19 +53,19 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         update=update_logger_level,
     )
 
-    is_advanced_mode: bpy.props.BoolProperty(  # type: ignore
+    is_advanced_mode: BoolProperty(
         name="Advanced Mode",
         description="Show Advanced Options in Asset Pipeline Panels",
         default=False,
     )
 
-    preserve_action: bpy.props.BoolProperty(  # type: ignore
+    preserve_action: BoolProperty(
         name="Preserve Actions in Workfiles",
         description="Preserve Action Data-Blocks on Armatures in working files during Pull (this data will not be pushed to Sync Target)",
         default=False,
     )
 
-    preserve_indexes: bpy.props.BoolProperty(  # type: ignore
+    preserve_indexes: BoolProperty(
         name="Preserve Active Indexes in Workfiles",
         description=(
             "Preserve Active Indexes (Vertex Groups, Shape Keys, UV Maps, Color Attributes, Attributes) "
@@ -90,14 +87,6 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "is_advanced_mode")
 
 
-classes = (ASSET_PIPELINE_addon_preferences,)
-
-
-def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
-
-
-def unregister():
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+registry = [
+    ASSET_PIPELINE_addon_preferences,
+]

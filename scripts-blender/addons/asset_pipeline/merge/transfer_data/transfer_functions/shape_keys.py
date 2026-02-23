@@ -2,23 +2,24 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import bmesh
 import bpy
 import mathutils
-import bmesh
 import numpy as np
+
+from .... import constants, logging
+from ...naming import merge_get_basename
+from ..transfer_util import (
+    find_ownership_data,
+    transfer_data_item_init,
+    transfer_data_item_is_missing,
+)
+from .transfer_function_util.drivers import cleanup_drivers, transfer_drivers
 from .transfer_function_util.proximity_core import (
-    tris_per_face,
     closest_face_to_point,
     closest_tri_on_face,
+    tris_per_face,
 )
-from .transfer_function_util.drivers import transfer_drivers, cleanup_drivers
-from ..transfer_util import (
-    transfer_data_item_is_missing,
-    transfer_data_item_init,
-    find_ownership_data,
-)
-from ...naming import merge_get_basename
-from .... import constants, logging
 
 
 def shape_key_set_active(obj, shape_key_name):
@@ -146,11 +147,7 @@ def transfer_shape_key(
         weights = mathutils.interpolate.poly_3d_calc([tri[i].vert.co for i in range(3)], point)
 
         vals_weighted = [
-            weights[i]
-            * (
-                sk_source.data[tri[i].vert.index].co
-                - source_obj.data.vertices[tri[i].vert.index].co
-            )
+            weights[i] * (sk_source.data[tri[i].vert.index].co - source_obj.data.vertices[tri[i].vert.index].co)
             for i in range(3)
         ]
         val = mathutils.Vector(sum(np.array(vals_weighted)))
@@ -159,6 +156,4 @@ def transfer_shape_key(
     if source_obj.data.shape_keys is None:
         return
 
-    transfer_drivers(
-        source_obj.data.shape_keys, target_obj.data.shape_keys, 'key_blocks', shape_key_name
-    )
+    transfer_drivers(source_obj.data.shape_keys, target_obj.data.shape_keys, 'key_blocks', shape_key_name)

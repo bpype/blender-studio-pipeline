@@ -7,7 +7,6 @@ from pathlib import Path
 import json
 from . import constants
 
-
 TASK_LAYER_TYPES = {}
 TRANSFER_DATA_DEFAULTS = {}
 ATTRIBUTE_DEFAULTS = {}
