@@ -1,0 +1,5 @@
+# ~= denotes the latest compatible release (e.g. 5.0.2)
+bpy~=5.0.1 --extra-index-url https://download.blender.org/pypi/
+pytest>=9.0,<10.0
+fake-bpy-module
+yapf
