@@ -26,4 +26,4 @@ wheels = [
 ]
 
 [permissions]
-files = "To update files in the local SVN repository checkout, or move them to system trash"
+files = "Update/remove files in local repository"
