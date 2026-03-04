@@ -6,12 +6,20 @@ import bpy
 from bpy.types import Modifier, Context, Collection, NodeTree, Operator, Object
 from pathlib import Path
 from typing import Any
-from bpy.props import IntProperty, StringProperty, BoolProperty, FloatProperty
+from bpy.props import IntProperty, StringProperty, BoolProperty, FloatProperty, EnumProperty
 from .prefs import get_addon_prefs
 
-NODETREE_NAME = "GN-shape_key"
+NODETREE_NAMES = {
+    "shapekey": "GN-shape_key",
+    "pre_process": "GN-shape_key.pre_process"
+}
 COLLECTION_NAME = "GeoNode Shape Keys"
-
+MASK_NAME = "GNSK-Mask"
+TRANSFER_MODES = {
+    "ABSOLUTE": 1,
+    "RELATIVE": 0,
+    "TANGENT_SPACE": 2,
+}
 
 def geomod_get_identifier(modifier: Modifier, param_name: str) -> str:
     if hasattr(modifier.node_group, 'interface'):
@@ -65,18 +73,23 @@ def get_resource_blend_path(context) -> tuple[str, bool]:
 
     return filepath.as_posix(), addon_prefs.node_import_type == 'LINK'
 
-
-def link_shape_key_node_tree(context) -> NodeTree:
+def link_node_tree(context, name) -> NodeTree:
     # Load shape key node tree from a file.
-    if NODETREE_NAME in bpy.data.node_groups:
-        return bpy.data.node_groups[NODETREE_NAME]
+    if name in bpy.data.node_groups:
+        return bpy.data.node_groups[name]
 
     blend_path, do_link = get_resource_blend_path(context)
 
     with bpy.data.libraries.load(blend_path, link=do_link, relative=True) as (data_from, data_to):
-        data_to.node_groups.append(NODETREE_NAME)
+        data_to.node_groups.append(name)
 
-    return bpy.data.node_groups[NODETREE_NAME]
+    return bpy.data.node_groups[name]
+
+def link_shape_key_node_tree(context) -> NodeTree:
+    return link_node_tree(context, NODETREE_NAMES["shapekey"])
+
+def link_pre_process_node_tree(context) -> NodeTree:
+    return link_node_tree(context, NODETREE_NAMES["pre_process"])
 
 
 def ensure_shapekey_collection(context: Context) -> Collection:
@@ -122,6 +135,16 @@ class OBJECT_OT_gnsk_add_shape(Operator):
         name="UVMap",
         description="UV Map to use for the deform space magic. All selected objects must have a map with this name, or the default will be used",
     )
+    transfer_mode: EnumProperty(
+        name="Transfer Mode",
+        default="RELATIVE",
+        items=[
+            ("ABSOLUTE", "Absolute", "Transfers the deformation as an absolute shape", 1),
+            ("RELATIVE", "Relative", "Transfers the deformation relative to the base shape", 2),
+            ("TANGENT_SPACE", "Tangent Space", "Transfers the deformation relative to the base shape in tangent space", 3),
+        ]
+    )
+
 
     def invoke(self, context, _event):
         for o in context.selected_objects:
@@ -141,8 +164,10 @@ class OBJECT_OT_gnsk_add_shape(Operator):
 
     def draw(self, context):
         layout = self.layout
-        layout.prop_search(self, 'uv_name', context.object.data, 'uv_layers', icon='GROUP_UVS')
         layout.prop(self, 'shape_name')
+        layout.prop(self, 'transfer_mode')
+        if self.transfer_mode == "TANGENT_SPACE":
+            layout.prop_search(self, 'uv_name', context.object.data, 'uv_layers', icon='GROUP_UVS')
 
     def execute(self, context):
         try:
@@ -163,13 +188,16 @@ class OBJECT_OT_gnsk_add_shape(Operator):
 
         sk_ob = self.make_combined_sculpt_mesh(context, mesh_objs)
 
-        for obj in mesh_objs:
+        for i, obj in enumerate(mesh_objs):
             # Add GeoNode modifiers.
             gnsk = obj.geonode_shapekeys.add()
             gnsk.name = self.shape_name
 
             mod = obj.modifiers.new(gnsk.name, type='NODES')
             mod.node_group = link_shape_key_node_tree(context)
+
+            mod[geomod_get_identifier(mod, "Transfer Mode")] = TRANSFER_MODES[self.transfer_mode]
+            mod[geomod_get_identifier(mod, "Part Index")] = i
 
             # Find desired modifier index: After any other GNSK modifier, or if
             # none, before the SubSurf modifier.
@@ -207,10 +235,27 @@ class OBJECT_OT_gnsk_add_shape(Operator):
         for obj in mesh_objs:
             self.make_evaluated_object(context, obj)
 
-        # Join all the shape key objects into one object...
-        bpy.ops.object.join()
+        # Join all the shape key objects into one object in order of selected list
+        ob_list = context.selected_objects[:]
+        for i, ob in enumerate(ob_list[1:]):
+            if len(ob.data.vertices) == 0:
+                bpy.data.objects.remove(ob)
+                continue
+            merge_objs = [ob_list[0], ob]
+            attr = ob.data.attributes.new("GNSK-part_index", "INT", "POINT")
+            attr.data.foreach_set("value", [i+1]*len(attr.data))
+            with context.temp_override(object=ob_list[0], active_object=ob_list[0], selected_objects=merge_objs, selected_editable_objects=merge_objs):
+                bpy.ops.object.join()
+
+        context.view_layer.objects.active = ob_list[0]
+
         sk_ob = context.active_object
         sk_ob.name = self.shape_name
+
+        # Add pre-processing modifier to sculpt mesh object
+        mod = sk_ob.modifiers.new("Pre-Processing", type='NODES')
+        mod.node_group = link_pre_process_node_tree(context)
+
         return sk_ob
 
     def get_desired_modifier_index(self, obj: Object, mod: Modifier) -> int:
@@ -230,7 +275,7 @@ class OBJECT_OT_gnsk_add_shape(Operator):
             if m.type == 'SUBSURF':
                 return i
 
-        return -1
+        return len(obj.modifiers)
 
     @staticmethod
     def disable_modifiers_after_subsurf(obj: Object) -> dict[str, dict[str, Any]]:
@@ -425,6 +470,14 @@ class OBJECT_OT_gnsk_toggle_object(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     gnsk_index: IntProperty(default=-1)
+    mode: EnumProperty(
+        name = "",
+        default = "SCULPT",
+        items = [
+            ("SCULPT", "Sculpt", "", 1),
+            ("WEIGHT", "Weight Paint", "", 2),
+        ]
+    )
 
     @classmethod
     def poll(cls, context):
@@ -493,7 +546,18 @@ class OBJECT_OT_gnsk_toggle_object(Operator):
 
             orig_ui = context.area.ui_type
             context.area.ui_type = 'VIEW_3D'
-            bpy.ops.object.mode_set(mode='SCULPT')
+            match self.mode:
+                case "SCULPT":
+                    bpy.ops.object.mode_set(mode='SCULPT')
+                case "WEIGHT":
+                    bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
+
+                    vg = storage.vertex_groups.get(MASK_NAME)
+                    if vg == None:
+                        vg = storage.vertex_groups.new(name=MASK_NAME)
+                        vg.add(range(len(storage.data.vertices)), 1.0, 'REPLACE')
+                    storage.vertex_groups.active = vg
+
             context.area.ui_type = orig_ui
 
         else:
