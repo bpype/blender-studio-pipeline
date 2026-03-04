@@ -2,11 +2,19 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
-from bpy.types import Modifier, Context, Collection, NodeTree, Operator, Object
 from pathlib import Path
 from typing import Any
-from bpy.props import IntProperty, StringProperty, BoolProperty, FloatProperty, EnumProperty
+
+import bpy
+from bpy.props import (
+    BoolProperty,
+    EnumProperty,
+    FloatProperty,
+    IntProperty,
+    StringProperty,
+)
+from bpy.types import Collection, Context, Modifier, NodeTree, Object, Operator
+
 from .prefs import get_addon_prefs
 
 NODETREE_NAMES = {
@@ -413,7 +421,7 @@ class OBJECT_OT_gnsk_remove_shape(Operator):
         if self.remove_from_all:
             delete_storage = True
             if not storage_ob:
-                self.report({'WARNING'}, f'Storage object was not found.')
+                self.report({'WARNING'}, 'Storage object was not found.')
             else:
                 objs = [target.obj for target in storage_ob.geonode_shapekey_targets]
 

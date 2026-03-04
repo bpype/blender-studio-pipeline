@@ -2,23 +2,24 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
-import threading
-import subprocess
 import random
+import subprocess
+import threading
 from typing import List
 
-from ..util import get_addon_prefs, redraw_viewport
+import bpy
 from bpy.app.handlers import persistent
+
+from ..util import get_addon_prefs, redraw_viewport
 
 
 class BackgroundProcess:
     """
-    Base class that uses bpy.app.timers and threading to execute SVN commands 
+    Base class that uses bpy.app.timers and threading to execute SVN commands
     without freezing the interface.
 
-    The class should be extended and the process_output and acquire_output functions 
-    implemented for each SVN command, then a single instance of that subclass should 
+    The class should be extended and the process_output and acquire_output functions
+    implemented for each SVN command, then a single instance of that subclass should
     be created, which can from that point on be used to manage that SVN process.
     """
 
@@ -98,7 +99,7 @@ class BackgroundProcess:
         Executed repeatedly while the timer is running, with tick_delay seconds between
         each call.
 
-        Doesn't have to be used for anything. Can be useful for redrawing the UI. 
+        Doesn't have to be used for anything. Can be useful for redrawing the UI.
         Just be careful with this though.
         """
         return
@@ -162,7 +163,7 @@ class BackgroundProcess:
         return self.tick_delay
 
     def get_ui_message(self, context) -> str:
-        """Return a string that should be drawn in the UI for user feedback, 
+        """Return a string that should be drawn in the UI for user feedback,
         depending on the state of the process."""
 
         if self.is_running:
@@ -264,9 +265,9 @@ class ProcessManager:
         if process:
             process.stop()
             del self.processes[proc_name]
-    
+
     def restart(self, proc_name: str):
-        """Destroy a process, then start it again. 
+        """Destroy a process, then start it again.
         Useful to skip the repeat_delay timer of infinite processes like Status or Log."""
         self.kill(proc_name)
         self.start(proc_name)

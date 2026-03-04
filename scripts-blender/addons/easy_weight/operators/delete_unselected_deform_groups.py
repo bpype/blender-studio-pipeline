@@ -4,7 +4,7 @@
 
 from bpy.types import Operator
 
-from ..utils import delete_vgroups, poll_weight_paint_mode, get_deforming_vgroups
+from ..utils import delete_vgroups, get_deforming_vgroups, poll_weight_paint_mode
 
 
 class EASYWEIGHT_OT_delete_unselected_deform_groups(Operator):
@@ -25,7 +25,7 @@ class EASYWEIGHT_OT_delete_unselected_deform_groups(Operator):
             vg for vg in deforming_groups if vg.name not in selected_bone_names
         ]
 
-        print(f"Deleting unselected deform groups:")
+        print("Deleting unselected deform groups:")
         deleted_names = [vg.name for vg in unselected_def_groups]
         print("    " + "\n    ".join(deleted_names))
 

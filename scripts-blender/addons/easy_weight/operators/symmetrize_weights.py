@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from bpy.types import Operator, Object
 from bpy.props import EnumProperty
+from bpy.types import Object, Operator
 from bpy.utils import flip_name
 from mathutils.kdtree import KDTree
 
@@ -198,7 +198,7 @@ def symmetrize_vertex_group(
         def zero_or_less(x):
             return x <= 0
 
-        # Determine the function which determines whether an X coordinate is on 
+        # Determine the function which determines whether an X coordinate is on
         # the destination side.
         is_dst_side = zero_or_more if right_to_left else zero_or_less
         dst_side_verts = [i for i, v in enumerate(obj.data.vertices) if is_dst_side(v.co.x)]

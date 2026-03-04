@@ -2,17 +2,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import List, Dict, Union, Any, Set, Optional, Tuple
-
-from bpy.types import Operator
-from bpy.props import BoolProperty
-
-from .simple_commands import SVN_Operator
-from ..util import get_addon_prefs
-from ..threaded.background_process import Processes
 
 import subprocess
 from pathlib import Path
+
+from bpy.props import BoolProperty
+from bpy.types import Operator
+
+from ..threaded.background_process import Processes
+from ..util import get_addon_prefs
+from .simple_commands import SVN_Operator
 
 
 class SVN_OT_checkout_initiate(Operator):

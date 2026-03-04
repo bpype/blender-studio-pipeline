@@ -3,16 +3,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import importlib
+
 import bpy
 
 from . import (
-    props, 
-    prefs,
-    ui,
-    ops,
-    ui_list,
-    symmetrize_shape_key,
     naming,
+    ops,
+    prefs,
+    props,
+    symmetrize_shape_key,
+    ui,
+    ui_list,
 )
 
 # Each module can have register() and unregister() functions and a list of classes to register called "registry".

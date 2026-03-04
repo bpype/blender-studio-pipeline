@@ -6,10 +6,10 @@ from .background_process import BackgroundProcess
 
 
 class BGP_SVN_Activate_File(BackgroundProcess):
-    """This crazy hacky method of activating the file with some delay is necessary 
-    because Blender won't let us select the file immediately when changing the 
+    """This crazy hacky method of activating the file with some delay is necessary
+    because Blender won't let us select the file immediately when changing the
     directory - some time needs to pass before the files actually appear.
-    (This is visible with the naked eye as the file browser is empty for a 
+    (This is visible with the naked eye as the file browser is empty for a
     brief moment whenever params.dictionary is changed.)
     """
 

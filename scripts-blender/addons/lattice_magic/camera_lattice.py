@@ -8,22 +8,23 @@
 # and create a 2D lattice that fills the camera's view,
 # to deform the mesh objects in that collection.
 
-import bpy
 import math
+
+import bpy
 from bpy.app.handlers import persistent
-from mathutils import Vector
 from bpy.props import (
     BoolProperty,
-    PointerProperty,
     CollectionProperty,
-    IntProperty,
     EnumProperty,
     FloatProperty,
+    IntProperty,
+    PointerProperty,
 )
+from mathutils import Vector
 from mathutils.geometry import intersect_point_line
 
-from .utils import bounding_box_center_of_objects
 from .prefs import get_addon_prefs
+from .utils import bounding_box_center_of_objects
 
 
 class CAMLAT_UL_lattice_slots(bpy.types.UIList):
@@ -124,7 +125,7 @@ class OBJECT_OT_camlattice_remove(bpy.types.Operator):
         scene = context.scene
         if len(scene.lattice_slots) > 0:
             return True
-        
+
         cls.poll_message_set("No slots to remove.")
         return False
 
@@ -167,7 +168,7 @@ class OBJECT_OT_camlattice_move(bpy.types.Operator):
         scene = context.scene
         if len(scene.lattice_slots) > 1:
             return True
-        
+
         cls.poll_message_set("No slots to re-order.")
         return False
 

@@ -2,14 +2,13 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import subprocess
 from datetime import datetime
 from pathlib import Path
-import subprocess
 
-from ..util import redraw_viewport
 from .. import constants
-from .execute_subprocess import execute_svn_command
 from .background_process import BackgroundProcess
+from .execute_subprocess import execute_svn_command
 
 
 def reload_svn_log(self, context):
@@ -131,7 +130,7 @@ class BGP_SVN_Log(BackgroundProcess):
     debug = False
 
     def acquire_output(self, context, prefs):
-        """This function should be executed from a separate thread to avoid freezing 
+        """This function should be executed from a separate thread to avoid freezing
         Blender's UI during execute_svn_command().
         """
         repo = context.scene.svn.get_repo(context)

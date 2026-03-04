@@ -16,5 +16,15 @@ readme = "README.md"
 requires-python = ">= 3.11"
 
 [tool.black]
-line-length = 100
+line-length = 120
 skip_string_normalization = true
+
+[tool.yapf]
+BASED_ON_STYLE = "pep8"
+SPACES_BEFORE_COMMENT = 4
+SPLIT_BEFORE_LOGICAL_OPERATOR = true
+COALESCE_BRACKETS = true
+COLUMN_LIMIT = 120
+CONTINUATION_ALIGN_STYLE = "VALIGN-RIGHT"
+ALLOW_SPLIT_BEFORE_DEFAULT_OR_NAMED_ASSIGN = true
+NO_SPACES_AROUND_SELECTED_BINARY_OPERATORS = true

@@ -6,8 +6,8 @@
 # Except that one doesn't allow passing a custom add operator, so we may need to hack around that, or tweak it upstream for more flexibility.
 
 import bpy
-from bpy.types import Operator, UILayout
 from bpy.props import EnumProperty, StringProperty
+from bpy.types import Operator, UILayout
 
 
 def get_context_attr(context, data_path):

@@ -4,6 +4,7 @@
 
 import bpy
 from bpy.props import FloatProperty
+
 from .utils import get_lattice_point_original_position
 
 

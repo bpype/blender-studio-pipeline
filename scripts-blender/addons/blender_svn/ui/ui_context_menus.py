@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
-from bpy.types import Context, UIList, Operator
-from bpy.props import StringProperty, BoolProperty
 from pathlib import Path
+
+import bpy
+from bpy.types import Context, UIList
 
 
 def check_context_match(context: Context, uilayout_type: str, bl_idname: str) -> bool:
-    """For example, when right-clicking on a UIList, the uilayout_type will 
+    """For example, when right-clicking on a UIList, the uilayout_type will
     be `ui_list` and the bl_idname is that of the UIList being right-clicked.
     """
     uilayout = getattr(context, uilayout_type, None)
@@ -41,7 +41,7 @@ def svn_file_list_context_menu(self: UIList, context: Context) -> None:
         layout.operator("wm.path_open",
                         text=f"Open {active_file.name}").filepath = str(file_abs_path)
     layout.operator("wm.path_open",
-                    text=f"Open Containing Folder").filepath = Path(file_abs_path).parent.as_posix()
+                    text="Open Containing Folder").filepath = Path(file_abs_path).parent.as_posix()
     layout.separator()
 
 

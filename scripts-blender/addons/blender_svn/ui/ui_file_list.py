@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from bpy.types import UIList
 from bpy.props import BoolProperty
+from bpy.types import UIList
 
 from .. import constants
-from ..util import get_addon_prefs, dots
 from ..threaded.background_process import Processes
+from ..util import dots, get_addon_prefs
 
 
 class SVN_UL_file_list(UIList):
@@ -25,7 +25,7 @@ class SVN_UL_file_list(UIList):
         self.use_filter_show = True
 
         if self.layout_type != 'DEFAULT':
-            raise NotImplemented
+            raise NotImplementedError
 
         file_entry = item
         prefs = get_addon_prefs(context)
@@ -114,7 +114,7 @@ class SVN_UL_file_list(UIList):
 
     @classmethod
     def cls_filter_items(cls, context, data, propname):
-        """By moving all of this logic to a classmethod (and all the filter 
+        """By moving all of this logic to a classmethod (and all the filter
         properties to the addon preferences) we can find a visible entry
         from other UI code, allowing us to avoid situations where the active
         element becomes hidden."""

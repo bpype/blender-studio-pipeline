@@ -5,8 +5,9 @@
 import bpy
 from bpy.props import BoolProperty
 
-from .weight_cleaner import start_cleaner, stop_cleaner
 from .prefs_to_disk import PrefsFileSaveLoadMixin, update_prefs_on_file
+from .weight_cleaner import start_cleaner, stop_cleaner
+
 
 def get_available_wp_brushes():
     for brush in bpy.data.brushes:

@@ -4,6 +4,7 @@
 
 import bpy
 from bl_ui.generic_ui_list import draw_ui_list
+
 from .operators import geomod_get_identifier
 from .prefs import get_addon_prefs
 

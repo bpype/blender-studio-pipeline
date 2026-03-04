@@ -2,12 +2,15 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .util import get_addon_prefs
-from bpy.props import StringProperty, PointerProperty, BoolProperty
-from bpy.types import PropertyGroup
-import bpy
 from typing import Optional
+
+import bpy
+from bpy.props import BoolProperty, PointerProperty, StringProperty
+from bpy.types import PropertyGroup
+
 from . import wheels
+from .util import get_addon_prefs
+
 # This will load the dateutil and BAT wheel files.
 wheels.preload_dependencies()
 

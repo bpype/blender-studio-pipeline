@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from bpy.types import PoseBone, Object, VertexGroup, Bone, EditBone
+from bpy.types import Bone, EditBone, Object, PoseBone, VertexGroup
 
 from . import __package__ as base_package
 
@@ -70,7 +70,7 @@ def poll_weight_paint_mode(operator, context, with_rig=False, with_groups=False)
         operator.poll_message_set("Must be in Weight Paint mode.")
         return False
     if with_rig:
-        if not 'ARMATURE' in (m.type for m in obj.modifiers):
+        if 'ARMATURE' not in (m.type for m in obj.modifiers):
             operator.poll_message_set("This mesh is not deformed by an Armature modifier.")
             return False
         if not context.pose_object or context.pose_object != get_deforming_armature(obj):

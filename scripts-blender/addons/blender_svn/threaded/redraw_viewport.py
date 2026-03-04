@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .background_process import BackgroundProcess, Processes
 from ..util import redraw_viewport
+from .background_process import BackgroundProcess, Processes
 
 
 class BGP_SVN_Redraw_Viewport(BackgroundProcess):

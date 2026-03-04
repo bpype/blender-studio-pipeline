@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from bpy.props import CollectionProperty, IntProperty, PointerProperty, StringProperty
 from bpy.types import Modifier, Object, PropertyGroup
-from bpy.props import StringProperty, CollectionProperty, IntProperty, PointerProperty
+
 from .operators import geomod_get_identifier
 
 

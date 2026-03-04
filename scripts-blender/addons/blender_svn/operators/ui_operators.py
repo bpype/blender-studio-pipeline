@@ -4,6 +4,7 @@
 
 from bpy.props import BoolProperty, StringProperty
 from bpy.types import Operator
+
 from ..threaded.background_process import Processes
 
 

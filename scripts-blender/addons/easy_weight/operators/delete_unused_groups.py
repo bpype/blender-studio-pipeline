@@ -3,9 +3,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from bpy.types import Operator, Object, VertexGroup, Modifier
+from bpy.types import Modifier, Object, Operator, VertexGroup
 
-from ..utils import delete_vgroups, poll_deformed_mesh_with_vgroups, get_deforming_vgroups
+from ..utils import (
+    delete_vgroups,
+    get_deforming_vgroups,
+    poll_deformed_mesh_with_vgroups,
+)
 
 
 class EASYWEIGHT_OT_delete_unused_vertex_groups(Operator):
@@ -31,7 +35,7 @@ def delete_unused_vgroups(mesh_ob: Object) -> list[str]:
     groups_to_delete = get_unused_vgroups(mesh_ob)
 
     names = [vgroup.name for vgroup in groups_to_delete]
-    print(f"Deleting unused non-deform groups:")
+    print("Deleting unused non-deform groups:")
     print("    " + "\n    ".join(names))
 
     delete_vgroups(mesh_ob, groups_to_delete)

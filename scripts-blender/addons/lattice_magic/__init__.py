@@ -15,14 +15,15 @@ bl_info = {
 }
 
 import importlib
+
 import bpy
 
 from . import (
     camera_lattice,
-    tweak_lattice,
     operators,
-    utils,
     prefs,
+    tweak_lattice,
+    utils,
 )
 
 modules = [camera_lattice, tweak_lattice, operators, utils, prefs]

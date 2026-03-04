@@ -9,6 +9,7 @@ import bpy
 
 from . import __package__ as base_package
 
+
 def get_addon_prefs(context=None):
     if not context:
         context = bpy.context
@@ -23,7 +24,7 @@ def get_addon_prefs(context=None):
 
     if name in addons:
         prefs = addons[name].preferences
-        if prefs == None:
+        if prefs is None:
             pass
             # print("This happens when packaging the extension, due to the registration delay.")
         return addons[name].preferences
@@ -96,7 +97,7 @@ class PrefsFileSaveLoadMixin:
                 continue
             if type(value) in (list, bpy.types.bpy_prop_collection_idprop):
                 ret[key] = [self.prefs_to_dict_recursive(elem) for elem in value]
-            elif type(value) == IDPropertyGroup:
+            elif type(value) is IDPropertyGroup:
                 ret[key] = self.prefs_to_dict_recursive(value)
             else:
                 if (
@@ -115,14 +116,14 @@ class PrefsFileSaveLoadMixin:
             if not hasattr(propgroup, key):
                 # Property got removed or renamed in the implementation.
                 continue
-            if type(value) == list:
+            if type(value) is list:
                 for elem in value:
                     collprop = getattr(propgroup, key)
                     entry = collprop.get(elem['name'])
                     if not entry:
                         entry = collprop.add()
                     self.apply_prefs_from_dict_recursive(entry, elem)
-            elif type(value) == dict:
+            elif type(value) is dict:
                 self.apply_prefs_from_dict_recursive(getattr(propgroup, key), value)
             else:
                 setattr(propgroup, key, value)

@@ -4,7 +4,9 @@
 
 import bpy
 from bpy.app.handlers import persistent
+
 from .utils import get_addon_prefs
+
 
 @persistent
 def start_cleaner(scene=None, depsgraph=None):
@@ -77,7 +79,7 @@ def ensure_mirror_groups(mesh_obj):
                     flipped_name = bpy.utils.flip_name(pb.name)
                     if flipped_name != pb.name and flipped_name not in mesh_obj.vertex_groups:
                         mesh_obj.vertex_groups.new(name=flipped_name)
-        
+
 
 def register():
     start_cleaner()

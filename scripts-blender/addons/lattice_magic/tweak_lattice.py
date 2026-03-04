@@ -4,37 +4,41 @@
 
 # Inspired by https://twitter.com/soyposmoderno/status/1307222594047758337
 
-# This lets you create an empty hooked up to a Lattice to deform all selected 
-# objects. A root empty is also created that can be (manually) parented to a 
+# This lets you create an empty hooked up to a Lattice to deform all selected
+# objects. A root empty is also created that can be (manually) parented to a
 # rig in order to use this for animation.
+
+from math import *
+from typing import List, Tuple
 
 import bpy
 from bpy.props import (
+    EnumProperty,
     FloatProperty,
     IntVectorProperty,
     PointerProperty,
     StringProperty,
-    EnumProperty,
 )
 from bpy.types import (
-    Operator,
-    Object,
-    Lattice,
-    VertexGroup,
-    Scene,
     Collection,
+    Lattice,
     Modifier,
+    Object,
+    Operator,
     Panel,
     PropertyGroup,
+    Scene,
+    VertexGroup,
 )
-from typing import List, Tuple
-
 from mathutils import Matrix, Vector, kdtree
-from math import *
-
 from rna_prop_ui import rna_idprop_ui_create
 
-from .utils import clamp, get_lattice_vertex_index, simple_driver, bounding_box_center_of_objects
+from .utils import (
+    bounding_box_center_of_objects,
+    clamp,
+    get_lattice_vertex_index,
+    simple_driver,
+)
 
 TWEAKLAT_COLL_NAME = 'Tweak Lattices'
 
@@ -109,7 +113,7 @@ class OBJECT_OT_tweaklattice_create(Operator):
         for ob in context.selected_objects:
             if ob.type == 'MESH':
                 return True
-        
+
         cls.poll_message_set("No selected mesh objects.")
         return False
 
@@ -278,7 +282,7 @@ class OBJECT_OT_tweaklattice_create(Operator):
             delta = mat_pre_arm_con.inverted() @ mat_post_arm_con
 
             root.matrix_world = matrix_of_parent @ delta.inverted()
-        
+
         if self.parent_method != 'AUTO' or self.location != 'CURSOR':
             root.rotation_euler = 0, 0, 0
 
@@ -304,7 +308,7 @@ class OBJECT_OT_tweaklattice_create(Operator):
             weights = {}
             if self.parent_bone:
                 weights = {self.parent_bone: 1.0}
-        
+
         return parent, weights
 
     def get_lattice_parent_matrix(self, context):
@@ -463,7 +467,7 @@ class OBJECT_OT_tweaklattice_objects_add(Operator):
                 continue
             if sel_o not in values:
                 return True
-        
+
         cls.poll_message_set("No selected objects to add to this Tweak Lattice.")
         return False
 
@@ -496,7 +500,7 @@ class OBJECT_OT_tweaklattice_objects_remove(Operator):
                 continue
             if sel_o in values:
                 return True
-            
+
         cls.poll_message_set("No selected objects to remove from this Tweak Lattice.")
         return False
 

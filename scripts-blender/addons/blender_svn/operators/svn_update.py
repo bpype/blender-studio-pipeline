@@ -5,12 +5,12 @@
 from typing import Set
 
 import bpy
-from bpy.types import Operator, Context
 from bpy.props import IntProperty
+from bpy.types import Context, Operator
 
-from .simple_commands import May_Modifiy_Current_Blend
 from ..threaded.background_process import Processes
 from ..util import get_addon_prefs
+from .simple_commands import May_Modifiy_Current_Blend
 
 
 class SVN_OT_update_all(May_Modifiy_Current_Blend, Operator):
@@ -51,7 +51,7 @@ class SVN_OT_update_all(May_Modifiy_Current_Blend, Operator):
         else:
             for f in repo.external_files:
                 if f.status in ['modified', 'added', 'conflicted', 'deleted', 'missing', 'unversioned']:
-                    # If user wants to check out an older version of the repo but 
+                    # If user wants to check out an older version of the repo but
                     # there are uncommitted local changes to any files, warn user.
                     return context.window_manager.invoke_props_dialog(self, width=500)
 

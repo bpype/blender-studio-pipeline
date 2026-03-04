@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import platform
+from pathlib import Path
 
-from bpy.types import UIList, Operator, Menu
+from bpy.types import Menu, Operator, UIList
 from bpy_extras.io_utils import ImportHelper
 
-from ..util import get_addon_prefs
-from .ui_log import draw_svn_log, is_log_useful
-from .ui_file_list import draw_file_list, draw_process_info
 from ..threaded.background_process import Processes
+from ..util import get_addon_prefs
+from .ui_file_list import draw_file_list, draw_process_info
+from .ui_log import draw_svn_log, is_log_useful
 
-from pathlib import Path
 
 class SVN_UL_repositories(UIList):
     def draw_item(
@@ -43,9 +43,9 @@ class SVN_OT_repo_add(Operator, ImportHelper):
         path = Path(self.filepath)
         if not path.exists():
             # It's unlikely that a path that the user JUST BROWSED doesn't exist.
-            # So, this actually happens when the user leaves a filename in the 
+            # So, this actually happens when the user leaves a filename in the
             # file browser text box while trying to select the folder...
-            # Basically, Blender is dumb, and it will add that filename to the 
+            # Basically, Blender is dumb, and it will add that filename to the
             # end of the browsed path. We need to discard that.
             path = path.parent
         if path.is_file():

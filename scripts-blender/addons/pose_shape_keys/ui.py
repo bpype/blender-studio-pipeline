@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from bpy.types import Panel, UIList, Menu, UILayout
 from bl_ui.properties_data_mesh import DATA_PT_shape_keys
 from bpy.props import EnumProperty
+from bpy.types import Menu, Panel, UILayout, UIList
 
-from .ui_list import draw_ui_list
-from .ops import get_deforming_armature, poll_correct_pose_key_pose, get_active_pose_key
+from .ops import get_active_pose_key, get_deforming_armature, poll_correct_pose_key_pose
 from .prefs import get_addon_prefs
 from .props import update_posekey_index
+from .ui_list import draw_ui_list
 
 
 class MESH_PT_pose_keys(Panel):

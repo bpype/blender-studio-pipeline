@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from bpy.props import IntProperty, BoolProperty
-from bpy.types import UIList, Panel, Operator
+from bpy.props import BoolProperty, IntProperty
+from bpy.types import Operator, Panel, UIList
+
 from ..util import get_addon_prefs
 
 
@@ -16,7 +17,7 @@ class SVN_UL_log(UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         if self.layout_type != 'DEFAULT':
-            raise NotImplemented
+            raise NotImplementedError
 
         svn = data
         log_entry = item
@@ -191,7 +192,7 @@ def draw_svn_log(context, layout):
 
 
 def execute_tooltip_log(self, context):
-    """Set the index on click, to act as if this operator button was 
+    """Set the index on click, to act as if this operator button was
     click-through in the UIList."""
     repo = context.scene.svn.get_repo(context)
     tup = repo.get_log_by_revision(self.log_rev)
