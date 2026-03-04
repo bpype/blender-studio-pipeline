@@ -319,11 +319,13 @@ class OBJECT_OT_gnsk_remove_shape(Operator):
 
         targets = get_active_gnsk_targets(context.object)
         if len(targets) > 1 and self.remove_from_all:
-            layout.label(text="Shape will be removed from:")
-            for target in targets:
-                row = layout.row()
-                row.enabled = False
-                row.prop(target, 'obj', text="")
+            header, panel = layout.panel("GNSK Remove", default_closed=True)
+            header.label(text=f"Remove from {len(targets)} objects:")
+            if panel:
+                for target in targets:
+                    row = panel.row()
+                    row.enabled = False
+                    row.prop(target, 'obj', text="")
 
     def execute(self, context):
         ob = context.object
