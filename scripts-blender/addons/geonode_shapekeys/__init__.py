@@ -6,7 +6,7 @@ import importlib
 
 import bpy
 
-from . import operators, prefs, props, ui
+from . import geonode_util, operators, prefs, props, ui
 
 bl_info = {
     'name': "GeoNode Shape Keys",
@@ -26,6 +26,7 @@ modules = (
     props,
     ui,
     prefs,
+    geonode_util,
 )
 
 

@@ -56,6 +56,10 @@ class GeoNodeShapeKey(PropertyGroup):
             if gnsk == self:
                 return i
 
+    @property
+    def shapekey_targets(self):
+        return self.storage_object.geonode_shapekey_targets
+
 
 class GNSK_TargetObject(PropertyGroup):
     obj: PointerProperty(name="Target Object", type=Object)

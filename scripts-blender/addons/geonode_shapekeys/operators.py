@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from pathlib import Path
-from typing import Any
 
 import bpy
 from bpy.props import (
@@ -13,8 +12,15 @@ from bpy.props import (
     IntProperty,
     StringProperty,
 )
-from bpy.types import Collection, Context, Modifier, NodeTree, Object, Operator
+from bpy.types import Collection, Context, NodeTree, Object, Operator
 
+from .geonode_util import (
+    geomod_get_data_path,
+    geomod_get_identifier,
+    geomod_get_param_value,
+    geomod_set_param_attribute,
+    geomod_set_param_value,
+)
 from .prefs import get_addon_prefs
 
 NODETREE_NAMES = {
@@ -28,103 +34,6 @@ TRANSFER_MODES = {
     "RELATIVE": 0,
     "TANGENT_SPACE": 2,
 }
-
-def geomod_get_identifier(modifier: Modifier, param_name: str) -> str:
-    if hasattr(modifier.node_group, 'interface'):
-        # 4.0
-        input = modifier.node_group.interface.items_tree.get(param_name)
-    else:
-        # 3.6
-        input = modifier.node_group.inputs.get(param_name)
-
-    if input:
-        return input.identifier
-
-
-def geomod_get_data_path(modifier: Modifier, param_name: str) -> str:
-    return f'modifiers["{modifier.name}"]["{geomod_get_identifier(modifier, param_name)}"]'
-
-
-def geomod_set_param_value(modifier: Modifier, param_name: str, param_value: Any):
-    input_id = geomod_get_identifier(modifier, param_name)
-    # Note: Must use setattr, see T103865.
-    setattr(modifier, f'["{input_id}"]', param_value)
-
-
-def geomod_get_param_value(modifier: Modifier, param_name: str):
-    input_id = geomod_get_identifier(modifier, param_name)
-    return modifier[input_id]
-
-
-def geomod_set_param_use_attribute(modifier: Modifier, param_name: str, use_attrib: bool):
-    input_id = geomod_get_identifier(modifier, param_name)
-    modifier[input_id + "_use_attribute"] = use_attrib
-
-
-def geomod_set_param_attribute(modifier: Modifier, param_name: str, attrib_name: str):
-    input_id = geomod_get_identifier(modifier, param_name)
-    modifier[input_id + "_use_attribute"] = True
-    modifier[input_id + "_attribute_name"] = attrib_name
-
-
-def get_resource_blend_path(context) -> tuple[str, bool]:
-    """Return the desired filepath to the .blend file containing the node set-up.
-    Also return a boolean which indicates whether it should be linked or appended.
-    """
-    addon_prefs = get_addon_prefs(context)
-
-    filepath = Path(addon_prefs.blend_path)
-    if not filepath.exists():
-        raise FileNotFoundError(
-            f"Node tree file not found: '{filepath.as_posix()}'. Browse it in the add-on preferences."
-        )
-
-    return filepath.as_posix(), addon_prefs.node_import_type == 'LINK'
-
-def link_node_tree(context, name) -> NodeTree:
-    # Load shape key node tree from a file.
-    if name in bpy.data.node_groups:
-        return bpy.data.node_groups[name]
-
-    blend_path, do_link = get_resource_blend_path(context)
-
-    with bpy.data.libraries.load(blend_path, link=do_link, relative=True) as (data_from, data_to):
-        data_to.node_groups.append(name)
-
-    return bpy.data.node_groups[name]
-
-def link_shape_key_node_tree(context) -> NodeTree:
-    return link_node_tree(context, NODETREE_NAMES["shapekey"])
-
-def link_pre_process_node_tree(context) -> NodeTree:
-    return link_node_tree(context, NODETREE_NAMES["pre_process"])
-
-
-def ensure_shapekey_collection(context: Context) -> Collection:
-    """Ensure and return a collection used for the objects created by the add-on."""
-    scene = context.scene
-    coll = bpy.data.collections.get(COLLECTION_NAME)
-    if not coll:
-        coll = bpy.data.collections.new(COLLECTION_NAME)
-        scene.collection.children.link(coll)
-        coll.hide_render = True
-
-    coll.hide_viewport = False
-    if coll not in list(scene.collection.children):
-        scene.collection.children.link(coll)
-
-    context.view_layer.layer_collection.children[coll.name].exclude = False
-
-    return coll
-
-
-def get_gnsk_targets(gnsk):
-    return gnsk.storage_object.geonode_shapekey_targets
-
-
-def get_active_gnsk_targets(obj):
-    active_gnsk = obj.geonode_shapekeys[obj.geonode_shapekey_index]
-    return get_gnsk_targets(active_gnsk)
 
 
 class OBJECT_OT_gnsk_add_shape(Operator):
@@ -152,7 +61,6 @@ class OBJECT_OT_gnsk_add_shape(Operator):
             ("TANGENT_SPACE", "Tangent Space", "Transfers the deformation relative to the base shape in tangent space", 3),
         ]
     )
-
 
     def invoke(self, context, _event):
         for o in context.selected_objects:
@@ -188,31 +96,47 @@ class OBJECT_OT_gnsk_add_shape(Operator):
             if obj.type != 'MESH':
                 obj.select_set(False)
 
-        mesh_objs = context.selected_objects
+        mesh_objs = context.selected_objects[:]
         for obj in mesh_objs:
-            if self.uv_name not in obj.data.uv_layers:
+            if self.transfer_mode == "TANGENT_SPACE" and self.uv_name not in obj.data.uv_layers:
                 self.report({'ERROR'}, f'Object "{obj.name}" has no UV Map named "{self.uv_name}"!')
                 return {'CANCELLED'}
 
-        sk_ob = self.make_combined_sculpt_mesh(context, mesh_objs)
+        # Keep track of objects which will get the GNSK modifier.
+        # Tuple of (original_obj, mod_index)
+        objs_to_add_modifier: list[tuple[Object, int]] = []
 
-        for i, obj in enumerate(mesh_objs):
+        eval_objs: list[Object] = []
+        # Save evaluated objects into a new, combined object.
+        for obj in mesh_objs:
+            mod_index = GNSK_get_desired_modifier_index(context, obj)
+            eval_obj = GNSK_make_evaluated_obj(context, obj, mod_index, self.shape_name)
+            obj.select_set(False)
+            if eval_obj:
+                # Only add GNSK modifier to objects which were successfully evaluated (non-empty).
+                objs_to_add_modifier.append((obj, mod_index))
+                obj.hide_set(True)
+                eval_objs.append(eval_obj)
+
+        sk_ob = GNSK_join_objects(context, eval_objs, self.shape_name)
+        # NOTE: eval_objs is not to be accessed anymore!! Blender objects were deleted!!
+        eval_objs = None
+
+        for i, (obj, mod_index) in enumerate(objs_to_add_modifier):
             # Add GeoNode modifiers.
             gnsk = obj.geonode_shapekeys.add()
             gnsk.name = self.shape_name
 
+            obj.override_library.is_system_override = False
             mod = obj.modifiers.new(gnsk.name, type='NODES')
-            mod.node_group = link_shape_key_node_tree(context)
+            mod.node_group = ensure_shape_key_node_tree(context)
 
             mod[geomod_get_identifier(mod, "Transfer Mode")] = TRANSFER_MODES[self.transfer_mode]
             mod[geomod_get_identifier(mod, "Part Index")] = i
 
-            # Find desired modifier index: After any other GNSK modifier, or if
-            # none, before the SubSurf modifier.
-            mod_index = self.get_desired_modifier_index(obj, mod)
-            with context.temp_override(object=obj):
-                bpy.ops.object.modifier_move_to_index(modifier=mod.name, index=mod_index)
-            gnsk.name = mod.name  # In case the modifier got a .001 suffix.
+            obj.modifiers.move(obj.modifiers.find(mod.name), mod_index)
+            # Make sure GNSK entry name matches modifier name, in case of .001 suffix.
+            gnsk.name = mod.name
 
             gnsk.storage_object = sk_ob
 
@@ -236,130 +160,120 @@ class OBJECT_OT_gnsk_add_shape(Operator):
 
         return {'FINISHED'}
 
-    def make_combined_sculpt_mesh(
-        self, context, mesh_objs: list[Object]
-    ) -> Object:
-        # Save evaluated objects into a new, combined object.
-        for obj in mesh_objs:
-            self.make_evaluated_object(context, obj)
 
-        # Join all the shape key objects into one object in order of selected list
-        ob_list = context.selected_objects[:]
-        for i, ob in enumerate(ob_list[1:]):
-            if len(ob.data.vertices) == 0:
-                bpy.data.objects.remove(ob)
-                continue
-            merge_objs = [ob_list[0], ob]
-            attr = ob.data.attributes.new("GNSK-part_index", "INT", "POINT")
-            attr.data.foreach_set("value", [i+1]*len(attr.data))
-            with context.temp_override(object=ob_list[0], active_object=ob_list[0], selected_objects=merge_objs, selected_editable_objects=merge_objs):
-                bpy.ops.object.join()
+def GNSK_make_evaluated_obj(
+    context: Context, obj: Object, mod_idx: int, shape_name: str
+) -> Object | None:
+    """Evaluate the object's modifier stack only up until the point where the
+    geonode modifier will be inserted."""
+    # Disable any modifiers after where the GNSK nodes will be inserted.
+    modifier_states = disable_modifiers_after_idx(obj, mod_idx)
 
-        context.view_layer.objects.active = ob_list[0]
+    # Get evaluated mesh, wrap it in an object, and link it to the scene.
+    eval_dg = context.evaluated_depsgraph_get()
+    sk_mesh = bpy.data.meshes.new_from_object(obj.evaluated_get(eval_dg))
+    if len(sk_mesh.vertices) == 0:
+        return
+    sk_ob = bpy.data.objects.new(obj.name + "." + shape_name, sk_mesh)
+    sk_ob.data.name = sk_ob.name
+    sk_ob.matrix_world = obj.matrix_world
+    sk_coll = ensure_shapekey_collection(context)
+    sk_coll.objects.link(sk_ob)
+    sk_ob.hide_set(False)
+    sk_ob.select_set(True)
 
-        sk_ob = context.active_object
-        sk_ob.name = self.shape_name
+    # Add shape keys.
+    sk_ob.use_shape_key_edit_mode = True
+    sk_ob.shape_key_add(name="Basis")
+    sk_ob.hide_render = True
+    adjust = sk_ob.shape_key_add(name="New Shape", from_mix=True)
+    adjust.value = 1
+    sk_ob.active_shape_key_index = 1
+    sk_ob.add_rest_position_attribute = True
 
-        # Add pre-processing modifier to sculpt mesh object
-        mod = sk_ob.modifiers.new("Pre-Processing", type='NODES')
-        mod.node_group = link_pre_process_node_tree(context)
+    restore_modifiers(obj, modifier_states)
 
-        return sk_ob
+    return sk_ob
 
-    def get_desired_modifier_index(self, obj: Object, mod: Modifier) -> int:
-        """Figure out the desired index to insert the next GeoNodes ShapeKey modifier at.
-        If there are any other GNSK modifiers, we should insert after the last one.
-        Otherwise, insert before any SubSurf modifiers, if any.
-        Otherwise, insert at bottom of stack.
-        """
 
-        for i, m in reversed(list(enumerate(obj.modifiers))):
-            if m == mod:
-                continue
-            if m.type == 'NODES' and m.node_group == mod.node_group:
-                return i + 1
+def GNSK_get_desired_modifier_index(context, obj: Object) -> int:
+    """Figure out the desired index to insert the next GeoNodes ShapeKey modifier at.
+    """
 
-        for i, m in enumerate(obj.modifiers):
-            if m.type == 'SUBSURF':
-                return i
+    # If there are any other GNSK modifiers, we should insert after the last one.
+    last_i = -1
+    for i, m in enumerate(obj.modifiers):
+        if m.type == 'NODES' and m.node_group == ensure_shape_key_node_tree(context):
+            last_i
+    if last_i > -1:
+        return last_i + 1
 
-        return len(obj.modifiers)
+    # Otherwise, insert before any SubSurf modifiers, if any.
+    for i, m in enumerate(obj.modifiers):
+        if m.type == 'SUBSURF':
+            return i
 
-    @staticmethod
-    def disable_modifiers_after_subsurf(obj: Object) -> dict[str, dict[str, Any]]:
-        """Disable modifiers that might cause the propagation of the sculpted shape to fail.
-        This includes the Subsurf modifier and any subsequent modifiers.
-        Possibly more in future.
-        """
-        modifier_states = {}
-        found_subsurf = False
-        for m in obj.modifiers:
-            if m.type == 'SUBSURF':
-                found_subsurf = True
+    # Otherwise, insert at bottom of stack.
+    return len(obj.modifiers)
 
-            if found_subsurf:
-                modifier_states[m.name] = {
-                    'show_viewport': m.show_viewport,
-                }
 
-                # Mute driver, if any.
-                if obj.animation_data:
-                    fc = obj.animation_data.drivers.find(f'modifiers["{m.name}"].show_viewport')
-                    if fc:
-                        fc.mute = True
-                m.show_viewport = False
+def GNSK_join_objects(
+    context, eval_mesh_obs: list[Object], shape_name: str,
+) -> Object:
+    """Join passed objects while storing an attribute needed for the geonode shapekey set-up."""
+    for i, ob in enumerate(eval_mesh_obs[1:]):
+        merge_objs = [eval_mesh_obs[0], ob]
+        attr = ob.data.attributes.new("GNSK-part_index", "INT", "POINT")
+        attr.data.foreach_set("value", [i+1]*len(attr.data))
+        with context.temp_override(
+            object=eval_mesh_obs[0],
+            active_object=eval_mesh_obs[0],
+            selected_objects=merge_objs,
+            selected_editable_objects=merge_objs,
+        ):
+            bpy.ops.object.join()
 
-        return modifier_states
+    context.view_layer.objects.active = eval_mesh_obs[0]
 
-    @staticmethod
-    def restore_modifiers(obj: Object, modifier_states: dict[str, dict[str, Any]]):
-        """Reset SubSurf and subsequent modifiers."""
-        for mod_name, prop_dict in modifier_states.items():
-            for key, value in prop_dict.items():
-                setattr(obj.modifiers[mod_name], key, value)
+    sk_ob = context.active_object
+    sk_ob.name = shape_name
 
-                # Unmute driver, if any.
-                if obj.animation_data:
-                    fc = obj.animation_data.drivers.find(f'modifiers["{mod_name}"].{key}')
-                    if fc:
-                        fc.mute = False
+    # Add pre-processing modifier to sculpt mesh object
+    mod = sk_ob.modifiers.new("Pre-Processing", type='NODES')
+    mod.node_group = ensure_pre_process_node_tree(context)
 
-    def make_evaluated_object(
-        self, context: Context, obj: Object
-    ) -> Object:
+    return sk_ob
 
-        obj.override_library.is_system_override = False
 
-        # Disable the first SubSurf and all subsequent modifiers.
-        # NOTE: Other generative modifiers beside SubSurf may have to trigger this too.
-        modifier_states = self.disable_modifiers_after_subsurf(obj)
-        eval_dg = context.evaluated_depsgraph_get()
+def disable_modifiers_after_idx(obj: Object, idx: int) -> dict[str, bool]:
+    """Disable modifiers that might cause the propagation of the sculpted shape to fail.
+    This includes the Subsurf modifier and any subsequent modifiers.
+    Possibly more in future.
+    """
+    modifier_states = {}
+    for mod in obj.modifiers[idx:]:
+        modifier_states[mod.name] = mod.show_viewport
 
-        sk_mesh = bpy.data.meshes.new_from_object(obj.evaluated_get(eval_dg))
-        sk_ob = bpy.data.objects.new(obj.name + "." + self.shape_name, sk_mesh)
-        sk_ob.data.name = sk_ob.name
-        sk_coll = ensure_shapekey_collection(context)
-        sk_coll.objects.link(sk_ob)
+        # Mute driver, if any.
+        if obj.animation_data:
+            fc = obj.animation_data.drivers.find(f'modifiers["{mod.name}"].show_viewport')
+            if fc:
+                fc.mute = True
+        mod.show_viewport = False
 
-        # Add shape keys
-        sk_ob.use_shape_key_edit_mode = True
-        sk_ob.shape_key_add(name="Basis")
-        sk_ob.hide_render = True
-        adjust = sk_ob.shape_key_add(name="New Shape", from_mix=True)
-        adjust.value = 1
-        sk_ob.active_shape_key_index = 1
-        sk_ob.add_rest_position_attribute = True
+    return modifier_states
 
-        sk_ob.matrix_world = obj.matrix_world
 
-        self.restore_modifiers(obj, modifier_states)
+def restore_modifiers(obj: Object, modifier_states: dict[str, bool]):
+    """Reset SubSurf and subsequent modifiers."""
+    for mod_name, state in modifier_states.items():
+        obj.modifiers[mod_name].show_viewport = state
 
-        obj.hide_set(True)
-        sk_ob.hide_set(False)
-        sk_ob.select_set(True)
-        context.view_layer.objects.active = sk_ob
-
-        return sk_ob
+        # Unmute driver, if any.
+        if obj.animation_data:
+            fc = obj.animation_data.drivers.find(f'modifiers["{mod_name}"].show_viewport')
+            if fc:
+                fc.mute = False
 
 
 class OBJECT_OT_gnsk_remove_shape(Operator):
@@ -468,6 +382,11 @@ class OBJECT_OT_gnsk_remove_shape(Operator):
                 bpy.data.collections.remove(coll)
 
         return {'FINISHED'}
+
+
+def get_active_gnsk_targets(obj):
+    active_gnsk = obj.geonode_shapekeys[obj.geonode_shapekey_index]
+    return active_gnsk.shapekey_targets
 
 
 class OBJECT_OT_gnsk_toggle_object(Operator):
@@ -595,7 +514,7 @@ class OBJECT_OT_gnsk_influence_slider(Operator):
     def update_slider(self, context):
         ob = context.object
         gnsk = ob.geonode_shapekeys[self.gnsk_index]
-        for target in get_gnsk_targets(gnsk):
+        for target in gnsk.shapekey_targets:
             obj = target.obj
             for obj_gnsk in obj.geonode_shapekeys:
                 if obj_gnsk.storage_object == gnsk.storage_object:
@@ -629,9 +548,8 @@ class OBJECT_OT_gnsk_influence_slider(Operator):
 
         ob = context.object
         gnsk = ob.geonode_shapekeys[self.gnsk_index]
-        targets = get_gnsk_targets(gnsk)
         layout.label(text="Affected objects:")
-        for target in targets:
+        for target in gnsk.shapekey_targets:
             row = layout.row()
             row.enabled = False
             row.prop(target, 'obj', text="")
@@ -700,6 +618,60 @@ class OBJECT_OT_gnsk_setup_uvs(Operator):
             obj.data.uv_layers.active = obj.data.uv_layers.get(layer)
 
         return {'FINISHED'}
+
+
+def ensure_shape_key_node_tree(context) -> NodeTree:
+    return ensure_node_tree(context, NODETREE_NAMES["shapekey"])
+
+
+def ensure_pre_process_node_tree(context) -> NodeTree:
+    return ensure_node_tree(context, NODETREE_NAMES["pre_process"])
+
+
+def ensure_node_tree(context, name) -> NodeTree:
+    # Load shape key node tree from a file.
+    if name in bpy.data.node_groups:
+        return bpy.data.node_groups[name]
+
+    blend_path, do_link = get_resource_blend_path(context)
+
+    with bpy.data.libraries.load(blend_path, link=do_link, relative=True) as (data_from, data_to):
+        data_to.node_groups.append(name)
+
+    return bpy.data.node_groups[name]
+
+
+def get_resource_blend_path(context) -> tuple[str, bool]:
+    """Return the desired filepath to the .blend file containing the node set-up.
+    Also return a boolean which indicates whether it should be linked or appended.
+    """
+    addon_prefs = get_addon_prefs(context)
+
+    filepath = Path(addon_prefs.blend_path)
+    if not filepath.exists():
+        raise FileNotFoundError(
+            f"Node tree file not found: '{filepath.as_posix()}'. Browse it in the add-on preferences."
+        )
+
+    return filepath.as_posix(), addon_prefs.node_import_type == 'LINK'
+
+
+def ensure_shapekey_collection(context: Context) -> Collection:
+    """Ensure and return a collection used for the objects created by the add-on."""
+    scene = context.scene
+    coll = bpy.data.collections.get(COLLECTION_NAME)
+    if not coll:
+        coll = bpy.data.collections.new(COLLECTION_NAME)
+        scene.collection.children.link(coll)
+        coll.hide_render = True
+
+    coll.hide_viewport = False
+    if coll not in list(scene.collection.children):
+        scene.collection.children.link(coll)
+
+    context.view_layer.layer_collection.children[coll.name].exclude = False
+
+    return coll
 
 
 registry = [
