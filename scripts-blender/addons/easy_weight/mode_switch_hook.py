@@ -1,7 +1,7 @@
-import bpy, os
+import bpy
 from bpy.types import Object
+
 from .utils import get_addon_prefs
-from pathlib import Path
 
 mode_history = []
 suspend_hook = False
@@ -59,7 +59,7 @@ def on_weight_paint_enter():
             viewport.overlay.show_xray_bone = True
 
     # If the armature is still not visible, add it to the scene root collection.
-    if not armature.visible_get() and not armature.name in context.scene.collection.objects:
+    if not armature.visible_get() and armature.name not in context.scene.collection.objects:
         context.scene.collection.objects.link(armature)
         wp_toggle['arm_coll_assigned'] = True
 
@@ -130,8 +130,8 @@ def get_armature_of_meshob(obj: Object):
 
 def set_brush_prefs():
     if bpy.app.version >= (4, 3, 0):
-        # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file 
-        # until they are first accessed, so let's do that when needed. We also can't check 
+        # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file
+        # until they are first accessed, so let's do that when needed. We also can't check
         # whether these brushes exist without looping over all of them.
         for brush_name in ('Blur', 'Paint'):
             brush = next((brush for brush in bpy.data.brushes if brush.use_paint_weight and brush.name==brush_name), None)

@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
 from bpy.types import Menu, MESH_MT_vertex_group_context_menu
+
 VG_CONTEXT_MENU = MESH_MT_vertex_group_context_menu
 
 

@@ -4,7 +4,7 @@
 
 from typing import List
 
-from .background_process import Processes, BackgroundProcess
+from .background_process import BackgroundProcess, Processes
 from .execute_subprocess import execute_svn_command
 
 
@@ -22,7 +22,7 @@ class BGP_SVN_Commit(BackgroundProcess):
         self.file_list = file_list
 
     def acquire_output(self, context, prefs):
-        """This function should be executed from a separate thread to avoid freezing 
+        """This function should be executed from a separate thread to avoid freezing
         Blender's UI during execute_svn_command().
         """
         if not self.commit_msg:
@@ -59,7 +59,7 @@ class BGP_SVN_Commit(BackgroundProcess):
         repo.force_update_ui_caches(context)
 
     def get_ui_message(self, context) -> str:
-        """Return a string that should be drawn in the UI for user feedback, 
+        """Return a string that should be drawn in the UI for user feedback,
         depending on the state of the process."""
 
         if self.is_running:

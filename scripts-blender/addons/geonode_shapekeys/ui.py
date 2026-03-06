@@ -4,6 +4,7 @@
 
 import bpy
 from bl_ui.generic_ui_list import draw_ui_list
+
 from .operators import geomod_get_identifier
 from .prefs import get_addon_prefs
 
@@ -16,7 +17,7 @@ class GNSK_UL_main(bpy.types.UIList):
             # Other layout types not supported by this UIList.
             return
 
-        split = layout.row().split(factor=0.66, align=True)
+        split = layout.row().split(factor=0.4, align=True)
 
         row = split.row()
         if gnsk.storage_object:
@@ -26,15 +27,20 @@ class GNSK_UL_main(bpy.types.UIList):
             row.alert=True
             row.label(text="Error: Modifier was removed.")
             return
-        identifier = geomod_get_identifier(modifier, "Factor")
         row = split.row(align=True)
-        row.prop(modifier, f'["{identifier}"]', text="", emboss=True)
+        row.prop(modifier, f'["{geomod_get_identifier(modifier, "Transfer Mode")}"]', text="", emboss=True)
+        row.prop(modifier, f'["{geomod_get_identifier(modifier, "Factor")}"]', text="", emboss=True)
         row = row.row(align=True)
         row.alignment = 'RIGHT'
         ops = []
         ops.append(
             row.operator('object.geonode_shapekey_switch_focus', text="", icon='SCULPTMODE_HLT')
         )
+        ops[-1].mode = "SCULPT"
+        ops.append(
+            row.operator('object.geonode_shapekey_switch_focus', text="", icon='MOD_VERTEX_WEIGHT')
+        )
+        ops[-1].mode = "WEIGHT"
 
         other_target_objs = gnsk.other_affected_objects
         if len(other_target_objs) > 0:

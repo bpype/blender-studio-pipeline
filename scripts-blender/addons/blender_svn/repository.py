@@ -2,26 +2,26 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Optional,Tuple
 from pathlib import Path
+from typing import Optional, Tuple
 
 import bpy
-from bpy.types import PropertyGroup
 from bpy.props import (
-    StringProperty,
     BoolProperty,
     CollectionProperty,
-    IntProperty,
     EnumProperty,
     FloatProperty,
+    IntProperty,
+    StringProperty,
 )
+from bpy.types import PropertyGroup
 
-from .threaded import svn_log
-from .threaded.background_process import Processes
+from . import constants
 from .operators.svn_commit import SVN_commit_line
 from .svn_info import get_svn_info
+from .threaded import svn_log
+from .threaded.background_process import Processes
 from .util import get_addon_prefs
-from . import constants
 
 
 class SVN_file(PropertyGroup):

@@ -2,9 +2,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy, importlib
+import importlib
 
-from . import operators, ui, props, prefs
+import bpy
+
+from . import geonode_util, operators, prefs, props, ui
 
 bl_info = {
     'name': "GeoNode Shape Keys",
@@ -24,6 +26,7 @@ modules = (
     props,
     ui,
     prefs,
+    geonode_util,
 )
 
 

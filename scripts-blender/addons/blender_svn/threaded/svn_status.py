@@ -2,19 +2,20 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from ..svn_info import get_svn_info
-from ..util import get_addon_prefs
-from .. import constants
-from .execute_subprocess import execute_svn_command, check_svn_installed
-from .background_process import BackgroundProcess, Processes
-from bpy.types import Operator
-from bpy.props import StringProperty
-import bpy
-import xmltodict
 import time
 from pathlib import Path
-from typing import List, Dict, Union, Any, Set, Optional, Tuple
-from .. import wheels
+from typing import Dict, Tuple
+
+import bpy
+import xmltodict
+from bpy.props import StringProperty
+from bpy.types import Operator
+
+from .. import constants, wheels
+from ..svn_info import get_svn_info
+from ..util import get_addon_prefs
+from .background_process import BackgroundProcess, Processes
+from .execute_subprocess import check_svn_installed, execute_svn_command
 
 # This will load the xmltodict wheel file.
 wheels.preload_dependencies()
@@ -173,7 +174,7 @@ class BGP_SVN_Status(BackgroundProcess):
         if self.repeat_delay > time_delta > 0:
             return f"Status update in {int(time_delta)}s."
 
-        return f"Updating repo status..."
+        return "Updating repo status..."
 
 
 class BGP_SVN_Authenticate(BGP_SVN_Status):

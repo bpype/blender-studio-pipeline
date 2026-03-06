@@ -2,10 +2,20 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy, random
-from bpy.types import PropertyGroup, Object, Action, ActionSlot, ShapeKey
-from bpy.props import PointerProperty, IntProperty, CollectionProperty, StringProperty, BoolProperty
+import random
+
+import bpy
+from bpy.props import (
+    BoolProperty,
+    CollectionProperty,
+    IntProperty,
+    PointerProperty,
+    StringProperty,
+)
+from bpy.types import Action, ActionSlot, Object, PropertyGroup, ShapeKey
+
 from .ops import get_active_pose_key
+
 
 class PoseShapeKeyTarget(PropertyGroup):
     def update_name(self, context):
@@ -179,7 +189,7 @@ def update_posekey_index(self, context):
             # We just want to fire the update func.
             pk.active_target_shape_index = pk.active_target_shape_index
         else:
-            # If nothing is active in the UI, avoid any shape key being active, 
+            # If nothing is active in the UI, avoid any shape key being active,
             # so it doesn't get unintentionally modified.
             context.object.data.active_shape_key_index = -1
 

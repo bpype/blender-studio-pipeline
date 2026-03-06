@@ -4,7 +4,7 @@
 
 from bpy.types import Operator
 
-from ..utils import poll_weight_paint_mode, reveal_bone, get_deforming_vgroups
+from ..utils import get_deforming_vgroups, poll_weight_paint_mode, reveal_bone
 
 
 class EASYWEIGHT_OT_focus_deform_bones(Operator):

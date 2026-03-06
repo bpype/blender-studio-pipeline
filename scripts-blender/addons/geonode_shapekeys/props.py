@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from bpy.props import CollectionProperty, IntProperty, PointerProperty, StringProperty
 from bpy.types import Modifier, Object, PropertyGroup
-from bpy.props import StringProperty, CollectionProperty, IntProperty, PointerProperty
+
 from .operators import geomod_get_identifier
 
 
@@ -54,6 +55,10 @@ class GeoNodeShapeKey(PropertyGroup):
         for i, gnsk in enumerate(obj.geonode_shapekeys):
             if gnsk == self:
                 return i
+
+    @property
+    def shapekey_targets(self):
+        return self.storage_object.geonode_shapekey_targets
 
 
 class GNSK_TargetObject(PropertyGroup):

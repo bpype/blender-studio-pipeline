@@ -4,17 +4,17 @@
 
 import re
 from collections import OrderedDict
-
-import bpy
-from bpy.types import Object, Operator
-from bpy.props import StringProperty, BoolProperty, EnumProperty
-from mathutils import Vector, Quaternion
 from math import sqrt
 
-from .symmetrize_shape_key import mirror_mesh
-from .prefs import get_addon_prefs
-from .ui_list import UILIST_OT_Entry_Add, UILIST_OT_Entry_Remove
+import bpy
+from bpy.props import BoolProperty, EnumProperty, StringProperty
+from bpy.types import Object, Operator
+from mathutils import Quaternion, Vector
+
 from .naming import side_is_left
+from .prefs import get_addon_prefs
+from .symmetrize_shape_key import mirror_mesh
+from .ui_list import UILIST_OT_Entry_Add, UILIST_OT_Entry_Remove
 
 # When saving or pushing shapes, disable any modifier NOT in this list.
 DEFORM_MODIFIERS = [
@@ -231,7 +231,7 @@ class OperatorWithWarning:
         col.prop(addon_prefs, 'no_warning', text="Disable Warnings (Can be reset in Preferences)")
 
     def get_warning_text(self, context):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class OBJECT_OT_pose_key_save(Operator, OperatorWithWarning, SaveAndRestoreState):
@@ -904,7 +904,7 @@ class OBJECT_OT_pose_key_shape_remove(UILIST_OT_Entry_Remove, OperatorWithWarnin
 
         super().execute(context)
 
-        self.report({'INFO'}, f"Removed shape key slot.")
+        self.report({'INFO'}, "Removed shape key slot.")
         return {'FINISHED'}
 
 
@@ -918,7 +918,7 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
     shapekey_name: StringProperty()
 
     side: EnumProperty(
-        name="Side", 
+        name="Side",
         items=[
             ('LEFT', "Left", "Exclude bones whose names indicate right-side."),
             ('BOTH', "Both", "Consider the transformations of all bones, regardless of which side they're on."),
@@ -928,8 +928,8 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
     )
 
     only_selected: BoolProperty(
-        name="Only Selected Bones", 
-        description="Only consider selected bones for the driver set-up", 
+        name="Only Selected Bones",
+        description="Only consider selected bones for the driver set-up",
         default=False
     )
 
@@ -1159,7 +1159,7 @@ def reset_rig(rig, *, reset_transforms=True, reset_props=True, pbones=[]):
                 if not property_settings:
                     continue
                 property_settings = property_settings.as_dict()
-                if not 'default' in property_settings:
+                if 'default' not in property_settings:
                     continue
             except TypeError:
                 # Some properties don't support UI data, and so don't have a default value. (like addon PropertyGroups)

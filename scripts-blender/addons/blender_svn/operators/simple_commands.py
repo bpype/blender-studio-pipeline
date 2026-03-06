@@ -2,17 +2,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import List, Dict, Union, Any, Set, Optional, Tuple
 from pathlib import Path
+from typing import List, Set
 
 import bpy
-from bpy.props import StringProperty, IntProperty, EnumProperty, BoolProperty
+from bpy.props import BoolProperty, EnumProperty, IntProperty, StringProperty
 from bpy.types import Context, Operator
-
 from send2trash import send2trash
 
-from ..threaded.execute_subprocess import execute_svn_command
 from ..threaded.background_process import Processes
+from ..threaded.execute_subprocess import execute_svn_command
 from ..util import get_addon_prefs, redraw_viewport
 
 
@@ -101,7 +100,7 @@ class Warning_Operator(Popup_Operator):
             row.label(text=line)
 
     def get_warning_text(self, context):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class May_Modifiy_Current_Blend(SVN_Operator_Single_File, Warning_Operator):

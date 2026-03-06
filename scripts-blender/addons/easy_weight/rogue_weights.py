@@ -2,13 +2,22 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from collections import defaultdict
-import bpy
-import sys
 import itertools
+import sys
+from collections import defaultdict
 
-from bpy.props import IntProperty, CollectionProperty, StringProperty, BoolProperty
-from bpy.types import PropertyGroup, Panel, UIList, Operator, Mesh, VertexGroup, MeshVertex, Object
+import bpy
+from bpy.props import BoolProperty, CollectionProperty, IntProperty, StringProperty
+from bpy.types import (
+    Mesh,
+    MeshVertex,
+    Object,
+    Operator,
+    Panel,
+    PropertyGroup,
+    UIList,
+    VertexGroup,
+)
 from bpy.utils import flip_name
 
 from .utils import get_deforming_vgroups, poll_deformed_mesh_with_vgroups
@@ -208,7 +217,7 @@ class EASYWEIGHT_OT_mark_island_as_okay(Operator):
             if new_num_islands == 1:
                 self.report(
                     {'INFO'},
-                    f"Vertex group is now a single island, changing expected island count no longer necessary.",
+                    "Vertex group is now a single island, changing expected island count no longer necessary.",
                 )
                 return {'FINISHED'}
             self.report(

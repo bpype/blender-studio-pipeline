@@ -2,10 +2,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from bpy.types import Operator, Object, VertexGroup
+from bpy.types import Object, Operator, VertexGroup
 from bpy.utils import flip_name
 
-from ..utils import delete_vgroups, poll_deformed_mesh_with_vgroups, get_deforming_vgroups
+from ..utils import (
+    delete_vgroups,
+    get_deforming_vgroups,
+    poll_deformed_mesh_with_vgroups,
+)
 
 
 class EASYWEIGHT_OT_delete_empty_deform_groups(Operator):
@@ -23,7 +27,7 @@ class EASYWEIGHT_OT_delete_empty_deform_groups(Operator):
         empty_groups = get_empty_deforming_vgroups(context.active_object)
 
         num_groups = len(empty_groups)
-        print(f"Deleting empty deform groups:")
+        print("Deleting empty deform groups:")
         print("    " + "\n    ".join([vg.name for vg in empty_groups]))
 
         delete_vgroups(context.active_object, empty_groups)
@@ -44,7 +48,7 @@ def get_empty_deforming_vgroups(mesh_ob: Object) -> list[VertexGroup]:
     empty_deforming_groups = [vg for vg in deforming_vgroups if not vgroup_has_weight(mesh_ob, vg)]
 
     # If there's no Mirror modifier, we're done.
-    if not 'MIRROR' in (m.type for m in mesh_ob.modifiers):
+    if 'MIRROR' not in (m.type for m in mesh_ob.modifiers):
         return empty_deforming_groups
 
     # Mirror Modifier: A group is not considered empty if it is the opposite

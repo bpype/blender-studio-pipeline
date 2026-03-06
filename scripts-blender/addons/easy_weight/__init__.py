@@ -2,20 +2,22 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import importlib
+
+import bpy
+
 from . import (
     force_apply_mirror,
     mode_switch_hook,
     operators,
+    prefs,
+    prefs_to_disk,
+    rogue_weights,
+    utils,
+    vertex_group_menu,
     weight_cleaner,
     weight_pie,
-    vertex_group_menu,
-    rogue_weights,
-    prefs_to_disk,
-    prefs,
-    utils,
 )
-import bpy
-import importlib
 
 bl_info = {
     "name": "Easy Weight",

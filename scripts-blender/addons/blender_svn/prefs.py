@@ -2,19 +2,19 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Optional
+import json
 import platform
+from pathlib import Path
+from typing import Optional
 
 import bpy
-from bpy.props import IntProperty, CollectionProperty, BoolProperty
+from bpy.props import BoolProperty, CollectionProperty, IntProperty
 from bpy.types import AddonPreferences
 
-from .ui.ui_repo_list import draw_checkout, draw_repo_list
 from .repository import SVN_repository
 from .svn_info import get_svn_info
-import json
-from pathlib import Path
 from .threaded.background_process import Processes
+from .ui.ui_repo_list import draw_checkout, draw_repo_list
 
 
 class SVN_addon_preferences(AddonPreferences):

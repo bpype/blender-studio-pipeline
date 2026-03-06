@@ -4,13 +4,13 @@
 
 from . import (
     background_process,
+    commit,
     execute_subprocess,
+    filebrowser_activate_file,
+    redraw_viewport,
     svn_log,
     svn_status,
-    filebrowser_activate_file,
     update,
-    commit,
-    redraw_viewport
 )
 
 modules = [

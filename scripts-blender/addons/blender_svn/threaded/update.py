@@ -2,10 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import List, Dict, Union, Any, Set, Optional, Tuple
 
-from .execute_subprocess import execute_svn_command
 from .background_process import BackgroundProcess, Processes
+from .execute_subprocess import execute_svn_command
 
 
 class BGP_SVN_Update(BackgroundProcess):
@@ -80,7 +79,7 @@ class BGP_SVN_Update(BackgroundProcess):
         return
 
     def get_ui_message(self, context) -> str:
-        """Return a string that should be drawn in the UI for user feedback, 
+        """Return a string that should be drawn in the UI for user feedback,
         depending on the state of the process."""
 
         if self.is_running:

@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Tuple
-from pathlib import Path
 import subprocess
+from pathlib import Path
+from typing import Tuple
 
 from .threaded.execute_subprocess import execute_command
 

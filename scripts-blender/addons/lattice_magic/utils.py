@@ -2,9 +2,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from typing import List, Tuple
+
 import bpy
 from mathutils import Vector
-from typing import List, Tuple
 
 
 def clamp(val, _min=0, _max=1) -> float or int:

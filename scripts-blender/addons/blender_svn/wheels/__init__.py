@@ -8,9 +8,9 @@
 """External dependencies loader."""
 
 import contextlib
-from pathlib import Path
-import sys
 import logging
+import sys
+from pathlib import Path
 from types import ModuleType
 from typing import Iterator
 

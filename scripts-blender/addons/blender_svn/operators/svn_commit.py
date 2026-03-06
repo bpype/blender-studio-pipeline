@@ -2,15 +2,15 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import List, Dict, Union, Any, Set, Optional, Tuple
+from typing import List, Set
 
 import bpy
-from bpy.types import PropertyGroup, Operator, Context
 from bpy.props import StringProperty
+from bpy.types import Context, Operator, PropertyGroup
 
 from ..threaded.background_process import Processes
-from .simple_commands import SVN_Operator, Popup_Operator
 from ..util import get_addon_prefs
+from .simple_commands import Popup_Operator, SVN_Operator
 
 # Store a reference to the running operator in global namespace when it runs,
 # so that its sub-operators can mess
@@ -119,7 +119,7 @@ class SVN_OT_commit(SVN_Operator, Popup_Operator, Operator):
             text = file.status_name
             icon = file.status_icon
             if file.will_conflict:
-                # We don't want to conflict-resolve during a commit, it's 
+                # We don't want to conflict-resolve during a commit, it's
                 # confusing. User should resolve this as a separate step.
                 checkbox_ui.enabled = False
                 text = "Conflicting"

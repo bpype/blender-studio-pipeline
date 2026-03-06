@@ -2,12 +2,13 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from bpy.types import Panel
 from bl_ui.space_filebrowser import FileBrowserPanel
+from bpy.types import Panel
 
-from .ui_log import draw_svn_log, is_log_useful
-from .ui_file_list import draw_file_list
 from ..util import get_addon_prefs
+from .ui_file_list import draw_file_list
+from .ui_log import draw_svn_log, is_log_useful
+
 
 class FILEBROWSER_PT_SVN_files(FileBrowserPanel, Panel):
     bl_space_type = 'FILE_BROWSER'

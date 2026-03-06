@@ -2,9 +2,12 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy, os
+import os
+
+import bpy
+from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import AddonPreferences
-from bpy.props import BoolProperty, StringProperty, EnumProperty
+
 from . import __package__ as base_package
 
 

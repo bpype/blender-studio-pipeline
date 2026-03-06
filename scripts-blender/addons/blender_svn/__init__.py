@@ -3,16 +3,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import importlib
+
 import bpy
 
 from . import (
+    operators,
+    prefs,
     props,
     repository,
-    operators,
+    svn_info,
     threaded,
     ui,
-    prefs,
-    svn_info,
 )
 
 bl_info = {

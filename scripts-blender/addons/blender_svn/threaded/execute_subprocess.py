@@ -4,6 +4,7 @@
 
 import subprocess
 from typing import List
+
 from ..util import get_addon_prefs
 
 
