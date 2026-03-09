@@ -82,7 +82,7 @@ def ownership_get(
         if col.asset_id_owner == "NONE":
             col.asset_id_owner = default_task_layer
 
-    task_layer_objs = get_task_layer_objects(asset_pipe)
+    task_layer_objs = get_local_tasklayer_collection_objects(asset_pipe)
 
     for obj in local_col.all_objects:
         # TODO REPLACE This is expensive to loop over everything again
@@ -123,7 +123,7 @@ def ownership_set(temp_transfer_data: bpy.types.CollectionProperty) -> None:
 def get_invalid_objects(
     asset_pipe: 'bpy.types.AssetPipeline',
     local_col: bpy.types.Collection,
-) -> list[bpy.types.Object]:
+) -> set[bpy.types.Object]:
     """Returns a list of objects not used in the merge processing,
     which are considered invalid. The objects will be excluded from
     the merge process.
@@ -135,20 +135,18 @@ def get_invalid_objects(
     Returns:
         list[bpy.types.Object]: List of Invalid Objects
     """
-    local_task_layer_keys = asset_pipe.get_local_task_layers()
-    task_layer_objs = get_task_layer_objects(asset_pipe)
-
-    invalid_obj = []
+    invalid_objs = set()
     for obj in local_col.all_objects:
         if obj.library:
             # Linked objects don't have or need ownership data, so they don't count
             # as invalid.
             continue
         if obj.asset_id_owner == "NONE":
-            invalid_obj.append(obj)
-        if obj not in task_layer_objs and obj.asset_id_owner in local_task_layer_keys:
-            invalid_obj.append(obj)
-    return invalid_obj
+            invalid_objs.add(obj)
+        if not any([obj in set(coll.all_objects) for coll in asset_pipe.asset_collection.children if coll.asset_id_owner == obj.asset_id_owner]):
+            # Object is not assigned to its owning task layer's collection.
+            invalid_objs.add(obj)
+    return invalid_objs
 
 
 def remap_user(source_datablock: bpy.types.ID, target_datablock: bpy.types.ID) -> None:
@@ -322,11 +320,20 @@ def import_data_from_lib(
     return data_local_collprop.get(data_name)
 
 
-def get_task_layer_objects(asset_pipe):
+def get_local_tasklayer_collection_objects(asset_pipe) -> list[bpy.types.Object]:
+    """Return all objects in collections of local task layers."""
     local_task_layer_keys = asset_pipe.get_local_task_layers()
-    local_col = asset_pipe.asset_collection
-    task_layer_objs = []
-    for col in local_col.children:
+    root_coll = asset_pipe.asset_collection
+    objs = set()
+    for col in root_coll.children:
         if col.asset_id_owner in local_task_layer_keys:
-            task_layer_objs = task_layer_objs + list(col.all_objects)
-    return task_layer_objs
+            objs |= set(col.all_objects)
+    return list(objs)
+
+
+def get_local_tasklayer_objects(asset_pipe) -> list[bpy.types.Object]:
+    """Return all objects in collections of local task layers
+    WHICH ARE OWNED BY a local task layer."""
+    local_task_layer_keys = asset_pipe.get_local_task_layers()
+    coll_objects = get_local_tasklayer_collection_objects(asset_pipe)
+    return [o for o in coll_objects if o.asset_id_owner in local_task_layer_keys]

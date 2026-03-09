@@ -5,6 +5,7 @@
 from .... import constants
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import find_ownership_data
+from .transfer_function_util.drivers import cleanup_drivers, transfer_drivers
 from .transfer_function_util.properties import (
     copy_runtime_property,
     get_all_runtime_prop_names,
@@ -14,6 +15,7 @@ from .transfer_function_util.properties import (
 
 def transfer_custom_prop(prop_name, target_obj, source_obj):
     copy_runtime_property(source_obj, target_obj, prop_name)
+    transfer_drivers(source_obj, target_obj, '', prop_name)
 
 
 def custom_prop_clean(obj):
@@ -27,6 +29,9 @@ def custom_prop_clean(obj):
         if not ownership_data:
             cleaned_item_names.add(key)
             remove_property(obj, key)
+
+    for name in cleaned_item_names:
+        cleanup_drivers(obj, '', name)
 
     return cleaned_item_names
 

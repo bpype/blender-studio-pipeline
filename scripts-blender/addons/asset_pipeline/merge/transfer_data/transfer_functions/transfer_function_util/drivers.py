@@ -58,8 +58,8 @@ def find_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> list[b
 
 
 def transfer_drivers(source_id: bpy.types.ID, target_id: bpy.types.ID, target_type: str, target_name: str) -> None:
-    """Transfers Drivers from one ID to another, will copy and new drivres from source to from
-    source to target, and will remove any drivers on the target that are not in the source.
+    """Copy any new drivers from source_id to target_id,
+    and remove any drivers on target_id not present on source_id.
 
     Args:
         source_id (bpy.types.ID): Source ID, containing drivers to copy

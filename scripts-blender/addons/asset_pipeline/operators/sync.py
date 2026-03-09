@@ -87,6 +87,7 @@ class ASSETPIPE_OT_sync_pull(Operator):
 
     def invoke(self, context: Context, event: Event):
         sync_invoke(self, context)
+        self.did_invoke = True
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: Context):
@@ -100,6 +101,9 @@ class ASSETPIPE_OT_sync_pull(Operator):
         if self.save:
             save_images()
             bpy.ops.wm.save_mainfile()
+
+        if not hasattr(self, 'did_invoke'):
+            sync_invoke(self, context)
 
         hooks_instance = Hooks()
         hooks_instance.load_hooks(context)
@@ -227,8 +231,7 @@ def sync_draw(self, context):
         header.label(text="Sync will delete Invalid Objects", icon='TRASH')
         if panel:
             col = panel.column(align=True)
-            col.label(
-                text="An object is considered invalid if it's not linked")
+            col.label(text="An object is considered invalid if it's not linked")
             col.label(text="to the collection of its owning task layer.")
             col.separator()
             for obj in self._invalid_objs:
