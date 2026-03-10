@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import contextlib
-from typing import Optional
 
 import bpy
+from bpy.types import FCurve, Object, Scene
 
 
-def get_visibility_driver(obj) -> Optional[bpy.types.FCurve]:
+def get_visibility_driver(obj) -> FCurve | None:
     obj = bpy.data.objects.get(obj.name)
     assert obj, "Object was renamed while its visibility was being ensured?"
     if hasattr(obj, "animation_data") and obj.animation_data:
@@ -16,13 +16,13 @@ def get_visibility_driver(obj) -> Optional[bpy.types.FCurve]:
 
 
 @contextlib.contextmanager
-def override_obj_visibility(obj: bpy.types.Object, scene: bpy.types.Scene):
+def override_obj_visibility(obj: Object, scene: Scene):
     """Temporarily Change the visibility of an Object so an bpy.ops or other
     function that requires the object to be visible can be called.
 
     Args:
-        obj (bpy.types.Object): Object to un-hide
-        scene (bpy.types.Scene): Scene Object is in
+        obj (Object): Object to un-hide
+        scene (Scene): Scene Object is in
     """
     hide = obj.hide_get()  # eye icon
     hide_viewport = obj.hide_viewport  # hide viewport

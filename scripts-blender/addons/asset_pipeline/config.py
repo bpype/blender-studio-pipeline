@@ -2,15 +2,17 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
-from pathlib import Path
 import json
+from pathlib import Path
+
+import bpy
+
 from . import constants
 
-TASK_LAYER_TYPES = {}
-TRANSFER_DATA_DEFAULTS = {}
-ATTRIBUTE_DEFAULTS = {}
-ASSET_CATALOG_ID = ""
+TASK_LAYER_TYPES: dict[str] = {}
+TRANSFER_DATA_DEFAULTS: dict[str] = {}
+ATTRIBUTE_DEFAULTS: dict[str] = {}
+ASSET_CATALOG_ID: str = ""
 
 
 def get_task_layer_json_filepath() -> Path:
@@ -25,7 +27,7 @@ def get_task_layer_dict(file_path_str="") -> dict:
     else:
         json_file_path = Path(file_path_str)
     if not json_file_path.exists():
-        return
+        return {}
     return json.load(open(json_file_path))
 
 

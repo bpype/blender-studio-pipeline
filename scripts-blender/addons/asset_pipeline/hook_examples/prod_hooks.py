@@ -1,4 +1,5 @@
-import bpy
+from bpy.types import Collection
+
 from .hooks import hook
 
 '''
@@ -7,8 +8,8 @@ Rules:
     merge_status: ['pre', 'post'] # Run hook either before or after push/pull (both if left blank)
 
 Keyword Arguments:
-    asset_col: bpy.types.Collection # Get the top level collection for the current asset
-    
+    asset_col: Collection # Get the top level collection for the current asset
+
 Notes:
     Function Naming: Must be unique between production hooks and asset hooks files
     Production Hook Path: 'your_project_name/svn/pro/assets/scripts/asset_pipeline/hooks.py'
@@ -17,7 +18,7 @@ Notes:
 
 
 @hook(merge_mode='pull', merge_status="pre")
-def prod_pre_pull(asset_col: bpy.types.Collection, **kwargs):
+def prod_pre_pull(asset_col: Collection, **kwargs):
     # Only runs before pull
     print(f"Asset Collection Name '{asset_col.name}'")
     print("PRE PULL production level asset hook running!")

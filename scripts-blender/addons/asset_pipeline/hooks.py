@@ -5,14 +5,16 @@
 # TODO: This code should be de-duplicated between here and Blender Kitsu,
 # and moved to blender-studio-utils repo, then added to this repo as a submodule.
 
-import bpy
-import sys
-from pathlib import Path
-import typing
-import types
 import importlib.util
-from . import prefs
 import logging
+import sys
+import types
+import typing
+from pathlib import Path
+
+import bpy
+
+from . import prefs
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +28,7 @@ class DoNotMatch:
 
 
 MatchCriteriaType = typing.Union[
-    str, typing.List[str], typing.Type[Wildcard], typing.Type[DoNotMatch]
+    str, list[str], typing.Type[Wildcard], typing.Type[DoNotMatch]
 ]
 """
 The MatchCriteriaType is a type definition for the parameters of the `hook` decorator.
@@ -43,7 +45,7 @@ would work.
   production configuration.
 """
 
-MatchingRulesType = typing.Dict[str, MatchCriteriaType]
+MatchingRulesType = dict[str, MatchCriteriaType]
 """
 Hooks are stored as `_hook_rules' attribute on the function.
 The MatchingRulesType is the type definition of the `_hook_rules` attribute.
@@ -71,7 +73,7 @@ def _match_hook_parameter(
 
 class Hooks:
     def __init__(self):
-        self._hooks: typing.List[HookFunction] = []
+        self._hooks: list[HookFunction] = []
 
     def matches(
         self,

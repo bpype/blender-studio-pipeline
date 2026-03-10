@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
+from bpy.types import Context, Modifier, Object, Scene
 
 from .... import constants, logging
+from ....props import AssetTransferData
 from ...naming import task_layer_prefix_basename_get, task_layer_prefix_name_get
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import (
@@ -25,7 +27,7 @@ BIND_OPS = {
 }
 
 
-def modifiers_clean(obj):
+def modifiers_clean(obj: Object):
     cleaned_names = transfer_data_clean(obj=obj, data_list=obj.modifiers, td_type_key=constants.MODIFIER_KEY)
 
     # Remove Drivers that match the cleaned item's name
@@ -33,7 +35,7 @@ def modifiers_clean(obj):
         cleanup_drivers(obj, 'modifiers', name)
 
 
-def modifier_is_missing(transfer_data_item):
+def modifier_is_missing(transfer_data_item: AssetTransferData):
     return transfer_data_item_is_missing(
         transfer_data_item=transfer_data_item,
         td_type_key=constants.MODIFIER_KEY,
@@ -41,7 +43,7 @@ def modifier_is_missing(transfer_data_item):
     )
 
 
-def init_modifiers(scene, obj):
+def init_modifiers(scene: Scene, obj: Object):
     asset_pipe = scene.asset_pipeline
     td_type_key = constants.MODIFIER_KEY
     transfer_data = obj.transfer_data_ownership
@@ -66,7 +68,12 @@ def init_modifiers(scene, obj):
         ownership_data.name = mod.name
 
 
-def transfer_modifier(context, modifier_name, target_obj, source_obj):
+def transfer_modifier(
+        context: Context,
+        modifier_name: str,
+        target_obj: Object,
+        source_obj: Object,
+    ):
     """Transfer a single modifier from source_obj to target_obj.
     For example, when pulling into rigging and transferring a rigging modifier,
     then source_obj will be the local object, and target_obj will be the external object.
@@ -94,7 +101,11 @@ def transfer_modifier(context, modifier_name, target_obj, source_obj):
         bind_modifier(context, target_obj, modifier_name)
 
 
-def place_modifier_in_stack(source_obj, target_obj, modifier_name):
+def place_modifier_in_stack(
+        source_obj: Object,
+        target_obj: Object,
+        modifier_name: str,
+    ):
     """Modifiers will try to be placed below the modifier they were below on the source object.
     This is not very foolproof, since re-ordering multiple modifiers or renaming plus re-ordering,
     or removing plus re-ordering, all in one step, could make it hard to determine the ideal order.
@@ -125,7 +136,7 @@ def place_modifier_in_stack(source_obj, target_obj, modifier_name):
         logger.debug(msg)
 
 
-def transfer_modifier_props(context, source_mod, target_mod):
+def transfer_modifier_props(context: Context, source_mod: Modifier, target_mod: Modifier):
     props = [p.identifier for p in source_mod.bl_rna.properties if not p.is_readonly]
     for prop in props:
         value = getattr(source_mod, prop)
@@ -157,7 +168,7 @@ def transfer_modifier_props(context, source_mod, target_mod):
             target_mod.node_group.interface_update(context)
 
 
-def bind_modifier(context, obj, modifier_name):
+def bind_modifier(context: Context, obj: Object, modifier_name: str):
     """Binding data cannot be transferred. Instead, modifiers that require binding will have the bind operator executed.
 
     Sometimes binding is meant to be done in a bind pose other than the default. For this, shape keys can be added
@@ -211,7 +222,7 @@ def bind_modifier(context, obj, modifier_name):
                                 return
 
 
-def is_modifier_bound(modifier) -> bool | None:
+def is_modifier_bound(modifier: Modifier) -> bool | None:
     if modifier.type == 'CORRECTIVE_SMOOTH':
         return modifier.rest_source == 'BIND' and modifier.is_bind
     elif hasattr(modifier, 'is_bound'):

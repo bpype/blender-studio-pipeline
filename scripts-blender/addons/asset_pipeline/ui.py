@@ -13,7 +13,7 @@ from .config import verify_task_layer_json_data
 from .merge.publish import is_staged_publish
 
 
-class ASSETPIPE_PT_initialize_asset(bpy.types.Panel):
+class ASSETPIPE_PT_initialize_asset(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Asset Pipeline'
@@ -24,7 +24,7 @@ class ASSETPIPE_PT_initialize_asset(bpy.types.Panel):
         asset_pipe = context.scene.asset_pipeline
         return not (asset_pipe.is_asset_pipeline_file or context.scene.asset_pipeline.is_published)
 
-    def draw(self, context: bpy.types.Context) -> None:
+    def draw(self, context: Context) -> None:
         layout = self.layout
         asset_pipe = context.scene.asset_pipeline
         layout.prop(asset_pipe, "new_file_mode", expand=True)
@@ -46,16 +46,16 @@ class ASSETPIPE_PT_working_files(Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
-    def poll(cls, context: bpy.types.Context) -> bool:
+    def poll(cls, context: Context) -> bool:
         return context.scene.asset_pipeline.is_published
 
-    def draw(self, context: bpy.types.Context) -> None:
+    def draw(self, context: Context) -> None:
         for file in Path(bpy.data.filepath).parent.parent.glob("*.blend"):
             name = f"Open {file.name.strip('.blend')}"
             self.layout.operator("assetpipe.open_file", text=name).filepath = str(file)
 
 
-class ASSETPIPE_PT_configure(bpy.types.Panel):
+class ASSETPIPE_PT_configure(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Asset Pipeline'
@@ -66,7 +66,7 @@ class ASSETPIPE_PT_configure(bpy.types.Panel):
     def poll(cls, context):
         return not (ASSETPIPE_PT_initialize_asset.poll(context) or ASSETPIPE_PT_working_files.poll(context))
 
-    def draw(self, context: bpy.types.Context) -> None:
+    def draw(self, context: Context) -> None:
         layout = self.layout
         asset_pipe = context.scene.asset_pipeline
 
@@ -100,7 +100,7 @@ def poll_valid_workfile(context) -> bool:
     return True
 
 
-class ASSETPIPE_PT_sync(bpy.types.Panel):
+class ASSETPIPE_PT_sync(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Asset Pipeline'
@@ -111,7 +111,7 @@ class ASSETPIPE_PT_sync(bpy.types.Panel):
     def poll(cls, context):
         return poll_valid_workfile(context)
 
-    def draw(self, context: bpy.types.Context) -> None:
+    def draw(self, context: Context) -> None:
         layout = self.layout
         asset_pipe = context.scene.asset_pipeline
 
@@ -173,7 +173,7 @@ class ASSETPIPE_PT_publish(Panel):
     def poll(cls, context):
         return poll_valid_workfile(context)
 
-    def draw(self, context: bpy.types.Context) -> None:
+    def draw(self, context: Context) -> None:
         staged = is_staged_publish(Path(bpy.data.filepath))
         layout = self.layout
         if staged:
@@ -182,7 +182,7 @@ class ASSETPIPE_PT_publish(Panel):
         layout.operator("assetpipe.open_publish", icon="FILE")
 
 
-class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
+class ASSETPIPE_PT_sync_tools(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Asset Pipeline'
@@ -193,7 +193,7 @@ class ASSETPIPE_PT_sync_tools(bpy.types.Panel):
     def poll(cls, context):
         return poll_valid_workfile(context)
 
-    def draw(self, context: bpy.types.Context) -> None:
+    def draw(self, context: Context) -> None:
         layout = self.layout
         layout.operator("assetpipe.revert_file", icon="LOOP_BACK")
 

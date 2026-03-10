@@ -3,12 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from bpy.props import BoolProperty, EnumProperty, StringProperty
-from bpy.types import Context, Event, Operator, Panel, UILayout
+from bpy.types import Collection, Context, Event, Operator, Panel, UILayout
 
 from .. import constants
 from ..merge import task_layer
 from ..merge.task_layer import draw_task_layer_selection
-from ..prefs import get_addon_prefs
 from ..props import AssetTransferData
 from ..ui import poll_valid_workfile
 
@@ -20,7 +19,7 @@ class ASSETPIPE_PT_ownership_manager(Panel):
     bl_label = "Ownership Manager"
 
     @classmethod
-    def poll(cls, context):
+    def poll(cls, context: Context):
         return poll_valid_workfile(context)
 
     def draw(self, context: Context) -> None:
@@ -59,7 +58,7 @@ class ASSETPIPE_PT_ownership_manager(Panel):
             if obj.asset_id_surrender:
                 object_row.operator("assetpipe.update_surrendered_object")
 
-            draw_task_layer_selection(context, layout=object_row, data=obj)
+            draw_task_layer_selection(context, layout=object_row, id=obj)
             surrender_row = object_row.row()
             surrender_row.enabled = obj.asset_id_owner in asset_pipe.local_task_layers
             surrender_row.prop(obj, "asset_id_surrender", text="", icon="ORPHAN_DATA" if obj.asset_id_surrender else "HEART")
@@ -178,7 +177,7 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
                                 default=False,
                                 update=update_set_surrender)
 
-    def update_claim_surrender(self, context):
+    def update_claim_surrender(self, context: Context):
         if self.claim_surrender:
             self.set_surrender = False
 
@@ -187,7 +186,7 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
                                   update=update_claim_surrender)
 
     def _filter_by_name(self,
-                        context,
+                        context: Context,
                         unfiltered_list: list[AssetTransferData] = []):
         if self.name_filter == "":
             return unfiltered_list
@@ -195,7 +194,7 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
             item for item in unfiltered_list if self.name_filter in item.name
         ]
 
-    def _get_transfer_data_to_update(self, context):
+    def _get_transfer_data_to_update(self, context: Context):
         asset_pipe = context.scene.asset_pipeline
         objs = self._get_objects(context)
         transfer_data_items_to_update = []
@@ -232,14 +231,14 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
 
         return transfer_data_items_to_update
 
-    def _get_objects(self, context):
+    def _get_objects(self, context: Context):
         asset_objs = context.scene.asset_pipeline.asset_collection.all_objects
         selected_asset_objs = [
             obj for obj in asset_objs if obj in context.selected_objects
         ]
         return asset_objs if self.data_source == "ALL" else selected_asset_objs
 
-    def _get_filtered_objects(self, context):
+    def _get_filtered_objects(self, context: Context):
         asset_pipe = context.scene.asset_pipeline
         objs = self._get_objects(context)
         filtered_objs = self._filter_by_name(context, objs)
@@ -269,7 +268,7 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
             ]
         return filtered_objs
 
-    def _get_message(self, context) -> str:
+    def _get_message(self, context: Context) -> str:
         objs = self._get_filtered_objects(context)
         if self.data_type == "OBJECT":
             data_type_name = "Object(s)"
@@ -295,7 +294,6 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
         return context.window_manager.invoke_props_dialog(self, width=500)
 
     def draw(self, context: Context):
-        prefs = get_addon_prefs()
         grey_out = True
 
         if self.set_surrender:
@@ -322,7 +320,7 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
         task_layer.draw_task_layer_selection(
             context,
             layout=owner_row,
-            data=self,
+            id=self,
             data_owner_name='owner_selection',
             current_data_owner=self.owner_selection,
             show_all_task_layers=self.avaliable_owners == 'ALL',
@@ -381,7 +379,7 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
         return {'FINISHED'}
 
 
-def draw_collection_ownership(context, layout, collection):
+def draw_collection_ownership(context: Context, layout: UILayout, collection: Collection):
     asset_pipe = context.scene.asset_pipeline
     layout = layout.box()
     row = layout.row()
@@ -392,7 +390,7 @@ def draw_collection_ownership(context, layout, collection):
         if collection is tl_coll or collection in set(tl_coll.children_recursive):
             split = layout.split()
             split.label(text=f"{tl_coll.name}: ", icon="OUTLINER_COLLECTION")
-            draw_task_layer_selection(context, layout=split, data=tl_coll)
+            draw_task_layer_selection(context, layout=split, id=tl_coll)
 
 
 def draw_all_data_ownership_of_obj(
@@ -476,7 +474,7 @@ def draw_ownership_data_single_item(
     draw_task_layer_selection(
         context,
         layout=main_row.row(),
-        data=transfer_data_item,
+        id=transfer_data_item,
     )
     surrender_icon = "ORPHAN_DATA" if transfer_data_item.surrender else "HEART"
     surrender_row = main_row.row()

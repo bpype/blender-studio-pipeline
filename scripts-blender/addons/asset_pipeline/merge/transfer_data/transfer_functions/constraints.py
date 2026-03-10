@@ -2,9 +2,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
+from bpy.types import Object, Scene
 
 from .... import constants, logging
+from ....props import AssetTransferData
 from ...naming import task_layer_prefix_name_get
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import (
@@ -15,15 +16,19 @@ from ..transfer_util import (
 from .transfer_function_util.drivers import cleanup_drivers, transfer_drivers
 
 
-def constraints_clean(obj):
-    cleaned_names = transfer_data_clean(obj=obj, data_list=obj.constraints, td_type_key=constants.CONSTRAINT_KEY)
+def constraints_clean(obj: Object):
+    cleaned_names = transfer_data_clean(
+        obj=obj,
+        data_list=obj.constraints,
+        td_type_key=constants.CONSTRAINT_KEY,
+    )
 
     # Remove Drivers that match the cleaned item's name
     for name in cleaned_names:
         cleanup_drivers(obj, 'constraints', name)
 
 
-def constraint_is_missing(transfer_data_item):
+def constraint_is_missing(transfer_data_item: AssetTransferData):
     return transfer_data_item_is_missing(
         transfer_data_item=transfer_data_item,
         td_type_key=constants.CONSTRAINT_KEY,
@@ -31,7 +36,7 @@ def constraint_is_missing(transfer_data_item):
     )
 
 
-def init_constraints(scene, obj):
+def init_constraints(scene: Scene, obj: Object):
     td_type_key = constants.CONSTRAINT_KEY
     transfer_data = obj.transfer_data_ownership
     asset_pipe = scene.asset_pipeline
@@ -54,9 +59,8 @@ def init_constraints(scene, obj):
         const.name = task_layer_prefix_name_get(const.name, ownership_data.owner)
 
 
-def transfer_constraint(constraint_name, target_obj, source_obj):
+def transfer_constraint(constraint_name: str, target_obj: Object, source_obj: Object):
     logger = logging.get_logger()
-    context = bpy.context
     # Remove old and sync existing constraints.
     old_con = target_obj.constraints.get(constraint_name)
     if old_con:

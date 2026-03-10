@@ -26,7 +26,7 @@ from ..merge.task_layer import draw_task_layer_selection
 from ..operators.ownership_manager import draw_all_data_ownership_of_obj
 
 
-class ASSETPIPE_OT_prepare_sync(bpy.types.Operator):
+class ASSETPIPE_OT_prepare_sync(Operator):
     bl_idname = "assetpipe.prepare_sync"
     bl_label = "Prepare Sync"
     bl_description = (
@@ -38,14 +38,14 @@ class ASSETPIPE_OT_prepare_sync(bpy.types.Operator):
     _invalid_objs = []
     _other_ids = []
 
-    def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
+    def invoke(self, context: Context, event: Event):
         sync_invoke(self, context)
         return context.window_manager.invoke_props_dialog(self, width=400)
 
-    def draw(self, context: bpy.types.Context):
+    def draw(self, context: Context):
         sync_draw(self, context)
 
-    def execute(self, context: bpy.types.Context):
+    def execute(self, context: Context):
         asset_col = context.scene.asset_pipeline.asset_collection
         hooks_instance = Hooks()
         hooks_instance.load_hooks(context)
@@ -201,7 +201,7 @@ class ASSETPIPE_OT_sync_push(Operator):
         return {'FINISHED'}
 
 
-def sync_invoke(self, context):
+def sync_invoke(self, context: Context):
     logger = logging.get_logger()
     logger.info("Loading Transfer Data")
     self._temp_transfer_data = context.scene.asset_pipeline.temp_transfer_data
@@ -220,7 +220,7 @@ def sync_invoke(self, context):
     self._shared_ids = init_shared_ids(context.scene)
 
 
-def sync_draw(self, context):
+def sync_draw(self, context: Context):
     layout = self.layout
     row = layout.row()
 
@@ -247,7 +247,7 @@ def sync_draw(self, context):
                 draw_task_layer_selection(
                     context,
                     layout=row,
-                    data=id,
+                    id=id,
                 )
 
     if len(self._temp_transfer_data) == 0:
@@ -277,14 +277,14 @@ def sync_draw(self, context):
             draw_all_data_ownership_of_obj(context, panel, obj_ownership)
 
 
-def sync_execute_update_ownership(self, context):
+def sync_execute_update_ownership(self, context: Context):
     logger = logging.get_logger()
     logger.info("Updating Ownership")
     temp_transfer_data = context.scene.asset_pipeline.temp_transfer_data
     ownership_set(temp_transfer_data)
 
 
-def sync_execute_prepare_sync(self, context):
+def sync_execute_prepare_sync(self, context: Context):
     asset_pipe = context.scene.asset_pipeline
     self._current_file = Path(bpy.data.filepath)
     self._temp_dir = Path(bpy.app.tempdir).parent
@@ -299,7 +299,7 @@ def sync_execute_prepare_sync(self, context):
         bpy.data.objects.remove(obj)
 
 
-def sync_execute_pull(self, context):
+def sync_execute_pull(self, context: Context):
     start_time = time.time()
     profiler = logging.get_profiler()
     logger = logging.get_logger()
@@ -331,7 +331,7 @@ def sync_execute_pull(self, context):
     profiler.add(time.time() - start_time, "TOTAL")
 
 
-def create_temp_file_backup(self, context):
+def create_temp_file_backup(self, context: Context):
     temp_file = self._temp_dir.joinpath(
         self._current_file.name.replace(".blend", "") +
         "_Asset_Pipe_Backup.blend")
@@ -339,13 +339,13 @@ def create_temp_file_backup(self, context):
     return temp_file.__str__()
 
 
-def update_temp_file_paths(self, context, temp_file_path):
+def update_temp_file_paths(self, context: Context, temp_file_path: str):
     asset_pipe = context.scene.asset_pipeline
     asset_pipe.temp_file = temp_file_path
     asset_pipe.source_file = self._current_file.__str__()
 
 
-def sync_execute_push(self, context):
+def sync_execute_push(self, context: Context):
     start_time = time.time()
     profiler = logging.get_profiler()
     logger = logging.get_logger()

@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Any, Generator, List, Tuple
+from typing import Any, Generator
 
 import bpy
-from bpy.types import bpy_prop_collection
+from bpy.types import ID, Collection, Object, bpy_prop_collection
 
 from .. import constants
 
@@ -14,20 +14,20 @@ from .. import constants
 ####################################
 
 
-def get_id_info() -> List[Tuple[type, str, str]]:
+def get_id_info() -> list[tuple[type, str, str]]:
     """Return a list of tuples with the python class, type identifier string, and bpy.data container name
     of each ID type present in the blend file.
     Eg. when called in a file containing meshes and objects, it will return at least:
     [
-        (bpy.types.Object, 'OBJECT', "objects"),
-        (bpy.types.Mesh, 'MESH', "meshes"),
+        (Object, 'OBJECT', "objects"),
+        (Mesh, 'MESH', "meshes"),
     ]
     """
     bpy_prop_collection = type(bpy.data.objects)
     id_info = []
     for prop_name in dir(bpy.data):
         coll_prop = getattr(bpy.data, prop_name)
-        if type(coll_prop) == bpy_prop_collection:
+        if type(coll_prop) is bpy_prop_collection:
             if len(coll_prop) == 0:
                 # We can't get full info about the ID type if there isn't at least one entry of it.
                 # But we shouldn't need it, since we don't have any entries of it!
@@ -39,7 +39,7 @@ def get_id_info() -> List[Tuple[type, str, str]]:
 
 def get_id_identifier_from_class(id_type: type):
     """Return the string name of an ID type class.
-    eg. bpy.types.Object -> 'OBJECT'
+    eg. Object -> 'OBJECT'
     """
     id_info = get_id_info()
     for typ, typ_str, container_str in id_info:
@@ -47,19 +47,19 @@ def get_id_identifier_from_class(id_type: type):
             return typ_str
 
 
-def get_fundamental_id_type(datablock: bpy.types.ID) -> Any:
+def get_fundamental_id_type(datablock: ID) -> Any:
     """Certain datablocks have very specific types, such as
-    bpy.types.GeometryNodeTree instead of bpy.types.NodeTree.
+    GeometryNodeTree instead of NodeTree.
 
     This function should return their fundamental type, ie. parent class,
     by reaching into the python Method Resolution Order (MRO) to find its
     python class inheritance chain and then step back 4 steps:
-    object->bpy_struct->bpy.types.ID->bpy.types.WhatWeNeed"""
+    object->bpy_struct->ID->WhatWeNeed"""
 
     return type(datablock).mro()[-4]
 
 
-def get_storage_of_id(datablock: bpy.types.ID) -> bpy_prop_collection:
+def get_storage_of_id(datablock: ID) -> bpy_prop_collection:
     """Return the storage collection property of the datablock.
     Eg. for an object, returns bpy.data.objects.
     """
@@ -76,14 +76,14 @@ def get_storage_of_id(datablock: bpy.types.ID) -> bpy_prop_collection:
 
 
 def traverse_collection_tree(
-    collection: bpy.types.Collection,
-) -> Generator[bpy.types.Collection, None, None]:
+    collection: Collection,
+) -> Generator[Collection, None, None]:
     yield collection
     for child in collection.children:
         yield from traverse_collection_tree(child)
 
 
-def data_type_from_transfer_data_key(obj: bpy.types.Object, td_type: str):
+def data_type_from_transfer_data_key(obj: Object, td_type: str):
     """Returns the data on an object that is referred to by the Transferable Data type"""
     if td_type == constants.VERTEX_GROUP_KEY:
         return obj.vertex_groups

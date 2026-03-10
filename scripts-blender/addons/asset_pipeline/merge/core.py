@@ -6,9 +6,11 @@ import time
 from pathlib import Path
 
 import bpy
+from bpy.types import ID, Collection, Context, Object, Scene
 
 from .. import constants, logging
 from ..merge.naming import task_layer_prefix_transfer_data_update
+from ..props import AssetPipeline, AssetTransferDataTemp
 from .asset_mapping import AssetTransferMapping
 from .naming import (
     get_id_type_name,
@@ -18,7 +20,7 @@ from .naming import (
 from .transfer_data.transfer_core import (
     apply_transfer_data,
     init_transfer_data,
-    transfer_data_clean,
+    transfer_data_clean_all,
     transfer_data_is_missing,
 )
 from .transfer_data.transfer_functions.transfer_function_util.active_indexes import (
@@ -35,13 +37,13 @@ from .transfer_data.transfer_util import (
 
 
 def ownership_transfer_data_cleanup(
-    asset_pipe: 'bpy.types.AssetPipeline',
-    obj: bpy.types.Object,
+    asset_pipe: AssetPipeline,
+    obj: Object,
 ) -> None:
     """Remove Transferable Data ownership items if the corresponding data is missing
 
     Args:
-        obj (bpy.types.Object): Object that contains the Transferable Data
+        obj (Object): Object that contains the Transferable Data
     """
     local_task_layer_keys = asset_pipe.get_local_task_layers()
     transfer_data = obj.transfer_data_ownership
@@ -56,21 +58,19 @@ def ownership_transfer_data_cleanup(
 
 
 def ownership_get(
-    local_col: bpy.types.Collection,
-    scene: bpy.types.Scene,
+    local_col: Collection,
+    scene: Scene,
 ) -> None:
     """Find new Transferable Data owned by the local task layer.
     Marks items as owned by the local task layer if they are in the
     corresponding task layer collection and have no owner.
 
     Args:
-        local_col (bpy.types.Collection): The top level asset collection that is local to the file
-        task_layer_name (str): Name of the current task layer that will be the owner of the data
-        temp_transfer_data (bpy.types.CollectionProperty): Collection property containing newly found
-        data and the object that contains this data.
+        local_col: The top level asset collection that is local to the file
+        scene: Active scene (which holds add-on data.)
 
     Returns:
-        list[bpy.types.Object]: Returns a list of objects that have no owner and will not be included
+        list[Object]: Returns a list of objects that have no owner and will not be included
         in the merge process
     """
     asset_pipe = scene.asset_pipeline
@@ -100,12 +100,12 @@ def ownership_get(
         init_transfer_data(scene, obj)
 
 
-def ownership_set(temp_transfer_data: bpy.types.CollectionProperty) -> None:
+def ownership_set(temp_transfer_data: list[AssetTransferDataTemp]) -> None:
     """Add new Transferable Data items on each object found in the
     temp Transferable Data collection property
 
     Args:
-        temp_transfer_data (bpy.types.CollectionProperty): Collection property containing newly found
+        temp_transfer_data: Collection property containing newly found
         data and the object that contains this data.
     """
     for transfer_data_item in temp_transfer_data:
@@ -121,19 +121,19 @@ def ownership_set(temp_transfer_data: bpy.types.CollectionProperty) -> None:
 
 
 def get_invalid_objects(
-    asset_pipe: 'bpy.types.AssetPipeline',
-    local_col: bpy.types.Collection,
-) -> set[bpy.types.Object]:
+    asset_pipe: AssetPipeline,
+    local_col: Collection,
+) -> set[Object]:
     """Returns a list of objects not used in the merge processing,
     which are considered invalid. The objects will be excluded from
     the merge process.
 
     Args:
-        local_col (bpy.types.Collection): The top level asset collection that is local to the file
-        scene (bpy.types.Scene): Scene that contains a the file's asset
+        asset_pipe: Asset pipeline data.
+        local_col: Asset root collection.
 
     Returns:
-        list[bpy.types.Object]: List of Invalid Objects
+        Set of Invalid Objects
     """
     invalid_objs = set()
     for obj in local_col.all_objects:
@@ -149,12 +149,12 @@ def get_invalid_objects(
     return invalid_objs
 
 
-def remap_user(source_datablock: bpy.types.ID, target_datablock: bpy.types.ID) -> None:
+def remap_user(source_datablock: ID, target_datablock: ID) -> None:
     """Remap datablock and append name to datablock that has been remapped
 
     Args:
-        source_datablock (bpy.types.ID): datablock that will be replaced by the target
-        target_datablock (bpy.types.ID): datablock that will replace the source
+        source_datablock (ID): datablock that will be replaced by the target
+        target_datablock (ID): datablock that will replace the source
     """
     logger = logging.get_logger()
     logger.debug(f"Remapping {source_datablock.rna_type.name}: {source_datablock.name} to {target_datablock.name}")
@@ -163,7 +163,7 @@ def remap_user(source_datablock: bpy.types.ID, target_datablock: bpy.types.ID) -
 
 
 def merge_task_layer(
-    context: bpy.types.Context,
+    context: Context,
     local_tls: list[str],
     external_file: Path,
 ) -> None:
@@ -178,12 +178,11 @@ def merge_task_layer(
     and map is created to match each object to its respective owner.
 
     Args:
-        context: (bpy.types.Context): context of current .blend
+        context: (Context): context of current .blend
         local_tls: (list[str]): list of task layers that are local to the current file
         external_file (Path): external file to pull data into the current file from
     """
 
-    logger = logging.get_logger()
     profiles = logging.get_profiler()
 
     start_time = time.time()
@@ -218,7 +217,7 @@ def merge_task_layer(
 
     if len(map.conflict_ids) != 0:
         for conflict_obj in map.conflict_ids:
-            type_name = get_id_type_name(type(conflict_obj))
+            type_name = get_id_type_name(conflict_obj)
             error_msg += f"Ownership conflict found for {type_name}: '{conflict_obj.name}'\n"
         return error_msg
     mapped_time = time.time()
@@ -236,7 +235,7 @@ def merge_task_layer(
 
     for source_obj, target_obj in map.object_map.items():
         remap_user(source_obj, target_obj)
-        transfer_data_clean(target_obj)
+        transfer_data_clean_all(target_obj)
     obj_remap_time = time.time()
     profiles.add((obj_remap_time - apply_td_time), "OBJECTS")
 
@@ -274,7 +273,7 @@ def import_data_from_lib(
     data_category: str,
     data_name: str,
     link: bool = False,
-) -> bpy.types.ID:
+) -> ID:
     """Appends/Links data from an external file into the current file.
 
     Args:
@@ -284,7 +283,7 @@ def import_data_from_lib(
         link (bool, optional): Set to link library otherwise append. Defaults to False.
 
     Returns:
-        bpy.types.ID: returns datablock that was linked/appended
+        ID: returns datablock that was linked/appended
     """
 
     noun = "Appended"
@@ -320,7 +319,7 @@ def import_data_from_lib(
     return data_local_collprop.get(data_name)
 
 
-def get_local_tasklayer_collection_objects(asset_pipe) -> list[bpy.types.Object]:
+def get_local_tasklayer_collection_objects(asset_pipe: AssetPipeline) -> list[Object]:
     """Return all objects in collections of local task layers."""
     local_task_layer_keys = asset_pipe.get_local_task_layers()
     root_coll = asset_pipe.asset_collection
@@ -331,7 +330,7 @@ def get_local_tasklayer_collection_objects(asset_pipe) -> list[bpy.types.Object]
     return list(objs)
 
 
-def get_local_tasklayer_objects(asset_pipe) -> list[bpy.types.Object]:
+def get_local_tasklayer_objects(asset_pipe: AssetPipeline) -> list[Object]:
     """Return all objects in collections of local task layers
     WHICH ARE OWNED BY a local task layer."""
     local_task_layer_keys = asset_pipe.get_local_task_layers()

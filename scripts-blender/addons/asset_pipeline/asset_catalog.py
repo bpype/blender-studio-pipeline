@@ -4,7 +4,6 @@
 
 import os
 from pathlib import Path
-from typing import List
 
 import bpy
 
@@ -36,7 +35,7 @@ def find_asset_cat_file(directory: str) -> str:
     return find_asset_cat_file(parent_dir)
 
 
-def get_asset_catalog_items(reload: bool = False) -> List[str]:
+def get_asset_catalog_items(reload: bool = False) -> list[str]:
     """Generate List of Asset Catalog Items, and Dictionary of
     Asset Catalog UUIDs with their matching names. When this function
     is called the list and dict of asset catalog items will be updated.

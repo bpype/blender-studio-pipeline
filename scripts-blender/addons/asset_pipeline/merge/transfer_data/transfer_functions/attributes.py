@@ -3,11 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bmesh
-import bpy
 import mathutils
 import numpy as np
+from bpy.types import Attribute, Object, Scene, bpy_prop_collection
 
 from .... import constants, logging
+from ....props import AssetTransferData
 from ...naming import merge_get_basename
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import find_ownership_data
@@ -20,7 +21,7 @@ from .transfer_function_util.proximity_core import (
 )
 
 
-def attributes_get_editable(attributes):
+def attributes_get_editable(attributes: bpy_prop_collection):
     return [
         attribute
         for attribute in attributes
@@ -33,7 +34,7 @@ def attributes_get_editable(attributes):
     ]
 
 
-def attribute_clean(obj):
+def attribute_clean(obj: Object):
     logger = logging.get_logger()
     if obj.type != "MESH":
         return
@@ -54,7 +55,7 @@ def attribute_clean(obj):
         obj.data.attributes.remove(attribute_to_remove)
 
 
-def attribute_is_missing(transfer_data_item):
+def attribute_is_missing(transfer_data_item: AssetTransferData):
     obj = transfer_data_item.id_data
     if obj.type != "MESH":
         return
@@ -64,7 +65,7 @@ def attribute_is_missing(transfer_data_item):
         return True
 
 
-def init_attributes(scene, obj):
+def init_attributes(scene: Scene, obj: Object):
     asset_pipe = scene.asset_pipeline
     if obj.type != "MESH":
         return
@@ -86,8 +87,8 @@ def init_attributes(scene, obj):
 
 def transfer_attribute(
     attribute_name: str,
-    target_obj: bpy.types.Object,
-    source_obj: bpy.types.Object,
+    target_obj: Object,
+    source_obj: Object,
 ):
     source_attributes = source_obj.data.attributes
     target_attributes = target_obj.data.attributes
@@ -118,23 +119,23 @@ def transfer_attribute(
     for source_data_item in source_attribute.data.items():
         index = source_data_item[0]
         source_data = source_data_item[1]
-        keys = set(source_data.bl_rna.properties.keys()) - set(bpy.types.Attribute.bl_rna.properties.keys())
+        keys = set(source_data.bl_rna.properties.keys()) - set(Attribute.bl_rna.properties.keys())
         for key in list(keys):
             target_data = target_attribute.data[index]
             setattr(target_data, key, getattr(source_data, key))
 
 
 def proximity_transfer_single_attribute(
-    source_obj: bpy.types.Object,
-    target_obj: bpy.types.Object,
-    source_attribute: bpy.types.Attribute,
-    target_attribute: bpy.types.Attribute,
+    source_obj: Object,
+    target_obj: Object,
+    source_attribute: Attribute,
+    target_attribute: Attribute,
 ):
     # src_dat = source_obj.data
     # tgt_dat = target_obj.data
     # if type(src_dat) is not type(tgt_dat) or not (src_dat or tgt_dat):
     #     return False
-    # if type(tgt_dat) is not bpy.types.Mesh:  # TODO: support more types
+    # if type(tgt_dat) is not Mesh:  # TODO: support more types
     #     return False
 
     # If target attribute already exists, remove it.

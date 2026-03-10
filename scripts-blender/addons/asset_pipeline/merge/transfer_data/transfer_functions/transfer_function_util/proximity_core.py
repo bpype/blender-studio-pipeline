@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bmesh
-import bpy
 import mathutils
 import numpy as np
+from bpy.types import Curve, Mesh, Object
 
 
 def closest_face_to_point(bm_source, p_target, bvh_tree=None):
@@ -140,7 +140,7 @@ def transfer_corner_data(obj_source, obj_target, data_layer_source, data_layer_t
                         p,
                         skip_edges=traversed_edges,
                     )
-                    if edge == None:
+                    if edge is None:
                         break
                     if len(edge.link_faces) != 2:
                         break
@@ -186,7 +186,7 @@ def is_mesh_identical(mesh_a, mesh_b) -> bool:
     return True
 
 
-def is_curve_identical(curve_a: bpy.types.Curve, curve_b: bpy.types.Curve) -> bool:
+def is_curve_identical(curve_a: Curve, curve_b: Curve) -> bool:
     if len(curve_a.splines) != len(curve_b.splines):
         return False
     for spline1, spline2 in zip(curve_a.splines, curve_b.splines):
@@ -195,19 +195,19 @@ def is_curve_identical(curve_a: bpy.types.Curve, curve_b: bpy.types.Curve) -> bo
     return True
 
 
-def is_obdata_identical(a: bpy.types.Object or bpy.types.Mesh, b: bpy.types.Object or bpy.types.Mesh) -> bool:
+def is_obdata_identical(a: Object or Mesh, b: Object or Mesh) -> bool:
     """Checks if two objects have matching topology (efficiency over exactness)"""
-    if type(a) == bpy.types.Object:
+    if type(a) is Object:
         a = a.data
-    if type(b) == bpy.types.Object:
+    if type(b) is Object:
         b = b.data
 
-    if type(a) != type(b):
+    if type(a) is not type(b):
         return False
 
-    if type(a) == bpy.types.Mesh:
+    if type(a) is Mesh:
         return is_mesh_identical(a, b)
-    elif type(a) == bpy.types.Curve:
+    elif type(a) is Curve:
         return is_curve_identical(a, b)
     else:
         # TODO: Support geometry types other than mesh or curve.

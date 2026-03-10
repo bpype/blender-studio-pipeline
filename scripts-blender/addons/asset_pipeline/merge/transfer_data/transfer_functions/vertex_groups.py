@@ -2,12 +2,12 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from typing import Dict, List, Tuple
 
-import bpy
+from bpy.types import Mesh, MeshVertex, Object, Scene, VertexGroup
 from mathutils import Vector, kdtree
 
 from .... import constants, logging
+from ....props import AssetTransferData
 from ..transfer_util import (
     transfer_data_clean,
     transfer_data_item_init,
@@ -18,11 +18,11 @@ from .transfer_function_util.proximity_core import (
 )
 
 
-def vertex_groups_clean(obj):
+def vertex_groups_clean(obj: Object):
     transfer_data_clean(obj=obj, data_list=obj.vertex_groups, td_type_key=constants.VERTEX_GROUP_KEY)
 
 
-def vertex_group_is_missing(transfer_data_item):
+def vertex_group_is_missing(transfer_data_item: AssetTransferData):
     return transfer_data_item_is_missing(
         transfer_data_item=transfer_data_item,
         td_type_key=constants.VERTEX_GROUP_KEY,
@@ -30,7 +30,7 @@ def vertex_group_is_missing(transfer_data_item):
     )
 
 
-def init_vertex_groups(scene, obj):
+def init_vertex_groups(scene: Scene, obj: Object):
     transfer_data_item_init(
         scene=scene,
         obj=obj,
@@ -40,9 +40,9 @@ def init_vertex_groups(scene, obj):
 
 
 def transfer_vertex_groups(
-    vertex_group_names: List[str],
-    target_obj: bpy.types.Object,
-    source_obj: bpy.types.Object,
+    vertex_group_names: list[str],
+    target_obj: Object,
+    source_obj: Object,
 ):
     logger = logging.get_logger()
     for vertex_group_name in vertex_group_names:
@@ -58,7 +58,7 @@ def transfer_vertex_groups(
         precalc_and_transfer_multiple_groups(source_obj, target_obj, vertex_group_names, expand=2)
 
 
-def transfer_single_vgroup_by_topology(source_obj, target_obj, vgroup_name):
+def transfer_single_vgroup_by_topology(source_obj: Object, target_obj: Object, vgroup_name: str):
     """Function to quickly transfer single vertex group between mesh objects in case of matching topology."""
 
     remove_vgroups([target_obj], [vgroup_name])
@@ -71,7 +71,7 @@ def transfer_single_vgroup_by_topology(source_obj, target_obj, vgroup_name):
             vgroup_tgt.add([v.index], vgroup_src.weight(v.index), 'REPLACE')
 
 
-def remove_vgroups(objs, vgroup_names):
+def remove_vgroups(objs: list[Object], vgroup_names: list[str]):
     for obj in objs:
         for vgroup_name in vgroup_names:
             target_vgroup = obj.vertex_groups.get(vgroup_name)
@@ -79,7 +79,7 @@ def remove_vgroups(objs, vgroup_names):
                 obj.vertex_groups.remove(target_vgroup)
 
 
-def precalc_and_transfer_multiple_groups(source_obj, target_obj, vgroup_names, expand=2):
+def precalc_and_transfer_multiple_groups(source_obj: Object, target_obj: Object, vgroup_names: list[str], expand=2):
     """Convenience function to transfer multiple groups."""
 
     remove_vgroups([target_obj], vgroup_names)
@@ -94,7 +94,7 @@ def precalc_and_transfer_multiple_groups(source_obj, target_obj, vgroup_names, e
     )
 
 
-def precalc_and_transfer_single_group(source_obj, target_obj, vgroup_name, expand=2):
+def precalc_and_transfer_single_group(source_obj: Object, target_obj: Object, vgroup_name: str, expand=2):
     """Convenience function to transfer a single group. For transferring multiple groups,
     precalc_and_transfer_multiple_groups should be used as it is more efficient."""
 
@@ -111,7 +111,7 @@ def precalc_and_transfer_single_group(source_obj, target_obj, vgroup_name, expan
     )
 
 
-def build_kdtree(mesh):
+def build_kdtree(mesh: Mesh):
     kd = kdtree.KDTree(len(mesh.vertices))
     for i, v in enumerate(mesh.vertices):
         kd.insert(v.co, i)
@@ -119,10 +119,15 @@ def build_kdtree(mesh):
     return kd
 
 
-def build_vert_influence_map(obj_from, obj_to, kd_tree, expand=2):
+def build_vert_influence_map(
+        obj_from: Object,
+        obj_to: Object,
+        kd_tree: kdtree.KDTree,
+        expand=2,
+    ) -> dict[int, list[tuple[int, float]]]:
     verts_of_edge = {i: (e.vertices[0], e.vertices[1]) for i, e in enumerate(obj_from.data.edges)}
 
-    edges_of_vert: Dict[int, List[int]] = {}
+    edges_of_vert: dict[int, list[int]] = {}
     for edge_idx, edge in enumerate(obj_from.data.edges):
         for vert_idx in edge.vertices:
             if vert_idx not in edges_of_vert:
@@ -133,7 +138,7 @@ def build_vert_influence_map(obj_from, obj_to, kd_tree, expand=2):
     # their influence.
     # This can be pre-calculated once per object pair, to minimize re-calculations
     # of subsequent transferring of individual vertex groups.
-    vert_influence_map: List[int, List[Tuple[int, float]]] = {}
+    vert_influence_map: dict[int, list[tuple[int, float]]] = {}
     for i, dest_vert in enumerate(obj_to.data.vertices):
         vert_influence_map[i] = get_source_vert_influences(
             dest_vert, obj_from, kd_tree, expand, edges_of_vert, verts_of_edge
@@ -143,8 +148,13 @@ def build_vert_influence_map(obj_from, obj_to, kd_tree, expand=2):
 
 
 def get_source_vert_influences(
-    target_vert, obj_from, kd_tree, expand=2, edges_of_vert={}, verts_of_edge={}
-) -> List[Tuple[int, float]]:
+    target_vert: MeshVertex,
+    obj_from: Object,
+    kd_tree: kdtree.KDTree,
+    expand=2,
+    edges_of_vert: dict[int, list[int]]={},
+    verts_of_edge: dict[int, tuple[int, int]]={},
+) -> list[tuple[int, float]]:
     _coord, idx, dist = get_nearest_vert(target_vert.co, kd_tree)
     source_vert_indices = [idx]
 
@@ -161,7 +171,7 @@ def get_source_vert_influences(
                     new_indices.append(vert_other)
         source_vert_indices.extend(new_indices)
 
-    distances: List[Tuple[int, float]] = []
+    distances: list[tuple[int, float]] = []
     distance_total = 0
     for src_vert_idx in source_vert_indices:
         distance = (target_vert.co - obj_from.data.vertices[src_vert_idx].co).length
@@ -178,23 +188,35 @@ def get_source_vert_influences(
     return influences
 
 
-def get_nearest_vert(coords: Vector, kd_tree: kdtree.KDTree) -> Tuple[Vector, int, float]:
+def get_nearest_vert(
+        coords: Vector,
+        kd_tree: kdtree.KDTree,
+    ) -> tuple[Vector, int, float]:
     """Return coordinate, index, and distance of nearest vert to coords in kd_tree."""
     return kd_tree.find(coords)
 
 
-def other_vert_of_edge(edge: int, vert: int, verts_of_edge: Dict[int, Tuple[int, int]]) -> int:
+def other_vert_of_edge(
+        edge: int,
+        vert: int,
+        verts_of_edge: dict[int, tuple[int, int]],
+    ) -> int:
     verts = verts_of_edge[edge]
     assert vert in verts, f"Vert {vert} not part of edge {edge}."
     return verts[0] if vert == verts[1] else verts[1]
 
 
-def transfer_multiple_vertex_groups(obj_from, obj_to, vert_influence_map, src_vgroups):
+def transfer_multiple_vertex_groups(
+        obj_from: Object,
+        obj_to: Object,
+        vert_influence_map: dict[int, list[tuple[int, float]]],
+        src_vgroups: list[VertexGroup],
+    ):
     """Transfer src_vgroups in obj_from to obj_to using a pre-calculated vert_influence_map."""
 
     for src_vg in src_vgroups:
         target_vg = obj_to.vertex_groups.get(src_vg.name)
-        if target_vg == None:
+        if target_vg is None:
             target_vg = obj_to.vertex_groups.new(name=src_vg.name)
 
     for i, dest_vert in enumerate(obj_to.data.vertices):

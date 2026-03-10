@@ -4,8 +4,8 @@
 
 import os
 
-import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
+from bpy.types import AddonPreferences, Context
 
 from . import constants
 from .logging import get_logger
@@ -17,7 +17,7 @@ def project_root_dir_get():
     return prefs.project_root_dir
 
 
-class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
+class ASSET_PIPELINE_addon_preferences(AddonPreferences):
     bl_idname = __package__
 
     project_root_dir: StringProperty(
@@ -68,7 +68,7 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         default=False,
     )
 
-    def draw(self, context):
+    def draw(self, context: Context):
         row = self.layout.row()
         if not os.path.exists(self.project_root_dir):
             row.alert = True

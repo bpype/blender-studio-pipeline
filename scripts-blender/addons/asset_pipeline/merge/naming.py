@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
+from bpy.types import ID, Collection
 from bpy_extras.id_map_utils import get_all_referenced_ids, get_id_reference_map
 
 from .. import config, constants
+from ..props import AssetTransferData
 from .util import data_type_from_transfer_data_key, get_storage_of_id
 
 
@@ -49,12 +51,12 @@ def merge_get_basename(name: str) -> str:
     return name
 
 
-def merge_remove_suffix_from_hierarchy(collection: bpy.types.Collection) -> None:
+def merge_remove_suffix_from_hierarchy(collection: Collection) -> None:
     """Removes the suffix after a set delimiter from all datablocks
     referenced by a collection, itself included
 
     Args:
-        collection (bpy.types.Collection): Collection that as been suffixed
+        collection (Collection): Collection that as been suffixed
     """
     ref_map = get_id_reference_map()
     datablocks = get_all_referenced_ids(collection, ref_map)
@@ -71,12 +73,12 @@ def merge_remove_suffix_from_hierarchy(collection: bpy.types.Collection) -> None
         db.name = merge_get_basename(db.name)
 
 
-def merge_add_suffix_to_hierarchy(collection: bpy.types.Collection, suffix_base: str) -> None:
+def merge_add_suffix_to_hierarchy(collection: Collection, suffix_base: str) -> None:
     """Add a suffix to the names of all datablocks referenced by a collection,
     itself included.
 
     Args:
-        collection (bpy.types.Collection): Collection that needs to be suffixed
+        collection (Collection): Collection that needs to be suffixed
         suffix_base (str): Suffix to append to collection and items linked to collection
     """
 
@@ -165,7 +167,7 @@ def task_layer_prefix_legacy_basename(name) -> str:
 
 
 def task_layer_prefix_transfer_data_update(
-    transfer_data_item: bpy.types.CollectionProperty,
+    transfer_data_item: AssetTransferData,
 ) -> bool:
     """Task Layer Prefix can become out of date with the actual owner of the task layer.
     This will update the existing prefixes on transfer_data_item so it can match the
@@ -173,7 +175,7 @@ def task_layer_prefix_transfer_data_update(
     name of the actual data the transfer_data_item is referring to.
 
     Args:
-        transfer_data_item (bpy.types.CollectionProperty): Transferable Data Item that is named with prefix
+        transfer_data_item (AssetTransferData): Transferable Data Item that is named with prefix
 
     Returns:
         bool: Returns True if a change to the name was completed
@@ -207,16 +209,16 @@ def task_layer_prefix_transfer_data_update(
     return True
 
 
-def get_id_type_name(id_type: bpy.types) -> str:
+def get_id_type_name(id: ID) -> str:
     """Return the cosmetic name of a given ID type
 
     Args:
-        id_type (bpy.types): An ID type e.g. bpy.types.Object
+        id (ID): Any datablock.
 
     Returns:
-        str: Name of an ID type e.g. bpy.types.Object will return 'Object'
+        str: Name of an ID type e.g. Object will return 'Object'
     """
-    type_str = str(id_type)
+    type_str = str(id)
     if "types." in type_str:
         return type_str.split("types.")[1].replace("'>", "")
     else:

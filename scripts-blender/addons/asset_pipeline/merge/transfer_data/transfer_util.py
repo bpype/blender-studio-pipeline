@@ -4,7 +4,15 @@
 
 import contextlib
 
-import bpy
+from bpy.types import (
+    Collection,
+    Context,
+    Modifier,
+    Object,
+    Scene,
+    bpy_prop_collection,
+    bpy_struct,
+)
 
 from ...props import AssetTransferData
 from ..naming import merge_get_basename
@@ -12,22 +20,20 @@ from ..task_layer import get_transfer_data_owner
 
 
 def find_ownership_data(
-    transfer_data: bpy.types.CollectionProperty,
-    key: str,
-    td_type_key: str,
+    transfer_data: list[AssetTransferData],
+    name: str,
+    type: str,
 ) -> AssetTransferData | None:
-    """Return matching AssetTransferData if it exists."""
-    existing_items = [
+    """Find an AssetTransferData in a list of them by name and type."""
+    return next((
         transfer_data_item
         for transfer_data_item in transfer_data
-        if transfer_data_item.type == td_type_key and key == transfer_data_item.name
-    ]
-    if existing_items:
-        return existing_items[0]
+        if transfer_data_item.type == type and name == transfer_data_item.name
+    ), None)
 
 
 def transfer_data_add_entry(
-    transfer_data: bpy.types.CollectionProperty,
+    transfer_data: list[AssetTransferData],
     name: str,
     td_type_key: str,
     task_layer_name: str,
@@ -36,11 +42,11 @@ def transfer_data_add_entry(
     """Add entry to Transferable Data ownership
 
     Args:
-        ownership (bpy.types.CollectionProperty): Transferable Data of an object
-        name (str): Name of new Transferable Data item
-        td_type_key (str): Type of Transferable Data
-        task_layer_name (str): Name of current task layer
-        surrender (bool): Whether this data's ownership should be surrendered to begin with
+        transfer_data: Transferable Data of an object
+        name: Name of new Transferable Data item
+        td_type_key: Type of Transferable Data
+        task_layer_name: Name of current task layer
+        surrender: Whether this data's ownership should be surrendered to begin with
     """
     transfer_data_item = transfer_data.add()
     transfer_data_item.name = name
@@ -50,12 +56,12 @@ def transfer_data_add_entry(
     return transfer_data_item
 
 
-def transfer_data_clean(obj: bpy.types.Object, data_list: bpy.types.CollectionProperty, td_type_key: str):
+def transfer_data_clean(obj: Object, data_list: list[bpy_struct], td_type_key: str):
     """Removes data if a transfer_data_item doesn't exist but the data does exist
     Args:
-        obj (bpy.types.Object): Object containing Transferable Data
-        data_list (bpy.types.CollectionProperty): Collection Property containing a type of possible Transferable Data e.g. obj.modifiers
-        td_type_key (str): Key for the Transferable Data type
+        obj: Object containing Transferable Data
+        data_list: List containing a type of possible Transferable Data e.g. obj.modifiers
+        td_type_key: Key for the Transferable Data type
     """
     cleaned_item_names = set()
 
@@ -73,38 +79,36 @@ def transfer_data_clean(obj: bpy.types.Object, data_list: bpy.types.CollectionPr
 
 
 def transfer_data_item_is_missing(
-    transfer_data_item, data_list: bpy.types.CollectionProperty, td_type_key: str
+    transfer_data_item: AssetTransferData,
+    data_list: bpy_prop_collection,
+    td_type_key: str,
 ) -> bool:
     """Returns true if a transfer_data_item exists the data doesn't exist
 
     Args:
-        transfer_data_item (_type_): Item of Transferable Data
-        data_list (bpy.types.CollectionProperty): Collection Property containing a type of possible Transferable Data e.g. obj.modifiers
-        td_type_key (str): Key for the Transferable Data type
+        transfer_data_item: Item of Transferable Data
+        data_list: Collection Property containing a type of possible Transferable Data e.g. obj.modifiers
+        td_type_key: Key for the Transferable Data type
     Returns:
-        bool: Returns True if transfer_data_item is missing
+        bool: Returns True if there's no entry in the provided list with the provided name.
     """
     if transfer_data_item.type == td_type_key and not data_list.get(transfer_data_item["name"]):
         return True
 
 
-"""Intilize Transferable Data to a temporary collection property, used
-    to draw a display of new Transferable Data to the user before merge process. 
-"""
-
-
 def transfer_data_item_init(
-    scene: bpy.types.Scene,
-    obj: bpy.types.Object,
-    data_list: bpy.types.CollectionProperty,
+    scene: Scene,
+    obj: Object,
+    data_list: bpy_prop_collection,
     td_type_key: str,
 ):
-    """_summary_
+    """Intilize Transferable Data to a temporary collection property, used
+    to draw a display of new Transferable Data to the user before merge process.
 
     Args:
-        scene (bpy.types.Scene): Scene that contains a the file's asset
-        obj (bpy.types.Object): Object containing possible Transferable Data
-        data_list (bpy.types.CollectionProperty): Collection Property containing a type of possible Transferable Data e.g. obj.modifiers
+        scene (Scene): Scene that contains a the file's asset
+        obj (Object): Object containing possible Transferable Data
+        data_list (CollectionProperty): Collection Property containing a type of possible Transferable Data e.g. obj.modifiers
         td_type_key (str): Key for the Transferable Data type
     """
     asset_pipe = scene.asset_pipeline
@@ -128,7 +132,7 @@ def transfer_data_item_init(
 
 
 @contextlib.contextmanager
-def isolate_collection(context, iso_col: bpy.types.Collection):
+def isolate_collection(context: Context, iso_col: Collection):
     col_exclude = {}
     view_layer_col = context.view_layer.layer_collection
     view_layer_col.collection.children.link(iso_col)
@@ -148,7 +152,7 @@ def isolate_collection(context, iso_col: bpy.types.Collection):
 
 
 @contextlib.contextmanager
-def link_objs_to_collection(objs: set, col: bpy.types.Collection):
+def link_objs_to_collection(objs: set[Object], col: Collection):
     try:
         for obj in objs:
             col.objects.link(obj)
@@ -160,7 +164,7 @@ def link_objs_to_collection(objs: set, col: bpy.types.Collection):
 
 
 @contextlib.contextmanager
-def activate_shapekey(objs: set, sk_name: str):
+def activate_shapekey(objs: set[Object], sk_name: str):
     old_values = {}
     try:
         for obj in objs:
@@ -179,7 +183,7 @@ def activate_shapekey(objs: set, sk_name: str):
 
 
 @contextlib.contextmanager
-def disable_modifiers(objs: set, mod_types: set[str]):
+def disable_modifiers(objs: set[Object], mod_types: set[str]):
     mods_to_enable = {obj: [] for obj in objs}
     try:
         for obj in objs:
@@ -196,7 +200,7 @@ def disable_modifiers(objs: set, mod_types: set[str]):
 
 
 @contextlib.contextmanager
-def enable_modifiers(obj, modifiers):
+def enable_modifiers(obj: Object, modifiers: list[Modifier]):
     modifiers_to_disable = []
 
     fcurves_to_enable = []
@@ -221,7 +225,7 @@ def enable_modifiers(obj, modifiers):
 
 
 @contextlib.contextmanager
-def simplify(scene):
+def simplify(scene: Scene):
     """Disable subdivision surface modifiers globally using the scene's Simplify setting.
     Important for binding modifiers, but also probably doesn't hurt for general performance.
     """

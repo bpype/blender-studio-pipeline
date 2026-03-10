@@ -2,21 +2,21 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
+from bpy.types import ID, FCurve
 
 
-def copy_driver(from_fcurve: bpy.types.FCurve, target: bpy.types.ID, data_path=None, index=None) -> bpy.types.FCurve:
+def copy_driver(from_fcurve: FCurve, target: ID, data_path=None, index=None) -> FCurve:
     """Copy an existing FCurve containing a driver to a new ID, by creating a copy
     of the existing driver on the target ID.
 
     Args:
-        from_fcurve (bpy.types.FCurve): FCurve containing a driver
-        target (bpy.types.ID): ID that can have drivers added to it
+        from_fcurve (FCurve): FCurve containing a driver
+        target (ID): ID that can have drivers added to it
         data_path (_type_, optional): Data Path of existing driver. Defaults to None.
         index (_type_, optional): array index of the property drive. Defaults to None.
 
     Returns:
-        bpy.types.FCurve: Fcurve containing copy of driver on target ID
+        FCurve: Fcurve containing copy of driver on target ID
     """
 
     if not target.animation_data:
@@ -32,16 +32,16 @@ def copy_driver(from_fcurve: bpy.types.FCurve, target: bpy.types.ID, data_path=N
     return new_fc
 
 
-def find_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> list[bpy.types.FCurve]:
-    """_summary_
+def find_drivers(id: ID, target_type: str, target_name: str) -> list[FCurve]:
+    """Return a filtered list of driver FCurves on the given ID.
 
     Args:
-        drivers (list[bpy.types.FCurve]): List or Collection Property containing Fcurves with drivers
-        target_type (str): Name of data type found in driver data path, e.g. "modifiers"
+        id: ID whose drivers should be searched.
+        target_type: Part of the data path for filtering drivers.
         target_name (str): Name of data found in driver path, e.g. modifier's name
 
     Returns:
-        list[bpy.types.FCurve]: List of FCurves containing drivers that match type & name
+        list[FCurve]: List of FCurves containing drivers that match type & name
     """
 
     if not id.animation_data:
@@ -57,13 +57,13 @@ def find_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> list[b
     return found_drivers
 
 
-def transfer_drivers(source_id: bpy.types.ID, target_id: bpy.types.ID, target_type: str, target_name: str) -> None:
+def transfer_drivers(source_id: ID, target_id: ID, target_type: str, target_name: str) -> None:
     """Copy any new drivers from source_id to target_id,
     and remove any drivers on target_id not present on source_id.
 
     Args:
-        source_id (bpy.types.ID): Source ID, containing drivers to copy
-        target_id (bpy.types.ID): Target ID, which will recieve the drivers from source
+        source_id (ID): Source ID, containing drivers to copy
+        target_id (ID): Target ID, which will recieve the drivers from source
         target_type (str): Name of driver target's type, like `modifier` or `constraint`
         target_name (str): Name of driver target, e.g. name of a modifier or contraint
     """
@@ -79,11 +79,11 @@ def transfer_drivers(source_id: bpy.types.ID, target_id: bpy.types.ID, target_ty
         copy_driver(from_fcurve=fcurve, target=target_id)
 
 
-def cleanup_drivers(id: bpy.types.ID, target_type: str, target_name: str) -> None:
+def cleanup_drivers(id: ID, target_type: str, target_name: str) -> None:
     """Remove all drivers for transfer data that has been removed.
 
     Args:
-        object (bpy.types.ID): ID, which has drivers to remove
+        object (ID): ID, which has drivers to remove
         target_type (str): Name of driver target's type, like `modifier` or `constraint`
         target_name (str): Name of driver target, e.g. name of a modifier or contraint
     """
