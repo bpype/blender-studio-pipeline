@@ -23,7 +23,7 @@ from ..merge.preserve import Preserve
 from ..merge.publish import find_sync_target
 from ..merge.shared_ids import get_shared_id_icon, init_shared_ids
 from ..merge.task_layer import draw_task_layer_selection
-from ..merge.transfer_data.transfer_ui import draw_transfer_data
+from ..operators.ownership_manager import draw_all_data_ownership_of_obj
 
 
 class ASSETPIPE_OT_prepare_sync(bpy.types.Operator):
@@ -61,7 +61,7 @@ class ASSETPIPE_OT_prepare_sync(bpy.types.Operator):
 class ASSETPIPE_OT_sync_pull(Operator):
     bl_idname = "assetpipe.sync_pull"
     bl_label = "Pull Asset"
-    bl_description = """Pull Task Layers from the published sync target"""
+    bl_description = """Pull Task Layers from the sync target"""
     bl_options = {'REGISTER', 'UNDO'}
 
     _temp_transfer_data = None
@@ -126,7 +126,7 @@ class ASSETPIPE_OT_sync_pull(Operator):
 class ASSETPIPE_OT_sync_push(Operator):
     bl_idname = "assetpipe.sync_push"
     bl_label = "Sync Asset"
-    bl_description = """Sync the current Task Layer to the published sync target. File will be saved as part of the Push process"""
+    bl_description = """Sync the current Task Layer to the sync target. File will be saved as part of the Push process"""
 
     _temp_transfer_data = None
     _invalid_objs = []
@@ -157,8 +157,8 @@ class ASSETPIPE_OT_sync_push(Operator):
     def draw(self, context: Context):
         if not self.pull:
             col = self.layout.column()
-            col.label(text="Force Pushing without pulling can cause data loss",
-                      icon="ERROR")
+            col.alert = True
+            col.label(text="Pushing without pulling can lead to loss of data! Always pull first!", icon="ERROR")
             col.separator()
         sync_draw(self, context)
 
@@ -274,7 +274,7 @@ def sync_draw(self, context):
         header, panel = box.panel(obj.name, default_closed=True)
         header.label(text=obj.name, icon='OBJECT_DATA')
         if panel:
-            draw_transfer_data(context, obj_ownership, panel)
+            draw_all_data_ownership_of_obj(context, panel, obj_ownership)
 
 
 def sync_execute_update_ownership(self, context):

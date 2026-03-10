@@ -53,12 +53,6 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         update=update_logger_level,
     )
 
-    is_advanced_mode: BoolProperty(
-        name="Advanced Mode",
-        description="Show Advanced Options in Asset Pipeline Panels",
-        default=False,
-    )
-
     preserve_action: BoolProperty(
         name="Preserve Actions in Workfiles",
         description="Preserve Action Data-Blocks on Armatures in working files during Pull (this data will not be pushed to Sync Target)",
@@ -84,7 +78,6 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "logger_level")
         self.layout.prop(self, "preserve_action")
         self.layout.prop(self, "preserve_indexes")
-        self.layout.prop(self, "is_advanced_mode")
 
 
 registry = [
