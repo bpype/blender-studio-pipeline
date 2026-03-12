@@ -56,7 +56,7 @@ def enable_this(addon_name):
 
 def get_filepath_info(addon_name="") -> tuple[str, str, str]:
     filepath = Path(__file__)
-    dirpath = filepath.parent.parent
+    dirpath = filepath.parent.parent / Path("addons")
     addon_name = addon_name or dirpath.name
     module_name = addon_name.lower()
     return dirpath.as_posix(), addon_name, module_name
