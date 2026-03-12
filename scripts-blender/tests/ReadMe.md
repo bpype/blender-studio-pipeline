@@ -7,10 +7,10 @@ Tests require [Blender as Python Module](https://pypi.org/project/bpy/) which in
     Other OS: Figure it out.
 1. **Creating Python virtual environment in the repo's root**
     `cd path/to/blender-studio-tools/scripts-blender/addons`
-    Windows: `py -3.11 -m venv venv`
+    Windows: `py -3.11 -m venv .venv`
     Linux: `python3.11 -m venv .venv`
 1. **Activate Python 3.11 venv**
-    Windows: `.\venv\Scripts\activate`
+    Windows: `.\.venv\Scripts\activate`
     Linux: `. .venv/bin/activate`
 1. **Install dependencies**
     `pip install -r requirements-dev.txt`

@@ -7,10 +7,11 @@ from pathlib import Path
 
 import bpy
 from bpy.props import BoolProperty, EnumProperty
-from bpy.types import Context, Operator
+from bpy.types import Context, Event, Operator
 
 from .. import config, constants
 from ..merge import publish
+from ..props import AssetPipeline
 
 
 class ASSETPIPE_OT_create_new_asset(Operator):
@@ -21,7 +22,7 @@ class ASSETPIPE_OT_create_new_asset(Operator):
     _name = ""
     _prefix = ""
     _json_path = None
-    _asset_pipe = None
+    _asset_pipe: AssetPipeline = None
 
     create_files: BoolProperty(name="Create Files for Unselected Task Layers",
                                default=True)
@@ -45,7 +46,7 @@ class ASSETPIPE_OT_create_new_asset(Operator):
                 return False
         return True
 
-    def invoke(self, context: Context, event):
+    def invoke(self, context: Context, _event: Event):
         # Dynamically Create Task Layer Bools
         self._asset_pipe = context.scene.asset_pipeline
 
@@ -60,7 +61,6 @@ class ASSETPIPE_OT_create_new_asset(Operator):
                 continue
             new_task_layer = all_task_layers.add()
             new_task_layer.name = task_layer_key
-        self.publish_type = constants.STAGED_PUBLISH_KEY
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: Context):
@@ -95,7 +95,7 @@ class ASSETPIPE_OT_create_new_asset(Operator):
         self._asset_pipe.name = name
         self._asset_pipe.prefix = prefix
 
-    def _asset_dir_get(self, context) -> str:
+    def _asset_dir_get(self, context: Context) -> str:
         if self._asset_pipe.new_file_mode == "KEEP":
             return Path(bpy.data.filepath).parent.__str__()
 
@@ -103,23 +103,18 @@ class ASSETPIPE_OT_create_new_asset(Operator):
             user_dir = bpy.path.abspath(self._asset_pipe.dir)
             return os.path.join(user_dir, self._name)
 
-    def _load_task_layers(self, context):
+    def _load_task_layers(self, context: Context) -> list[str]:
         all_task_layers = self._asset_pipe.all_task_layers
         local_tls = []
         for task_layer_bool in all_task_layers:
             if task_layer_bool.is_local:
                 local_tls.append(task_layer_bool.name)
 
-        if not any(task_layer_bool.is_local
-                   for task_layer_bool in all_task_layers):
-            self.report(
-                {'ERROR'},
-                "Please select at least one task layer to be local to the current file",
-            )
-            return {'CANCELLED'}
+        if not any(task_layer_bool.is_local for task_layer_bool in all_task_layers):
+            return []
         return local_tls
 
-    def _create_publish_directories(self, context, asset_directory):
+    def _create_publish_directories(self, context: Context, asset_directory: str):
         for publish_type in constants.PUBLISH_KEYS:
             new_dir_path = os.path.join(asset_directory, publish_type)
             if os.path.exists(new_dir_path):
@@ -130,7 +125,7 @@ class ASSETPIPE_OT_create_new_asset(Operator):
                 return {'CANCELLED'}
             os.mkdir(new_dir_path)
 
-    def _asset_collection_get(self, context, local_tls):
+    def _asset_collection_get(self, context: Context, local_tls):
         if self._asset_pipe.new_file_mode == "KEEP":
             asset_col = self._asset_pipe.asset_collection
             for col in asset_col.children:
@@ -143,7 +138,7 @@ class ASSETPIPE_OT_create_new_asset(Operator):
             self._asset_pipe.asset_collection = asset_col
         return asset_col
 
-    def _remove_collections(self, context):
+    def _remove_collections(self, context: Context):
         # Remove Data From task layer Files except for asset_collection
         for col in bpy.data.collections:
             if not col == self._asset_pipe.asset_collection:
@@ -168,7 +163,7 @@ class ASSETPIPE_OT_create_new_asset(Operator):
             if task_layer_col not in list(asset_col.children):
                 asset_col.children.link(task_layer_col)
 
-    def _first_file_create(self, context, local_tls, asset_directory) -> str:
+    def _first_file_create(self, context: Context, local_tls: list[str], asset_directory: str) -> str:
         self._asset_pipe.is_asset_pipeline_file = True
 
         asset_col = self._asset_collection_get(context, local_tls)
@@ -188,8 +183,12 @@ class ASSETPIPE_OT_create_new_asset(Operator):
         bpy.ops.wm.save_as_mainfile(filepath=first_file, copy=True)
         return first_file
 
-    def _task_layer_file_create(self, context, task_layer_key,
-                                asset_directory):
+    def _task_layer_file_create(
+            self,
+            context: Context,
+            task_layer_key: str,
+            asset_directory: str,
+        ):
         name = (self._name + constants.FILE_DELIMITER +
                 task_layer_key.lower().replace(" ", "_") + ".blend")
         self._asset_pipe.set_local_task_layers([task_layer_key])
@@ -204,6 +203,9 @@ class ASSETPIPE_OT_create_new_asset(Operator):
         self._asset_name_set(context)
         asset_directory = self._asset_dir_get(context)
         local_tls = self._load_task_layers(context)
+        if not local_tls:
+            self.report({'ERROR'}, "Please select at least one task layer to be local to the current file")
+            return {'CANCELLED'}
 
         if not os.path.exists(asset_directory):
             os.mkdir(asset_directory)
@@ -219,15 +221,13 @@ class ASSETPIPE_OT_create_new_asset(Operator):
         if self._asset_pipe.new_file_mode == "BLANK":
             self._remove_collections(context)
 
-        starting_file = self._first_file_create(context, local_tls,
-                                                asset_directory)
+        starting_file = self._first_file_create(context, local_tls, asset_directory)
 
         for task_layer_key in config.TASK_LAYER_TYPES:
             if task_layer_key == "NONE" or task_layer_key in local_tls:
                 continue
             self._remove_collections(context)
-            self._task_layer_file_create(context, task_layer_key,
-                                         asset_directory)
+            self._task_layer_file_create(context, task_layer_key, asset_directory)
 
         # Create intial publish based on task layers.
         self._remove_collections(context)

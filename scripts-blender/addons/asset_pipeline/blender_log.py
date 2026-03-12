@@ -2,6 +2,7 @@ import sys
 
 import addon_utils
 import bpy
+from bpy.types import Context
 
 from .logging import get_logger
 
@@ -12,7 +13,7 @@ def __get_blenlog_module_name() -> str:
     return next((m for m in sys.modules if m.endswith('.blender_log')), None)
 
 
-def clear_log_category(context, category: str):
+def clear_log_category(context: Context, category: str):
     """Clear a category of issues, to avoid duplicating issues when checking for them multiple times."""
     blenlog_module_name = __get_blenlog_module_name()
     log_enabled = addon_utils.check(blenlog_module_name)[1]
@@ -23,7 +24,7 @@ def clear_log_category(context, category: str):
 def add_log(
     name: str,
     *,
-    context=None,
+    context: Context|None=None,
     description="",
     icon="",
     category="Uncategorized",

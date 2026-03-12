@@ -31,7 +31,10 @@ def get_all_runtime_prop_names(owner):
 
 def get_addon_prop_names(owner):
     if bpy.app.version >= (5, 0, 0):
-        return list(owner.bl_system_properties_get().keys())
+        sys_props = owner.bl_system_properties_get()
+        if sys_props:
+            return list(sys_props.keys())
+        return []
     else:
         return [prop_name for prop_name in owner.keys() if is_addon_prop(owner, prop_name)]
 

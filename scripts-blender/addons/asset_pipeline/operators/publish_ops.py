@@ -5,14 +5,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    pass
 
 import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
-from bpy.types import Context
+from bpy.types import Context, Event, Operator
 
 from .. import constants
 from ..asset_catalog import get_asset_id
@@ -20,7 +16,7 @@ from ..images import save_images
 from ..merge import publish
 
 
-class ASSETPIPE_OT_open_file(bpy.types.Operator):
+class ASSETPIPE_OT_open_file(Operator):
     bl_idname = "assetpipe.open_file"
     bl_label = "Open File"
     bl_description = """Open an Asset Pipeline File, will not prompt to save current file"""
@@ -32,7 +28,7 @@ class ASSETPIPE_OT_open_file(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def get_publish_type_enum(self, context):
+def get_publish_type_enum(self, context: Context):
     sync_target = [
         (
             "sync_target",
@@ -43,7 +39,7 @@ def get_publish_type_enum(self, context):
     return sync_target + constants.PUBLISH_TYPES
 
 
-class ASSETPIPE_OT_open_publish(bpy.types.Operator):
+class ASSETPIPE_OT_open_publish(Operator):
     bl_idname = "assetpipe.open_publish"
     bl_label = "Open Latest Publish"
     bl_description = """Open the current Published File used for Push/Pull/Sync."""
@@ -58,11 +54,11 @@ class ASSETPIPE_OT_open_publish(bpy.types.Operator):
         description="Save the file before opening Published File",
     )
 
-    def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
+    def invoke(self, context: Context, event: Event):
         # self.publish_types = "sync_target"
         return context.window_manager.invoke_props_dialog(self, width=400)
 
-    def draw(self, context: bpy.types.Context):
+    def draw(self, context: Context):
         layout = self.layout
         layout.prop(self, "publish_types")
         if bpy.data.is_dirty:
@@ -98,7 +94,7 @@ class ASSETPIPE_OT_open_publish(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
+class ASSETPIPE_OT_publish_new_version(Operator):
     bl_idname = "assetpipe.publish_new_version"
     bl_label = "Publish New Version"
     bl_description = """Create a new Published Version in the Publish Area"""
@@ -109,7 +105,7 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
     )
 
     @classmethod
-    def poll(cls, context: bpy.types.Context) -> bool:
+    def poll(cls, context: Context) -> bool:
         if bpy.data.is_dirty:
             cls.poll_message_set(
                 "Save the current file and/or Pull from last publish before creating new Publish"
@@ -117,14 +113,14 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
             return False
         return True
 
-    def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
+    def invoke(self, context: Context, event: Event):
         return context.window_manager.invoke_props_dialog(self, width=400)
 
-    def draw(self, context: bpy.types.Context):
+    def draw(self, context: Context):
         layout = self.layout
         layout.prop(self, "publish_types")
 
-    def execute(self, context: bpy.types.Context):
+    def execute(self, context: Context):
         if (
             publish.is_staged_publish(Path(bpy.data.filepath))
             and self.publish_types != constants.SANDBOX_PUBLISH_KEY
@@ -144,13 +140,13 @@ class ASSETPIPE_OT_publish_new_version(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
+class ASSETPIPE_OT_publish_staged_as_active(Operator):
     bl_idname = "assetpipe.publish_staged_as_active"
     bl_label = "Publish Staged to Active"
     bl_description = """Create a new Published Version in the Publish Area"""
 
     @classmethod
-    def poll(cls, context: bpy.types.Context) -> bool:
+    def poll(cls, context: Context) -> bool:
         if bpy.data.is_dirty:
             cls.poll_message_set(
                 "Save the current file and/or Pull from last publish before creating new Publish"
@@ -161,10 +157,10 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
             return False
         return True
 
-    def invoke(self, context: bpy.types.Context, event: bpy.types.Event):
+    def invoke(self, context: Context, event: Event):
         return context.window_manager.invoke_props_dialog(self, width=400)
 
-    def draw(self, context: bpy.types.Context):
+    def draw(self, context: Context):
         layout = self.layout
         layout.alert = True
         layout.label(
@@ -172,7 +168,7 @@ class ASSETPIPE_OT_publish_staged_as_active(bpy.types.Operator):
             icon="ERROR",
         )
 
-    def execute(self, context: bpy.types.Context):
+    def execute(self, context: Context):
         current_file = Path(bpy.data.filepath)
         staged_file = publish.find_latest_publish(
             current_file, publish_type=constants.STAGED_PUBLISH_KEY

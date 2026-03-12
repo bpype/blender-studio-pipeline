@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
+from bpy.types import Object, Scene
 
 from .... import constants
+from ....props import AssetTransferData
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import find_ownership_data
 from .attributes import transfer_attribute
@@ -13,7 +15,7 @@ from .transfer_function_util.proximity_core import (
 )
 
 
-def materials_clean(obj):
+def materials_clean(obj: Object):
     # Material slots cannot use generic transfer_data_clean() function
 
     ownership_data = find_ownership_data(
@@ -30,12 +32,12 @@ def materials_clean(obj):
         obj.data.materials.clear()
 
 
-def materials_is_missing(transfer_data_item):
+def materials_is_missing(transfer_data_item: AssetTransferData):
     if transfer_data_item.type == constants.MATERIAL_SLOT_KEY and len(transfer_data_item.id_data.material_slots) == 0:
         return True
 
 
-def init_materials(scene, obj):
+def init_materials(scene: Scene, obj: Object):
     asset_pipe = scene.asset_pipeline
     td_type_key = constants.MATERIAL_SLOT_KEY
     name = constants.MATERIAL_TRANSFER_DATA_ITEM_NAME
@@ -60,7 +62,7 @@ def init_materials(scene, obj):
         )
 
 
-def transfer_materials(target_obj: bpy.types.Object, source_obj):
+def transfer_materials(target_obj: Object, source_obj: Object):
     # Delete all material slots of target object.
     target_obj.data.materials.clear()
 
@@ -84,7 +86,7 @@ def transfer_materials(target_obj: bpy.types.Object, source_obj):
         transfer_uv_seams(source_obj, target_obj)
 
 
-def transfer_uv_seams(source_obj, target_obj):
+def transfer_uv_seams(source_obj: Object, target_obj: Object):
     if is_obdata_identical(source_obj, target_obj):
         for edge_from, edge_to in zip(source_obj.data.edges, target_obj.data.edges):
             edge_to.use_seam = edge_from.use_seam

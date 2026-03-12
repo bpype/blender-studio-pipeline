@@ -2,13 +2,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from bpy.types import Object, Scene
+
 from .... import constants, logging
+from ....props import AssetTransferData
 from ...naming import merge_get_basename
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import find_ownership_data
 
 
-def parent_clean(obj):
+def parent_clean(obj: Object):
     logger = logging.get_logger()
     ownership_data = find_ownership_data(
         obj.transfer_data_ownership,
@@ -23,12 +26,12 @@ def parent_clean(obj):
     logger.debug("Cleaning Parent Relationship")
 
 
-def parent_is_missing(transfer_data_item):
-    if transfer_data_item.type == constants.PARENT_KEY and transfer_data_item.id_data.parent == None:
+def parent_is_missing(transfer_data_item: AssetTransferData):
+    if transfer_data_item.type == constants.PARENT_KEY and transfer_data_item.id_data.parent is None:
         return True
 
 
-def init_parent(scene, obj):
+def init_parent(scene: Scene, obj: Object):
     asset_pipe = scene.asset_pipeline
     td_type_key = constants.PARENT_KEY
     name = constants.PARENT_TRANSFER_DATA_ITEM_NAME
@@ -52,7 +55,7 @@ def init_parent(scene, obj):
         )
 
 
-def transfer_parent(target_obj, source_obj):
+def transfer_parent(target_obj: Object, source_obj: Object):
     target_obj.parent = source_obj.parent
     target_obj.parent_type = source_obj.parent_type
     target_obj.parent_bone = source_obj.parent_bone

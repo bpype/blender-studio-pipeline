@@ -2,9 +2,13 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from bpy.types import Object, Scene
+
 from .... import constants
+from ....props import AssetTransferData
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import find_ownership_data
+from .transfer_function_util.drivers import cleanup_drivers, transfer_drivers
 from .transfer_function_util.properties import (
     copy_runtime_property,
     get_all_runtime_prop_names,
@@ -12,11 +16,12 @@ from .transfer_function_util.properties import (
 )
 
 
-def transfer_custom_prop(prop_name, target_obj, source_obj):
+def transfer_custom_prop(prop_name: str, target_obj: Object, source_obj: Object):
     copy_runtime_property(source_obj, target_obj, prop_name)
+    transfer_drivers(source_obj, target_obj, '', prop_name)
 
 
-def custom_prop_clean(obj):
+def custom_prop_clean(obj: Object):
     cleaned_item_names = set()
     for key in get_valid_runtime_prop_names(obj):
         ownership_data = find_ownership_data(
@@ -28,17 +33,20 @@ def custom_prop_clean(obj):
             cleaned_item_names.add(key)
             remove_property(obj, key)
 
+    for name in cleaned_item_names:
+        cleanup_drivers(obj, '', name)
+
     return cleaned_item_names
 
 
-def custom_prop_is_missing(transfer_data_item):
+def custom_prop_is_missing(transfer_data_item: AssetTransferData):
     obj = transfer_data_item.id_data
     return transfer_data_item.type == constants.CUSTOM_PROP_KEY and transfer_data_item[
         "name"
     ] not in get_valid_runtime_prop_names(obj)
 
 
-def init_custom_prop(scene, obj):
+def init_custom_prop(scene: Scene, obj: Object):
     asset_pipe = scene.asset_pipeline
     transfer_data = obj.transfer_data_ownership
     td_type_key = constants.CUSTOM_PROP_KEY

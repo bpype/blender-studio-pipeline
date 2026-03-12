@@ -1,3 +1,6 @@
+# Result .blend file of tests will start with a .
+.*.blend
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -195,7 +195,10 @@ def update_extension(extension_zip_name, src_folder_name='extensions', dst_path_
         for file in lines:
             old_file = dst_path_base / file
             if old_file.exists():
-                shutil.rmtree(old_file)
+                if old_file.is_dir():
+                    shutil.rmtree(old_file)
+                else:
+                    old_file.unlink()
 
     # Get a list of the top level content of the extension in case it doesn't just contain one folder
     extension_top_level_files = [entry.name for entry in src_path_base.iterdir()]
@@ -353,7 +356,10 @@ def update_extensions():
             for file in lines:
                 old_file = PATH_LOCAL / 'extensions' / file
                 if old_file.exists():
-                    shutil.rmtree(old_file)
+                    if old_file.is_dir():
+                        shutil.rmtree(old_file)
+                    else:
+                        old_file.unlink()
             extension_files.unlink()
             if extension_checksum.exists():
                 extension_checksum.unlink()

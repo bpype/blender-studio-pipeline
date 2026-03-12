@@ -3,11 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bmesh
-import bpy
 import mathutils
 import numpy as np
+from bpy.types import Context, Object, Scene
 
 from .... import constants, logging
+from ....props import AssetTransferData
 from ...naming import merge_get_basename
 from ..transfer_util import (
     find_ownership_data,
@@ -22,13 +23,13 @@ from .transfer_function_util.proximity_core import (
 )
 
 
-def shape_key_set_active(obj, shape_key_name):
+def shape_key_set_active(obj: Object, shape_key_name: str):
     for index, shape_key in enumerate(obj.data.shape_keys.key_blocks):
         if shape_key.name == shape_key_name:
             obj.active_shape_key_index = index
 
 
-def shape_keys_clean(obj):
+def shape_keys_clean(obj: Object):
     if obj.type != "MESH" or obj.data.shape_keys is None:
         return
 
@@ -52,7 +53,7 @@ def shape_keys_clean(obj):
         cleanup_drivers(obj.data.shape_keys, 'key_blocks', name)
 
 
-def shape_key_is_missing(transfer_data_item):
+def shape_key_is_missing(transfer_data_item: AssetTransferData):
     if not transfer_data_item.type == constants.SHAPE_KEY_KEY:
         return
     obj = transfer_data_item.id_data
@@ -67,7 +68,7 @@ def shape_key_is_missing(transfer_data_item):
     )
 
 
-def init_shape_keys(scene, obj):
+def init_shape_keys(scene: Scene, obj: Object):
     if obj.type != "MESH" or obj.data.shape_keys is None:
         return
 
@@ -90,10 +91,10 @@ def init_shape_keys(scene, obj):
 
 
 def transfer_shape_key(
-    context: bpy.types.Context,
+    context: Context,
     shape_key_name: str,
-    target_obj: bpy.types.Object,
-    source_obj: bpy.types.Object,
+    target_obj: Object,
+    source_obj: Object,
 ):
     logger = logging.get_logger()
     if not source_obj.data.shape_keys:

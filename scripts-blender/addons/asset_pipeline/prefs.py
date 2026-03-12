@@ -4,8 +4,8 @@
 
 import os
 
-import bpy
 from bpy.props import BoolProperty, EnumProperty, StringProperty
+from bpy.types import AddonPreferences, Context
 
 from . import constants
 from .logging import get_logger
@@ -17,7 +17,7 @@ def project_root_dir_get():
     return prefs.project_root_dir
 
 
-class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
+class ASSET_PIPELINE_addon_preferences(AddonPreferences):
     bl_idname = __package__
 
     project_root_dir: StringProperty(
@@ -53,12 +53,6 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         update=update_logger_level,
     )
 
-    is_advanced_mode: BoolProperty(
-        name="Advanced Mode",
-        description="Show Advanced Options in Asset Pipeline Panels",
-        default=False,
-    )
-
     preserve_action: BoolProperty(
         name="Preserve Actions in Workfiles",
         description="Preserve Action Data-Blocks on Armatures in working files during Pull (this data will not be pushed to Sync Target)",
@@ -74,7 +68,7 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         default=False,
     )
 
-    def draw(self, context):
+    def draw(self, context: Context):
         row = self.layout.row()
         if not os.path.exists(self.project_root_dir):
             row.alert = True
@@ -84,7 +78,6 @@ class ASSET_PIPELINE_addon_preferences(bpy.types.AddonPreferences):
         self.layout.prop(self, "logger_level")
         self.layout.prop(self, "preserve_action")
         self.layout.prop(self, "preserve_indexes")
-        self.layout.prop(self, "is_advanced_mode")
 
 
 registry = [
