@@ -61,7 +61,6 @@ class ASSETPIPE_OT_create_new_asset(Operator):
                 continue
             new_task_layer = all_task_layers.add()
             new_task_layer.name = task_layer_key
-        self.publish_type = constants.STAGED_PUBLISH_KEY
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: Context):
