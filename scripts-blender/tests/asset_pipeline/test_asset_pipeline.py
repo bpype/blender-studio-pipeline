@@ -55,6 +55,29 @@ def test_object_add_remove(context_ap):
     ### Delete an object which SHOULD return on pull (because it's not "ours")
     bpy.data.objects.remove(bpy.data.objects["RIG-test_asset"])
 
+    ##################################
+    asset_coll = bpy.data.collections['PR-test_asset']
+
+    ### Add a collection in the asset's root, which should survive pull and get assigned our task layer as the owner.
+    new_root_coll = bpy.data.collections.new("New Modeling Root Coll")
+    asset_coll.children.link(new_root_coll)
+
+    ### Add a collection in our task layer collection, which should survive pull.
+    model_coll = bpy.data.collections['test_asset-modeling']
+    new_sub_coll = bpy.data.collections.new("New Modeling Sub-coll")
+    model_coll.children.link(new_sub_coll)
+
+    new_sub_sub_coll = bpy.data.collections.new("New Modeling Sub-sub-coll")
+    coll_modeling_sub.children.link(new_sub_sub_coll)
+
+    ### Add a collection in someone else's task layer collection, which should vanish on pull.
+    rigging_coll = bpy.data.collections['test_asset-rigging']
+    new_invalid_coll = bpy.data.collections.new("Invalid Rigging Coll")
+    rigging_coll.children.link(new_invalid_coll)
+
+    new_invalid_sub_coll = bpy.data.collections.new("Invalid Rigging Sub-Coll")
+    coll_rigging_sub.children.link(new_invalid_sub_coll)
+
     ###### PULL DATA FROM THE PUBLISH.
     bpy.ops.assetpipe.sync_pull()
     bpy.ops.wm.save_mainfile()
@@ -66,11 +89,25 @@ def test_object_add_remove(context_ap):
     for obname in ("Cube In Wrong Coll", "Unowned In Rigging", "Rigging Cube", "GEO-Ear.L", "Not Owned Cube"):
         assert obname not in bpy.data.objects, f"Object should be deleted: {obname}"
 
-    coll_rigging_sub = bpy.data.collections['test_asset-rigging_sub']
     # Assert objects that should still be here, but not linked to the Rigging collection.
+    coll_rigging_sub = bpy.data.collections['test_asset-rigging_sub']
     for obname in ("New Cube", "New Cube 2"):
         assert bpy.data.objects.get(obname) not in set(coll_rigging_sub.objects), f"Object shouldn't be in Rigging collection: {obname}"
 
+    # Assert collections that should still be here + their parents.
+    surviving_colls = [
+        ("New Modeling Sub-coll", "test_asset-modeling"),
+        ("New Modeling Sub-sub-coll", "test_asset-modeling_sub"),
+    ]
+    for child_name, parent_name in surviving_colls:
+        child_coll = bpy.data.collections.get(child_name)
+        assert child_coll, f"Collection {child_coll} should still exist!"
+        parent_coll = bpy.data.collections.get(parent_name)
+        assert parent_coll, f"Collection {child_coll} should still exist!"
+        assert child_coll in set(parent_coll.children), f"Collection {child_coll.name} should be a child of {parent_coll.name}"
+    goner_colls = ["Invalid Rigging Coll", "Invalid Rigging Sub-Coll"]
+    for coll_name in goner_colls:
+        assert bpy.data.collections.get(coll_name) is None, f"Collection {coll_name} should've been removed by pull!"
 
 def test_data_transfer_simple(context_ap):
     """This test adds some transferable data to objects and then pulls.
@@ -139,7 +176,7 @@ def test_data_transfer_simple(context_ap):
     our_rig = bpy.data.objects['RIG-test']
     their_sphere = bpy.data.objects['GEO-Sphere']
 
-    vg = their_sphere.vertex_groups['ROOT-Sphere']
+    vg = their_sphere.vertex_groups.get('ROOT-Sphere')
     assert vg, "Vertex Group transfer failed."
     assert all((vg.weight(i)==1.0) for i in range(len(their_sphere.data.vertices))), "Vertex Group transfer failed."
     assert their_sphere.modifiers['RIG-Armature'].object == our_rig, "Modifier transfer failed."

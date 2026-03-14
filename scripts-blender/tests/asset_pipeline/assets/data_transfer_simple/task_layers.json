@@ -47,5 +47,6 @@
             "default_owner": "Shading",
             "auto_surrender": true
         }
-    }
+    },
+    "FORCE_PUSH_COUNTER": 0
 }
