@@ -517,10 +517,10 @@ class BSBST_OT_select_surface(bpy.types.Operator):
         surface_object = getattr(bs_ob, '["BSBST_surface_object"]', None)
         if not surface_object:
             return {"CANCELLED"}
-        
-        bpy.context.view_layer.objects.active = surface_object
+
         if not context.mode == 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.context.view_layer.objects.active = surface_object
         for ob in bpy.data.objects:
             ob.select_set(False)
         surface_object.select_set(True)

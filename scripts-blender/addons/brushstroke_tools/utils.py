@@ -311,6 +311,25 @@ def write_lib_version(dir: Path = None):
     with open(dir.joinpath(".version"), "w") as file:
         file.write(str(addon_version))
 
+def get_file_blend_version(path: Path):
+    with open(path, "rb") as f:
+        prefix = f.read(4)
+        f.seek(0)
+
+        if prefix.startswith(b"BLENDER"):
+            header = f.read(12)
+
+        elif prefix == b"\x28\xb5\x2f\xfd":  # zstd
+            dctx = zstd.ZstdDecompressor()
+            with dctx.stream_reader(f) as reader:
+                header = reader.read(12)
+
+        else:
+            raise ValueError("Unknown blend format")
+
+    version = header[9:12].decode()
+    return int(version[0]), int(version[1:])
+
 def copy_resources_to_dir(tgt_dir = ''):
     source_dir = get_addon_directory().joinpath('assets')
     if not tgt_dir:
