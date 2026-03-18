@@ -94,6 +94,12 @@ class BSBST_OT_pre_process_brushstroke(bpy.types.Operator):
         for prop in props_list:
             setattr(context.tool_settings.curve_paint_settings, prop, getattr(tool_settings, prop))
 
+        if bpy.app.version >= (5,1):
+            utils.ensure_resources()
+            ng_process = bpy.data.node_groups['.brushstroke_tools.draw_processing']
+            ng_process.asset_mark() # workaround to let Blender register the node tool as an operator with the automatically generated id
+            ng_process.asset_clear()
+
         return {'FINISHED'}
 
 class BSBST_OT_post_process_brushstroke(bpy.types.Operator):
@@ -119,7 +125,11 @@ class BSBST_OT_post_process_brushstroke(bpy.types.Operator):
         if 'BSBST_surface_object' in context.object.keys():
             if context.object['BSBST_surface_object']:
                 self.ng_process.nodes['surface_object'].inputs[0].default_value = context.object['BSBST_surface_object']
-        bpy.ops.geometry.execute_node_group(name="set_brush_stroke_color", session_uid=self.ng_process.session_uid)
+
+        if bpy.app.version < (5,1):
+            bpy.ops.geometry.execute_node_group(name="set_brush_stroke_color", session_uid=self.ng_process.session_uid)
+        else:
+            bpy.ops.geometry._brushstroke_tools_draw_processing()
 
         preserve_draw_settings(context, restore=True)
         return {'FINISHED'}

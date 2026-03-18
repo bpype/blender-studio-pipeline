@@ -549,15 +549,15 @@ class BSBST_PT_brushstroke_tools_panel(bpy.types.Panel):
 
 class BSBST_MT_PIE_brushstroke_data_marking(bpy.types.Menu):
     bl_idname= "BSBST_MT_PIE_brushstroke_data_marking"
-    bl_label = "Mark Brushstroke Flow"
+    bl_label = "Mark Brushstroke Data"
 
     items = {
-        "Brush Flow - Mark": ['FORCE_WIND'],
-        "Brush Flow - Clear": ['NONE'],
-        "Brush Break - Mark": ['MOD_PHYSICS'],
-        "Brush Break - Clear": ['NONE'],
-        "Brush Ignore - Mark": ['X'],
-        "Brush Ignore - Clear": ['NONE'],
+        "Brush Flow - Mark": ['geometry.brush_flow_mark','FORCE_WIND'],
+        "Brush Flow - Clear": ['geometry.brush_flow_clear','NONE'],
+        "Brush Break - Mark": ['geometry.brush_break_mark','MOD_PHYSICS'],
+        "Brush Break - Clear": ['geometry.brush_break_clear','NONE'],
+        "Brush Ignore - Mark": ['geometry.brush_ignore_mark','X'],
+        "Brush Ignore - Clear": ['geometry.brush_ignore_clear','NONE'],
     }
 
     def draw(self, context):
@@ -567,11 +567,14 @@ class BSBST_MT_PIE_brushstroke_data_marking(bpy.types.Menu):
 
         for name, info in self.items.items():
             pie.alert=True
-            op = pie.operator("geometry.execute_node_group", text=name, icon=info[0])
-            op.asset_library_type='CUSTOM'
-            op.asset_library_identifier=utils.asset_lib_name
-            op.relative_asset_identifier=f"core/brushstroke_tools-resources.blend/NodeTree/{name}"
-    
+            if bpy.app.version < (5,1):
+                op = pie.operator("geometry.execute_node_group", text=name, icon=info[1])
+                op.asset_library_type='CUSTOM'
+                op.asset_library_identifier=utils.asset_lib_name
+                op.relative_asset_identifier=f"core/brushstroke_tools-resources.blend/NodeTree/{name}"
+            else:
+                op = pie.operator(info[0], text=name, icon=info[1])
+
 class BSBST_OT_brushstroke_data_marking(bpy.types.Operator):
     """
     Call pie menu for operators to mark brushstroke data on the surface mesh

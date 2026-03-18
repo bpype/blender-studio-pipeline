@@ -1,4 +1,4 @@
-## 1.1.3
+## 1.2.1
 
 ## CHANGED
 
@@ -10,6 +10,8 @@
 - Fix version specific Grease Pencil availability
 - Fix resetting brushstroke material to preset when creating a new brushstroke layer
 - Fix transform issues when creating Grease Pencil objects
+- Fix node tool integration in preparation for [compatibility changes in Blender 5.1](https://developer.blender.org/docs/release_notes/5.1/#compatibility) [#539](https://projects.blender.org/studio/blender-studio-tools/pulls/539)
+- Fix enforcing to object mode when using `Select Surface` operator
 
 ## 1.1.2 - 2025-07-04
 
@@ -63,12 +65,12 @@
 - fix registry issue by not importing brushstrokes on addon registry ([#346](https://projects.blender.org/studio/blender-studio-tools/pulls/346))
 - add nullcheck for no context material ([#346](https://projects.blender.org/studio/blender-studio-tools/pulls/346))
 
-## 1.0.3 - 2024-11-11 
+## 1.0.3 - 2024-11-11
 
 ### FIXED
 - use pathlib for cross-platform compatibility ([#344](https://projects.blender.org/studio/blender-studio-tools/pulls/344))
 
-## 1.0.2 - 2024-11-07 
+## 1.0.2 - 2024-11-07
 
 ### FIXED
 - fix manifest ([#341](https://projects.blender.org/studio/blender-studio-tools/pulls/341))
