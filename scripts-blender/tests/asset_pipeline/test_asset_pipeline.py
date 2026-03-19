@@ -27,6 +27,12 @@ def test_object_add_remove(context_ap):
     coll_rigging_sub.objects.link(good_cube)
     coll_rigging_sub.objects.link(also_good_cube)
 
+    # Move an object from the task layer collection to a sub-collection.
+    coll_modeling = bpy.data.collections['test_asset-modeling']
+    main_obj = bpy.data.objects['GEO-test_asset']
+    coll_modeling.objects.unlink(main_obj)
+    coll_modeling_sub.objects.link(main_obj)
+
     ################################
     ### Add some objects which should disappear on pull.
     # Adding an object owned by us, into the wrong task layer's collection.
@@ -82,9 +88,13 @@ def test_object_add_remove(context_ap):
     bpy.ops.assetpipe.sync_pull()
     bpy.ops.wm.save_mainfile()
 
+    coll_modeling_sub = bpy.data.collections['test_asset-modeling_sub']
+
     # Assert objects that should still be here.
     for obname in ("GEO-Ear.R", "New Cube", "New Cube 2", "RIG-test_asset"):
         assert bpy.data.objects.get(obname), f"Object should still be here: {obname}"
+    # Specifically, this obj should be assigned to the modeling sub-coll still.
+    assert bpy.data.objects['GEO-test_asset'] in set(coll_modeling_sub.objects), "Moving object into sub-coll was not preserved."
     # Assert objects that should be deleted.
     for obname in ("Cube In Wrong Coll", "Unowned In Rigging", "Rigging Cube", "GEO-Ear.L", "Not Owned Cube"):
         assert obname not in bpy.data.objects, f"Object should be deleted: {obname}"
