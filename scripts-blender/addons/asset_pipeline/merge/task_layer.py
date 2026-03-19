@@ -69,7 +69,9 @@ def draw_task_layer_selection(
 
     # Get the current data owner from OBJ/COL or Transferable Data Item if it hasn't been passed
 
-    current_owner = id.owner if type(id) is AssetTransferData else id.asset_id_owner
+    prop_name = "owner" if hasattr(id, "owner") else "asset_id_owner"
+    prop_name = "owner_selection" if hasattr(id, "owner_selection") else prop_name
+    current_owner = getattr(id, prop_name)
 
     asset_pipe = context.scene.asset_pipeline
 
@@ -82,7 +84,7 @@ def draw_task_layer_selection(
     if show_all_task_layers:
         row.prop_search(
             id,
-            "asset_id_owner",
+            prop_name,
             asset_pipe,
             'all_task_layers',
             text=text,
@@ -90,7 +92,7 @@ def draw_task_layer_selection(
     else:
         row.prop_search(
             id,
-            "asset_id_owner",
+            prop_name,
             asset_pipe,
             'local_task_layers',
             text=text,
