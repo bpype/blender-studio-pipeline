@@ -153,18 +153,6 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
         ),
     )
 
-    avaliable_owners: EnumProperty(
-        name="Avaliable Owners",
-        items=(
-            ('LOCAL', "Local Task Layers",
-             "Only show local task layers as options"),
-            (
-                'ALL',
-                "All Task Layers",
-                "Show all task layers as options",
-            ),
-        ),
-    )
     transfer_data_type: EnumProperty(
         name="Type Filter", items=constants.TRANSFER_DATA_TYPES_ENUM_ITEMS)
     owner_selection: StringProperty(name="Set Owner")
@@ -290,7 +278,6 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
 
     def invoke(self, context: Context, event: Event):
         self.filter_owners = 'LOCAL'
-        self.avaliable_owners = 'LOCAL'
         return context.window_manager.invoke_props_dialog(self, width=500)
 
     def draw(self, context: Context):
@@ -321,13 +308,9 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
             context,
             layout=owner_row,
             id=self,
-            data_owner_name='owner_selection',
-            current_data_owner=self.owner_selection,
-            show_all_task_layers=self.avaliable_owners == 'ALL',
+            show_all_task_layers=True,
             text="Set To",
         )
-
-        owner_row.prop(self, "avaliable_owners", text="")
 
         row = layout.row(align=True)
         row.prop(self, 'set_surrender', toggle=True)
