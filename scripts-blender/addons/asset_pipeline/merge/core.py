@@ -8,10 +8,10 @@ from pathlib import Path
 import bpy
 from bpy.types import ID, Collection, Context, Object, Scene
 
-from .. import constants, logging
+from .. import config, constants, logging
 from ..merge.naming import task_layer_prefix_transfer_data_update
 from ..props import AssetPipeline, AssetTransferDataTemp
-from .asset_mapping import AssetTransferMapping
+from .asset_mapping import AssetTransferMapping, merge_get_target_name
 from .naming import (
     get_id_type_name,
     merge_add_suffix_to_hierarchy,
@@ -166,16 +166,29 @@ def merge_task_layer(
     context: Context,
     local_tls: list[str],
     external_file: Path,
-) -> None:
-    """Combines data from an external task layer collection in the local
-    task layer collection. By finding the owner of each collection,
-    object and Transferable Data item and keeping each layer of data via a copy
-    from its respective owners.
+) -> tuple[Collection, str]:
+    """Combines data from an external .blend file's asset collection, with
+    the copy of the same asset collection in the local .blend file.
 
-    This ensures that objects owned by an external task layer will always be kept
-    linked into the scene, and any local Transferable Data like a modifier will be applied
-    ontop of that external object of vice versa. Ownership is stored in an objects properties,
-    and map is created to match each object to its respective owner.
+    During a Push step, this function should be called after opening the
+    sync target .blend.
+
+    The process goes something like this:
+        1. Add .LOC name suffix to the local datablocks.
+        2. Append the asset from the external .blend.
+        3. Add .EXT name suffix to the appended datablocks.
+           The name suffixing serves two purposes: 1) Avoid name conflicts. 2) Help pairing objects.
+        4. Based on ownership data stored on both copies and the passed "local_tls" list of
+           task layer names, we generate a source->target mapping between the two sets of objects.
+           4.1 We also detect any ownership conflicts during this step, and raise errors.
+           4.2 We also keep track of objects which have been removed or added.
+        5. Whichever object is owner by one of the local task layers, becomes the target for data
+           transfers, and the other object becomes the source. Then, any data owned by other task
+           layers on the other object, gets transferred.
+        6. Transfer all transferable data from sources to targets.
+            6.1 Link new objects to the local collection
+            6.2 Remove objects from the local collection whose external pair was not found in their
+                corresponding task layer collection.
 
     Args:
         context: (Context): context of current .blend
@@ -184,9 +197,10 @@ def merge_task_layer(
     """
 
     profiles = logging.get_profiler()
+    assetpipe = context.scene.asset_pipeline
 
     start_time = time.time()
-    local_col = context.scene.asset_pipeline.asset_collection
+    local_col = assetpipe.asset_collection
     if not local_col:
         return "Unable to find Asset Collection"
     col_base_name = local_col.name
@@ -208,18 +222,31 @@ def merge_task_layer(
     # External col may come from publish, ensure it is not marked as asset so it purges correctly
     external_col.asset_clear()
 
+    task_layer_dict = config.get_task_layer_dict()
+    json_push_count = task_layer_dict.get("FORCE_PUSH_COUNTER", 0)
+    local_push_count = assetpipe.force_push_counter
+    if assetpipe.is_published and local_push_count > json_push_count:
+        # This is an error case that can happen if user force pushes, then
+        # reverts the .json file using version control, but does not revert the publish.
+        return external_col, f".json's push counter ({json_push_count}) less than publish ({local_push_count})!"
+    if local_push_count < json_push_count:
+        assetpipe.force_push_counter = json_push_count
+        # In the case of a force push, we simply fully replace the asset, without transferring any data.
+        replace_asset(local_col, external_col)
+        return external_col, ""
+
     map = AssetTransferMapping(local_col, external_col, local_tls)
     error_msg = ''
     if len(map.conflict_transfer_data) != 0:
         for conflict in map.conflict_transfer_data:
             error_msg += f"Transferable Data conflict found for '{conflict.name}' on obj '{conflict.id_data.name}'\n"
-        return error_msg
+        return local_col, error_msg
 
     if len(map.conflict_ids) != 0:
         for conflict_obj in map.conflict_ids:
             type_name = get_id_type_name(conflict_obj)
             error_msg += f"Ownership conflict found for {type_name}: '{conflict_obj.name}'\n"
-        return error_msg
+        return local_col, error_msg
     mapped_time = time.time()
     profiles.add((mapped_time - imported_time), "MAPPING")
 
@@ -266,6 +293,25 @@ def merge_task_layer(
     bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=False, do_recursive=True)
     merge_remove_suffix_from_hierarchy(local_col)
     profiles.add((time.time() - start_time), "MERGE")
+
+    return local_col, ""
+
+
+def replace_asset(to_replace: Collection, replaced_by: Collection):
+    for child_coll in to_replace.children_recursive:
+        other_coll_name = merge_get_target_name(child_coll.name)
+        other_coll = bpy.data.collections.get(other_coll_name)
+        if other_coll:
+            child_coll.user_remap(other_coll)
+        for obj in child_coll.objects:
+            other_obj_name = merge_get_target_name(obj.name)
+            other_obj = bpy.data.objects.get(other_obj_name)
+            if other_obj:
+                obj.user_remap(other_obj)
+    to_replace.user_remap(replaced_by)
+
+    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=False, do_recursive=True)
+    merge_remove_suffix_from_hierarchy(replaced_by)
 
 
 def import_data_from_lib(

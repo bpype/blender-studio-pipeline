@@ -18,11 +18,9 @@ def context_ap():
 #############################
 
 
-def load_blend(blend_name: str):
-    blend_path = Path(__file__).parent / Path(f"{blend_name}")
-    bpy.ops.wm.open_mainfile(filepath=blend_path.as_posix())
-    new_path = blend_path.with_name("."+blend_path.name)
-    bpy.ops.wm.save_as_mainfile(filepath=new_path.as_posix())
+def load_blend(rel_blend_path: str):
+    abs_path = Path(__file__).parent / Path(f"{rel_blend_path}")
+    bpy.ops.wm.open_mainfile(filepath=abs_path.as_posix())
 
 
 def select_obj(context, obj_name=None):

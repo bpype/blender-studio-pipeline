@@ -28,7 +28,7 @@ class ASSETPIPE_OT_update_surrendered_object(Operator):
         task_layer.draw_task_layer_selection(
             context,
             layout=row,
-            id=context.active_object,
+            prop_owner=context.active_object,
         )
 
     def execute(self, context: Context):
@@ -72,7 +72,7 @@ class ASSETPIPE_OT_update_surrendered_transfer_data(Operator):
         task_layer.draw_task_layer_selection(
             context,
             layout=row,
-            id=self._surrendered_transfer_data,
+            prop_owner=self._surrendered_transfer_data,
         )
 
     def execute(self, context: Context):

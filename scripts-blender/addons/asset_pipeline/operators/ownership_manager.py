@@ -9,7 +9,6 @@ from .. import constants
 from ..merge import task_layer
 from ..merge.task_layer import draw_task_layer_selection
 from ..props import AssetTransferData
-from ..ui import poll_valid_workfile
 
 
 class ASSETPIPE_PT_ownership_manager(Panel):
@@ -20,7 +19,12 @@ class ASSETPIPE_PT_ownership_manager(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_valid_workfile(context)
+        ap = context.scene.asset_pipeline
+        if not ap.asset_collection:
+            return False
+        if not (ap.is_asset_pipeline_file or ap.is_published):
+            return False
+        return True
 
     def draw(self, context: Context) -> None:
         layout = self.layout
@@ -58,7 +62,7 @@ class ASSETPIPE_PT_ownership_manager(Panel):
             if obj.asset_id_surrender:
                 object_row.operator("assetpipe.update_surrendered_object")
 
-            draw_task_layer_selection(context, layout=object_row, id=obj)
+            draw_task_layer_selection(context, layout=object_row, prop_owner=obj)
             surrender_row = object_row.row()
             surrender_row.enabled = obj.asset_id_owner in asset_pipe.local_task_layers
             surrender_row.prop(obj, "asset_id_surrender", text="", icon="ORPHAN_DATA" if obj.asset_id_surrender else "HEART")
@@ -307,8 +311,8 @@ class ASSETPIPE_OT_batch_ownership_change(Operator):
         task_layer.draw_task_layer_selection(
             context,
             layout=owner_row,
-            id=self,
-            show_all_task_layers=True,
+            prop_owner=self,
+            prop_name='owner_selection',
             text="Set To",
         )
 
@@ -373,7 +377,7 @@ def draw_collection_ownership(context: Context, layout: UILayout, collection: Co
         if collection is tl_coll or collection in set(tl_coll.children_recursive):
             split = layout.split()
             split.label(text=f"{tl_coll.name}: ", icon="OUTLINER_COLLECTION")
-            draw_task_layer_selection(context, layout=split, id=tl_coll)
+            draw_task_layer_selection(context, layout=split, prop_owner=tl_coll)
 
 
 def draw_all_data_ownership_of_obj(
@@ -457,7 +461,7 @@ def draw_ownership_data_single_item(
     draw_task_layer_selection(
         context,
         layout=main_row.row(),
-        id=transfer_data_item,
+        prop_owner=transfer_data_item,
     )
     surrender_icon = "ORPHAN_DATA" if transfer_data_item.surrender else "HEART"
     surrender_row = main_row.row()
