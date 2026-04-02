@@ -154,28 +154,18 @@ class ASSETPIPE_OT_save_asset_hook(Operator):
 
     def execute(self, context: Context):
         if self.mode == 'PROD':
-            example_hooks_dir = (Path(__file__).parent.joinpath(
-                "hook_examples").joinpath('prod_hooks.py'))
+            example_hooks_dir = Path(__file__).parent.parent / Path("hook_examples/prod_hooks.py")
             hook_dir = get_production_hook_dir()
             if not hook_dir:
-                self.report({
-                    'ERROR'
-                }, "Production directory must be specified in the add-on preferences."
-                            )
+                self.report({'ERROR'}, "Production directory must be specified in the add-on preferences.")
                 return {'CANCELLED'}
-            save_hook_path = get_production_hook_dir().joinpath(
-                'hooks.py').resolve()
+            save_hook_path = (get_production_hook_dir() / Path("hooks.py")).resolve()
         else:  # if self.mode == 'ASSET'
-            example_hooks_dir = (Path(__file__).parent.joinpath(
-                "hook_examples").joinpath('asset_hooks.py'))
-            save_hook_path = get_asset_hook_dir().joinpath(
-                'hooks.py').resolve()
+            example_hooks_dir = Path(__file__).parent.parent / Path("hook_examples/asset_hooks.py")
+            save_hook_path = (get_asset_hook_dir() / Path('hooks.py')).resolve()
 
         if not example_hooks_dir.exists():
-            self.report(
-                {'ERROR'},
-                "Cannot find example hook file",
-            )
+            self.report({'ERROR'}, "Cannot find example hook file: {path}".format(path=example_hooks_dir))
             return {'CANCELLED'}
 
         if save_hook_path.exists():
