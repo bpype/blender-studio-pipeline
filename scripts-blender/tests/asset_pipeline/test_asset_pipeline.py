@@ -1,3 +1,6 @@
+import shutil
+from pathlib import Path
+
 import bpy
 from bpy.types import Collection, LayerCollection, Object
 
@@ -9,7 +12,8 @@ def test_object_add_remove(context_ap):
     Whether an object should be preserved or removed depends on its collection assignments,
     and owning task layer.
     """
-    load_blend("asset_pipeline/assets/object_add_remove/obj_add_remove-modeling.blend")
+    copy_asset("object_add_remove")
+    load_blend("asset_pipeline/assets/.object_add_remove/obj_add_remove-modeling.blend")
 
     coll_modeling_sub = bpy.data.collections['test_asset-modeling_sub']
     coll_rigging_sub = bpy.data.collections['test_asset-rigging_sub']
@@ -119,12 +123,14 @@ def test_object_add_remove(context_ap):
     for coll_name in goner_colls:
         assert bpy.data.collections.get(coll_name) is None, f"Collection {coll_name} should've been removed by pull!"
 
+
 def test_data_transfer_simple(context_ap):
     """This test adds some transferable data to objects and then pulls.
     Data transfer only occurs on pull when the data is added to objects owned by
     other task layers. So, in this case, we're adding rigging data to modeling-owned objects.
     """
-    load_blend("asset_pipeline/assets/data_transfer_simple/data_transfer_simple-rigging.blend")
+    copy_asset("data_transfer_simple")
+    load_blend("asset_pipeline/assets/.data_transfer_simple/data_transfer_simple-rigging.blend")
 
     ### Add some data to an object that is not owned by our task layer.
     ### This data should be initialized to be owned by us, and survive pulling.
@@ -220,7 +226,69 @@ def test_data_transfer_simple(context_ap):
     assert their_sphere.parent is our_rig, "Parenting transfer was supposed to fail but it didn't."
     assert their_sphere.data.materials[0].name == 'SphereMaterial', "Material transfer was supposed to fail but it didn't."
 
+
+def test_force_push(context_ap):
+    """This test tests the new force-push functionality implemented in
+    https://projects.blender.org/studio/blender-studio-tools/pulls/535
+
+    1. Perform actions which would normally be discarded by pulling
+    2. Force Push
+    3. Pull
+    4. Assert that all our changes have in fact been preserved.
+    """
+
+    copy_asset("data_transfer_simple")
+    load_blend("asset_pipeline/assets/.data_transfer_simple/data_transfer_simple-rigging.blend")
+
+    # Duplicate someone else's object.
+    their_sphere = bpy.data.objects['GEO-Sphere']
+    bpy.ops.object.select_all(action='DESELECT')
+    context_ap.view_layer.objects.active = their_sphere
+    their_sphere.select_set(True)
+    bpy.ops.object.duplicate()
+    new_obj_name = context_ap.active_object.name
+    assert new_obj_name == 'GEO-Sphere.001'
+
+    # Add some data to someone else's object, and set the ownership to someone other than us.
+    vg = their_sphere.vertex_groups.new(name="VGroup")
+    modifier = their_sphere.modifiers.new('Subsurf', 'SUBSURF')
+    bpy.ops.assetpipe.prepare_sync()
+    their_sphere.transfer_data_ownership[modifier.name].owner = 'Modeling'
+    their_sphere.transfer_data_ownership[vg.name].owner = 'Modeling'
+
+    # Add a sub-collection to someone else's collection.
+    their_coll = bpy.data.collections['data_transfer_test-modeling']
+    new_coll = bpy.data.collections.new('New Model Sub-coll')
+    their_coll.children.link(new_coll)
+
+    # Store current force push value
+    current_force_push_count = context_ap.scene.asset_pipeline.force_push_counter
+
+    ### FORCE PUSH & PULL
+    bpy.ops.assetpipe.sync_force_push()
+    bpy.ops.assetpipe.sync_pull()
+
+    assert bpy.data.objects.get(new_obj_name), "New Object not preserved in force push!"
+    their_sphere = bpy.data.objects['GEO-Sphere']
+    assert their_sphere.vertex_groups.get("VGroup"), "New Vertex Group not preserved in force push!"
+    assert their_sphere.modifiers.get("MOD-Subsurf"), "New Modifier not preserved in force push!"
+    assert bpy.data.collections.get('New Model Sub-coll'), "New Collection not preserved in force push!"
+    assert context_ap.scene.asset_pipeline.force_push_counter == current_force_push_count+1, "Force push counter didn't get incremented!"
+
+
 #############################################
+
+
+def copy_asset(asset_name: str):
+    """Since these tests write files and we want to be able to run them repeatedly,
+    let's run them on non-git-tracked copies of the .blend files,
+    so we don't have to git revert them constantly."""
+    assets_dir = Path(__file__).parent / Path("assets")
+    asset_dir = assets_dir / Path(asset_name)
+    copy_dir = assets_dir / Path("."+asset_name)
+    if copy_dir.exists():
+        shutil.rmtree(copy_dir)
+    shutil.copytree(asset_dir, copy_dir)
 
 
 def add_cube_in_collection(context, collection: Collection, name="Cube") -> Object:

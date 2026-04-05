@@ -6,10 +6,11 @@
 from bpy.types import Collection, Context, Object, Operator, PropertyGroup, UILayout
 
 from .. import config, constants
-from ..props import AssetTransferData
+from ..props import AssetTransferData, AssetTransferDataTemp
 
 
 def get_default_task_layer_owner(td_type: str, name="") -> tuple[str, bool] | None:
+    config.verify_task_layer_json_data()
     if td_type == constants.ATTRIBUTE_KEY:
         if name in config.ATTRIBUTE_DEFAULTS:
             return (
@@ -48,9 +49,10 @@ def draw_task_layer_selection(
     context: Context,
     layout: UILayout,
     *,
-    id: Object | Collection | AssetTransferData,
+    prop_owner: Object | Collection | AssetTransferData,
     show_all_task_layers=False,
     text="",
+    prop_name="",
 ) -> None:
     """Draw an prop search UI for ownership of either OBJ/COL or Task Layer.
     It has three modes, 'Show All Task Layers" "Show All Task Layers Greyed Out" and
@@ -69,31 +71,23 @@ def draw_task_layer_selection(
 
     # Get the current data owner from OBJ/COL or Transferable Data Item if it hasn't been passed
 
-    prop_name = "owner" if hasattr(id, "owner") else "asset_id_owner"
-    prop_name = "owner_selection" if hasattr(id, "owner_selection") else prop_name
-    current_owner = getattr(id, prop_name)
+    prop_name = prop_name or ("owner" if type(prop_owner) in (AssetTransferData, AssetTransferDataTemp) else "asset_id_owner")
+    current_owner = getattr(prop_owner, prop_name)
 
     asset_pipe = context.scene.asset_pipeline
 
     row = layout.row()
     if current_owner not in asset_pipe.local_task_layers:
         show_all_task_layers = True
-        if not isinstance(id, Operator):
+        if not isinstance(prop_owner, Operator):
             row.enabled = False
 
-    if show_all_task_layers:
-        row.prop_search(
-            id,
-            prop_name,
-            asset_pipe,
-            'all_task_layers',
-            text=text,
-        )
-    else:
-        row.prop_search(
-            id,
-            prop_name,
-            asset_pipe,
-            'local_task_layers',
-            text=text,
-        )
+    coll_prop_name = 'all_task_layers' if show_all_task_layers else 'local_task_layers'
+
+    row.prop_search(
+        prop_owner,
+        prop_name,
+        asset_pipe,
+        coll_prop_name,
+        text=text,
+    )

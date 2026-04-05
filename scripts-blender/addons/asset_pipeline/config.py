@@ -18,6 +18,8 @@ ASSET_CATALOG_ID: str = ""
 def get_task_layer_json_filepath() -> Path:
     directory = Path(bpy.data.filepath).parent
     json_file_path = directory.joinpath(constants.TASK_LAYER_CONFIG_NAME)
+    if not json_file_path.exists():
+        json_file_path = directory.parent.joinpath(constants.TASK_LAYER_CONFIG_NAME)
     return json_file_path
 
 

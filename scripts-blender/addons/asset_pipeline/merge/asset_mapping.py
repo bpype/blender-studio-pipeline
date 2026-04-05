@@ -39,10 +39,11 @@ class AssetTransferMapping:
 
         self.external_col_to_remove: set[Object] = set()
         self.external_col_to_add: set[Object] = set()
+
+        # TODO: Below values are never used. Clean up!! But how come things work??
         self.external_obj_to_add: set[Object] = set()
         self.surrendered_obj_to_remove: set[Object] = set()
         self._no_match_source_objs: set[Object] = set()
-
         self._no_match_source_colls: set[Object] = set()
         self._no_match_target_colls: set[Object] = set()
 
@@ -84,8 +85,9 @@ class AssetTransferMapping:
 
     def _gen_object_map(self) -> dict[Object, Object]:
         """
-        Tries to link all objects in source collection to an object in
-        target collection. Uses suffixes to match them up.
+        Determine which object out of local/external pairs should be the source
+        and the target for data transfer, based on data ownership values and rules.
+        This relies on the .LOC/.EXT object name suffixes to find the pairs!
         """
         object_map: dict[Object, Object] = {}
         for local_obj in self._local_top_col.all_objects:
@@ -99,8 +101,8 @@ class AssetTransferMapping:
                 self.logger.debug(f"Couldn't find external obj for {local_obj}")
                 continue
             self._check_id_conflict(external_obj, local_obj)
-            # IF ITEM IS OWNED BY LOCAL TASK LAYERS
 
+            ### OWNERSHIP SURRENDER CASES.
             if (
                 external_obj.asset_id_surrender
                 and not local_obj.asset_id_surrender
@@ -119,10 +121,12 @@ class AssetTransferMapping:
                 object_map[local_obj] = external_obj
                 continue
 
+            ### REGULAR CASES.
             if local_obj.asset_id_owner in self._local_tls:
+                # IF ITEM IS OWNED BY LOCAL TASK LAYERS
                 object_map[external_obj] = local_obj
-            # IF ITEM IS NOT OWNED BY LOCAL TASK LAYERS
             else:
+                # IF ITEM IS NOT OWNED BY LOCAL TASK LAYERS
                 object_map[local_obj] = external_obj
 
         # Find new objects to add to local_col
@@ -130,8 +134,8 @@ class AssetTransferMapping:
             if external_obj.library:
                 continue
             local_col_objs = self._local_top_col.all_objects
-            obj = local_col_objs.get(merge_get_target_name(external_obj.name))
-            if not obj and external_obj.asset_id_owner not in self._local_tls:
+            local_obj = local_col_objs.get(merge_get_target_name(external_obj.name))
+            if not local_obj and external_obj.asset_id_owner not in self._local_tls:
                 self.external_obj_to_add.add(external_obj)
         return object_map
 

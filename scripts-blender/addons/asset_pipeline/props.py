@@ -9,6 +9,7 @@ from bpy.props import (
     BoolProperty,
     CollectionProperty,
     EnumProperty,
+    IntProperty,
     PointerProperty,
     StringProperty,
 )
@@ -134,7 +135,6 @@ class AssetPipeline(PropertyGroup):
 
     prefix: StringProperty(name="Prefix", description="Prefix for new Asset", default="")
 
-
     def get_task_layer_presets(self, _context: Context) -> list[tuple[str, str, str]]:
         prefs = get_addon_prefs()
         user_tls = Path(prefs.custom_task_layers_dir)
@@ -209,6 +209,21 @@ class AssetPipeline(PropertyGroup):
         ]
     )
 
+    def update_force_push_counter(self, context: Context):
+        task_layer_dict = config.get_task_layer_dict()
+        old_count = task_layer_dict.get("FORCE_PUSH_COUNTER", 0)
+        if self.force_push_counter > old_count:
+            # Write the higher value to the .json file.
+            task_layer_dict["FORCE_PUSH_COUNTER"] = self.force_push_counter
+            config.update_task_layer_json_data(task_layer_dict)
+    force_push_counter: IntProperty(
+        name="Force Push Counter (Internal)",
+        description="Every time a user uses the Force Push function, this number is incremented by 1. This value can then be compared by other work files to detect the force push.",
+        default=0,
+        min=0,
+        update=update_force_push_counter,
+    )
+
 
 @bpy.app.handlers.persistent
 def set_asset_collection_name_post_file_load(_):
@@ -228,6 +243,21 @@ def refresh_asset_catalog(_):
     config.verify_task_layer_json_data()
 
 
+@bpy.app.handlers.persistent
+def reset_force_push_counter(_a, _b):
+    """Decrease the force push counter of workfiles (not the publish)
+    to the value in the json on file save/load.
+    """
+    task_layer_dict = config.get_task_layer_dict()
+    json_count = task_layer_dict.get("FORCE_PUSH_COUNTER", 0)
+    scene = bpy.context.scene
+    if not hasattr(scene, 'asset_pipeline'):
+        return
+    assetpipe = scene.asset_pipeline
+    if not assetpipe.is_published and assetpipe.force_push_counter > json_count:
+        assetpipe.force_push_counter = json_count
+
+
 registry = [
     AssetTransferData,
     AssetTransferDataTemp,
@@ -242,6 +272,8 @@ def register():
     ID.asset_id_owner = StringProperty(name="Owner", default="NONE")
     ID.asset_id_surrender = BoolProperty(name="Surrender Ownership", default=False)
 
+    bpy.app.handlers.load_post.append(reset_force_push_counter)
+    bpy.app.handlers.save_pre.append(reset_force_push_counter)
     bpy.app.handlers.load_post.append(set_asset_collection_name_post_file_load)
     bpy.app.handlers.load_post.append(refresh_asset_catalog)
 

@@ -1,5 +1,6 @@
 # Result .blend file of tests will start with a .
 .*.blend
+scripts-blender/tests/asset_pipeline/assets/.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

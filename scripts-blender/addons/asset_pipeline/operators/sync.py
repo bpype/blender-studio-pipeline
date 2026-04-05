@@ -39,6 +39,7 @@ class ASSETPIPE_OT_prepare_sync(Operator):
     _other_ids = []
 
     def invoke(self, context: Context, event: Event):
+        self.did_invoke = True
         sync_invoke(self, context)
         return context.window_manager.invoke_props_dialog(self, width=400)
 
@@ -46,6 +47,8 @@ class ASSETPIPE_OT_prepare_sync(Operator):
         sync_draw(self, context)
 
     def execute(self, context: Context):
+        if not hasattr(self, 'did_invoke'):
+            sync_invoke(self, context)
         asset_col = context.scene.asset_pipeline.asset_collection
         hooks_instance = Hooks()
         hooks_instance.load_hooks(context)
@@ -123,11 +126,7 @@ class ASSETPIPE_OT_sync_pull(Operator):
         return {'FINISHED'}
 
 
-class ASSETPIPE_OT_sync_push(Operator):
-    bl_idname = "assetpipe.sync_push"
-    bl_label = "Sync Asset"
-    bl_description = """Sync the current Task Layer to the sync target. File will be saved as part of the Push process"""
-
+class SharedPush:
     _temp_transfer_data = None
     _invalid_objs = []
     _other_ids = []
@@ -193,12 +192,58 @@ class ASSETPIPE_OT_sync_push(Operator):
         bpy.ops.wm.save_mainfile(filepath=self._current_file.__str__())
 
         sync_execute_push(self, context)
+        profiler.log_all()
+        return {'FINISHED'}
+
+    def report_info(self):
         if self.pull:
             self.report({'INFO'}, "Asset Sync Complete")
         else:
-            self.report({'INFO'}, "Asset Force Push Complete")
-        profiler.log_all()
-        return {'FINISHED'}
+            self.report({'INFO'}, "Asset Push Complete")
+
+class ASSETPIPE_OT_sync_push(SharedPush, Operator):
+    bl_idname = "assetpipe.sync_push"
+    bl_label = "Sync Asset"
+    bl_description = "Sync the current Task Layer to the sync target. File will be saved as part of the Push process"
+
+
+class ASSETPIPE_OT_sync_force_push(SharedPush, Operator):
+    bl_idname = "assetpipe.sync_force_push"
+    bl_label = "Force Push Asset"
+    bl_description = "Push ALL CONTENT of the Asset Collection from this work file to the publish, forcing all other work files to pull in the current state."
+
+    def report_info(self):
+        self.report({'INFO'}, "Asset Force Push Complete")
+
+    @classmethod
+    def poll(cls, context: Context) -> bool:
+        if context.mode == 'OBJECT':
+            return True
+        cls.poll_message_set("Push is only avaliable in Object Mode")
+        return False
+
+    def invoke(self, context: Context, event: Event):
+        self.pull = False
+        self.did_invoke = True
+        sync_invoke(self, context)
+        return context.window_manager.invoke_props_dialog(self, width=400)
+
+    def draw(self, context: Context):
+        col = self.layout.column(align=True)
+        col.alert = True
+        col.label(text="Force Pushing overwrites the ENTIRE Asset Collection", icon="ERROR")
+        col.label(text="for EVERYONE, with whatever is in this file right now!", icon='BLANK1')
+        col.separator()
+        sync_draw(self, context)
+
+    def execute(self, context: Context):
+        global_force_push_count = config.get_task_layer_dict().get('FORCE_PUSH_COUNTER', 0)
+        context.scene.asset_pipeline.force_push_counter = global_force_push_count + 1
+        self.is_force_push = True
+        if not hasattr(self, 'did_invoke'):
+            self.pull = False
+            sync_invoke(self, context)
+        return super().execute(context)
 
 
 def sync_invoke(self, context: Context):
@@ -247,7 +292,7 @@ def sync_draw(self, context: Context):
                 draw_task_layer_selection(
                     context,
                     layout=row,
-                    id=id,
+                    prop_owner=id,
                 )
 
     if len(self._temp_transfer_data) == 0:
@@ -311,7 +356,7 @@ def sync_execute_pull(self, context: Context):
 
     preserve_map = Preserve(context.scene.asset_pipeline.asset_collection)
 
-    error_msg = merge_task_layer(
+    _asset_col, error_msg = merge_task_layer(
         context,
         local_tls=self._task_layer_keys,
         external_file=self._sync_target,
@@ -367,13 +412,25 @@ def sync_execute_push(self, context: Context):
         if task_layer not in self._task_layer_keys
     ]
 
-    error_msg = merge_task_layer(
+    if hasattr(self, 'is_force_push'):
+        asset_pipe = context.scene.asset_pipeline
+        task_layer_dict = config.get_task_layer_dict()
+        json_push_count = task_layer_dict.get("FORCE_PUSH_COUNTER", 0)
+        publish_push_count = asset_pipe.force_push_counter
+        if publish_push_count >= json_push_count:
+            # This is an error case that can happen if user force pushes, then
+            # reverts the .json file using version control, but does not revert the publish.
+            asset_pipe.sync_error = True
+            self.report({'ERROR'}, f".json's push counter ({json_push_count}) should exceed publish ({publish_push_count})!")
+            return {'CANCELLED'}
+
+    asset_col, error_msg = merge_task_layer(
         context,
         local_tls=local_tls,
         external_file=self._current_file,
     )
     if error_msg:
-        context.scene.asset_pipeline.sync_error = True
+        asset_pipe.sync_error = True
         self.report({'ERROR'}, error_msg)
         return {'CANCELLED'}
 
@@ -394,4 +451,5 @@ registry = [
     ASSETPIPE_OT_prepare_sync,
     ASSETPIPE_OT_sync_pull,
     ASSETPIPE_OT_sync_push,
+    ASSETPIPE_OT_sync_force_push,
 ]

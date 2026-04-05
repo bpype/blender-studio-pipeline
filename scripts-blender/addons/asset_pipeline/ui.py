@@ -9,7 +9,7 @@ from addon_utils import check as check_addon
 from bpy.types import Context, Panel, UILayout
 
 from . import constants
-from .config import verify_task_layer_json_data
+from .config import get_task_layer_dict, verify_task_layer_json_data
 from .merge.publish import is_staged_publish
 
 
@@ -125,7 +125,19 @@ class ASSETPIPE_PT_sync(Panel):
             row.operator("assetpipe.revert_file", text="Revert", icon="FILE_TICK")
             return
 
-        # TODO Move this call out of the UI because we keep re-loading this file every draw
+        staged = is_staged_publish(Path(bpy.data.filepath))
+
+        if is_force_push_incoming(context) and not staged:
+            col = layout.column(align=True)
+            col.alert = True
+            col.label(text="Force Push incoming!", icon='ERROR')
+            col.label(text="You must pull or force push on top of it.", icon='BLANK1')
+            col.label(text="This will overwrite the entire Asset Collection!")
+            layout.operator("assetpipe.sync_pull", icon="TRIA_DOWN_BAR")
+            layout.operator("assetpipe.sync_force_push", icon="TRIA_UP_BAR")
+            return
+
+        # TODO Store json data in RNA, don't re-read every UI draw.
         if not verify_task_layer_json_data() and not asset_pipe.is_published:
             layout.label(text="Task Layer Config is invalid", icon="ERROR")
             return
@@ -136,10 +148,10 @@ class ASSETPIPE_PT_sync(Panel):
             self.draw_collection_selection(col, context)
             return
 
-        staged = is_staged_publish(Path(bpy.data.filepath))
         sync_target_name = "Staged" if staged else "Active"
         sync_text = f"Sync with {sync_target_name}"
         push_text = f"Push to {sync_target_name}"
+        force_push_text = f"Force Push to {sync_target_name}"
         if check_addon('blender_log')[1]:
             log_count = len(list(context.scene.blender_log.all_logs))
             if log_count > 0:
@@ -160,6 +172,9 @@ class ASSETPIPE_PT_sync(Panel):
                 icon="TRIA_DOWN",
             )
             panel.operator("assetpipe.sync_push", text=push_text, icon="TRIA_UP").pull = False
+            panel.separator()
+
+            panel.operator("assetpipe.sync_force_push", text=force_push_text, icon='TRIA_UP_BAR')
 
 
 class ASSETPIPE_PT_publish(Panel):
@@ -203,6 +218,18 @@ class ASSETPIPE_PT_sync_tools(Panel):
         layout.operator("assetpipe.fix_prefixes", icon="MODIFIER")
 
 
+def is_force_push_incoming(context) -> bool:
+    this_files_push_count = context.scene.asset_pipeline.force_push_counter
+    asset_push_count = get_task_layer_dict().get('FORCE_PUSH_COUNTER', 0)
+    return this_files_push_count < asset_push_count
+
+
+def warn_force_push_incoming(self, context):
+    if is_force_push_incoming(context):
+        self.layout.alert = True
+        self.layout.operator('assetpipe.sync_pull', text="Asset was Force Pushed!", icon='ERROR')
+
+
 registry = [
     ASSETPIPE_PT_initialize_asset,
     ASSETPIPE_PT_configure,
@@ -211,3 +238,9 @@ registry = [
     ASSETPIPE_PT_sync_tools,
     ASSETPIPE_PT_working_files,
 ]
+
+def register():
+    bpy.types.TOPBAR_MT_editor_menus.append(warn_force_push_incoming)
+
+def unregister():
+    bpy.types.TOPBAR_MT_editor_menus.remove(warn_force_push_incoming)
