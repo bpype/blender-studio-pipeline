@@ -5,7 +5,6 @@
 from typing import Dict, List, Set, Optional, Tuple, Any
 
 import bpy
-import threading
 import gazu
 from .. import cache, prefs
 
@@ -15,9 +14,6 @@ from ..playblast import ops as ops_playblast
 from ..logger import LoggerFactory
 
 logger = LoggerFactory.getLogger()
-
-active_thread = False
-
 
 class KITSU_OT_session_start(bpy.types.Operator):
     """
@@ -39,7 +35,7 @@ class KITSU_OT_session_start(bpy.types.Operator):
         return True
 
     def execute(self, context: bpy.types.Context) -> Set[str]:
-        self.thread_login(context)
+        self.kitsu_session_start(context)
         if not prefs.session_get(context).is_auth():
             self.report({"ERROR"}, "Login data not correct")
             logger.error("Login data not correct")
@@ -74,15 +70,6 @@ class KITSU_OT_session_start(bpy.types.Operator):
             self.report({"INFO"}, f"Logged in as {session_data.user['full_name']}")
         finally:
             return
-
-    def thread_login(self, context):
-        global active_thread
-        if active_thread:
-            active_thread._stop()
-        active_thread = threading.Thread(
-            target=self.kitsu_session_start(context), daemon=True
-        )
-        active_thread.start()
 
 
 class KITSU_OT_session_end(bpy.types.Operator):

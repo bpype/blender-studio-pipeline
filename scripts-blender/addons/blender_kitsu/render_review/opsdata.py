@@ -57,7 +57,7 @@ def _copy2_tree_progress(src, dst):
     progress = round((len(copytree_list) * 100) / copytree_num_of_items)
     delete_prev_line = "\033[1A\x1b[2K"
     message = "Copying %s (%i%%)" % (src, progress)
-    logger.warn(delete_lines * delete_prev_line + message)
+    logger.warning(delete_lines * delete_prev_line + message)
     shutil.copy2(src, dst)
 
     copytree_prev_printed_len = len(message)

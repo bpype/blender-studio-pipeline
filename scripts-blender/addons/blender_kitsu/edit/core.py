@@ -41,7 +41,7 @@ def edit_export_is_valid_name(file_pattern: str, filename: str) -> bool:
     # Prevents un-expected matches
     file_pattern = re.escape(file_pattern)
     # Replace `#` with `\d` to represent digits
-    match = re.search(file_pattern.replace('\#', '\d'), filename)
+    match = re.search(file_pattern.replace(r'\#', r'\d'), filename)
     if match:
         return True
     return False
