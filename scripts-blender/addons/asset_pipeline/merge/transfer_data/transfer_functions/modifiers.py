@@ -147,12 +147,19 @@ def transfer_modifier_props(context: Context, source_mod: Modifier, target_mod: 
         # That means you can rename sockets, but removing and adding new ones might cause trouble.
 
         # Transfer geo node attributes
-        for key, value in source_mod.items():
-            typ = type(getattr(target_mod, f'["{key}"]'))
-            if typ in (int, float, bool, str):
-                if not (typ is str and type(target_mod[key]) is int):  # skip conversion for enum props
-                    value = typ(value)
-            target_mod[key] = value
+        if bpy.app.version >= (5,2,0):
+            for socket_name in source_mod.properties.inputs.keys():
+                source_socket = getattr(source_mod.properties.inputs, socket_name, None)
+                target_socket = getattr(target_mod.properties.inputs, socket_name, None)
+                if source_socket and target_socket and hasattr(source_socket, "value"):
+                    target_socket.value = source_socket.value
+        else:
+            for key, value in source_mod.items():
+                typ = type(getattr(target_mod, f'["{key}"]'))
+                if typ in (int, float, bool, str):
+                    if not (typ is str and type(target_mod[key]) is int):  # skip conversion for enum props
+                        value = typ(value)
+                target_mod[key] = value
 
         # Transfer geo node bake settings
         target_mod.bake_directory = source_mod.bake_directory

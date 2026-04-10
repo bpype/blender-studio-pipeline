@@ -1,3 +1,4 @@
+import bpy
 from bpy.types import Collection
 
 from .hooks import hook
