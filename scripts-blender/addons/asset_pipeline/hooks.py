@@ -111,7 +111,7 @@ class Hooks:
         for hook_dir in hook_dirs:
             if not hook_dir or not hook_dir.exists():
                 logger.debug(f"Hooks directory not found: {hook_dir}")
-                return
+                continue
             hook_file_path = hook_dir.resolve() / "hooks.py"
             module_name = __package__ + ".production_hooks"
             try:
