@@ -35,7 +35,7 @@ Let's get going! :)
    If you are not using version control software for your project the script will setup the Blender Kitsu add-on to create version files for production files. (Sequences, Shot, Asset, & Edit .blend files.)
 
 4. **It creates your project folder**  
-   The script makes a new folder for your project in the place you chose. If the folder can't be made (maybe it already exists or the path is wrong), it will ask you for a new place. Calls `init_folder_structure()` from `init_project_folder_structure.py` to create the standard folder skeleton for the project, including the main, `svn`, and `shared` directories, using predefined JSON templates.
+   The script makes a new folder for your project in the place you chose. If the folder can't be made (maybe it already exists or the path is wrong), it will ask you for a new place. Calls `init_folder_structure()` from `init_project_folder_structure.py` to create the standard folder skeleton for the project, including the main, `project_files`, and `shared` directories, using predefined JSON templates.
 
 5. **It builds all the folders you need**  
    Inside your new project folder, it creates all the special folders and files that Blender Studio needs to work together with your team.
@@ -118,9 +118,10 @@ Here is how you would create a folder skeleton in the temporary files folder on 
 If you navigate to the `/tmp/my_project` folder you will see that there are three folders.
 - `local` This is where the local copy of Blender and the add-ons will be installed.
 - `shared` This is the folder that should be shared over the network. (By using Syncthing, NFS shares, Samba, Dropbox, etc)
-- `svn` This the versioned controlled folder where the `.blend` production files will live.
+- `project_files` This the folder where the `.blend` production files, images, and videos will live.
+- `tools` This is were all helper scripts to manage and run the project lives.
 
-Inside of the `svn` folder, there is a `tools` folder that contains all scripts listed here.
+The `tools` folder will contain all scripts listed here.
 From this point on, all scripts are to be run from within the `tools` folder
 
 ## consistency_check.py

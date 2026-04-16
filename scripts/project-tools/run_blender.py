@@ -50,8 +50,8 @@ parser.add_argument(
     action='store_true',
 )
 
-# The project base path (where shared, local and svn are located)
-PATH_BASE = Path(__file__).parent.parent.parent
+# The project base path (where shared, local and project_files are located)
+PATH_BASE = Path(__file__).parent.parent
 PATH_ARTIFACTS = PATH_BASE / 'shared' / 'artifacts'
 PATH_LOCAL = PATH_BASE / 'local'
 PATH_CUSTOM_SPLASH = Path(__file__).parent / "custom_splash.png"

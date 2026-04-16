@@ -9,11 +9,10 @@ from urllib.request import urlretrieve
 import requests
 import glob
 import os
-import json
 
 
 def is_4_5_or_lower_branch() -> bool:
-    blender_folder = Path(__file__).parents[2].joinpath("shared/artifacts/blender")
+    blender_folder = Path(__file__).parents[1].joinpath("shared/artifacts/blender")
     if not blender_folder.exists():
         return False
 
@@ -101,7 +100,7 @@ def download_file(url, out_folder, filename):
 
 
 current_file_folder_path = Path(__file__).parent
-download_folder_path = (current_file_folder_path / "../../shared/artifacts/extensions/").resolve()
+download_folder_path = (current_file_folder_path / "../shared/artifacts/extensions/").resolve()
 update_blender_studio_extensions(download_folder_path)
 
 # Customize this script to download extensions from other sources

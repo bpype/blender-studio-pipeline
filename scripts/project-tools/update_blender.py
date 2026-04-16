@@ -127,7 +127,7 @@ def shasum_matches(file, sha_sum):
 
 def update_blender(download_info):
     current_file_folder_path = pathlib.Path(__file__).parent
-    download_folder_path = (current_file_folder_path / "../../shared/artifacts/blender").resolve()
+    download_folder_path = (current_file_folder_path / "../shared/artifacts/blender").resolve()
     backup_folder_path = download_folder_path / "previous/current_snapshot"
     # This can happen if someone has run the rollback script, so we need to check for it.
     backup_exists = (download_folder_path / "previous/00").exists()

@@ -9,8 +9,8 @@ import os
 import shutil
 import sys
 
-# The project base path (where shared, local and svn are located)
-PATH_BASE = Path(__file__).parent.parent.parent
+# The project base path (where shared, local and project_files are located)
+PATH_BASE = Path(__file__).parent.parent
 PATH_ARTIFACTS = PATH_BASE / 'shared' / 'artifacts' / 'blender'
 PATH_PREVIOUS = PATH_ARTIFACTS / 'previous'
 BACKUP_DIR = PATH_PREVIOUS / '00'

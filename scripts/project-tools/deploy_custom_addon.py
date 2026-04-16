@@ -53,7 +53,7 @@ def main():
     # Define the download folder path
     current_file_folder_path = Path(__file__).parent
     download_folder_path = (
-        current_file_folder_path / "../../shared/artifacts/extensions/"
+        current_file_folder_path / "../shared/artifacts/extensions/"
     ).resolve()
 
     # Copy the zip file to the download folder
