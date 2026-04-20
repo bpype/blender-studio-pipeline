@@ -273,7 +273,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
         name="Project Root Directory",
         description=(
             "Directory path to the root of the project"
-            "In this directory blender kitsu searches for the svn/ & shared/ directories"
+            "In this directory blender kitsu searches for the project_files/ & shared/ directories"
             "Directory should follow `you_project_name/` format without any subdirectories"
         ),
         default="/data/gold/",
@@ -775,7 +775,7 @@ def session_get(context: bpy.types.Context) -> Session:
 
 def project_root_dir_get(context: bpy.types.Context):
     addon_prefs = addon_prefs_get(context)
-    return Path(addon_prefs.project_root_dir).joinpath('svn')
+    return Path(addon_prefs.project_root_dir).joinpath('project_files')
 
 
 def session_auth(context: bpy.types.Context) -> bool:
