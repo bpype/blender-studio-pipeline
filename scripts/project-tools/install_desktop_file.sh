@@ -3,7 +3,7 @@
 # Make sure we are in this files directory
 cd "$(dirname "$0")"
 
-PROJECT_NAME="$(basename $(realpath ../../))"
+PROJECT_NAME="$(basename $(realpath ../))"
 DESKTOP_FILE_DST="$HOME/.local/share/applications/blender_$PROJECT_NAME.desktop"
 BLENDER_BIN_PATH=$(realpath ./run_blender.py)
 BLENDER_ICON_NAME="blender_gold"

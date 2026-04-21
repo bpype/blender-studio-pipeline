@@ -140,7 +140,7 @@ class ASSETPIPE_OT_save_asset_hook(Operator):
     bl_idname = "assetpipe.save_production_hook"
     bl_label = "Save Production Hook"
     bl_description = """Save new hook file based on example file. Production hooks are used across all assets. Asset hooks are only used in the current asset.
-    - Production hooks: 'svn/pro/config' directory.
+    - Production hooks: 'project_files/pro/config' directory.
     - Asset hooks are stored at the root of the asset's directory'"""
     mode: EnumProperty(
         name="Hooks Mode",

@@ -279,13 +279,13 @@ def write_config_file(
             "version_control": version_control,
         },
     }
-    config_file = project_path.joinpath("svn/tools/project_config.json")
+    config_file = project_path.joinpath("tools/project_config.json")
     with open(config_file, "w") as f:
         json.dump(config_data, f, indent=4)
 
 
 def write_blender_branch(branch_name: str, project_path: Path):
-    update_script = project_path.joinpath("svn/tools/update_blender.py")
+    update_script = project_path.joinpath("tools/update_blender.py")
     if not update_script.exists():
         print(f"Config file not found: {update_script}")
         sys.exit()
@@ -474,8 +474,8 @@ def main():
         project_path.as_posix(), Path(__file__).parent.joinpath("folder_structure.json")
     )
     init_folder_structure(
-        project_path.joinpath("svn").as_posix(),
-        Path(__file__).parent.joinpath("folder_structure_svn.json"),
+        project_path.joinpath("project_files").as_posix(),
+        Path(__file__).parent.joinpath("folder_structure_project_files.json"),
     )
     init_folder_structure(
         project_path.joinpath("shared").as_posix(),
@@ -492,12 +492,12 @@ def main():
     write_blender_branch(available_blender_branches[selected_branch_name], project_path)
 
     # Download Blender
-    update_blender_script = project_path.joinpath("svn/tools/update_blender.py")
+    update_blender_script = project_path.joinpath("tools/update_blender.py")
     update_blender_args = ["--platform"] + args.platform if args.platform else []
     run_background_script(update_blender_script, *update_blender_args)
 
     # Download Blender Studio Extensions
-    update_extensions_script = project_path.joinpath("svn/tools/update_extensions.py")
+    update_extensions_script = project_path.joinpath("tools/update_extensions.py")
     run_background_script(update_extensions_script)
     # Write project config file
     write_config_file(KITSU_URL, selected_project, project_path, version_control)
@@ -505,7 +505,7 @@ def main():
     print_header("Mounting Project Folders", 1)
 
     print(
-        f"If you are using SVN or GIT LFS to do version control please make your initial commit of {project_path.joinpath('svn').as_posix()} now."
+        f"If you are using SVN or GIT LFS to do version control please make your initial commit of project folder now."
     )
     print("https://studio.blender.org/tools/td-guide/svn-setup")
     print()
@@ -518,7 +518,7 @@ def main():
     print(
         f"Next step: Ensure the SVN and Shared directories above are available on your artist workstations. Once the directories are setup, you can run deployment assistant on an Artist workstation."
     )
-    print(f"{project_path.joinpath('svn/tools/deployment_assistant.py').as_posix()}")
+    print(f"{project_path.joinpath('tools/deployment_assistant.py').as_posix()}")
     print(
         "https://projects.blender.org/studio/blender-studio-tools/src/branch/main/scripts/project-tools#readme"
     )

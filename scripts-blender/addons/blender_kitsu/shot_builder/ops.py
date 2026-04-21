@@ -58,7 +58,7 @@ class KITSU_OT_build_config_base_class(bpy.types.Operator):
 class KITSU_OT_build_config_save_hooks(KITSU_OT_build_config_base_class):
     bl_idname = "kitsu.build_config_save_hooks"
     bl_label = "Save Shot Builder Hook File"
-    bl_description = "Save hook.py file to `your_project_name/svn/pro/config/shot_builder` directory. Hooks are used to customize shot builder behaviour."
+    bl_description = "Save hook.py file to `your_project_name/project_files/pro/config/shot_builder` directory. Hooks are used to customize shot builder behaviour."
 
     def execute(self, context: bpy.types.Context):
         hooks_target_filepath = config.filepath_get(bkglobals.BUILD_HOOKS_FILENAME)
@@ -85,7 +85,7 @@ class KITSU_OT_build_config_save_hooks(KITSU_OT_build_config_base_class):
 class KITSU_OT_build_config_save_settings(KITSU_OT_build_config_base_class):
     bl_idname = "kitsu.build_config_save_settings"
     bl_label = "Save Shot Builder Settings File"
-    bl_description = "Save settings.json file to `your_project_name/svn/pro/config/shot_builder` Config are used to customize shot builder behaviour."
+    bl_description = "Save settings.json file to `your_project_name/project_files/pro/config/shot_builder` Config are used to customize shot builder behaviour."
 
     def execute(self, context: bpy.types.Context):
         settings_target_filepath = config.filepath_get(bkglobals.BUILD_SETTINGS_FILENAME)

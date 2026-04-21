@@ -147,7 +147,7 @@ class Hooks:
 
 def get_production_hook_dir() -> Path:
     root_dir = Path(prefs.project_root_dir_get())
-    prod_dir = root_dir.joinpath("svn/pro/")
+    prod_dir = root_dir.joinpath("project_files/pro/")
     if not prod_dir.exists():
         logger.warning(
             f"Production directory {str(prod_dir)} not found. Production hooks will not work."

@@ -22,7 +22,7 @@ class ASSET_PIPELINE_addon_preferences(AddonPreferences):
 
     project_root_dir: StringProperty(
         name="Project Root Directory",
-        description="Root Directory of the Project, this should be the root directory `your_project_name/ that contains the SVN, Shared and Local folders`",
+        description="Root Directory of the Project, this should be the root directory `your_project_name/ that contains the project_files, shared and local folders`",
         default="/data/our_project/",
         subtype="DIR_PATH",
     )

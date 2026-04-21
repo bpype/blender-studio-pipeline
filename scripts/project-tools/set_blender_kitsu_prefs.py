@@ -37,7 +37,7 @@ def set_blender_kitsu_login(login_data, addon_prefs):
 
 
 def set_blender_kitsu_paths(project_config, addon_prefs):
-    base_path = Path(__file__).parents[2].as_posix()
+    base_path = Path(__file__).parents[1].as_posix()
     project_paths = project_config["project_paths"]
     setattr(addon_prefs, "project_root_dir", base_path)
     print("project root dir: ", base_path)
@@ -67,7 +67,7 @@ def enable_blender_kitsu_addon():
 
 def set_asset_library(asset_lib_name):
     asset_libs = bpy.context.preferences.filepaths.asset_libraries
-    asset_lib_path = Path(__file__).parents[2].joinpath("svn/pro/assets").as_posix()
+    asset_lib_path = Path(__file__).parents[1].joinpath("project_files/pro/assets").as_posix()
 
     if asset_libs.get(asset_lib_name) is None:
         asset_lib = asset_libs.new(name=asset_lib_name, directory=asset_lib_path)

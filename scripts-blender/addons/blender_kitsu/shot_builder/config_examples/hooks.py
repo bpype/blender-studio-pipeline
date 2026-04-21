@@ -11,8 +11,8 @@ import logging
 Arguments to use in hooks
     scene: bpy.types.Scene # current scene
     shot: Shot class from blender_kitsu.types.py
-    prod_path: str # path to production root dir (your_project/svn/)
-    shot_path: str # path to shot file (your_project/svn/pro/shots/{sequence_name}/{shot_name}/{shot_task_name}.blend})
+    prod_path: str # path to production root dir (your_project/project_files/)
+    shot_path: str # path to shot file (your_project/project_files/pro/shots/{sequence_name}/{shot_name}/{shot_task_name}.blend})
     
 Notes
      matching_task_type = ['anim', 'lighting', 'fx', 'comp'] # either use list or just one string
