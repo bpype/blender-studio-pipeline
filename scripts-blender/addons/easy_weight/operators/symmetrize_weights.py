@@ -11,7 +11,7 @@ from ..utils import poll_deformed_mesh_with_vgroups
 
 
 class EASYWEIGHT_OT_symmetrize_groups(Operator):
-    """Symmetrize weights of vertex groups on a near-symmetrical mesh.\May have poor results on assymetrical meshes"""
+    """Symmetrize weights of vertex groups on a near-symmetrical mesh. May have poor results on assymetrical meshes"""
 
     bl_idname = "object.symmetrize_vertex_weights"
     bl_label = "Symmetrize Vertex Weights"
