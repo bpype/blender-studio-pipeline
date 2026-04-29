@@ -44,9 +44,21 @@ ATTRIBUTE_KEY = "ATTRIBUTE"
 PARENT_KEY = "PARENT"
 CUSTOM_PROP_KEY = "CUSTOM_PROP"
 
+# Order in which the transfer is executed
+TRANSFER_DATA_ORDER = [
+    VERTEX_GROUP_KEY,
+    ATTRIBUTE_KEY,
+    MATERIAL_SLOT_KEY,
+    CUSTOM_PROP_KEY,
+    SHAPE_KEY_KEY,
+    MODIFIER_KEY,
+    CONSTRAINT_KEY,
+    PARENT_KEY
+]
+
 # Information about supported transferable data.
 # UI Bools are defined in props.py file
-# {Key string : ("UI Name", 'ICON')}
+# (Key string, ("UI Name", 'ICON')}
 TRANSFER_DATA_TYPES = {
     NONE_KEY: ("None", "BLANK1"),
     VERTEX_GROUP_KEY: ("Vertex Groups", 'GROUP_VERTEX'),
