@@ -4,7 +4,7 @@ import bpy
 from bpy.types import Modifier
 
 
-def geomod_get_identifier(modifier: Modifier, param_name: str) -> str:
+def geomod_get_identifier(modifier: Modifier, param_name: str, must_exist=False) -> str:
     if hasattr(modifier.node_group, 'interface'):
         # 4.0+
         input = modifier.node_group.interface.items_tree.get(param_name)
@@ -14,8 +14,8 @@ def geomod_get_identifier(modifier: Modifier, param_name: str) -> str:
 
     if input:
         return input.identifier
-    else:
-        raise ValueError("No such Modifier socket: ", param_name)
+    elif must_exist:
+        raise ValueError("No such Modifier socket: ", param_name, "On modifier: ", modifier.name)
 
 
 def geomod_get_data_path(modifier: Modifier, param_name: str) -> str:
@@ -36,6 +36,8 @@ def geomod_set_param_value(modifier: Modifier, param_name: str, param_value: Any
 
 def geomod_get_param_value(modifier: Modifier, param_name: str):
     input_id = geomod_get_identifier(modifier, param_name)
+    if not input_id:
+        return
     if bpy.app.version >= (5, 2):
         return getattr(modifier.properties.inputs, input_id).value
     return modifier[input_id]

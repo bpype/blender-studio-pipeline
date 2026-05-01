@@ -206,9 +206,9 @@ def GNSK_get_desired_modifier_index(context, obj: Object) -> int:
     last_i = -1
     for i, m in enumerate(obj.modifiers):
         if m.type == 'NODES' and m.node_group == ensure_shape_key_node_tree(context):
-            last_i
+            last_i = i + 1
     if last_i > -1:
-        return last_i + 1
+        return last_i
 
     # Otherwise, insert before any SubSurf modifiers, if any.
     for i, m in enumerate(obj.modifiers):

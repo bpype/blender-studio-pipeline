@@ -7,10 +7,11 @@ from bl_ui.generic_ui_list import draw_ui_list
 
 from .geonode_util import geomod_get_identifier
 from .prefs import get_addon_prefs
+from .props import GeoNodeShapeKey
 
 
 class GNSK_UL_main(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, _icon, _active_data, _active_propname):
+    def draw_item(self, context, layout, data, item: GeoNodeShapeKey, _icon, _active_data, _active_propname):
         gnsk = item
 
         if self.layout_type != 'DEFAULT':
