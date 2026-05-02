@@ -47,7 +47,7 @@ You can assign a component to a bone in the metarig. For chain components, the c
 
 <img src="/media/addons/cloudrig/header_menu.jpg">
 
-You can copy and mirror component types using the operators found in the CloudRig header menu.  
+You can copy and mirror component types using the operators found in the CloudRig header menu.
 - **Copy Component**: With 2 or more bones selected, copy the CloudRig Component (type + all parameters) from the active bone to all selected bones.
 - **Symmetrize Components**: Mirror the CloudRig Component (type + all parameters) from the selected bones to their opposite sides. This will also flip bone names found among the parameters.
 
@@ -398,6 +398,30 @@ Extends the functionality of the Curve With Hooks component, where instead of ad
     When "Match Controls to Bones" is disabled, this specifies how many controls should be placed along the chain.
 - #### Create FK Chain
     Create an FK chain of controls, on top of the hook controls.
+
+</details>
+
+
+## Curve: IK with Hooks
+Extends Curve: With Hooks by adding an IK handle at the tip of each spline. The animator poses the IK handle to gesture the curve into a rough position, then refines the shape by animating the individual hooks. Useful for things like shoelaces, ropes, ponytails, or any curve where animating every hook by hand would be tedious. If no curve is assigned, one is auto-generated along the metarig bone chain at generation time.
+
+<details>
+<summary> Parameters </summary>
+
+- #### Curve
+    The target curve object. If empty, a bezier curve is auto-generated along the metarig bone chain. Once assigned (or auto-generated), it is preserved on subsequent generations — only edit the curve directly if you want to change its shape or point count.
+- #### Create IK Pole
+    Whether to create an IK pole target control to control the bend direction of the IK chain. Shared with the Chain: IK component.
+- #### Match Controls to Bones
+    *Auto-Generated Curve only.* When enabled, the auto-generated curve has one point per metarig bone joint. When disabled, points are distributed evenly along the chain length. Shared with Curve: Spline IK.
+- #### Number of Hooks
+    *Auto-Generated Curve only, when Match Controls to Bones is disabled.* Number of curve points to create. Shared with Curve: Spline IK.
+- #### Curve Handle Length
+    *Auto-Generated Curve only.* Bezier handle length multiplier on the auto-generated curve. Shared with Curve: Spline IK.
+
+The Custom Name, Inherit Scale, Controls for Handles, Rotatable Handles, and Separate Radius Control parameters are inherited from Curve: With Hooks and behave the same way.
+
+Parent Switching applies to the IK master, so the IK handle can be made to follow a chosen parent bone (e.g. a ponytail tip following the head).
 
 </details>
 
