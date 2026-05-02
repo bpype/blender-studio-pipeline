@@ -525,11 +525,11 @@ This component type lets you tweak aspects of a single bone that is expected to 
     - Locks
     - Rotation Mode
     - Bone Shape
-    - Color Palette
     - Collections
+    - Color Palette
+    - IK Properties
+    - B-Bone Properties
     - Custom Properties
-    - IK Settings
-    - B-Bone Settings
     Each of these can be chosen to be copied over to the target bone or not. For example if you just want to add some extra constraints to a bone, you probably don't want to overwrite its transforms, bone shape, etc, so you would leave all of those unticked, and they will remain untouched.
 
 </details>
