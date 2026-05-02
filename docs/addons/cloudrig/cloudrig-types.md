@@ -29,6 +29,7 @@ These are CloudRig's component types. Most component types are built on top of o
         - [Chain: Sphere](#chain-sphere)
     - [Curve: With Hooks](#curve-with-hooks)
         - [Curve: Spline IK](#curve-spline-ik)
+        - [Curve: IK with Hooks](#curve-ik-with-hooks)
     - [Lattice](#lattice)
     - [Aim](#aim)
     - [Raw Copy](#raw-copy)
@@ -418,8 +419,6 @@ Extends Curve: With Hooks by adding an IK handle at the tip of each spline. The 
     *Auto-Generated Curve only, when Match Controls to Bones is disabled.* Number of curve points to create. Shared with Curve: Spline IK.
 - #### Curve Handle Length
     *Auto-Generated Curve only.* Bezier handle length multiplier on the auto-generated curve. Shared with Curve: Spline IK.
-
-The Custom Name, Inherit Scale, Controls for Handles, Rotatable Handles, and Separate Radius Control parameters are inherited from Curve: With Hooks and behave the same way.
 
 Parent Switching applies to the IK master, so the IK handle can be made to follow a chosen parent bone (e.g. a ponytail tip following the head).
 
