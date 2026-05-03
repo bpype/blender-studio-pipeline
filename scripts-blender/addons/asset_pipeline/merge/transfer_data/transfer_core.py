@@ -98,19 +98,18 @@ def init_transfer_data(
         # Don't create ownership data for object data if the object is linked.
         return
 
+    if obj.data and not obj.data.library:
+        # Don't create ownership data for mesh data if the mesh is linked, or Empties.
+
+        vertex_groups.init_vertex_groups(scene, obj)
+        materials.init_materials(scene, obj)
+        shape_keys.init_shape_keys(scene, obj)
+        attributes.init_attributes(scene, obj)
+
     constraints.init_constraints(scene, obj)
     custom_props.init_custom_prop(scene, obj)
     parent.init_parent(scene, obj)
     modifiers.init_modifiers(scene, obj)
-
-    if not obj.data or obj.data.library:
-        # Don't create ownership data for mesh data if the mesh is linked, or Empties.
-        return
-
-    vertex_groups.init_vertex_groups(scene, obj)
-    materials.init_materials(scene, obj)
-    shape_keys.init_shape_keys(scene, obj)
-    attributes.init_attributes(scene, obj)
 
 
 def apply_transfer_data_items(
@@ -226,8 +225,19 @@ def apply_transfer_data(context: Context, transfer_data_map: dict[Object, dict])
         for source_obj in transfer_data_map:
             target_obj = transfer_data_map[source_obj]["target_obj"]
             td_types = transfer_data_map[source_obj]["td_types"]
+
+            # Check for any transfer data types that have no order defined
+            td_types_addition = {k for k in td_types.keys()} - set(constants.TRANSFER_DATA_ORDER)
+            if td_types_addition:
+                raise Exception(
+                    f"Transfer data contains types {td_types_addition} for which no order is defined in 'constants.TRANSFER_DATA_ORDER'"
+                )
+
             with link_objs_to_collection({target_obj, source_obj}, td_col):
-                for td_type_key, td_dicts in td_types.items():
+                for td_type_key in constants.TRANSFER_DATA_ORDER:
+                    if td_type_key not in td_types.keys():
+                        continue
+                    td_dicts = td_types[td_type_key]
                     start_time = time.time()
                     apply_transfer_data_items(context, source_obj, target_obj, td_type_key, td_dicts)
                     profiler.add(time.time() - start_time, td_type_key)

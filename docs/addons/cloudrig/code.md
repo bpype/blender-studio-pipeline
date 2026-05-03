@@ -1,5 +1,5 @@
 # Contribute
-This project has grown large enough that external contributors would be fairly welcome. Just [get in contact with Demeter](https://blender.chat/direct/mets) before you start coding. You can also [open an issue](https://projects.blender.org/Mets/CloudRig/issues) to discuss design and functionality before you start coding.
+This project has grown large enough that external contributors would be fairly welcome. Just [get in contact with Demeter](https://chat.blender.org/#/room/#CloudRig:blender.org) before you start coding. You can also [open an issue](https://projects.blender.org/Mets/CloudRig/issues) to discuss design and functionality before you start coding.
 
 ### Adding a new Component/Parameter
 The implementation of CloudRig's [Component Types](cloudrig-types) are found in the `rig_components` folder of the repository. [Here](https://projects.blender.org/Mets/CloudRig/src/branch/master/CloudRig/rig_components/external_components/minimal_component.py), you will also find `external_components/minimal_component.py`, which is a template for you to create your own component types. Simply un-comment the last line of this file and [Reload Scripts](https://docs.blender.org/manual/en/5.0/advanced/operators.html#bpy-ops-script-reload) in Blender, to see it show up as a component type option. Generating it will create a bone and a constraint.
@@ -20,8 +20,14 @@ To start making your own component types, just copy this folder, and rename some
     - Bone names should be derived from adding prefixes to metarig bone names, to ensure uniqueness.
     - As few prefixes as possible, but as many as needed. For animator-facing controls, I really advise limiting to 1 short prefix.
     - Avoid using the same prefix for different purposes; search the codebase before adding new ones.
-    - Do not hard-code some bone to be called "Torso" or anything else, because then you can't have more than 1 instance of this component in the rig. 
+    - Do not hard-code some bone to be called "Torso" or anything else, because then you can't have more than 1 instance of this component in the rig.
     - Avoid .001 suffixes by using `increment_name()` function for nice clean name increments.
+
+### Automated Tests
+CloudRig uses PyTest as its regression testing framework of choice. Tests are implemented in the [tests](https://projects.blender.org/Mets/CloudRig/src/branch/master/tests) folder, which is where you can also find information about how to run them yourself. If you want to contribute, it is vital that you know how to execute automated tests locally, since a PR won't be approved if it's failing tests.
+
+### Translations
+CloudRig [supports localization](https://projects.blender.org/Mets/CloudRig/issues/286), which comes with a lot of requirements for how Strings are handled inside the codebase. For example, f-strings are largely forbidden, because they cannot be translated. To alleviate this mental overhead, there is [one particularly useful test](https://projects.blender.org/Mets/CloudRig/src/branch/master/tests/test_codebase.py), which when ran, should give you very clear instructions on what you need to do in order to make all strings inside the codebase translatable. So to make your code translatable, just code as you normally would, run the test, and follow the test's failure messages until your code passes!
 
 ## Modules
 Below are descriptions of each python module in CloudRig.

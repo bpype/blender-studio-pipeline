@@ -8,6 +8,8 @@ CloudRig includes several quality of life features, each with a default hotkey. 
 
 - **Toggle Meta/Generated Rig** (`Shift+T`): Toggle visibilty and selection state between a metarig and its generated rig, syncing visibility of bone collections and bone selection. This can be used while a mesh object is selected, to hop to Pose Mode on its deforming armature.
 - **(Re-)Generate Rig** (`Ctrl+Alt+R`): Generates or Re-generates the active rig, or the active metarig's rig. If there is only one metarig in the scene, it doesn't need to be active.
+- **Push Bone to MetaRig**: This operator found in the CloudRig header menu lets you save some clicks when wanting to transfer a bone from the generated rig over to the metarig, which you might do when you made modifications on the generated rig, and want to keep them when re-generating.
+
 
 ## Rig Preview
 <video src="/media/addons/cloudrig/rig_preview_overlay.mp4" controls></video>
@@ -15,14 +17,14 @@ CloudRig includes several quality of life features, each with a default hotkey. 
 While editing a metarig, you can see a live preview of the rig which will be generated. In the Overlay pop-over, you'll find settings for how many components should be shown, and whether to use dashed lines. Drawing all visible components on a complex metarig can introduce lag when posing.
 
 
-## Scale Custom Shapes (Ctrl+Alt+Shift+S)
+## Scale Custom Shapes (Ctrl+Shift+S)
 Shown in the above video, this hotkey lets you scale the visual sizes of bones. This works well together with the Rig Preview, so you don't need to re-generate the rig all the time to see your changes. You can also hit the X/Y/Z keys to scale on those axes.
 The operator can also be found under 3D View Header -> Pose -> Transform -> Scale Custom Shapes.
 
 
 ## Smart Rename (F2)
 
-<img src="/media/addons/cloudrig/smart_rename.jpg">  
+<img src="/media/addons/cloudrig/smart_rename.jpg">
 
 In the 3D View only, this hotkey masks Blender's built-in Rename operator to provide more convenient renaming in the case of symmetrically named objects and bones. Renaming of the opposite item can be toggled off. You will also see a preview of the result of the renaming, which may not be what you asked for, as the desired name might be occupied. In this case, the names are incremented with CloudRig's name increment rules, as opposed to Blender's .001 suffixes.
 
@@ -86,7 +88,7 @@ A comprehensive toolset to manage bone custom shapes.
 - **Copy to Selected**: Copy the custom shape and transforms from the active bone selected bones.
 
 ## Personal Custom Shape Library
-If you'd like to add more custom shapes to your workflow, you can simply browse any .blend file containing objects named "WGT-something" in CloudRig's add-on preferences.  
+If you'd like to add more custom shapes to your workflow, you can simply browse any .blend file containing objects named "WGT-something" in CloudRig's add-on preferences.
 If you'd like to have icons for your custom shapes, you can use the "Render Bone Shape Thumbnails" operator, found under 3D View Header -> View:
 
 <img src="/media/addons/cloudrig/render_bone_shape_thumbnails.jpg">
@@ -99,5 +101,10 @@ Available with the rig, even if a user doesn't have CloudRig installed.
 <img src="/media/addons/cloudrig/bone_collections_popup.png">
 
 ## Quick Select (Shift+Alt+W)
-Pops up a list of collections that were [marked](organizing-bones#selection-sets) to be included in this list. Clicking on one of them selects the bones within. Shift+Click extends the selection. Ctrl+Click symmetrizes the selection. Alt+Click deselects the collection's bones. 
+Pops up a list of collections that were [marked](organizing-bones#selection-sets) to be included in this list. Clicking on one of them selects the bones within. Shift+Click extends the selection. Ctrl+Click symmetrizes the selection. Alt+Click deselects the collection's bones.
 Available with the rig, even if a user doesn't have CloudRig installed.
+
+## Improve Link/Append
+This user preference tweaks Blender's linking and appending behaviour to make it slightly more convenient:
+- When linking a collection which contains armatures, the collection and the armatures become automatically overridden and selected.
+- When linking or appending armatures which have runnable Python scripts attached, they are automatically executed.

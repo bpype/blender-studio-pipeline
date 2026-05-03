@@ -29,6 +29,7 @@ These are CloudRig's component types. Most component types are built on top of o
         - [Chain: Sphere](#chain-sphere)
     - [Curve: With Hooks](#curve-with-hooks)
         - [Curve: Spline IK](#curve-spline-ik)
+        - [Curve: IK with Hooks](#curve-ik-with-hooks)
     - [Lattice](#lattice)
     - [Aim](#aim)
     - [Raw Copy](#raw-copy)
@@ -47,7 +48,7 @@ You can assign a component to a bone in the metarig. For chain components, the c
 
 <img src="/media/addons/cloudrig/header_menu.jpg">
 
-You can copy and mirror component types using the operators found in the CloudRig header menu.  
+You can copy and mirror component types using the operators found in the CloudRig header menu.
 - **Copy Component**: With 2 or more bones selected, copy the CloudRig Component (type + all parameters) from the active bone to all selected bones.
 - **Symmetrize Components**: Mirror the CloudRig Component (type + all parameters) from the selected bones to their opposite sides. This will also flip bone names found among the parameters.
 
@@ -402,6 +403,28 @@ Extends the functionality of the Curve With Hooks component, where instead of ad
 </details>
 
 
+## Curve: IK with Hooks
+Extends Curve: With Hooks by adding an IK handle at the tip of each spline. The animator poses the IK handle to gesture the curve into a rough position, then refines the shape by animating the individual hooks. Useful for things like shoelaces, ropes, ponytails, or any curve where animating every hook by hand would be tedious. If no curve is assigned, one is auto-generated along the metarig bone chain at generation time.
+
+<details>
+<summary> Parameters </summary>
+
+- #### Curve
+    The target curve object. If empty, a bezier curve is auto-generated along the metarig bone chain. Once assigned (or auto-generated), it is preserved on subsequent generations — only edit the curve directly if you want to change its shape or point count.
+- #### Create IK Pole
+    Whether to create an IK pole target control to control the bend direction of the IK chain. Shared with the Chain: IK component.
+- #### Match Controls to Bones
+    *Auto-Generated Curve only.* When enabled, the auto-generated curve has one point per metarig bone joint. When disabled, points are distributed evenly along the chain length. Shared with Curve: Spline IK.
+- #### Number of Hooks
+    *Auto-Generated Curve only, when Match Controls to Bones is disabled.* Number of curve points to create. Shared with Curve: Spline IK.
+- #### Curve Handle Length
+    *Auto-Generated Curve only.* Bezier handle length multiplier on the auto-generated curve. Shared with Curve: Spline IK.
+
+Parent Switching applies to the IK master, so the IK handle can be made to follow a chosen parent bone (e.g. a ponytail tip following the head).
+
+</details>
+
+
 ## Lattice
 Creates a lattice with a root and a hook control. The hook control deforms the inside of the lattice using a spherical vertex group that gets generated. You can manually add Lattice modifiers to objects that you want to be deformed by the created lattice. This is a very performant and very flexible way to slightly nudge or bulge things. Every rig should have a few of these lattice set-ups scattered around, particularly clothing and faces. You never know when it might come in handy, but it often does.
 
@@ -502,11 +525,11 @@ This component type lets you tweak aspects of a single bone that is expected to 
     - Locks
     - Rotation Mode
     - Bone Shape
-    - Color Palette
     - Collections
+    - Color Palette
+    - IK Properties
+    - B-Bone Properties
     - Custom Properties
-    - IK Settings
-    - B-Bone Settings
     Each of these can be chosen to be copied over to the target bone or not. For example if you just want to add some extra constraints to a bone, you probably don't want to overwrite its transforms, bone shape, etc, so you would leave all of those unticked, and they will remain untouched.
 
 </details>

@@ -5,7 +5,7 @@
 from bpy.props import CollectionProperty, IntProperty, PointerProperty, StringProperty
 from bpy.types import Modifier, Object, PropertyGroup
 
-from .operators import geomod_get_identifier
+from .operators import geomod_get_param_value
 
 
 class GeoNodeShapeKey(PropertyGroup):
@@ -25,16 +25,13 @@ class GeoNodeShapeKey(PropertyGroup):
 
     @property
     def modifier(self) -> Modifier:
-        for m in self.id_data.modifiers:
-            if m.type == 'NODES':
-                identifier = geomod_get_identifier(m, 'Sculpt')
-                if not identifier:
-                    continue
-                sculpt_ob = m[identifier]
+        for mod in self.id_data.modifiers:
+            if mod.type == 'NODES':
+                sculpt_ob = geomod_get_param_value(mod, "Sculpt")
                 if not sculpt_ob:
                     continue
                 if sculpt_ob == self.storage_object:
-                    return m
+                    return mod
 
     @property
     def other_affected_objects(self) -> list[Object]:

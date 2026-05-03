@@ -16,7 +16,6 @@ from bpy.types import Collection, Context, NodeTree, Object, Operator
 
 from .geonode_util import (
     geomod_get_data_path,
-    geomod_get_identifier,
     geomod_get_param_value,
     geomod_set_param_attribute,
     geomod_set_param_value,
@@ -30,9 +29,9 @@ NODETREE_NAMES = {
 COLLECTION_NAME = "GeoNode Shape Keys"
 MASK_NAME = "GNSK-Mask"
 TRANSFER_MODES = {
-    "ABSOLUTE": 1,
-    "RELATIVE": 0,
-    "TANGENT_SPACE": 2,
+    "Absolute": 1,
+    "Relative": 0,
+    "Tangent Space": 2,
 }
 
 
@@ -54,11 +53,11 @@ class OBJECT_OT_gnsk_add_shape(Operator):
     )
     transfer_mode: EnumProperty(
         name="Transfer Mode",
-        default="RELATIVE",
+        default="Relative",
         items=[
-            ("ABSOLUTE", "Absolute", "Transfers the deformation as an absolute shape", 1),
-            ("RELATIVE", "Relative", "Transfers the deformation relative to the base shape", 2),
-            ("TANGENT_SPACE", "Tangent Space", "Transfers the deformation relative to the base shape in tangent space", 3),
+            ("Absolute", "Absolute", "Transfers the deformation as an absolute shape", 1),
+            ("Relative", "Relative", "Transfers the deformation relative to the base shape", 2),
+            ("Tangent Space", "Tangent Space", "Transfers the deformation relative to the base shape in tangent space", 3),
         ]
     )
 
@@ -131,8 +130,11 @@ class OBJECT_OT_gnsk_add_shape(Operator):
             mod = obj.modifiers.new(gnsk.name, type='NODES')
             mod.node_group = ensure_shape_key_node_tree(context)
 
-            mod[geomod_get_identifier(mod, "Transfer Mode")] = TRANSFER_MODES[self.transfer_mode]
-            mod[geomod_get_identifier(mod, "Part Index")] = i
+            if bpy.app.version >= (5, 2, 0):
+                geomod_set_param_value(mod, "Transfer Mode", self.transfer_mode)
+            else:
+                geomod_set_param_value(mod, "Transfer Mode", TRANSFER_MODES[self.transfer_mode])
+            geomod_set_param_value(mod, "Part Index", i)
 
             obj.modifiers.move(obj.modifiers.find(mod.name), mod_index)
             # Make sure GNSK entry name matches modifier name, in case of .001 suffix.
@@ -204,9 +206,9 @@ def GNSK_get_desired_modifier_index(context, obj: Object) -> int:
     last_i = -1
     for i, m in enumerate(obj.modifiers):
         if m.type == 'NODES' and m.node_group == ensure_shape_key_node_tree(context):
-            last_i
+            last_i = i + 1
     if last_i > -1:
-        return last_i + 1
+        return last_i
 
     # Otherwise, insert before any SubSurf modifiers, if any.
     for i, m in enumerate(obj.modifiers):
