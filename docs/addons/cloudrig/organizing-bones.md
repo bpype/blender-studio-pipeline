@@ -1,6 +1,6 @@
 # Organizing Bones
 
-In Blender, bones can be organized using [Bone Collections](https://docs.blender.org/manual/en/latest/animation/armatures/bones/bone_collections.html), or [Bone Selection Sets](https://docs.blender.org/manual/en/dev/addons/animation/bone_selection_sets.html), if you use that addon.
+In Blender, bones can be organized using [Bone Collections](https://docs.blender.org/manual/en/latest/animation/armatures/bones/bone_collections.html), or [Bone Selection Sets](https://docs.blender.org/manual/en/dev/addons/animation/bone_selection_sets.html), if you use that add-on.
 
 ## Bone Collections
 CloudRig has a slightly tweaked Bone Collections UI from what you might be used to. This is shown in both the Sidebar (N panel) as well as under Properties->Armature->Bone Collections->CloudRig.
@@ -32,7 +32,7 @@ The eye icon reveals additional Bone Sets, which you would rarely need to custom
 
 #### Bone Colors
 You can also choose a color preset to assign. This preset will be converted to a custom color, meaning your personal color presets will propagate to whoever uses your rig. This ensures the rig looks the same way, no matter who's using it.
-Additionally, you can change Blender's default color presets to CloudRig's recommended ones in the preferences, using this button:  
+Additionally, you can change Blender's default color presets to CloudRig's recommended ones in the preferences, using this button:
 <img src="/media/addons/cloudrig/bone_color_preset.png" width=800>
 
 ## Protected Collections
