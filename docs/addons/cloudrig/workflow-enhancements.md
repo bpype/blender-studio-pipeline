@@ -32,7 +32,7 @@ In the 3D View only, this hotkey masks Blender's built-in Rename operator to pro
 ## Better Duplicate & Extrude
 - **E** (Extrude) and **Shift+D** (Duplicate) increment bone names:
     - Duplicating `Bone1` creates `Bone2`, not `Bone1.001`.
-    - Hold **Shift** while confirming to keep the original numbering.
+    - Hold **Alt** while confirming to keep the original numbering.
 - Handles occupied names: if `Bone2` exists, it creates `Bone3`.
 - Supports symmetry: increments names on the opposite side.
 - **Shift+D** also copies drivers on bone and constraint properties.
