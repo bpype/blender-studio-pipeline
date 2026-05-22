@@ -9,6 +9,7 @@ from .. import constants
 from ..merge import task_layer
 from ..merge.task_layer import draw_task_layer_selection
 from ..props import AssetTransferData
+from ..utils import get_addon_prefs
 
 
 class ASSETPIPE_PT_ownership_manager(Panel):
@@ -414,7 +415,7 @@ def draw_all_data_ownership_of_obj(
             material_slots.append(transfer_data_item)
 
     draw_ownership_data_single_type(context, layout, vertex_groups)
-    draw_ownership_data_single_type(context, layout, modifiers)
+    draw_ownership_data_single_type(context, layout, sorted(modifiers, key=lambda m: m.order_key or "~"))
     draw_ownership_data_single_type(context, layout, constraints)
     draw_ownership_data_single_type(context, layout, custom_props)
     draw_ownership_data_single_type(context, layout, shape_keys)
@@ -451,6 +452,10 @@ def draw_ownership_data_single_item(
     ):
     main_row = layout.row()
     main_row.label(text=f"{transfer_data_item.name}: ")
+
+    debug = get_addon_prefs().logger_level == '10'
+    if transfer_data_item.type == constants.MODIFIER_KEY and debug:
+        main_row.label(text=transfer_data_item.order_key or "(none)")
 
     if transfer_data_item.surrender:
         # Disable entire row if the item is surrendered

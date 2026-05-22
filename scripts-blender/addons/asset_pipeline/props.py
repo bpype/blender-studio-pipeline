@@ -34,6 +34,8 @@ class AssetTransferData(PropertyGroup):
     )
     surrender: BoolProperty(name="Surrender Ownership", default=False)
 
+    order_key: StringProperty(name="Modifier Order Key", default="")
+
     @property
     def obj_name(self):
         return self.id_data.name
@@ -50,6 +52,7 @@ class AssetTransferDataTemp(PropertyGroup):
     )
     surrender: BoolProperty(name="Surrender Ownership", default=False)
     obj_name: StringProperty(name="Object Name", default="")
+    order_key: StringProperty(name="Modifier Order Key", default="")
 
 
 class TaskLayerSettings(PropertyGroup):
@@ -106,6 +109,7 @@ class AssetPipeline(PropertyGroup):
         type: str,
         obj_name: str,
         surrender: bool,
+        order_key: str = "",
     ) -> AssetTransferDataTemp:
         new_transfer_data = self.temp_transfer_data
         transfer_data_item = new_transfer_data.add()
@@ -114,6 +118,7 @@ class AssetPipeline(PropertyGroup):
         transfer_data_item.type = type
         transfer_data_item.obj_name = obj_name
         transfer_data_item.surrender = surrender
+        transfer_data_item.order_key = order_key
         return transfer_data_item
 
     ## NEW FILE

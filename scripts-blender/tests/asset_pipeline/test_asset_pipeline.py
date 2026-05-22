@@ -276,6 +276,76 @@ def test_force_push(context_ap):
     assert context_ap.scene.asset_pipeline.force_push_counter == current_force_push_count+1, "Force push counter didn't get incremented!"
 
 
+def test_modifier_orders(context_ap):
+    """Tests related to modifiers.
+    - Check that inserting a modifier at different places in the stack behaves in some predictable way.
+    TODO:
+    - Check that inputs are preserved, including GeoNodes.
+    - Check that binding states are preserved when expected: CorrectiveSmooth, SurfaceDeform, maybe MeshDeform.
+    """
+    copy_asset("modifier_transfer")
+    load_blend("asset_pipeline/assets/.modifier_transfer/modifier_transfer-rigging.blend")
+
+    # Suzanne starts with no modifiers at all.
+    def suzanne():
+        return bpy.data.objects['GEO-Suzanne']
+
+    def assert_order(obj, mod_names: list[str]):
+        assert len(obj.modifiers) == len(mod_names)
+        for mod, expected_name in zip(obj.modifiers, mod_names):
+            assert mod.name == expected_name
+
+    # Let's add some realistic rigging modifiers, sync, and assert a preserved order.
+    suzanne().modifiers.new("Armature", "ARMATURE")
+    suzanne().modifiers.new("Corrective Smooth", "CORRECTIVE_SMOOTH")
+    suzanne().modifiers.new("Shrinkwrap", "SHRINKWRAP")
+    suzanne().modifiers.new("Lattice 1", "LATTICE")
+    suzanne().modifiers.new("Lattice 2", "LATTICE")
+    bpy.ops.assetpipe.sync_push(pull=True)
+    assert_order(suzanne(), ["RIG-Armature", "RIG-Corrective Smooth", "RIG-Shrinkwrap", "RIG-Lattice 1", "RIG-Lattice 2"])
+    bpy.ops.wm.save_mainfile()
+
+    assert_order(
+        bpy.data.objects['GEO-PreFracIdx'],
+        ["MOD-Mirror", "RIG-Armature", "RIG-SurfaceDeform", "RIG-CorrectiveSmooth", "SHD-NormalEdit", "SHD-WeightedNormal", "MOD-Subdivision", "RIG-Lattice A", "RIG-Lattice B", "SHD-Final Smooth"]
+    )
+
+    # Open Shading file.
+    load_blend("asset_pipeline/assets/.modifier_transfer/modifier_transfer-shading.blend")
+
+    # Without being aware of the incoming Rigging modifiers, add some modifiers.
+    suzanne().modifiers.new("GN-GatherData", "NODES")
+    suzanne().modifiers.new("GN-PerformMiracle", "NODES")
+
+    # Sync this bitch.
+    bpy.ops.assetpipe.sync_push(pull=True)
+
+    # Shading modifiers end up on bottom. Top or bottom is arbitrary ("S" of "shd" is later in alphabet than "R" of "rig")
+    # but the important thing is that the modifiers did not get interlaced.
+    assert_order(suzanne(), ["RIG-Armature", "RIG-Corrective Smooth", "RIG-Shrinkwrap", "RIG-Lattice 1", "RIG-Lattice 2", "SHD-GN-GatherData", "SHD-GN-PerformMiracle"])
+
+    # Re-order, sync, assert order.
+    suzanne().modifiers.move(6, 3)
+    suzanne().modifiers.move(6, 3)
+    bpy.ops.assetpipe.sync_push(pull=True)
+    assert_order(suzanne(), ["RIG-Armature", "RIG-Corrective Smooth", "RIG-Shrinkwrap", "SHD-GN-GatherData", "SHD-GN-PerformMiracle", "RIG-Lattice 1", "RIG-Lattice 2"])
+
+    # Again.
+    suzanne().modifiers.move(3, 0)
+    suzanne().modifiers.move(4, 6)
+    bpy.ops.assetpipe.sync_push(pull=True)
+    assert_order(suzanne(), ["SHD-GN-GatherData", "RIG-Armature", "RIG-Corrective Smooth", "RIG-Shrinkwrap", "RIG-Lattice 1", "RIG-Lattice 2", "SHD-GN-PerformMiracle"])
+
+    bpy.ops.wm.save_mainfile()
+
+    # Back to rigging.
+    load_blend("asset_pipeline/assets/.modifier_transfer/modifier_transfer-rigging.blend")
+    # Move a modifier before bringing in the new ones.
+    suzanne().modifiers.move(3, 1)
+    bpy.ops.assetpipe.sync_push(pull=True)
+    assert_order(suzanne(), ["SHD-GN-GatherData", "RIG-Armature", "RIG-Lattice 1", "RIG-Corrective Smooth", "RIG-Shrinkwrap", "RIG-Lattice 2", "SHD-GN-PerformMiracle"])
+
+
 #############################################
 
 

@@ -51,6 +51,7 @@ def copy_transfer_data_ownership(
             td_type_key,
             transfer_data_dict["owner"],
             transfer_data_dict["surrender"],
+            transfer_data_dict.get("order_key", ""),
         )
 
 
@@ -141,6 +142,7 @@ def apply_transfer_data_items(
             source_obj=source_obj,
         )
     if td_type_key == constants.MODIFIER_KEY:
+        transfer_data_dicts = sorted(transfer_data_dicts, key=lambda d: source_obj.modifiers.find(d["name"]))
         for transfer_data_dict in transfer_data_dicts:
             logger.debug(
                 f"Transferring Modifier {transfer_data_dict['name']} from {source_obj.name} to {target_obj.name}."
@@ -241,4 +243,6 @@ def apply_transfer_data(context: Context, transfer_data_map: dict[Object, dict])
                     start_time = time.time()
                     apply_transfer_data_items(context, source_obj, target_obj, td_type_key, td_dicts)
                     profiler.add(time.time() - start_time, td_type_key)
+                modifiers.sort_modifiers_by_order(target_obj)
+
     bpy.data.collections.remove(td_col)

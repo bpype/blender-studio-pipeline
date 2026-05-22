@@ -2,12 +2,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from dataclasses import dataclass
+
 import bpy
 from bpy.types import Context, Modifier, Object, Scene
 
-from .... import constants, logging
-from ....props import AssetTransferData
-from ...naming import task_layer_prefix_basename_get, task_layer_prefix_name_get
+from .... import config, constants, logging
+from ....props import AssetTransferData, AssetTransferDataTemp
+from ...naming import task_layer_prefix_name_get
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import (
     activate_shapekey,
@@ -18,6 +20,7 @@ from ..transfer_util import (
     transfer_data_item_is_missing,
 )
 from .transfer_function_util.drivers import cleanup_drivers, transfer_drivers
+from .transfer_function_util.fractional_indexing import order_midpoint
 from .transfer_function_util.visibility import override_obj_visibility
 
 BIND_OPS = {
@@ -25,6 +28,14 @@ BIND_OPS = {
     'MESH_DEFORM': bpy.ops.object.meshdeform_bind,
     'CORRECTIVE_SMOOTH': bpy.ops.object.correctivesmooth_bind,
 }
+
+
+@dataclass
+class ModifierOrderState:
+    name: str
+    transfer_data: AssetTransferData | AssetTransferDataTemp
+    order_key: str | None
+    is_local: bool
 
 
 def modifiers_clean(obj: Object):
@@ -44,28 +55,123 @@ def modifier_is_missing(transfer_data_item: AssetTransferData):
 
 
 def init_modifiers(scene: Scene, obj: Object):
-    asset_pipe = scene.asset_pipeline
-    td_type_key = constants.MODIFIER_KEY
-    transfer_data = obj.transfer_data_ownership
-    task_layer_owner, auto_surrender = get_transfer_data_owner(
-        asset_pipe,
-        td_type_key,
-    )
+    _ensure_modifier_ownership(scene, obj)
+    _fix_modifier_order_keys(scene, obj)
 
+
+def _ensure_modifier_ownership(scene: Scene, obj: Object) -> None:
+    """Register new (unowned) modifiers in temp transfer data, and rename all modifiers to include their task layer prefix."""
+    asset_pipe = scene.asset_pipeline
+    task_layer_owner, auto_surrender = get_transfer_data_owner(asset_pipe, constants.MODIFIER_KEY)
     for mod in obj.modifiers:
-        # Only add new ownership transfer_data_item if modifier doesn't have an owner
-        ownership_data = find_ownership_data(transfer_data, mod.name, td_type_key)
+        ownership_data = find_ownership_data(obj.transfer_data_ownership, mod.name, constants.MODIFIER_KEY)
         if not ownership_data:
             ownership_data = asset_pipe.add_temp_transfer_data(
                 name=mod.name,
                 owner=task_layer_owner,
-                type=td_type_key,
+                type=constants.MODIFIER_KEY,
                 obj_name=obj.name,
                 surrender=auto_surrender,
             )
-
         mod.name = task_layer_prefix_name_get(mod.name, ownership_data.owner)
         ownership_data.name = mod.name
+
+
+def _fix_modifier_order_keys(scene: Scene, obj: Object) -> None:
+    """Reassign order_keys for any local modifiers that are out of position."""
+    asset_pipe = scene.asset_pipeline
+    local_task_layers = set(asset_pipe.get_local_task_layers())
+    mods = list(obj.modifiers)
+
+    temp_mod_data = {
+        item.name: item
+        for item in asset_pipe.temp_transfer_data
+        if item.obj_name == obj.name and item.type == constants.MODIFIER_KEY
+    }
+
+    states: list[ModifierOrderState] = []
+    for mod in mods:
+        ownership = find_ownership_data(obj.transfer_data_ownership, mod.name, constants.MODIFIER_KEY)
+        transfer_data = ownership or temp_mod_data.get(mod.name)
+        order_key = transfer_data.order_key or None
+        is_local = transfer_data.owner in local_task_layers
+        states.append(ModifierOrderState(
+            name=mod.name,
+            transfer_data=transfer_data,
+            order_key=order_key,
+            is_local=is_local,
+        ))
+
+    def _needs_key(s: ModifierOrderState) -> bool:
+        return s.is_local or s.order_key is None
+
+    buckets = []
+    i = 0
+    while i < len(states):
+        if not _needs_key(states[i]):
+            i += 1
+            continue
+        start = i
+        owner = _get_state_owner(states[i])
+        while i < len(states) and _needs_key(states[i]) and _get_state_owner(states[i]) == owner:
+            i += 1
+        buckets.append((start, i))
+
+    for bucket_start, bucket_end in buckets:
+        _make_bucket_contiguous(states, bucket_start, bucket_end)
+
+
+def _get_state_owner(state: ModifierOrderState) -> str:
+    return state.transfer_data.owner
+
+
+def _make_bucket_contiguous(
+    states: list[ModifierOrderState],
+    bucket_start: int,
+    bucket_end: int,
+) -> None:
+    """Redistribute order_keys for a contiguous block of same-owner modifiers within their anchor bounds."""
+    n = len(states)
+    bucket_owner = _get_state_owner(states[bucket_start])
+
+    def is_anchor(i: int) -> bool:
+        return states[i].order_key is not None and _get_state_owner(states[i]) != bucket_owner
+
+    anchor_prev = next(
+        (states[i].order_key for i in range(bucket_start - 1, -1, -1) if is_anchor(i)),
+        None,
+    )
+    anchor_nxt = next(
+        (states[i].order_key for i in range(bucket_end, n) if is_anchor(i)),
+        None,
+    )
+
+    if _bucket_is_contiguous([s.order_key for s in states[bucket_start:bucket_end]], anchor_prev, anchor_nxt):
+        return
+
+    lower = anchor_prev or ""
+    for j in range(bucket_start, bucket_end):
+        new_key = order_midpoint(lower, anchor_nxt)
+        if j == bucket_start and anchor_prev is None and anchor_nxt is None:
+            new_key += config.TASK_LAYER_TYPES.get(bucket_owner, bucket_owner).lower()
+        states[j].order_key = new_key
+        states[j].transfer_data.order_key = new_key
+        lower = new_key
+
+
+def _bucket_is_contiguous(keys: list[str | None], anchor_prev: str | None, anchor_nxt: str | None) -> bool:
+    """Return True if all keys are non-None, strictly increasing, and within the anchor bounds."""
+    prev = anchor_prev
+    for key in keys:
+        if key is None:
+            return False
+        if prev is not None and key <= prev:
+            return False
+        if anchor_nxt is not None and key >= anchor_nxt:
+            return False
+        prev = key
+    return True
+
 
 
 def transfer_modifier(
@@ -94,46 +200,34 @@ def transfer_modifier(
     if not target_mod:
         target_mod = target_obj.modifiers.new(source_mod.name, source_mod.type)
 
-    place_modifier_in_stack(source_obj, target_obj, modifier_name)
     transfer_modifier_props(context, source_mod, target_mod)
     transfer_drivers(source_obj, target_obj, 'modifiers', modifier_name)
     if is_modifier_bound(source_mod):
         bind_modifier(context, target_obj, modifier_name)
 
 
-def place_modifier_in_stack(
-        source_obj: Object,
-        target_obj: Object,
-        modifier_name: str,
-    ):
-    """Modifiers will try to be placed below the modifier they were below on the source object.
-    This is not very foolproof, since re-ordering multiple modifiers or renaming plus re-ordering,
-    or removing plus re-ordering, all in one step, could make it hard to determine the ideal order.
-    In such cases, user may need to fix the order and sync a 2nd time.
+def sort_modifiers_by_order(obj: Object):
+    """Sort all modifiers on obj by their stored order_key values.
+    Must be called after all transfer_data_ownership entries are populated,
+    so that orders from all task layers are available simultaneously.
     """
+    td_type_key = constants.MODIFIER_KEY
 
-    logger = logging.get_logger()
-    idx_tgt = target_obj.modifiers.find(modifier_name)
-    idx_src = source_obj.modifiers.find(modifier_name)
+    def get_order_key(mod_name: str) -> str:
+        td = find_ownership_data(obj.transfer_data_ownership, mod_name, td_type_key)
+        # "~" sorts after all lowercase letters, so modifiers without an order_key end up last.
+        return td.order_key if (td and td.order_key) else "~"
 
-    idx_new = 0
-    name_anchor = ""
-    # Order modifier based on previous modifier in source obj.
-    if idx_src > 0:
-        mod_anchor = source_obj.modifiers[idx_src - 1]
-        name_anchor = task_layer_prefix_basename_get(mod_anchor.name)
+    def is_out_of_order(pos: int) -> bool:
+        return get_order_key(obj.modifiers[pos - 1].name) > get_order_key(obj.modifiers[pos].name)
 
-        for idx, mod_of_tgt in enumerate(target_obj.modifiers):
-            if name_anchor == task_layer_prefix_basename_get(mod_of_tgt.name):
-                idx_new = min(len(target_obj.modifiers) - 1, idx + 1)
-                break
-
-    if idx_tgt != idx_new:
-        target_obj.modifiers.move(idx_tgt, idx_new)
-        msg = f"  Moved {modifier_name} to index {idx_new}"
-        if name_anchor:
-            msg += f"(after {name_anchor})"
-        logger.debug(msg)
+    # Sort modifiers by order_key: step through each modifier and shift it left
+    # until it is no longer out of order with its predecessor.
+    for i in range(1, len(obj.modifiers)):
+        pos = i
+        while pos > 0 and is_out_of_order(pos):
+            obj.modifiers.move(pos, pos - 1)
+            pos -= 1
 
 
 def transfer_modifier_props(context: Context, source_mod: Modifier, target_mod: Modifier):
