@@ -15,7 +15,7 @@ Tests require [Blender as Python Module](https://pypi.org/project/bpy/) which in
 1. **Install dependencies**
     `pip install -r requirements-dev.txt`
 1. **Run (verbose) tests**
-    `pytest -v`
+    `pytest .. -v`
 1. **Run tests with coverage visualization**
     `pip install coverage pytest-cov`
     `pytest -v --durations=0 --cov=./asset_pipeline --cov-report=html --cov-branch`

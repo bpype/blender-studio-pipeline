@@ -86,7 +86,7 @@ def transfer_modifier(
     if not source_mod:
         # This happens if a modifier's transfer data is still around, but the modifier
         # itself was removed.
-        logger.debug(f"Modifer Transfer cancelled, '{modifier_name}' not found on '{source_obj.name}'")
+        logger.debug(f"Modifier Transfer cancelled, '{modifier_name}' not found on '{source_obj.name}'")
         if target_mod:
             target_obj.modifiers.remove(target_mod)
         return
@@ -148,9 +148,15 @@ def transfer_modifier_props(context: Context, source_mod: Modifier, target_mod: 
 
         # Transfer geo node attributes
         if bpy.app.version >= (5,2,0):
-            for socket_name in source_mod.properties.inputs.keys():
-                source_socket = getattr(source_mod.properties.inputs, socket_name, None)
-                target_socket = getattr(target_mod.properties.inputs, socket_name, None)
+            props = source_mod.properties
+            if not props:
+                # This happens when GeoNode modifier has no node group at all.
+                # Could arguably raise an error, since such a modifier is useless.
+                return
+            target_props = target_mod.properties
+            for socket_name in props.inputs.keys():
+                source_socket = getattr(props.inputs, socket_name, None)
+                target_socket = getattr(target_props.inputs, socket_name, None)
                 if source_socket and target_socket and hasattr(source_socket, "value"):
                     target_socket.value = source_socket.value
         else:
@@ -220,7 +226,7 @@ def bind_modifier(context: Context, obj: Object, modifier_name: str):
             with override_obj_visibility(obj=obj, scene=context.scene):
                 with enable_modifiers(obj, [modifier]):
                     with context.temp_override(object=obj, active_object=obj):
-                        for i in range(2):
+                        for _ in range(2):
                             context.view_layer.update()
                             bind_op(modifier=modifier.name)
                             word = "Bound" if is_modifier_bound(modifier) else "Un-bound"

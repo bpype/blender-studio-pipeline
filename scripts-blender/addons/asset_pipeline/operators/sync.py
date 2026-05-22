@@ -89,8 +89,8 @@ class ASSETPIPE_OT_sync_pull(Operator):
         return False
 
     def invoke(self, context: Context, event: Event):
-        sync_invoke(self, context)
         self.did_invoke = True
+        sync_invoke(self, context)
         return context.window_manager.invoke_props_dialog(self, width=400)
 
     def draw(self, context: Context):
@@ -150,6 +150,7 @@ class SharedPush:
         return False
 
     def invoke(self, context: Context, event: Event):
+        self.did_invoke = True
         sync_invoke(self, context)
         return context.window_manager.invoke_props_dialog(self, width=400)
 
@@ -169,6 +170,9 @@ class SharedPush:
         hooks_instance.load_hooks(context)
         save_images()
         bpy.ops.wm.save_mainfile()
+
+        if not hasattr(self, 'did_invoke'):
+            sync_invoke(self, context)
 
         # Seperate if statement so hook can execute before updating ownership/prep sync
         if self.pull:
