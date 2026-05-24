@@ -197,6 +197,7 @@ class AssetTransferMapping:
             'name': transfer_data_item.name,
             "owner": transfer_data_item.owner,
             "surrender": transfer_data_item.surrender,
+            "order_key": transfer_data_item.order_key,
         }
 
     def _transfer_data_pair_not_local(self, td_1: AssetTransferData, td_2: AssetTransferData) -> bool:
@@ -268,6 +269,20 @@ class AssetTransferMapping:
 
     def _transfer_data_map_item(self, source_obj: Object, target_obj: Object, transfer_data_item: AssetTransferData):
         """Verifies if Transfer Data Item is valid/can be mapped"""
+
+        # Special case: if exactly one side of a modifier pair has an order_key,
+        # always use that side regardless of ownership rules. This lets a file that
+        # has already been initialized with fractional-index keys "donate" its keys
+        # to the other side, which has not been initialized yet.
+        if transfer_data_item.type == constants.MODIFIER_KEY:
+            matching = self._transfer_data_get_matching(transfer_data_item)
+            if matching is not None:
+                source_has_key = bool(transfer_data_item.order_key)
+                matching_has_key = bool(matching.order_key)
+                if source_has_key != matching_has_key:
+                    if source_has_key:
+                        self._transfer_data_map_item_add(source_obj, target_obj, transfer_data_item)
+                    return
 
         # If item is locally owned and is part of local file
         if transfer_data_item.owner in self._local_tls and source_obj.name.endswith(constants.LOCAL_SUFFIX):

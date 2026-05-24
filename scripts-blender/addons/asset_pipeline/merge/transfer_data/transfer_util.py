@@ -38,6 +38,7 @@ def transfer_data_add_entry(
     td_type_key: str,
     task_layer_name: str,
     surrender: bool,
+    order_key: str = "",
 ):
     """Add entry to Transferable Data ownership
 
@@ -47,12 +48,14 @@ def transfer_data_add_entry(
         td_type_key: Type of Transferable Data
         task_layer_name: Name of current task layer
         surrender: Whether this data's ownership should be surrendered to begin with
+        order_key: String fractional sort key for modifier stack ordering
     """
     transfer_data_item = transfer_data.add()
     transfer_data_item.name = name
     transfer_data_item.owner = task_layer_name
     transfer_data_item.type = td_type_key
     transfer_data_item.surrender = surrender
+    transfer_data_item.order_key = order_key
     return transfer_data_item
 
 

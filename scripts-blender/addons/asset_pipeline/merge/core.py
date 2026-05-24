@@ -117,6 +117,7 @@ def ownership_set(temp_transfer_data: list[AssetTransferDataTemp]) -> None:
             transfer_data_item.type,
             transfer_data_item.owner,
             transfer_data_item.surrender,
+            transfer_data_item.order_key,
         )
 
 

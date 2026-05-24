@@ -6,6 +6,8 @@
             "packageManager": "ms-python.python:pip"
         }
     ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
     "python.analysis.diagnosticSeverityOverrides": {
         "reportOptionalMemberAccess": "none",
         "reportInvalidTypeForm": "none"
