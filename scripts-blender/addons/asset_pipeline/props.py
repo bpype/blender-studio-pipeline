@@ -254,6 +254,10 @@ def reset_force_push_counter(_a, _b):
     to the value in the json on file save/load.
     """
     task_layer_dict = config.get_task_layer_dict()
+    if not task_layer_dict:
+        # This can happen when opening an autosave file.
+        # In this case, we don't want to do anything.
+        return
     json_count = task_layer_dict.get("FORCE_PUSH_COUNTER", 0)
     scene = bpy.context.scene
     if not hasattr(scene, 'asset_pipeline'):
