@@ -2,15 +2,18 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from . import utils, icons, settings, preferences, ui, draw_tool, ops
+import importlib
+from . import geomod, utils, icons, settings, preferences, ui, draw_tool, ops
 import tomllib as toml
 
-modules = [utils, icons, settings, preferences, ui, draw_tool, ops]
+modules = [geomod, utils, icons, settings, preferences, ui, draw_tool, ops]
 
 def register():
 	# register modules
 	for m in modules:
-		m.register()
+		importlib.reload(m)
+		if hasattr(m, 'register'):
+			m.register()
 	
 	# read addon meta-data
 	with open(f"{utils.get_addon_directory()}/blender_manifest.toml", 'rb') as f:
@@ -26,7 +29,8 @@ def register():
 def unregister():
 	# un-register modules
 	for m in reversed(modules):
-		m.unregister()
+		if hasattr(m, 'unregister'):
+			m.unregister()
 
 	# Remove addon asset library
 	utils.unregister_asset_lib()
