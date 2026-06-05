@@ -42,11 +42,11 @@ def set_value(mod: NodesModifier, identifier: str, value: Any):
     if bpy.app.version >= (5, 2, 0):
         getattr(mod.properties.inputs, identifier).value = value
     else:
-        if mod.node_group.interface.items_tree[identifier].socket_type == 'NodeSocketMenu':
-            menu_list = get_enum_value_to_compare(mod, identifier)
-            for item in menu_list:
+        prop_ui = mod.id_properties_ui(identifier).as_dict()
+        if 'items' in prop_ui.keys():
+            for item in prop_ui['items']:
                 if item[0] == value:
-                    mod[identifier] = item[1]
+                    mod[identifier] = item[4]
                     return
             print(f"Error: Item '{value}' not found in menu '{identifier}' of modifier '{mod.name}'")
         else:
