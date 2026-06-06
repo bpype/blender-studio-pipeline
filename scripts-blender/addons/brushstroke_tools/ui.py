@@ -3,8 +3,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
-from . import utils
+from . import utils, geomod
 from . import settings as settings_py
+from bpy.types import (
+    UILayout,
+    NodesModifier,
+    NodeTreeInterfaceItem,
+    NodeTreeInterfacePanel,
+    NodeTreeInterfaceSocketMenu,
+)
 
 warning_icons_dict = {
     'ERROR': 'CANCEL',
@@ -12,133 +19,92 @@ warning_icons_dict = {
     'INFO': 'INFO',
 }
 
-def draw_panel_ui_recursive(panel, panel_name, mod, items, display_mode, hide_panel=False):
-
-    scene = bpy.context.scene
-    settings = scene.BSBST_settings
-
-    is_preset = mod.id_data == settings.preset_object and mod.id_data
-
+def draw_panel_ui_recursive(
+    panel: UILayout | None,
+    panel_name: str,
+    mod: NodesModifier,
+    interface_items: tuple[str, NodeTreeInterfaceItem],
+    display_mode: int,
+    hide_panel: bool = False,
+):
     if not panel:
         return
-    
+
     mod_info = mod.id_data.modifier_info.get(mod.name)
-    
-    icon_dict = {
-        bpy.types.NodeTreeInterfaceSocketObject: 'OBJECT_DATA',
-        bpy.types.NodeTreeInterfaceSocketMaterial: 'MATERIAL',
-        bpy.types.NodeTreeInterfaceSocketImage: 'IMAGE_DATA',
-        bpy.types.NodeTreeInterfaceSocketCollection: 'OUTLINER_COLLECTION',
-    }
+    if not mod_info:
+        return
 
-    data_dict = {
-        bpy.types.NodeTreeInterfaceSocketMaterial: 'materials',
-        bpy.types.NodeTreeInterfaceSocketImage: 'images',
-        bpy.types.NodeTreeInterfaceSocketCollection: 'collections',
-    }
+    panel_active = not (mod_info.hide_ui or hide_panel)
+    inactive_mode_names: list[str] = []
 
-    mode_compare = []
-    for k, v in items:
-        if not v.parent.name == panel_name:
+    for name, interface_item in interface_items:
+        if interface_item.parent.name != panel_name:
             continue
-        if type(v) == bpy.types.NodeTreeInterfacePanel:
 
-            v_id = f'Panel_{v.index}' # TODO: replace with panel identifier once that is exposed in Blender 4.3
-
-            if not mod_info:
+        if isinstance(interface_item, NodeTreeInterfacePanel):
+            panel_id = f'Panel_{interface_item.index}'  # TODO: replace with panel identifier once exposed in Blender 4.3
+            socket_info = mod_info.socket_info.get(panel_id)
+            if not socket_info:
                 continue
-            s = mod_info.socket_info.get(v_id)
-            if not s:
+            if display_mode == 0 and socket_info.hide_ui:
                 continue
-            if display_mode == 0:
-                if s.hide_ui:
-                    continue
 
-            subpanel_header, subpanel = panel.panel(k, default_closed = v.default_closed)
-            subpanel_header.label(text=k)
+            subpanel_header, subpanel = panel.panel(name, default_closed=interface_item.default_closed)
+            subpanel_header.label(text=name)
             if display_mode != 0:
                 col = subpanel_header.column()
-                col.active = not (mod_info.hide_ui or hide_panel)
-                col.prop(s, 'hide_ui', icon_only=True, icon='UNPINNED' if s.hide_ui else 'PINNED', emboss=False)
-            draw_panel_ui_recursive(subpanel, k, mod, v.interface_items.items(), display_mode, s.hide_ui)
-            mode_compare = []
+                col.active = panel_active
+                col.prop(socket_info, 'hide_ui', icon_only=True,
+                         icon='UNPINNED' if socket_info.hide_ui else 'PINNED', emboss=False)
+            draw_panel_ui_recursive(subpanel, name, mod, interface_item.interface_items.items(), display_mode, socket_info.hide_ui)
+            inactive_mode_names = []
         else:
-            if v.parent.name != panel_name:
+            if not geomod.is_input_value_settable(mod, interface_item.identifier):
                 continue
-            if f'{v.identifier}' not in mod.keys():
-                continue
-            if not mod_info:
+            socket_info = mod_info.socket_info.get(interface_item.identifier)
+            if not socket_info:
                 continue
 
-            if type(v) == bpy.types.NodeTreeInterfaceSocketMenu:
-                for item in mod.id_properties_ui(f'{v.identifier}').as_dict()['items']:
-                    if item[4] == mod[f'{v.identifier}']:
-                        continue
-                    mode_compare += [item[0]]
+            if isinstance(interface_item, NodeTreeInterfaceSocketMenu):
+                current_value = geomod.get_value(mod, interface_item.identifier)
+                inactive_mode_names += [
+                    mode_id for mode_id, mode_value
+                    in geomod.get_enum_value_to_compare(mod, interface_item.identifier)
+                    if mode_value != current_value
+                ]
 
-            s = mod_info.socket_info.get(v.identifier)
-            if not s:
-                continue
             if display_mode == 0:
-                comp_match = False
-                for c in mode_compare:
-                    comp_match = c in v.name
-                    if comp_match:
-                        break
-                if comp_match:
+                if socket_info.hide_ui:
                     continue
-                if s.hide_ui:
+                if any(mode_name in interface_item.name for mode_name in inactive_mode_names):
                     continue
+
             row = panel.row(align=True)
-            row.active = not (mod_info.hide_ui or hide_panel or s.hide_ui)
+            row.active = not (mod_info.hide_ui or hide_panel or socket_info.hide_ui)
 
             col = row.column()
-            input_row = col.row(align=True)
-            attribute_toggle = False
-            if f'{v.identifier}_use_attribute' in mod.keys() and not v.force_non_field:
-                attribute_toggle = mod[f'{v.identifier}_use_attribute']
-                if attribute_toggle:
-                    input_row.prop(mod, f'["{v.identifier}_attribute_name"]', text=k)
-                else:
-                    input_row.prop(mod, f'["{v.identifier}"]', text=k)
-                if is_preset:
-                    toggle = input_row.operator('brushstroke_tools.preset_toggle_attribute',
-                                                text='',
-                                                depress=mod[f'{v.identifier}_use_attribute'],
-                                                icon='SPREADSHEET')
-                else:
-                    toggle = input_row.operator('brushstroke_tools.brushstrokes_toggle_attribute',
-                                                text='',
-                                                depress=mod[f'{v.identifier}_use_attribute'],
-                                                icon='SPREADSHEET')
-                toggle.modifier_name = mod.name
-                toggle.input_name = v.identifier
-            else:
-                if type(v) in icon_dict.keys():
-                    icon = icon_dict[type(v)]
-                else:
-                    icon='NONE'
-                if type(v) in data_dict.keys():
-                    input_row.prop_search(mod, f'["{v.identifier}"]', bpy.data, data_dict[type(v)], text=k, icon=icon)
-                else:
-                    input_row.prop(mod, f'["{v.identifier}"]', text=k, icon=icon)
-            if type(v) in utils.linkable_sockets:
-                col.active = not s.link_context
-                icon = settings_py.icon_from_link_type(s.link_context_type)
+            settings = bpy.context.scene.BSBST_settings
+            is_preset = bool(mod.id_data and mod.id_data == settings.preset_object)
+            geomod.draw_socket(col.row(align=True), mod, interface_item, name, is_preset)
+
+            if type(interface_item) in utils.linkable_sockets:
+                col.active = not socket_info.link_context
                 row.alignment = 'EXPAND'
-                if s.link_context:
-                    row.prop(s, 'link_context', text='', icon_value=icon)
-                else:
-                    if display_mode == -1:
-                        row.prop(s, 'link_context_type', text='', emboss=True, icon='LINKED', icon_only=True)
+                if socket_info.link_context:
+                    row.prop(socket_info, 'link_context', text='',
+                             icon_value=settings_py.icon_from_link_type(socket_info.link_context_type))
+                elif display_mode == -1:
+                    row.prop(socket_info, 'link_context_type', text='', emboss=True, icon='LINKED', icon_only=True)
+
             if display_mode != 0:
                 col = row.column()
-                col.active = not (mod_info.hide_ui or hide_panel)
-                col.prop(s, 'hide_ui', icon_only=True, icon='UNPINNED' if s.hide_ui else 'PINNED', emboss=False)
+                col.active = panel_active
+                icon = 'UNPINNED' if socket_info.hide_ui else 'PINNED'
+                col.prop(socket_info, 'hide_ui', icon_only=True, icon=icon, emboss=False)
 
-def draw_material_settings(layout, material, surface_object=None):
-    addon_prefs = bpy.context.preferences.addons[__package__].preferences
-    settings = bpy.context.scene.BSBST_settings
+def draw_material_settings(context, layout, material, surface_object=None):
+    addon_prefs = context.preferences.addons[__package__].preferences
+    settings = context.scene.BSBST_settings
 
     material_row = layout.row(align=True)
     material_row.template_ID(settings, 'context_material')
@@ -298,7 +264,7 @@ def draw_effect_panel_recursive(effects_panel, material, prev_node):
             panel.active = False
         for input in node.inputs[1:]:
             panel.prop(input, 'default_value', text=input.name)
-    
+
     draw_effect_panel_recursive(effects_panel, material, node)
 
 def draw_advanced_settings(layout, settings):
@@ -309,7 +275,7 @@ def draw_advanced_settings(layout, settings):
     new_advanced_panel.row().prop(settings, 'curve_mode', expand=True)
     if settings.curve_mode in ['CURVE', 'GP']:
         new_advanced_panel.label(text='Curve mode does not support drawing on deformed geometry', icon='ERROR')
-    
+
     new_advanced_panel.prop(settings, 'animated')
     new_advanced_panel.prop(settings, 'deforming_surface')
     new_advanced_panel.prop(settings, 'assign_materials')
@@ -329,7 +295,7 @@ def draw_shape_properties(layout, settings, style_object, is_preset, display_mod
         if display_mode == 0:
             if mod_info.hide_ui:
                 continue
-        
+
         mod_header, mod_panel = layout.panel(mod.name, default_closed = mod_info.default_closed)
         row = mod_header.row(align=True)
         row.label(text='', icon='GEOMETRY_NODES')
@@ -362,12 +328,12 @@ def draw_shape_properties(layout, settings, style_object, is_preset, display_mod
                                 mod,
                                 mod.node_group.interface.items_tree.items(),
                                 display_mode)
-        
+
         draw_mod_warnings(layout, mod)
 
-def draw_material_properties(layout, settings, surface_object):
+def draw_material_properties(context, layout, settings, surface_object):
     if settings.context_material:
-        draw_material_settings(layout, settings.context_material, surface_object=surface_object)
+        draw_material_settings(context, layout, settings.context_material, surface_object=surface_object)
     else:
         material_row = layout.row(align=True)
         material_row.template_ID(settings, 'context_material', new='brushstroke_tools.new_material')
@@ -383,7 +349,7 @@ def draw_settings_properties(layout, settings, style_object):
 
     layout.prop(style_object, 'visible_shadow', icon='LIGHT', emboss=True)
 
-def draw_properties_panel(layout, settings, style_object, surface_object, is_preset, display_mode):
+def draw_properties_panel(context, layout, settings, style_object, surface_object, is_preset, display_mode):
 
     layout.separator(type='LINE')
     row = layout.row(align=True)
@@ -391,7 +357,7 @@ def draw_properties_panel(layout, settings, style_object, surface_object, is_pre
     layout.separator(factor=.0, type='SPACE')
 
     if settings.view_tab == 'MATERIAL':
-        draw_material_properties(layout, settings, surface_object)
+        draw_material_properties(context, layout, settings, surface_object)
     elif settings.view_tab == 'SHAPE':
         draw_shape_properties(layout, settings, style_object, is_preset, display_mode)
 
@@ -441,7 +407,7 @@ class BSBST_MT_bs_context_menu(bpy.types.Menu):
 
     def draw(self, _context):
         layout = self.layout
-        
+
         op = layout.operator('brushstroke_tools.copy_brushstrokes', text='Copy to Selected Objects')
         op.copy_all = False
 
@@ -545,7 +511,7 @@ class BSBST_PT_brushstroke_tools_panel(bpy.types.Panel):
             if not settings.preset_object and is_preset:
                 layout.operator("brushstroke_tools.init_preset", icon='MODIFIER')
             else:
-                draw_properties_panel(style_panel, settings, style_object, surface_object, is_preset, display_mode)       
+                draw_properties_panel(context, style_panel, settings, style_object, surface_object, is_preset, display_mode)
 
 class BSBST_MT_PIE_brushstroke_data_marking(bpy.types.Menu):
     bl_idname= "BSBST_MT_PIE_brushstroke_data_marking"
@@ -607,7 +573,7 @@ def register():
     wm = bpy.context.window_manager
     if wm.keyconfigs.addon is not None:
         km = wm.keyconfigs.addon.keymaps.new(name="Mesh")
-        kmi = km.keymap_items.new("brushstroke_tools.data_marking","F", "PRESS",shift=False, ctrl=True, alt=True)   
+        kmi = km.keymap_items.new("brushstroke_tools.data_marking","F", "PRESS",shift=False, ctrl=True, alt=True)
 
 def unregister():
     for c in reversed(classes):

@@ -10,6 +10,7 @@ from bpy.app.handlers import persistent
 import math, shutil, errno, numpy
 from bpy.app.handlers import persistent
 from mathutils import Vector
+from . import geomod
 
 addon_version = (0,0,0)
 
@@ -35,6 +36,7 @@ linkable_sockets = [
 ]
 
 asset_lib_name = 'Brushstroke Tools Library'
+
 
 @persistent
 def find_context_brushstrokes(scene, depsgraph):
@@ -178,7 +180,7 @@ def set_brushstroke_material(ob, material):
                 continue
             if not s.link_context_type == 'MATERIAL':
                 continue
-            mod[s.name] = material
+            geomod.set_value(mod, s.name, material)
     ob.update_tag()
 
     if ob.type == 'EMPTY':
@@ -655,11 +657,7 @@ def transfer_modifier(modifier_name, target_obj, source_obj):
 
     if source_mod.type == 'NODES':
         # Transfer geo node attributes
-        for key, value in source_mod.items():
-            try:
-                target_mod[key] = value
-            except (TypeError, ValueError) as e:
-                target_mod[key] = type(target_mod[key])(value)
+        geomod.copy_inputs(source_mod, target_mod)
 
         # Transfer geo node bake settings
         target_mod.bake_directory = source_mod.bake_directory
@@ -744,7 +742,7 @@ def set_surface_object(bs, surf_ob):
                     continue
                 if not s.link_context_type == 'SURFACE_OBJECT':
                     continue
-                mod[s.name] = surf_ob
+                geomod.set_value(mod, s.name, surf_ob)
         ob.parent = surf_ob
         ob.parent_type = 'OBJECT'
     surf_ob.update_tag()
@@ -775,7 +773,7 @@ def set_flow_object(bs, ob):
                 continue
             if not s.link_context_type == 'FLOW_OBJECT':
                 continue
-            mod[s.name] = ob
+            geomod.set_value(mod, s.name, ob)
     ob.update_tag()
 
     bs['BSBST_flow_object'] = ob

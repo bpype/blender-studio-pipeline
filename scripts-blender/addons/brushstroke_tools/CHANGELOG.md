@@ -1,3 +1,9 @@
+## 1.2.2
+
+## FIXED
+
+- Compatibility with Blender 5.2 LTS [#566](https://projects.blender.org/studio/blender-studio-tools/pulls/566)
+
 ## 1.2.1
 
 ## CHANGED

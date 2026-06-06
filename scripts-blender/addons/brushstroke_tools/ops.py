@@ -4,7 +4,7 @@
 
 import bpy
 import random
-from . import utils, settings
+from . import utils, settings, geomod
 import mathutils
 
 class BSBST_OT_new_brushstrokes(bpy.types.Operator):
@@ -64,7 +64,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
 
         # link to surface object's collections (fall back to active collection if all are linked data)
         utils.link_to_collections_by_ref(flow_object, surface_object, unlink=False)
-        
+
         visibility_options = [
             'visible_camera',
             'visible_diffuse',
@@ -85,8 +85,8 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
 
         utils.mark_socket_context_type(mod_info, 'Socket_2', 'SURFACE_OBJECT')
 
-        mod['Socket_2'] = surface_object
-        mod['Socket_3'] = False
+        geomod.set_value(mod, 'Socket_2', surface_object)
+        geomod.set_value(mod, 'Socket_3', False)
 
         utils.set_deformable(flow_object, settings.deforming_surface)
         utils.set_animated(flow_object, settings.animated)
@@ -94,7 +94,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
 
     def main(self, context):
         settings = context.scene.BSBST_settings
-        
+
         utils.ensure_resources()
         if not context.mode == 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -135,7 +135,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
 
         if not settings.preset_object:
             bpy.ops.brushstroke_tools.init_preset()
-        
+
         # assign preset material
         preset_material = getattr(settings.preset_object, '["BSBST_material"]', None)
 
@@ -153,7 +153,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
         # transfer preset modifiers to new brushstrokes TODO: refactor to deduplicate
         for mod in settings.preset_object.modifiers:
             utils.transfer_modifier(mod.name, brushstrokes_object, settings.preset_object)
-            
+
             for v in mod.node_group.interface.items_tree.values():
                 if type(v) not in utils.linkable_sockets:
                     continue
@@ -161,25 +161,26 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
                     continue
                 # initialize linked context parameters
                 link_context_type = settings.preset_object.modifier_info[mod.name].socket_info[v.identifier].link_context_type
+                bs_mod = brushstrokes_object.modifiers[mod.name]
                 if link_context_type=='SURFACE_OBJECT':
-                    brushstrokes_object.modifiers[mod.name][f'{v.identifier}'] = surface_object
+                    geomod.set_value(bs_mod, v.identifier, surface_object)
                 elif link_context_type=='FLOW_OBJECT':
-                    brushstrokes_object.modifiers[mod.name][f'{v.identifier}'] = flow_object
+                    geomod.set_value(bs_mod, v.identifier, flow_object)
                 elif link_context_type=='MATERIAL':
-                    brushstrokes_object.modifiers[mod.name][f'{v.identifier}'] = settings.context_material
+                    geomod.set_value(bs_mod, v.identifier, settings.context_material)
                 elif link_context_type=='UVMAP':
-                    if type(brushstrokes_object.modifiers[mod.name][f'{v.identifier}']) == str:
-                        brushstrokes_object.modifiers[mod.name][f'{v.identifier}'] = surface_object.data.uv_layers.active.name
+                    if isinstance(geomod.get_value(bs_mod, v.identifier), str):
+                        geomod.set_value(bs_mod, v.identifier, surface_object.data.uv_layers.active.name)
                     else:
-                        brushstrokes_object.modifiers[mod.name][f'{v.identifier}_use_attribute'] = True
-                        brushstrokes_object.modifiers[mod.name][f'{v.identifier}_attribute_name'] = surface_object.data.uv_layers.active.name
+                        geomod.set_input_is_attribute(bs_mod, v.identifier, True)
+                        geomod.set_attribute_name(bs_mod, v.identifier, surface_object.data.uv_layers.active.name)
                 elif link_context_type=='RANDOM':
                     vmin = v.min_value
                     vmax = v.max_value
                     val = vmin + random.random() * (vmax - vmin)
-                    brushstrokes_object.modifiers[mod.name][f'{v.identifier}_use_attribute'] = False
-                    brushstrokes_object.modifiers[mod.name][f'{v.identifier}'] = type(brushstrokes_object.modifiers[mod.name][f'{v.identifier}'])(val)
-        
+                    geomod.set_input_is_attribute(bs_mod, v.identifier, False)
+                    geomod.set_value(bs_mod, v.identifier, type(geomod.get_value(bs_mod, v.identifier))(val))
+
         # transfer modifier info data from preset to brush strokes
         utils.deep_copy_mod_info(settings.preset_object, brushstrokes_object)
 
@@ -195,14 +196,14 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             mod = brushstrokes_object.modifiers['Brushstrokes']
             if settings.brushstroke_method == 'SURFACE_FILL':
                 # set density
-                mod['Socket_7'] = utils.round_n((1000 / surf_est) ** 0.5, 2)
+                geomod.set_value(mod, 'Socket_7', utils.round_n((1000 / surf_est) ** 0.5, 2))
                 # set length
-                mod['Socket_11'] = utils.round_n(bb_radius * 0.5, 2)
+                geomod.set_value(mod, 'Socket_11', utils.round_n(bb_radius * 0.5, 2))
                 # set width
-                mod['Socket_13'] = utils.round_n(bb_radius * 0.05, 2)
+                geomod.set_value(mod, 'Socket_13', utils.round_n(bb_radius * 0.05, 2))
             elif settings.brushstroke_method == 'SURFACE_DRAW':
                 # set width
-                mod['Socket_5'] = utils.round_n(bb_radius * 0.05, 2)
+                geomod.set_value(mod, 'Socket_5', utils.round_n(bb_radius * 0.05, 2))
 
         # refresh UI
         for mod in brushstrokes_object.modifiers:
@@ -213,7 +214,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
                 for v in mod.node_group.interface.items_tree.values():
                     if type(v) != bpy.types.NodeTreeInterfaceSocketMaterial:
                         continue
-                    mat = mod[v.identifier]
+                    mat = geomod.get_value(mod, v.identifier)
                     if not mat:
                         continue
                     if mat in [m_slot.material for m_slot in brushstrokes_object.material_slots]:
@@ -223,13 +224,13 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
                     with context.temp_override(**override):
                         bpy.ops.object.material_slot_add()
                         brushstrokes_object.material_slots[-1].material = mat
-        
+
         # set deformable
         set_brushstrokes_deformable(brushstrokes_object, settings.deforming_surface)
-        
+
         # set animated
         set_brushstrokes_animated(brushstrokes_object, settings.animated)
-        
+
         for mod in brushstrokes_object.modifiers:
             mod.show_group_selector = False
 
@@ -239,7 +240,7 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
             if name == brushstrokes_object.name:
                 settings.active_context_brushstrokes_index = i
                 break
-        
+
         utils.edit_active_brushstrokes(context)
         return {"FINISHED"}
 
@@ -247,10 +248,10 @@ class BSBST_OT_new_brushstrokes(bpy.types.Operator):
         settings = context.scene.BSBST_settings
         settings.silent_switch = True
         state = self.main(context)
-    
+
         settings.silent_switch = False
         return state
-    
+
 class BSBST_OT_edit_brushstrokes(bpy.types.Operator):
     """
     Enter the editing context for the active context brushstrokes. 
@@ -269,10 +270,10 @@ class BSBST_OT_edit_brushstrokes(bpy.types.Operator):
         settings = context.scene.BSBST_settings
         settings.silent_switch = True
         state = utils.edit_active_brushstrokes(context)
-    
+
         settings.silent_switch = False
         return state
-    
+
 class BSBST_OT_delete_brushstrokes(bpy.types.Operator):
     """
     Delete the active context brushstrokes 
@@ -324,7 +325,7 @@ class BSBST_OT_delete_brushstrokes(bpy.types.Operator):
 
         settings.edit_toggle = edit_toggle
         return {'FINISHED'}
-    
+
 class BSBST_OT_duplicate_brushstrokes(bpy.types.Operator):
     """
     Duplicate the active context brushstrokes 
@@ -345,7 +346,7 @@ class BSBST_OT_duplicate_brushstrokes(bpy.types.Operator):
         bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
             return {"CANCELLED"}
-        
+
         if not bs_ob.visible_get(view_layer=context.view_layer):
             self.report({"WARNING"}, f"Skipped Brushstroke layer '{bs_ob.name}' because it is invisible in this context")
             return {"CANCELLED"}
@@ -354,7 +355,7 @@ class BSBST_OT_duplicate_brushstrokes(bpy.types.Operator):
 
         if context.mode != 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
-        
+
         bpy.context.view_layer.objects.active = bs_ob
         if context.mode != 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -371,7 +372,7 @@ class BSBST_OT_duplicate_brushstrokes(bpy.types.Operator):
                 if not mod.type=='NODES':
                     continue
                 if not mod.node_group:
-                    continue            
+                    continue
                 for v in mod.node_group.interface.items_tree.values():
                     if type(v) not in utils.linkable_sockets:
                         continue
@@ -383,7 +384,7 @@ class BSBST_OT_duplicate_brushstrokes(bpy.types.Operator):
                         vmin = v.min_value
                         vmax = v.max_value
                         val = vmin + random.random() * (vmax - vmin)
-                        mod[f'{v.identifier}'] = type(ob.modifiers[mod.name][f'{v.identifier}'])(val)
+                        geomod.set_value(mod, v.identifier, type(geomod.get_value(mod, v.identifier))(val))
 
         return {'FINISHED'}
 
@@ -459,7 +460,7 @@ class BSBST_OT_copy_brushstrokes(bpy.types.Operator):
 
                 ob.parent = surface_object
                 utils.set_surface_object(ob, surface_object)
-                
+
                 for mod in ob.modifiers:
                     if not mod.type:
                         continue
@@ -475,27 +476,28 @@ class BSBST_OT_copy_brushstrokes(bpy.types.Operator):
                             continue
                         # re-initialize linked context parameters
                         link_context_type = ob.modifier_info[mod.name].socket_info[v.identifier].link_context_type
+                        ob_mod = ob.modifiers[mod.name]
                         if link_context_type=='SURFACE_OBJECT':
-                            ob.modifiers[mod.name][f'{v.identifier}'] = surface_object
+                            geomod.set_value(ob_mod, v.identifier, surface_object)
                         elif link_context_type=='UVMAP':
-                            if type(ob.modifiers[mod.name][f'{v.identifier}']) == str:
-                                ob.modifiers[mod.name][f'{v.identifier}'] = surface_object.data.uv_layers.active.name
+                            if isinstance(geomod.get_value(ob_mod, v.identifier), str):
+                                geomod.set_value(ob_mod, v.identifier, surface_object.data.uv_layers.active.name)
                             else:
-                                ob.modifiers[mod.name][f'{v.identifier}_use_attribute'] = True
-                                ob.modifiers[mod.name][f'{v.identifier}_attribute_name'] = surface_object.data.uv_layers.active.name
+                                geomod.set_input_is_attribute(ob_mod, v.identifier, True)
+                                geomod.set_attribute_name(ob_mod, v.identifier, surface_object.data.uv_layers.active.name)
                         elif link_context_type=='RANDOM':
                             vmin = v.min_value
                             vmax = v.max_value
                             val = vmin + random.random() * (vmax - vmin)
-                            ob.modifiers[mod.name][f'{v.identifier}_use_attribute'] = False
-                            ob.modifiers[mod.name][f'{v.identifier}'] = type(ob.modifiers[mod.name][f'{v.identifier}'])(val)
-        
+                            geomod.set_input_is_attribute(ob_mod, v.identifier, False)
+                            geomod.set_value(ob_mod, v.identifier, type(geomod.get_value(ob_mod, v.identifier))(val))
+
 
                 # enable rest position
                 surface_object.add_rest_position_attribute = True
 
         return {'FINISHED'}
-    
+
 class BSBST_OT_select_surface(bpy.types.Operator):
     """
     Select the surface object for the active context brushstrokes.
@@ -547,7 +549,7 @@ class BSBST_OT_assign_surface(bpy.types.Operator):
         bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
             return {"CANCELLED"}
-        
+
         surface_object = bpy.data.objects.get(self.surface_object)
 
         if not surface_object:
@@ -577,11 +579,11 @@ def set_brushstrokes_deformable(bs_ob, deformable):
         if not mod.node_group:
             continue
         if mod.node_group.name == '.brushstroke_tools.pre_processing':
-            mod['Socket_3'] = deformable
+            geomod.set_value(mod, 'Socket_3', deformable)
         elif mod.node_group.name == '.brushstroke_tools.surface_fill':
-            mod['Socket_27'] = deformable
+            geomod.set_value(mod, 'Socket_27', deformable)
         elif mod.node_group.name == '.brushstroke_tools.surface_draw':
-            mod['Socket_15'] = deformable
+            geomod.set_value(mod, 'Socket_15', deformable)
 
         mod.node_group.interface_update(bpy.context)
     utils.set_deformable(bs_ob, deformable)
@@ -601,7 +603,7 @@ def set_brushstrokes_animated(bs_ob, animated):
         if not mod:
             mod = ob.modifiers.new('Animation', 'NODES')
             mod.node_group = utils.ensure_node_group('.brushstroke_tools.animation')
-        
+
             mod_info = ob.modifier_info.get(mod.name)
             if not mod_info:
                 mod_info = ob.modifier_info.add()
@@ -610,7 +612,7 @@ def set_brushstrokes_animated(bs_ob, animated):
             # ui visibility settings
             mod_info.hide_ui = True
         else:
-            mod['Socket_5'] = True
+            geomod.set_value(mod, 'Socket_5', True)
             mod.node_group.interface_update(bpy.context)
         with bpy.context.temp_override(object=ob):
             bpy.ops.object.modifier_move_to_index(modifier=mod.name, index=0)
@@ -632,7 +634,7 @@ class BSBST_OT_copy_flow(bpy.types.Operator):
 
     source_bs:  bpy.props.StringProperty(name="Brushstroke Layers")
     bs_list:    bpy.props.CollectionProperty(type=settings.BSBST_context_brushstrokes)
-    
+
     @classmethod
     def poll(cls, context):
         settings = context.scene.BSBST_settings
@@ -643,7 +645,7 @@ class BSBST_OT_copy_flow(bpy.types.Operator):
         flow_ob_old = utils.get_flow_object(bs_ob)
         if not bs_ob:
             return {"CANCELLED"}
-        
+
         # get source
 
         source_ob = bpy.data.objects.get(self.source_bs)
@@ -738,7 +740,7 @@ class BSBST_OT_switch_deformable(bpy.types.Operator):
                     if ob.type == 'GREASEPENCIL':
                         self.report({"WARNING"}, "Grease Pencil does not currently support drawing on deformable surface geometry.")
             set_brushstrokes_deformable(ob, self.deformable)
-        
+
         context.view_layer.depsgraph.update()
 
         return {"FINISHED"}
@@ -775,11 +777,11 @@ class BSBST_OT_switch_animated(bpy.types.Operator):
 
         for ob in bs_objects:
             set_brushstrokes_animated(ob, self.animated)
-        
+
         context.view_layer.depsgraph.update()
 
         return {"FINISHED"}
-        
+
 class BSBST_OT_init_preset(bpy.types.Operator):
     """
     Initialize the preset to define a modifier stack applied to new brushstrokess.
@@ -793,7 +795,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
     def poll(cls, context):
         settings = context.scene.BSBST_settings
         return settings.preset_object is None
-    
+
     def init_fill(self, context):
         settings = context.scene.BSBST_settings
 
@@ -803,7 +805,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
         ## input
         mod = preset_object.modifiers.new('Surface Input', 'NODES')
         mod.node_group = bpy.data.node_groups['.brushstroke_tools.geometry_input']
-        
+
         mod_info = settings.preset_object.modifier_info.get(mod.name)
         if not mod_info:
             mod_info = settings.preset_object.modifier_info.add()
@@ -820,7 +822,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
         ## masking
         mod = preset_object.modifiers.new('Masking', 'NODES')
         mod.node_group = bpy.data.node_groups['.brushstroke_tools.mask_surface']
-        
+
         mod_info = settings.preset_object.modifier_info.get(mod.name)
         if not mod_info:
             mod_info = settings.preset_object.modifier_info.add()
@@ -838,7 +840,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
         ## brushstrokes
         mod = preset_object.modifiers.new('Brushstrokes', 'NODES')
         mod.node_group = bpy.data.node_groups['.brushstroke_tools.surface_fill']
-        
+
         mod_info = settings.preset_object.modifier_info.get(mod.name)
         if not mod_info:
             mod_info = settings.preset_object.modifier_info.add()
@@ -846,7 +848,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
 
         # set fill custom defaults
 
-        mod['Socket_59'] = 1 # color method: curves
+        geomod.set_value(mod, 'Socket_59', 'Curves') # color method: curves
 
         # context link settings
         utils.mark_socket_context_type(mod_info, 'Socket_2', 'FLOW_OBJECT')
@@ -879,7 +881,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
         ]
         for p in hide_panels:
             utils.mark_panel_hidden(mod_info, p)
-    
+
     def init_draw(self, context):
         settings = context.scene.BSBST_settings
 
@@ -889,7 +891,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
         ## add pre-processing modifier
         mod = preset_object.modifiers.new('Pre-Processing', 'NODES')
         mod.node_group = bpy.data.node_groups['.brushstroke_tools.pre_processing']
-        
+
         mod_info = settings.preset_object.modifier_info.get(mod.name)
         if not mod_info:
             mod_info = settings.preset_object.modifier_info.add()
@@ -903,7 +905,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
         ## brushstrokes
         mod = preset_object.modifiers.new('Brushstrokes', 'NODES')
         mod.node_group = bpy.data.node_groups['.brushstroke_tools.surface_draw']
-        
+
         mod_info = settings.preset_object.modifier_info.get(mod.name)
         if not mod_info:
             mod_info = settings.preset_object.modifier_info.add()
@@ -937,7 +939,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
     def execute(self, context):
 
         settings = context.scene.BSBST_settings
-        
+
         utils.ensure_resources()
         preset_name = f'BSBST-PRESET_{settings.brushstroke_method}'
         preset_object = bpy.data.objects.new(preset_name, bpy.data.hair_curves.new(preset_name))
@@ -947,7 +949,7 @@ class BSBST_OT_init_preset(bpy.types.Operator):
             self.init_fill(context)
         elif settings.brushstroke_method == "SURFACE_DRAW":
             self.init_draw(context)
-        
+
         # select preset material
         mat = bpy.data.materials.get('Brush Material')
         if not mat:
@@ -982,7 +984,7 @@ class BSBST_OT_make_preset(bpy.types.Operator):
         else:
             for mod in settings.preset_object.modifiers[:]:
                 settings.preset_object.modifiers.remove(mod)
-            
+
         # transfer brushstrokes modifiers to preset
         bs_ob = utils.get_active_context_brushstrokes_object(context.scene)
         if not bs_ob:
@@ -994,7 +996,7 @@ class BSBST_OT_make_preset(bpy.types.Operator):
         for mod in settings.preset_object.modifiers:
             # refresh UI
             mod.node_group.interface_update(context)
-            
+
             # identify linked sockets
             for v in mod.node_group.interface.items_tree.values():
                 if type(v) not in utils.linkable_sockets:
@@ -1002,8 +1004,8 @@ class BSBST_OT_make_preset(bpy.types.Operator):
                 if not settings.preset_object.modifier_info[mod.name].socket_info[v.identifier]:
                     continue
                 if type(v) == bpy.types.NodeTreeInterfaceSocketObject:
-                    if bs_ob['BSBST_surface_object']==mod[v.identifier]:
-                        mod[v.identifier] = None
+                    if bs_ob['BSBST_surface_object']==geomod.get_value(mod, v.identifier):
+                        geomod.set_value(mod, v.identifier, None)
                         settings.preset_object.modifier_info[mod.name].socket_info[v.identifier].link_context = True
                 elif type(v) == bpy.types.NodeTreeInterfaceSocketMaterial:
                     pass # TODO: figure out material preset linking
@@ -1109,14 +1111,14 @@ class BSBST_OT_brushstrokes_toggle_attribute(bpy.types.Operator):
         if not bs_ob:
             settings.edit_toggle = edit_toggle
             return {"CANCELLED"}
-        
+
         override = context.copy()
         override['object'] = bs_ob
         with context.temp_override(**override):
             bpy.ops.object.geometry_nodes_input_attribute_toggle(input_name=self.input_name,
                                                                  modifier_name=self.modifier_name)
         return {"FINISHED"}
-        
+
 class BSBST_OT_render_setup(bpy.types.Operator):
     """
     Set up render settings. 
@@ -1165,7 +1167,7 @@ class BSBST_OT_render_setup(bpy.types.Operator):
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
-        
+
 class BSBST_OT_view_all(bpy.types.Operator):
     """
     Enable/disable all brushstrokes for the viewport. 
@@ -1299,11 +1301,11 @@ class BSBST_OT_select_brush_style(bpy.types.Operator):
             if bs.name == settings.context_material.brush_style:
                 self.brush_styles_filtered_active_index = i
                 break
-        
+
         self.name_filter = ''
 
         return context.window_manager.invoke_props_dialog(self, width=450)
-    
+
 class BSBST_OT_upgrade_resources(bpy.types.Operator):
     """ Upgrade all local BST assets to available addon resources.
     """
@@ -1331,12 +1333,12 @@ class BSBST_OT_upgrade_resources(bpy.types.Operator):
         layout = self.layout
 
         split = layout.split(factor=.6)
-        
+
         col = split.column()
         col.prop(self, 'upgrade_shape_modifiers', icon='MODIFIER')
         col.prop(self, 'upgrade_materials', icon='MATERIAL')
         col.prop(self, 'upgrade_brush_styles', icon='BRUSHES_ALL')
-        
+
         col = split.column()
         row = col.row()
         row.active = self.upgrade_shape_modifiers
@@ -1422,7 +1424,7 @@ classes = [
 
 def register():
     for c in classes:
-        bpy.utils.register_class(c) 
+        bpy.utils.register_class(c)
 
 def unregister():
     for c in reversed(classes):

@@ -97,9 +97,7 @@ class BSBST_OT_pre_process_brushstroke(bpy.types.Operator):
         if bpy.app.version >= (5,1):
             utils.ensure_resources()
             ng_process = bpy.data.node_groups['.brushstroke_tools.draw_processing']
-            ng_process.asset_mark() # workaround to let Blender register the node tool as an operator with the automatically generated id
-            ng_process.asset_clear()
-
+            ng_process.is_tool = True # workaround to let Blender register the node tool as an operator with the automatically generated id
         return {'FINISHED'}
 
 class BSBST_OT_post_process_brushstroke(bpy.types.Operator):
