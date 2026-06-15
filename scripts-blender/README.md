@@ -21,7 +21,6 @@ To install add-ons which are not there, follow these steps:
 |Blender Kitsu |Enforce conventions, build shots, manage production files and update data on kitsu server.
 |Blender Log |A place for add-ons to report issues to the user in a persistent UI element.
 |Brushstroke Tools |Achieve a highly controllable painterly style easily and procedurally.
-|Cache Manager |Streamline the Alembic cache workflow of assets.
 |CloudRig |Rig generation and workflow tools. CloudRig lives in a [separate repository](https://projects.blender.org/Mets/CloudRig).
 |Contact Sheet |Create a contactsheet from sequence editor strips.
 |Easy Weight |Quality of life improvements for weight painting.

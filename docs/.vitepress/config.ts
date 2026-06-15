@@ -190,7 +190,6 @@ export default defineConfig({
           { text: 'Blender Kitsu', link: '/addons/blender_kitsu' },
           { text: 'Blender Log', link: '/addons/blender_log' },
           { text: 'Brushstroke Tools', link: '/addons/brushstroke_tools' },
-          { text: 'Cache Manager', link: '/addons/cache_manager' },
           {
             text: 'CloudRig',
             collapsed: true,
