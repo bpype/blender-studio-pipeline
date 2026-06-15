@@ -189,7 +189,6 @@ export default defineConfig({
           { text: 'Asset Pipeline', link: '/addons/asset_pipeline'},
           { text: 'Blender Kitsu', link: '/addons/blender_kitsu'},
           { text: 'Blender Log', link: '/addons/blender_log'},
-          { text: 'Blender SVN', link: '/addons/blender_svn'},
           { text: 'Bone Gizmos', link: '/addons/bone_gizmos'},
           { text: 'Brushstroke Tools', link: '/addons/brushstroke_tools'},
           { text: 'Cache Manager', link: '/addons/cache_manager'},

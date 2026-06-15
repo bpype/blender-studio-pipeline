@@ -20,7 +20,6 @@ To install add-ons which are not there, follow these steps:
 |Asset Pipeline |Manages the Asset Pipeline, used by Modeling, Shading and Rigging departments. 
 |Blender Kitsu |Enforce conventions, build shots, manage production files and update data on kitsu server.
 |Blender Log |A place for add-ons to report issues to the user in a persistent UI element.
-|Blender SVN |UI for the SVN (Subversion) file versioning system.  
 |Blender Gizmos |Prototype of a system for using meshes for the manipulation of armatures.  
 |Brushstroke Tools |Achieve a highly controllable painterly style easily and procedurally.  
 |Cache Manager |Streamline the Alembic cache workflow of assets. 
