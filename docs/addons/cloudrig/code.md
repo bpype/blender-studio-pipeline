@@ -158,7 +158,7 @@ Used by `Widgets.blend` to do automatic housekeeping: Sorting widget geometry to
 ---
 
 #### bone_gizmos.py
-[Bone Gizmos](https://projects.blender.org/studio/blender-studio-tools/src/branch/main/docs/addons/bone_gizmos.md) is/was an experimental/abandoned add-on of mine, and this module allows components to interface with it. Currently dead code, but might make a return one day.
+[Bone Gizmos](https://projects.blender.org/Mets/bone_gizmos) is/was an experimental/abandoned add-on of mine, and this module allows components to interface with it. Currently dead code, but might make a return one day.
 
 ---
 

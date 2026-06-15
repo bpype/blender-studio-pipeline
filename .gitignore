@@ -21,7 +21,7 @@ lib64/
 parts/
 sdist/
 var/
-/wheels/ # Otherwise wheels folder of blender-svn will be ignored.
+/wheels/ # Careful not to ignore wheels of add-ons.
 *.egg-info/
 .installed.cfg
 *.egg

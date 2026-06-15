@@ -14,20 +14,17 @@ To install add-ons which are not there, follow these steps:
 
 ### List of add-ons
 
-| Add-on | Description | 
+| Add-on | Description |
 |---|---|
-|Anim Cupboard |Miscellaneous tools for animators. 
-|Asset Pipeline |Manages the Asset Pipeline, used by Modeling, Shading and Rigging departments. 
+|Anim Cupboard |Miscellaneous tools for animators.
+|Asset Pipeline |Manages the Asset Pipeline, used by Modeling, Shading and Rigging departments.
 |Blender Kitsu |Enforce conventions, build shots, manage production files and update data on kitsu server.
 |Blender Log |A place for add-ons to report issues to the user in a persistent UI element.
-|Blender SVN |UI for the SVN (Subversion) file versioning system.  
-|Blender Gizmos |Prototype of a system for using meshes for the manipulation of armatures.  
-|Brushstroke Tools |Achieve a highly controllable painterly style easily and procedurally.  
-|Cache Manager |Streamline the Alembic cache workflow of assets. 
-|CloudRig |Rig generation and workflow tools. CloudRig lives in a [separate repository](https://projects.blender.org/Mets/CloudRig). 
-|Contact Sheet |Create a contactsheet from sequence editor strips.  
-|Easy Weight |Quality of life improvements for weight painting.  
-|Geonode Shapekeys |Enable animators to sculpt on linked and overridden meshes.  
-|Lattice Magic |Lattice-based utilities.  
-|Lighting Overrider |Create, manage and apply python overrides in a flexible and reliable way.  
-|Pose Shape Keys |Manage and maintain shapekeys for rigging.  
+|Brushstroke Tools |Achieve a highly controllable painterly style easily and procedurally.
+|CloudRig |Rig generation and workflow tools. CloudRig lives in a [separate repository](https://projects.blender.org/Mets/CloudRig).
+|Contact Sheet |Create a contactsheet from sequence editor strips.
+|Easy Weight |Quality of life improvements for weight painting.
+|Geonode Shapekeys |Enable animators to sculpt on linked and overridden meshes.
+|Lattice Magic |Lattice-based utilities.
+|Lighting Overrider |Create, manage and apply python overrides in a flexible and reliable way.
+|Pose Shape Keys |Manage and maintain shapekeys for rigging.
