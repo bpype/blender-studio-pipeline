@@ -36,6 +36,7 @@ These are CloudRig's component types. Most component types are built on top of o
     - [Single Control](#single-control)
         - [Chain Intersection](#chain-intersection)
     - [Bone Tweak](#bone-tweak)
+    - [Component Instance](#component-instance)
 
 ## Assigning Components
 You can assign a component to a bone in the metarig. For chain components, the connected children will be part of the same component, as long as they aren't assigned a component of their own. You can assign components to bones in two places in the UI:
@@ -262,7 +263,7 @@ A very simple extension of the FK Chain component, essentially just changes the 
 <details>
 <summary> Parameters </summary>
 
-- #### Up Axis
+- #### Forward Axis
     Rotate the bone shape to align with this axis of the bone.
 </details>
 
@@ -531,5 +532,20 @@ This component type lets you tweak aspects of a single bone that is expected to 
     - B-Bone Properties
     - Custom Properties
     Each of these can be chosen to be copied over to the target bone or not. For example if you just want to add some extra constraints to a bone, you probably don't want to overwrite its transforms, bone shape, etc, so you would leave all of those unticked, and they will remain untouched.
+
+</details>
+
+## Component Instance
+This component type references another, and the generator will act as if the same component is assigned with the same parameters. Can be useful to reduce the amount of times you need to copy or mirror components between bones, since this allows you to create live references instead.
+
+For example, if you want a particular finger configuration on all fingers, you can just define it on a single finger bone, and reference that one from all other fingers.
+
+<details>
+<summary> Parameters </summary>
+
+- #### Source Bone
+    Select another bone which has a component type assigned. This bone will act as if the same component with the same parameters was assigned to it.
+- #### Mirror
+    Flip left/right side names when copying parameters from the Source Bone. For example, the bone names in parent switching set-ups will be flipped.
 
 </details>
