@@ -1104,8 +1104,18 @@ def match_mat(tgt_mat, src_mat):
 
     for attr_path in path_list:
         try:
-            exec(f'tgt_mat.{attr_path} = src_mat.{attr_path}')
+            path_parts = attr_path.replace("'", '"').split('.')
+            attr_name = path_parts[-1]
+            item_path = ".".join(path_parts[:-1])
+            if item_path:
+                tgt_item = tgt_mat.path_resolve(item_path)
+                src_item = src_mat.path_resolve(item_path)
+            else:
+                tgt_item = tgt_mat
+                src_item = src_mat
+            setattr(tgt_item, attr_name, getattr(src_item, attr_name))
         except:
+            print(f"Could not copy attribute '{attr_path}' on material '{tgt_mat.name}'")
             pass
     
     tgt_curve_node = tgt_mat.node_tree.nodes.get('Brush Curve')
