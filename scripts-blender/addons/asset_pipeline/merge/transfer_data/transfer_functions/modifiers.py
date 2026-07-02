@@ -9,7 +9,7 @@ from bpy.types import Context, Modifier, Object, Scene
 
 from .... import config, constants, logging
 from ....props import AssetTransferData, AssetTransferDataTemp
-from ...naming import task_layer_prefix_name_get
+from ...naming import task_layer_prefix_basename_get, task_layer_prefix_name_get
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import (
     activate_shapekey,
@@ -45,7 +45,6 @@ def modifiers_clean(obj: Object):
     for name in cleaned_names:
         cleanup_drivers(obj, 'modifiers', name)
 
-
 def modifier_is_missing(transfer_data_item: AssetTransferData):
     return transfer_data_item_is_missing(
         transfer_data_item=transfer_data_item,
@@ -64,7 +63,12 @@ def _ensure_modifier_ownership(scene: Scene, obj: Object) -> None:
     asset_pipe = scene.asset_pipeline
     task_layer_owner, auto_surrender = get_transfer_data_owner(asset_pipe, constants.MODIFIER_KEY)
     for mod in obj.modifiers:
-        ownership_data = find_ownership_data(obj.transfer_data_ownership, mod.name, constants.MODIFIER_KEY)
+        base_name = task_layer_prefix_basename_get(mod.name)
+        ownership_data = next((
+            item for item in obj.transfer_data_ownership
+            if item.type == constants.MODIFIER_KEY
+            and task_layer_prefix_basename_get(item.name) == base_name
+        ), None)
         if not ownership_data:
             ownership_data = asset_pipe.add_temp_transfer_data(
                 name=mod.name,

@@ -6,10 +6,9 @@ from bpy.types import Object, Scene
 
 from .... import constants, logging
 from ....props import AssetTransferData
-from ...naming import task_layer_prefix_name_get
+from ...naming import task_layer_prefix_basename_get, task_layer_prefix_name_get
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import (
-    find_ownership_data,
     transfer_data_clean,
     transfer_data_item_is_missing,
 )
@@ -46,7 +45,12 @@ def init_constraints(scene: Scene, obj: Object):
     )
     for const in obj.constraints:
         # Only add new ownership transfer_data_item if vertex group doesn't have an owner
-        ownership_data = find_ownership_data(transfer_data, const.name, td_type_key)
+        base_name = task_layer_prefix_basename_get(const.name)
+        ownership_data = next((
+            item for item in transfer_data
+            if item.type == td_type_key
+            and task_layer_prefix_basename_get(item.name) == base_name
+        ), None)
         if not ownership_data:
             ownership_data = asset_pipe.add_temp_transfer_data(
                 name=const.name,
