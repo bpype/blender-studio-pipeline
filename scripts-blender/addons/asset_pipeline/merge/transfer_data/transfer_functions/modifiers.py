@@ -214,6 +214,11 @@ def sort_modifiers_by_order(obj: Object):
     """Sort all modifiers on obj by their stored order_key values.
     Must be called after all transfer_data_ownership entries are populated,
     so that orders from all task layers are available simultaneously.
+
+    In `apply_transfer_data()`, this means calling it once per distinct target object,
+    after every Transfer Data map entry referencing that object has been applied -
+    not once per entry, since a target object can be referenced by more than one entry
+    and earlier entries may leave its ownership data incomplete.
     """
     td_type_key = constants.MODIFIER_KEY
 
