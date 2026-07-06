@@ -13,6 +13,7 @@ These are CloudRig's component types. Most component types are built on top of o
 
 - [Shared Features](#shared-features)
     - [Chain: Toon](#chain-toon)
+        - [Chain: Layered](#chain-layered)
         - [Chain: Face Grid](#chain-face-grid)
             - [Chain: Eyelid](#chain-eyelid)
         - [Chain: FK](#chain-fk)
@@ -129,6 +130,18 @@ Scaling the stretch controls uniformally gives the connected bendy bones more vo
     Create helper bones that can be used to read the rotational difference between deform bones. Useful for driving corrective shape keys. These helpers will be prefixed "SKH" for "Shape Key Helper".
 - #### Create Deform Controls
     Create controls that allow you to translate and scale deform bones by disconnecting them from their neighbours.
+
+</details>
+
+
+## Chain: Layered
+Extends the functionality of the Toon Chain with the ability to create or specify a higher "layer" of bendy bone controls, which the lower layer will be glued to using Armature constraints.
+
+<details>
+<summary> Parameters </summary>
+
+- #### Parent Chain
+    If provided, use this Toon Chain as the parent of this chain instead of generating a single bendy bone with controls.
 
 </details>
 
