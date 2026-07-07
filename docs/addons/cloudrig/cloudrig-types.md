@@ -115,13 +115,14 @@ Scaling the stretch controls uniformally gives the connected bendy bones more vo
     Number of sub-controls for each bone in the meta chain.
 - #### Tip Control
     Whether there should be a control at the tip of this chain.
-
 - #### B-Bone Density
     B-Bone segments will be distributed equally along the chain. As long as this value is >0, each bone will have at least 2 b-bone segments. A high density will not have a severe impact on performance.
 - #### Sharp Sections
     Bendy bones will not affect the curvature of their neighbours, unless their shared stretch control is scaled up on its local Y axis.
 - #### Smooth Spline
     Bendy bones will have a wider effect on the curvature of their neighbours, to easily get smoother curves. Works best when Deform Segments is 1, but that is not a requirement. Works fine with Sharp Sections, but it will only take effect once a stretch control is scaled up along its local Y axis.
+- #### Deforming
+    Whether the bendy bones generated for this chain contribute to Armature deformation or not.
 - #### Squash & Stretch
     When enabled, deform bones will become fatter when squashed, and slimmer when stretched.
 - #### Volume Variation
