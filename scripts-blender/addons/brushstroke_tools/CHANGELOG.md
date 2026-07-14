@@ -1,16 +1,22 @@
+## 1.2.3
+
+### FIXED
+
+- Replace using `exec` function to comply with security policy [#576](https://projects.blender.org/studio/blender-studio-tools/pulls/576)
+
 ## 1.2.2
 
-## FIXED
+### FIXED
 
 - Compatibility with Blender 5.2 LTS [#566](https://projects.blender.org/studio/blender-studio-tools/pulls/566)
 
 ## 1.2.1
 
-## CHANGED
+### CHANGED
 
 - rename and relink brushstroke layer objects according to the new surface object when copying from one object to another [#416](https://projects.blender.org/studio/blender-studio-tools/pulls/416)
 
-## FIXED
+### FIXED
 
 - Fix issue when multiple windows and scenes by getting rid of `bpy.context` in multiple places [#420](https://projects.blender.org/studio/blender-studio-tools/pulls/420)
 - Fix version specific Grease Pencil availability

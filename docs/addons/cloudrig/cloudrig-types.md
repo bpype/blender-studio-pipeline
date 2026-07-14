@@ -13,6 +13,7 @@ These are CloudRig's component types. Most component types are built on top of o
 
 - [Shared Features](#shared-features)
     - [Chain: Toon](#chain-toon)
+        - [Chain: Layered](#chain-layered)
         - [Chain: Face Grid](#chain-face-grid)
             - [Chain: Eyelid](#chain-eyelid)
         - [Chain: FK](#chain-fk)
@@ -114,13 +115,14 @@ Scaling the stretch controls uniformally gives the connected bendy bones more vo
     Number of sub-controls for each bone in the meta chain.
 - #### Tip Control
     Whether there should be a control at the tip of this chain.
-
 - #### B-Bone Density
     B-Bone segments will be distributed equally along the chain. As long as this value is >0, each bone will have at least 2 b-bone segments. A high density will not have a severe impact on performance.
 - #### Sharp Sections
     Bendy bones will not affect the curvature of their neighbours, unless their shared stretch control is scaled up on its local Y axis.
 - #### Smooth Spline
     Bendy bones will have a wider effect on the curvature of their neighbours, to easily get smoother curves. Works best when Deform Segments is 1, but that is not a requirement. Works fine with Sharp Sections, but it will only take effect once a stretch control is scaled up along its local Y axis.
+- #### Deforming
+    Whether the bendy bones generated for this chain contribute to Armature deformation or not.
 - #### Squash & Stretch
     When enabled, deform bones will become fatter when squashed, and slimmer when stretched.
 - #### Volume Variation
@@ -129,6 +131,18 @@ Scaling the stretch controls uniformally gives the connected bendy bones more vo
     Create helper bones that can be used to read the rotational difference between deform bones. Useful for driving corrective shape keys. These helpers will be prefixed "SKH" for "Shape Key Helper".
 - #### Create Deform Controls
     Create controls that allow you to translate and scale deform bones by disconnecting them from their neighbours.
+
+</details>
+
+
+## Chain: Layered
+Extends the functionality of the Toon Chain with the ability to create or specify a higher "layer" of bendy bone controls, which the lower layer will be glued to using Armature constraints.
+
+<details>
+<summary> Parameters </summary>
+
+- #### Parent Chain
+    If provided, use this Toon Chain as the parent of this chain instead of generating a single bendy bone with controls.
 
 </details>
 

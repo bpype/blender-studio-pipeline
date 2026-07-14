@@ -222,6 +222,11 @@ def apply_transfer_data(context: Context, transfer_data_map: dict[Object, dict])
     # Create/isolate tmp collection to reduce depsgraph update time
     profiler = logging.get_profiler()
     td_col = bpy.data.collections.new("ISO_COL_TEMP")
+
+    # Helper Set to let us only sort modifiers after all data transfers complete,
+    # and only once per target object.
+    target_objs_to_sort: set[Object] = set()
+
     with isolate_collection(context, td_col):
         # Loop over objects in Transfer data map
         for source_obj in transfer_data_map:
@@ -243,6 +248,10 @@ def apply_transfer_data(context: Context, transfer_data_map: dict[Object, dict])
                     start_time = time.time()
                     apply_transfer_data_items(context, source_obj, target_obj, td_type_key, td_dicts)
                     profiler.add(time.time() - start_time, td_type_key)
-                modifiers.sort_modifiers_by_order(target_obj)
+            if constants.MODIFIER_KEY in td_types:
+                target_objs_to_sort.add(target_obj)
+
+        for target_obj in target_objs_to_sort:
+            modifiers.sort_modifiers_by_order(target_obj)
 
     bpy.data.collections.remove(td_col)

@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from bpy.props import BoolProperty, EnumProperty, StringProperty
-from bpy.types import Collection, Context, Event, Operator, Panel, UILayout
+from bpy.types import Collection, Context, Event, Object, Operator, Panel, UILayout
 
 from .. import constants
 from ..merge import task_layer
+from ..merge.core import transfer_data_is_missing
 from ..merge.task_layer import draw_task_layer_selection
 from ..props import AssetTransferData
 from ..utils import get_addon_prefs
@@ -69,6 +70,7 @@ class ASSETPIPE_PT_ownership_manager(Panel):
             surrender_row.prop(obj, "asset_id_surrender", text="", icon="ORPHAN_DATA" if obj.asset_id_surrender else "HEART")
 
             object_row.operator("assetpipe.clear_ownership_data", text="", icon="TRASH")
+            object_row.operator("assetpipe.cleanup_ownership_data", text="", icon="BRUSH_DATA")
 
             for coll in obj.users_collection:
                 if coll in set(asset_pipe.asset_collection.children_recursive):
@@ -76,13 +78,7 @@ class ASSETPIPE_PT_ownership_manager(Panel):
 
             draw_all_data_ownership_of_obj(context, col, transfer_data)
 
-
-class ASSETPIPE_OT_clear_ownership_data(Operator):
-    bl_idname = "assetpipe.clear_ownership_data"
-    bl_label = "Clear Ownership Data"
-    bl_description = """Reset all ownership data on active object.\nAlt: Reset on all selected objects."""
-    bl_options = {'REGISTER', 'UNDO'}
-
+class OwnerShipOperatorMixin:
     affect_selected: BoolProperty(default=False, options={'SKIP_SAVE'})
 
     @classmethod
@@ -101,6 +97,14 @@ class ASSETPIPE_OT_clear_ownership_data(Operator):
         self.layout.alert = True
         self.layout.label(text="Clearing ownership data may lead to ownership conflicts.", icon='ERROR')
 
+
+
+class ASSETPIPE_OT_clear_ownership_data(OwnerShipOperatorMixin, Operator):
+    bl_idname = "assetpipe.clear_ownership_data"
+    bl_label = "Clear Ownership Data"
+    bl_description = """Reset all ownership data on active object.\nAlt: Reset on all selected objects."""
+    bl_options = {'REGISTER', 'UNDO'}
+
     def execute(self, context: Context):
         objs = context.selected_objects if self.affect_selected else [context.active_object]
         for obj in objs:
@@ -109,6 +113,36 @@ class ASSETPIPE_OT_clear_ownership_data(Operator):
             self.report({'INFO'}, f"'{obj.name}' ownership data cleared ")
         return {'FINISHED'}
 
+
+class ASSETPIPE_OT_cleanup_ownership_data(OwnerShipOperatorMixin, Operator):
+    bl_idname = "assetpipe.cleanup_ownership_data"
+    bl_label = "Clean-up Ownership Data"
+    bl_description = """Remove any ownership data for which the Blender data no longer exists.\nAlt: Clean up on all selected objects."""
+    bl_options = {'REGISTER', 'UNDO'}
+
+
+    def execute(self, context: Context):
+        objs = context.selected_objects if self.affect_selected else [context.active_object]
+        for obj in objs:
+            transfer_data_ownership_clean(obj)
+            self.report({'INFO'}, f"'{obj.name}' ownership data cleaned")
+        return {'FINISHED'}
+
+def transfer_data_ownership_clean(obj: Object) -> None:
+    """Remove Transferable Data ownership items if the corresponding data is missing,
+    even if it's for non-local task layers.
+
+    Args:
+        obj (Object): Object that contains the Transferable Data
+    """
+    transfer_data = obj.transfer_data_ownership
+    to_remove = [
+        index
+        for index, transfer_data_item in enumerate(transfer_data)
+        if transfer_data_is_missing(transfer_data_item)
+    ]
+    for index in reversed(to_remove):
+        transfer_data.remove(index)
 
 class ASSETPIPE_OT_batch_ownership_change(Operator):
     # TODO Update Operator Documentation
@@ -478,5 +512,6 @@ def draw_ownership_data_single_item(
 registry = [
     ASSETPIPE_PT_ownership_manager,
     ASSETPIPE_OT_clear_ownership_data,
+    ASSETPIPE_OT_cleanup_ownership_data,
     ASSETPIPE_OT_batch_ownership_change,
 ]
