@@ -108,3 +108,15 @@ Available with the rig, even if a user doesn't have CloudRig installed.
 This user preference tweaks Blender's linking and appending behaviour to make it slightly more convenient:
 - When linking a collection which contains armatures, the collection and the armatures become automatically overridden and selected.
 - When linking or appending armatures which have runnable Python scripts attached, they are automatically executed.
+
+## Bone Chain from Edge Loops
+This operator is found in Mesh Edit mode under the Add menu, and it's useful for quickly creating a chain of bones, mainly for tube shapes like fingers, tails, hair strands, tentacles, spikes, etc. Just select the edge loops and run it. A pop-up will ask for all the info it needs;
+
+<img src="/media/addons/cloudrig/bone_chain_from_edge_loops.png">
+
+- Bone Name: The # symbols will be replaced with 0-padded numbering.
+- Focus Rig: Whether you want to land in pose mode after the operation is done. If you want to create several chains one after the other, you would disable this.
+- Automatic Weights: Automatic weights will be assigned only for the newly created bones.
+- Root End: Which edge loop out of the first and last one should be the beginning/end of the bone chain - The thicker or the thinner one of the two.
+
+Note: The logic for determining the order of the bone chain is pretty simplistic, so this operator is only expected to work for fairly straight lines, not zig-zag or L-shaped tubes.
