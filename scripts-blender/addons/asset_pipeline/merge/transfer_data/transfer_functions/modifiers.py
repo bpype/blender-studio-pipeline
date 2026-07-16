@@ -235,7 +235,13 @@ def sort_modifiers_by_order(obj: Object):
     for i in range(1, len(obj.modifiers)):
         pos = i
         while pos > 0 and is_out_of_order(pos):
-            obj.modifiers.move(pos, pos - 1)
+            try:
+                obj.modifiers.move(pos, pos - 1)
+            except RuntimeError:
+                # Some modifier orderings are disallowed by Blender itself
+                # (e.g. Geometry Nodes cannot be placed above Multiresolution).
+                # Leave the stack as-is rather than raising.
+                break
             pos -= 1
 
 
