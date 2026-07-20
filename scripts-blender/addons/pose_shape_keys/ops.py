@@ -951,7 +951,7 @@ class OBJECT_OT_pose_key_magic_driver(Operator):
             if self.side != 'BOTH':
                 if (bone_is_left and self.side=='RIGHT') or (bone_is_left==False and self.side=='LEFT'):
                     continue
-            if self.only_selected and not pb.bone.select:
+            if self.only_selected and not pb.select:
                 continue
             bone_channels = OrderedDict({'loc' : [], 'rot': [], 'scale': []})
 
