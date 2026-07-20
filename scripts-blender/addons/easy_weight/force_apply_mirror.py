@@ -1,272 +1,313 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import bmesh
 import bpy
 from bpy.props import BoolProperty
+from bpy.types import ID, AnimData, Context, FCurve, Object, Operator, ShapeKey
 from bpy.utils import flip_name
-
-# TODO:
-# Should find a way to select the X axis verts before doing Remove Doubles, or don't Remove Doubles at all. Also need to select the Basis shape before doing Remove Doubles.
-# Implement our own Remove Doubles algo with kdtree, which would average the vertex weights of the merged verts rather than just picking the weights of one of them at random.
+from mathutils.kdtree import KDTree
 
 
-def flip_driver_targets(obj):
-    # We just need to flip the bone targets on every driver.
-    shape_keys = obj.data.shape_keys
-    if not shape_keys:
-        return
-    if not hasattr(shape_keys.animation_data, "drivers"):
-        return
-    drivers = shape_keys.animation_data.drivers
-
-    for sk in shape_keys.key_blocks:
-        # Capital D signifies that this is a driver container (known as a driver) rather than a driver(also known as driver) - Yes, the naming convention for drivers in python API is BAD. D=driver, d=driver.driver.
-        for D in drivers:
-            if sk.name in D.data_path:
-                sk.vertex_group = flip_name(sk.vertex_group)
-                for var in D.driver.variables:
-                    for t in var.targets:
-                        if not t.bone_target:
-                            continue
-                        t.bone_target = flip_name(t.bone_target)
-
-
-class EASYWEIGHT_OT_force_apply_mirror(bpy.types.Operator):
+class EASYWEIGHT_OT_force_apply_mirror(Operator):
     """Force apply mirror modifier by duplicating the object, flipping it on the X axis, merging into the original, and welding it at the middle"""
 
     bl_idname = "object.force_apply_mirror_modifier"
     bl_label = "Force Apply Mirror Modifier"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {"REGISTER", "UNDO"}
 
-    remove_doubles: BoolProperty(name="Remove Doubles", default=False)
     weighted_normals: BoolProperty(name="Weighted Normals", default=True)
     split_shape_keys: BoolProperty(
         name="Split Shape Keys",
         default=True,
-        description="If shape keys end in either .L or .R, duplicate them and flip their mask vertex group name",
+        description="If shape keys end in either .L or .R, duplicate them, flip their mask vertex group name, and their driver",
     )
 
     @classmethod
-    def poll(cls, context):
+    def poll(cls, context: Context):
         obj = context.active_object
-        if not (obj and obj.type == 'MESH' and obj.data and obj.data.shape_keys):
+        if not (obj and obj.type == "MESH" and obj.data and obj.data.shape_keys):
             cls.poll_message_set("There must be an active mesh object with shape keys.")
             return False
         for mod in obj.modifiers:
-            if mod.type == 'MIRROR':
+            if mod.type == "MIRROR":
                 if mod.use_axis[:] != (True, False, False):
                     cls.poll_message_set("Only X axis mirror modifier is supported.")
                     return False
-
                 return True
-        else:
-            cls.poll_message_set("This mesh has no Mirror modifier.")
-
+        cls.poll_message_set("This mesh has no Mirror modifier.")
         return False
 
-    def execute(self, context):
-        # Remove Mirror Modifier
-        # Copy mesh
-        # Scale it -1 on X
-        # Flip vgroup names
-        # Join into original mesh
-        # Remove doubles
-        # Recalc Normals
-        # Weight Normals
-
+    def execute(self, context: Context):
         obj = context.active_object
 
-        # Find Mirror modifier.
-        mirror = None
-        for mod in obj.modifiers:
-            if mod.type == 'MIRROR':
-                mirror = mod
-                break
+        mirror = next((mod for mod in obj.modifiers if mod.type == "MIRROR"), None)
         if not mirror:
-            return {'CANCELLED'}
-
+            return {"CANCELLED"}
         if mirror.use_axis[:] != (True, False, False):
-            self.report({'ERROR'}, "Only X axis mirroring is supported for now.")
-            return {'CANCELLED'}
+            self.report({"ERROR"}, "Only X axis mirroring is supported for now.")
+            return {"CANCELLED"}
 
-        # Remove mirror modifier.
+        merge_center = mirror.use_mirror_merge
+        clip_threshold = mirror.merge_threshold
+
         obj.modifiers.remove(mirror)
 
-        # Set mode and selection.
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode="OBJECT")
+        bpy.ops.object.select_all(action="DESELECT")
         obj.select_set(True)
         context.view_layer.objects.active = obj
 
-        # Remove Doubles - This should print out removed 0, otherwise we're gonna remove some important verts.
-        if self.remove_doubles:
-            print(
-                "Checking for doubles pre-mirror. If it doesn't say Removed 0 vertices, you should undo."
-            )
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.remove_doubles(use_unselected=True)
-            bpy.ops.object.mode_set(mode='OBJECT')
-
-        # Reset scale.
         org_scale = obj.scale[:]
         obj.scale = (1, 1, 1)
 
-        # Duplicate and scale object.
         bpy.ops.object.duplicate()
-        flipped_o = context.active_object
-        flipped_o.scale = (-1, 1, 1)
+        flipped_obj = context.active_object
+        flipped_obj.scale = (-1, 1, 1)
 
-        # Flip vertex group names.
-        done = []  # Don't flip names twice...
-        for vgroup in flipped_o.vertex_groups:
-            if vgroup in done:
-                continue
-            old_name = vgroup.name
-            flipped_name = flip_name(vgroup.name)
-            if old_name == flipped_name:
-                continue
+        _flip_names(flipped_obj.vertex_groups)
 
-            opp_vgroup = flipped_o.vertex_groups.get(flipped_name)
-            if opp_vgroup:
-                vgroup.name = "temp"
-                opp_vgroup.name = old_name
-                vgroup.name = flipped_name
-                done.append(opp_vgroup)
+        if self.split_shape_keys and flipped_obj.data.shape_keys:
+            _flip_names(flipped_obj.data.shape_keys.key_blocks)
+            flip_shape_key_drivers(flipped_obj)
+            copy_shape_key_drivers(
+                flipped_obj.data.shape_keys,
+                obj.data.shape_keys,
+            )
 
-            vgroup.name = flipped_name
-            done.append(vgroup)
-
-        # Split/Flip shape keys.
-        if self.split_shape_keys:
-            done = []  # Don't flip names twice...
-            shape_keys = flipped_o.data.shape_keys
-            if shape_keys:
-                key_blocks = shape_keys.key_blocks
-                for key_block in key_blocks:
-                    if key_block in done:
-                        continue
-                    old_name = key_block.name
-                    flipped_name = flip_name(key_block.name)
-                    if old_name == flipped_name:
-                        continue
-
-                    opp_sk = key_blocks.get(flipped_name)
-                    if opp_sk:
-                        key_block.name = "temp"
-                        opp_sk.name = old_name
-                        done.append(opp_sk)
-
-                    key_block.name = flipped_name
-                    done.append(key_block)
-
-        flip_driver_targets(flipped_o)
-
-        # Joining objects does not seem to preserve drivers on any except the active object, at least for shape keys.
-        # To work around this, we duplicate the flipped mesh again, so we can copy the drivers over from that copy to the merged version...
-        bpy.ops.object.duplicate()
-        copy_of_flipped = context.active_object
-        copy_of_flipped.select_set(False)
-
-        flipped_o.select_set(True)
+        flipped_obj.select_set(True)
         obj.select_set(True)
         # We want to be sure the original is the active so the object name doesn't get a .001
         context.view_layer.objects.active = obj
         bpy.ops.object.join()
 
         combined_object = context.active_object
-
-        # Copy drivers from the duplicate.
-        if hasattr(copy_of_flipped.data.shape_keys, "animation_data") and hasattr(
-            copy_of_flipped.data.shape_keys.animation_data, "drivers"
-        ):
-            for old_D in copy_of_flipped.data.shape_keys.animation_data.drivers:
-                for key_block in combined_object.data.shape_keys.key_blocks:
-                    if key_block.name in old_D.data_path:
-                        # Create the driver...
-                        new_D = combined_object.data.shape_keys.driver_add(
-                            'key_blocks["' + key_block.name + '"].value'
-                        )
-                        new_d = new_D.driver
-                        old_d = old_D.driver
-
-                        expression = old_d.expression
-                        # The beginning of shape key names will indicate which axes should be flipped... What an awful solution! :)
-                        flip_x = False
-                        flip_y = False
-                        flip_z = False
-                        flip_flags = key_block.name.split("_")[0]
-                        # This code is just getting better :)
-                        if flip_flags in ['XYZ', 'XZ', 'XY', 'YZ', 'Z']:
-                            if ('X') in flip_flags:
-                                flip_x = True
-                            if ('Y') in flip_flags:
-                                flip_y = True
-                            if ('Z') in flip_flags:
-                                flip_z = True
-
-                        for v in old_d.variables:
-                            new_v = new_d.variables.new()
-                            new_v.name = v.name
-                            new_v.type = v.type
-                            for i in range(len(v.targets)):
-                                if new_v.type == 'SINGLE_PROP':
-                                    new_v.targets[i].id_type = v.targets[i].id_type
-                                new_v.targets[i].id = v.targets[i].id
-                                new_v.targets[i].bone_target = v.targets[i].bone_target
-                                new_v.targets[i].data_path = v.targets[i].data_path
-                                new_v.targets[i].transform_type = v.targets[i].transform_type
-                                new_v.targets[i].transform_space = v.targets[i].transform_space
-
-                            if (
-                                new_v.targets[0].bone_target
-                                and "SCALE" not in v.targets[0].transform_type
-                                and (v.targets[0].transform_type.endswith("_X") and flip_x)
-                                or (v.targets[0].transform_type.endswith("_Y") and flip_y)
-                                or (v.targets[0].transform_type.endswith("_Z") and flip_z)
-                            ):
-                                # Flipping sign - this is awful, I know.
-                                if "-" + new_v.name in expression:
-                                    expression = expression.replace(
-                                        "-" + new_v.name, "+" + new_v.name
-                                    )
-                                elif "+ " + new_v.name in expression:
-                                    expression = expression.replace(
-                                        "+ " + new_v.name, "- " + new_v.name
-                                    )
-                                else:
-                                    expression = expression.replace(new_v.name, "-" + new_v.name)
-
-                        new_d.expression = expression
-
-        # Delete the copy
-        copy_of_flipped.select_set(True)
         combined_object.select_set(False)
         bpy.ops.object.delete(use_global=False)
 
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.object.mode_set(mode="EDIT")
+
+        if merge_center:
+            bm = bmesh.from_edit_mesh(combined_object.data)
+            for vert in bm.verts:
+                vert.select = abs(vert.co.x) < clip_threshold
+            bm.select_flush_mode()
+            _average_seam_weights(bm, clip_threshold)
+            bmesh.update_edit_mesh(combined_object.data)
+
+            bpy.ops.mesh.remove_doubles(threshold=clip_threshold)
+
+        bpy.ops.mesh.select_all(action="SELECT")
         bpy.ops.mesh.normals_make_consistent(inside=False)
 
-        # Mesh cleanup
-        if self.remove_doubles:
-            bpy.ops.mesh.remove_doubles()
-
-        bpy.ops.object.mode_set(mode='OBJECT')
-        if self.weighted_normals and "calculate_weighted_normals" in dir(bpy.ops.object):
+        bpy.ops.object.mode_set(mode="OBJECT")
+        if self.weighted_normals and "calculate_weighted_normals" in dir(
+            bpy.ops.object
+        ):
             bpy.ops.object.calculate_weighted_normals()
 
-        # Restore scale
-        context.active_object.scale = org_scale
+        refresh_drivers(combined_object)
 
-        self.report({'INFO'}, "Applied X-Mirror modifier with shape keys.")
+        combined_object.scale = org_scale
 
-        return {'FINISHED'}
+        self.report({"INFO"}, "Applied X-Mirror modifier with shape keys.")
+        return {"FINISHED"}
 
 
-def draw_force_apply_mirror(self, context):
+def _average_seam_weights(bm: bmesh.types.BMesh, threshold: float) -> None:
+    """Average vertex group weights across vertices that will be merged by remove_doubles,
+    so the surviving vertex always ends up with the averaged weights of the merge cluster."""
+    seam_verts = [v for v in bm.verts if v.select]
+    if len(seam_verts) < 2:
+        return
+
+    kd = KDTree(len(seam_verts))
+    for i, v in enumerate(seam_verts):
+        kd.insert(v.co, i)
+    kd.balance()
+
+    deform = bm.verts.layers.deform.verify()
+
+    # BFS to find connected components within the merge threshold.
+    component = [-1] * len(seam_verts)
+    comp_id = 0
+    for i in range(len(seam_verts)):
+        if component[i] != -1:
+            continue
+        queue = [i]
+        component[i] = comp_id
+        while queue:
+            curr = queue.pop()
+            for _, j, _ in kd.find_range(seam_verts[curr].co, threshold):
+                if component[j] == -1:
+                    component[j] = comp_id
+                    queue.append(j)
+        comp_id += 1
+
+    clusters: dict[int, list[int]] = {}
+    for i, c in enumerate(component):
+        clusters.setdefault(c, []).append(i)
+
+    for indices in clusters.values():
+        if len(indices) < 2:
+            continue
+        all_keys: set[int] = set()
+        for idx in indices:
+            all_keys.update(seam_verts[idx][deform].keys())
+        for key in all_keys:
+            avg = sum(seam_verts[idx][deform].get(key, 0.0) for idx in indices) / len(
+                indices
+            )
+            for idx in indices:
+                seam_verts[idx][deform][key] = avg
+
+
+def _flip_names(things_with_names: list):
+    """Swap mirrored name pairs in a vertex group or shape key collection."""
+    done = set()
+    for item in things_with_names:
+        if item in done:
+            continue
+        old_name = item.name
+        flipped = flip_name(old_name)
+        if old_name == flipped:
+            continue
+        opposite = things_with_names.get(flipped)
+        if opposite:
+            item.name = "temp"
+            opposite.name = old_name
+            done.add(opposite)
+        item.name = flipped
+        done.add(item)
+
+
+def copy_shape_key_drivers(src_shape_keys: ShapeKey, dst_shape_keys: ShapeKey):
+    anim_data = src_shape_keys.animation_data
+    if not (anim_data and anim_data.drivers):
+        return
+    for old_fcurve in anim_data.drivers:
+        for key_block in src_shape_keys.key_blocks:
+            if key_block.name in old_fcurve.data_path:
+                copy_driver(old_fcurve, dst_shape_keys, old_fcurve.data_path)
+
+
+def copy_driver(
+    from_fcurve: FCurve, target: ID, data_path: str = None, index: int = None
+) -> FCurve:
+    """Copy an existing FCurve containing a driver to a new ID, by creating a copy
+    of the existing driver on the target ID.
+
+    Args:
+        from_fcurve: FCurve containing a driver
+        target: ID that can have AnimationData
+        data_path: Data Path of new driver. Defaults to copying the passed fcurve
+        index: array index of the property to drive. Defaults to copying the passed fcurve
+
+    Returns:
+        FCurve: Fcurve with new driver on target ID
+    """
+
+    # Ensure anim data.
+    if not target.animation_data:
+        target.animation_data_create()
+
+    # Remove old driver if it exists.
+    tgt_drivers = target.animation_data.drivers
+    if not data_path:
+        data_path = from_fcurve.data_path
+    if index not in {-1, None}:
+        old_fcurve = tgt_drivers.find(data_path, index=index)
+    else:
+        old_fcurve = tgt_drivers.find(data_path)
+
+    if old_fcurve:
+        tgt_drivers.remove(old_fcurve)
+
+    new_fcurve = tgt_drivers.from_existing(src_driver=from_fcurve)
+    new_fcurve.data_path = data_path
+    if index not in {None, -1}:
+        new_fcurve.array_index = index
+
+    return new_fcurve
+
+
+def flip_shape_key_drivers(obj: Object):
+    def _flip_var_sign(expression: str, var_name: str) -> str:
+        if f"-{var_name}" in expression:
+            return expression.replace(f"-{var_name}", f"+{var_name}")
+        if f"+ {var_name}" in expression:
+            return expression.replace(f"+ {var_name}", f"- {var_name}")
+        return expression.replace(var_name, f"-{var_name}")
+
+    shape_keys: ShapeKey = obj.data.shape_keys
+    if not shape_keys:
+        return
+    anim_data: AnimData = shape_keys.animation_data
+    if not anim_data:
+        return
+
+    flipped_sks = set()
+    for key_block in shape_keys.key_blocks:
+        # The name prefix before the first underscore indicates which transform axes to flip.
+        flip_flags = key_block.name.split("_")[0]
+        has_axis_prefix = flip_flags in {"XYZ", "XZ", "XY", "YZ", "Z"}
+        x_flag = has_axis_prefix and "X" in flip_flags
+        y_flag = has_axis_prefix and "Y" in flip_flags
+        z_flag = has_axis_prefix and "Z" in flip_flags
+        any_flag = any((x_flag, y_flag, z_flag))
+
+        driver_fcurves: list[FCurve] = anim_data.drivers
+
+        for fcurve in driver_fcurves:
+            if key_block.name not in fcurve.data_path:
+                continue
+            if key_block.name not in flipped_sks:
+                key_block.vertex_group = flip_name(key_block.vertex_group)
+                flipped_sks.add(key_block.name)
+            driver = fcurve.driver
+            for var in driver.variables:
+                for tar in var.targets:
+                    if tar.bone_target:
+                        tar.bone_target = flip_name(tar.bone_target)
+
+                target_0 = var.targets[0]
+                should_flip = target_0.bone_target and (
+                    "SCALE" not in target_0.transform_type
+                    and (
+                        (target_0.transform_type.endswith("_X") and x_flag)
+                        or (target_0.transform_type.endswith("_Y") and y_flag)
+                        or (target_0.transform_type.endswith("_Z") and z_flag)
+                    )
+                    or (
+                        not any_flag
+                        and target_0.transform_type in ("ROT_Z", "ROT_Y", "LOC_X")
+                    )
+                )
+                if should_flip:
+                    driver.expression = _flip_var_sign(driver.expression, var.name)
+
+
+def refresh_drivers(id: ID):
+    """Cause all drivers belonging to the object to be re-evaluated, clearing any errors."""
+
+    if hasattr(id, "data") and id.data:
+        refresh_drivers(id.data)
+        if hasattr(id.data, "shape_keys") and id.data.shape_keys:
+            refresh_drivers(id.data.shape_keys)
+
+    # Refresh object's own drivers if any
+    anim_data = getattr(id, "animation_data", None)
+
+    if anim_data:
+        for fcu in anim_data.drivers:
+            # Make a fake change to the driver
+            fcu.driver.type = fcu.driver.type
+
+
+def draw_force_apply_mirror(self, _context: Context):
     self.layout.separator()
-    self.layout.operator(EASYWEIGHT_OT_force_apply_mirror.bl_idname, icon='MOD_MIRROR')
+    self.layout.operator(EASYWEIGHT_OT_force_apply_mirror.bl_idname, icon="MOD_MIRROR")
 
 
 registry = [EASYWEIGHT_OT_force_apply_mirror]

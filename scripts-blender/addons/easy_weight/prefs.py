@@ -1,9 +1,10 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import bpy
 from bpy.props import BoolProperty
+from bpy.types import Context, KeyMap, KeyMapItem, UILayout
 
 from .prefs_to_disk import PrefsFileSaveLoadMixin, update_prefs_on_file
 from .weight_cleaner import start_cleaner, stop_cleaner
@@ -13,6 +14,7 @@ def get_available_wp_brushes():
     for brush in bpy.data.brushes:
         if brush.use_paint_weight:
             yield brush
+
 
 class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -41,8 +43,14 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         default=True,
         update=update_prefs_on_file,
     )
+    always_reveal_armature: BoolProperty(
+        name="Always Reveal Armature",
+        description="Automatically make the deforming armature visible (unhide it, take it out of local view, or link it to the scene if needed) when entering Weight Paint mode, and restore its previous visibility when leaving",
+        default=True,
+        update=update_prefs_on_file,
+    )
 
-    def update_auto_clean(self, context):
+    def update_auto_clean(self, _context: Context):
         update_prefs_on_file()
         if self.auto_clean_weights:
             start_cleaner()
@@ -55,23 +63,33 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         default=True,
     )
 
-    def update_front_faces(self, context):
+    def update_front_faces(self, _context: Context):
         update_prefs_on_file()
         for brush in get_available_wp_brushes():
             brush.use_frontface = self.global_front_faces_only
 
-    def update_accumulate(self, context):
+    def update_accumulate(self, _context: Context):
         update_prefs_on_file()
         for brush in get_available_wp_brushes():
             brush.use_accumulate = self.global_accumulate
 
-    def update_falloff_shape(self, context):
+    def update_falloff_shape(self, _context: Context):
         update_prefs_on_file()
         for brush in get_available_wp_brushes():
-            brush.falloff_shape = 'SPHERE' if self.global_falloff_shape_sphere else 'PROJECTED'
+            brush.falloff_shape = (
+                "SPHERE" if self.global_falloff_shape_sphere else "PROJECTED"
+            )
             for i, val in enumerate(brush.cursor_color_add):
                 if val > 0:
-                    brush.cursor_color_add[i] = 0.5 if self.global_falloff_shape_sphere else 2.0
+                    brush.cursor_color_add[i] = (
+                        0.5 if self.global_falloff_shape_sphere else 1.0
+                    )
+
+    def update_unified_strength(self, context: Context):
+        update_prefs_on_file()
+        context.tool_settings.weight_paint.unified_paint_settings.use_unified_strength = (
+            self.global_unified_strength
+        )
 
     global_front_faces_only: BoolProperty(
         name="Front Faces Only",
@@ -88,28 +106,36 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         description="All weight paint brushes switch between a 3D spherical or a 2D projected circular falloff shape",
         update=update_falloff_shape,
     )
+    global_unified_strength: BoolProperty(
+        name="Unified Strength",
+        description="All weight paint brushes share the same Strength value, instead of each brush having its own",
+        update=update_unified_strength,
+    )
 
-    def draw(self, context):
+    def draw(self, context: Context):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False
 
         col = layout.column()
-        col.prop(self, 'auto_clean_weights')
+        col.prop(self, "auto_clean_weights")
         if bpy.app.version < (5, 0, 0):
-            col.prop(self, 'always_show_zero_weights')
-        col.prop(self, 'always_auto_normalize')
-        col.prop(self, 'always_multipaint')
-        col.prop(self, 'always_xray')
+            col.prop(self, "always_show_zero_weights")
+        col.prop(self, "always_auto_normalize")
+        col.prop(self, "always_multipaint")
+        col.prop(self, "always_xray")
+        col.prop(self, "always_reveal_armature")
 
         main_col = layout.column(align=True)
-        hotkey_header, hotkey_panel = main_col.panel("EasyWeight Hotkeys", default_closed=False)
+        hotkey_header, hotkey_panel = main_col.panel(
+            "EasyWeight Hotkeys", default_closed=False
+        )
         hotkey_header.label(text="Hotkeys")
         if hotkey_panel:
-            type(self).draw_hotkey_list(hotkey_panel, context)
+            type(self).draw_hotkey_list(context, hotkey_panel)
 
     @classmethod
-    def draw_hotkey_list(cls, layout, context):
+    def draw_hotkey_list(cls, context: Context, layout: UILayout):
         hotkey_class = cls
         user_kc = context.window_manager.keyconfigs.user
 
@@ -124,7 +150,10 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
             for user_kmi in user_km.keymap_items:
                 if user_kmi.idname != addon_kmi.idname:
                     continue
-                if user_kmi.idname == 'wm.call_menu_pie' and user_kmi.properties.name != addon_kmi.properties.name:
+                if (
+                    user_kmi.idname == "wm.call_menu_pie"
+                    and user_kmi.properties.name != addon_kmi.properties.name
+                ):
                     continue
                 col = layout.column()
                 col.context_pointer_set("keymap", user_km)
@@ -137,7 +166,7 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
 
     # NOTE: This function is copied from CloudRig's cloudrig.py.
     @staticmethod
-    def draw_kmi(km, kmi, layout):
+    def draw_kmi(km: KeyMap, kmi: KeyMapItem, layout: UILayout):
         """A simplified version of draw_kmi from rna_keymap_ui.py."""
         col = layout.column()
 
@@ -146,7 +175,7 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         # header bar
         row = split.row(align=True)
         row.prop(kmi, "active", text="", emboss=False)
-        row.label(text=f'{kmi.name} ({km.name})')
+        row.label(text=f"{kmi.name} ({km.name})")
 
         row = split.row(align=True)
         sub = row.row(align=True)
@@ -154,38 +183,16 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         sub.prop(kmi, "type", text="", full_event=True)
 
         if kmi.is_user_modified:
-            row.operator("preferences.keyitem_restore", text="", icon='BACK').item_id = kmi.id
+            row.operator(
+                "preferences.keyitem_restore", text="", icon="BACK"
+            ).item_id = kmi.id
 
-    # NOTE: This function is copied from CloudRig's cloudrig.py.
-    @staticmethod
-    def find_kmi_in_km_by_hash(keymap, kmi_hash):
-        """There's no solid way to match modified user keymap items to their
-        add-on equivalent, which is necessary to draw them in the UI reliably.
-
-        To remedy this, we store a hash in the KeyMapItem's properties.
-
-        This function lets us find a KeyMapItem with a stored hash in a KeyMap.
-        Eg., we can pass a User KeyMap and an Addon KeyMapItem's hash, to find the
-        corresponding user keymap, even if it was modified.
-
-        The hash value is unfortunately exposed to the users, so we just hope they don't touch that.
-        """
-
-        for kmi in keymap.keymap_items:
-            if not kmi.properties:
-                continue
-            if 'hash' not in kmi.properties:
-                continue
-
-            if kmi.properties['hash'] == kmi_hash:
-                return kmi
 
 EASYWEIGHT_KEYMAPS = []
 
 
-
 def register_hotkey(
-    bl_idname, hotkey_kwargs, *, key_cat='Window', space_type='EMPTY', op_kwargs={}
+    bl_idname, hotkey_kwargs, *, key_cat="Window", space_type="EMPTY", op_kwargs={}
 ):
     """This function inserts a 'hash' into the created KeyMapItems' properties,
     so they can be compared to each other, and duplicates can be avoided."""
@@ -215,10 +222,10 @@ registry = [EASYWEIGHT_addon_preferences]
 
 def register():
     register_hotkey(
-        'wm.call_menu_pie',
-        hotkey_kwargs={'type': "W", 'value': "PRESS"},
-        key_cat='Weight Paint',
-        op_kwargs={'name': 'EASYWEIGHT_MT_PIE_easy_weight'},
+        "wm.call_menu_pie",
+        hotkey_kwargs={"type": "W", "value": "PRESS"},
+        key_cat="Weight Paint",
+        op_kwargs={"name": "EASYWEIGHT_MT_PIE_easy_weight"},
     )
     EASYWEIGHT_addon_preferences.register_autoload_from_file()
 

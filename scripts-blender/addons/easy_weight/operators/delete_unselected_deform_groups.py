@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,7 +12,7 @@ class EASYWEIGHT_OT_delete_unselected_deform_groups(Operator):
 
     bl_idname = "object.delete_unselected_deform_vgroups"
     bl_label = "Delete Unselected Deform Groups"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
     def poll(cls, context):
@@ -31,8 +31,8 @@ class EASYWEIGHT_OT_delete_unselected_deform_groups(Operator):
 
         delete_vgroups(context.active_object, unselected_def_groups)
 
-        self.report({'INFO'}, f"Deleted {len(deleted_names)} unselected deform groups.")
-        return {'FINISHED'}
+        self.report({"INFO"}, f"Deleted {len(deleted_names)} unselected deform groups.")
+        return {"FINISHED"}
 
 
 registry = [EASYWEIGHT_OT_delete_unselected_deform_groups]

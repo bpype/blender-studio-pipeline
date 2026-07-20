@@ -6,13 +6,20 @@ import pytest
 from .install_addons import disable_addon, install_addon
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def context_ap():
     context = bpy.context
     install_addon(context, addon_name='asset_pipeline')
     context.preferences.filepaths.save_version = 0
     yield context
     disable_addon('asset_pipeline')
+
+@pytest.fixture(scope='module')
+def context_ew():
+    context = bpy.context
+    install_addon(context, addon_name='easy_weight')
+    yield context
+    disable_addon('easy_weight')
 
 
 #############################

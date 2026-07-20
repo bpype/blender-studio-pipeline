@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,7 +12,7 @@ class EASYWEIGHT_OT_focus_deform_bones(Operator):
 
     bl_idname = "object.focus_deform_vgroups"
     bl_label = "Focus Deforming Bones"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
     def poll(cls, context):
@@ -32,8 +32,8 @@ class EASYWEIGHT_OT_focus_deform_bones(Operator):
                 continue
             reveal_bone(pb, select=True)
 
-        self.report({'INFO'}, "Un-hid and selected all deforming bones.")
-        return {'FINISHED'}
+        self.report({"INFO"}, "Un-hid and selected all deforming bones.")
+        return {"FINISHED"}
 
 
 registry = [EASYWEIGHT_OT_focus_deform_bones]

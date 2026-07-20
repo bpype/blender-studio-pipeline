@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -17,7 +17,7 @@ class EASYWEIGHT_OT_delete_unused_vertex_groups(Operator):
 
     bl_idname = "object.delete_unused_vgroups"
     bl_label = "Delete Unused Vertex Groups"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
     def poll(cls, context):
@@ -26,8 +26,8 @@ class EASYWEIGHT_OT_delete_unused_vertex_groups(Operator):
     def execute(self, context):
         deleted_names = delete_unused_vgroups(context.active_object)
 
-        self.report({'INFO'}, f"Deleted {len(deleted_names)} unused non-deform groups.")
-        return {'FINISHED'}
+        self.report({"INFO"}, f"Deleted {len(deleted_names)} unused non-deform groups.")
+        return {"FINISHED"}
 
 
 def delete_unused_vgroups(mesh_ob: Object) -> list[str]:
@@ -57,15 +57,15 @@ def get_used_vgroups(mesh_ob: Object) -> list[VertexGroup]:
     used_vgroups = []
     # Inputs of Modifiers, including GeoNodes.
     for modifier in mesh_ob.modifiers:
-        if modifier.type == 'NODES':
+        if modifier.type == "NODES":
             print(modifier.name)
             used_vgroups.extend(get_vgroups_used_by_geonodes(mesh_ob, modifier))
         else:
             used_vgroups.extend(get_referenced_vgroups(mesh_ob, modifier))
-            if modifier.type == 'ARMATURE':
+            if modifier.type == "ARMATURE":
                 used_vgroups.extend(get_deforming_vgroups(mesh_ob, modifier.object))
         # Masks of Physics settings.
-        if hasattr(modifier, 'settings'):
+        if hasattr(modifier, "settings"):
             used_vgroups.extend(get_referenced_vgroups(mesh_ob, modifier.settings))
 
     # Masks of Shape Keys.
@@ -113,14 +113,14 @@ def get_vgroups_used_by_constraints_of_dependent_objects(
     dependent_objs = [id for id in bpy.data.user_map()[mesh_ob] if type(id) == Object]
     for dependent_obj in dependent_objs:
         constraint_lists = [dependent_obj.constraints]
-        if dependent_obj.type == 'ARMATURE':
+        if dependent_obj.type == "ARMATURE":
             constraint_lists += [pb.constraints for pb in dependent_obj.pose.bones]
 
         for constraint_list in constraint_lists:
             for constraint in constraint_list:
                 if (
-                    hasattr(constraint, 'target')
-                    and hasattr(constraint, 'subtarget')
+                    hasattr(constraint, "target")
+                    and hasattr(constraint, "subtarget")
                     and constraint.target == mesh_ob
                     and constraint.subtarget
                 ):
@@ -134,7 +134,9 @@ def get_vgroups_used_by_constraints_of_dependent_objects(
     return used_vgroups
 
 
-def get_vgroups_used_by_geonodes(mesh_ob: Object, modifier: Modifier) -> list[VertexGroup]:
+def get_vgroups_used_by_geonodes(
+    mesh_ob: Object, modifier: Modifier
+) -> list[VertexGroup]:
     used_vgroups = []
     for identifier in geomod_get_input_identifiers(modifier):
         use_attrib = identifier + "_use_attribute"
@@ -147,14 +149,14 @@ def get_vgroups_used_by_geonodes(mesh_ob: Object, modifier: Modifier) -> list[Ve
 
 
 def geomod_get_input_identifiers(modifier: Modifier) -> set[str]:
-    if hasattr(modifier.node_group, 'interface'):
+    if hasattr(modifier.node_group, "interface"):
         # 4.0
         return {
             socket.identifier
             for socket in modifier.node_group.interface.items_tree
-            if socket.item_type == 'SOCKET'
-            and socket.in_out == 'INPUT'
-            and socket.socket_type != 'NodeSocketGeometry'
+            if socket.item_type == "SOCKET"
+            and socket.in_out == "INPUT"
+            and socket.socket_type != "NodeSocketGeometry"
         }
     else:
         # 3.6

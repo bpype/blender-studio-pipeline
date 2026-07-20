@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,34 +6,10 @@ import json
 from pathlib import Path
 
 import bpy
+from bpy.types import Context
+from rna_prop_ui import IDPropertyGroup
 
 from . import __package__ as base_package
-
-
-def get_addon_prefs(context=None):
-    if not context:
-        context = bpy.context
-
-    addons = context.preferences.addons
-    if base_package.startswith('bl_ext'):
-        # 4.2 and later
-        name = base_package
-    else:
-        # Pre-4.2
-        name = base_package.split(".")[0]
-
-    if name in addons:
-        prefs = addons[name].preferences
-        if prefs is None:
-            pass
-            # print("This happens when packaging the extension, due to the registration delay.")
-        return addons[name].preferences
-
-
-def update_prefs_on_file(self=None, context=None) -> tuple[str, dict]:
-    prefs = get_addon_prefs(context)
-    if not type(prefs).loading:
-        prefs.save_prefs_to_file()
 
 
 class PrefsFileSaveLoadMixin:
@@ -70,9 +46,10 @@ class PrefsFileSaveLoadMixin:
             if not prefs:
                 return 1
             prefs.load_prefs_from_file()
+
         bpy.app.timers.register(timer_func, first_interval=delay)
 
-    def prefs_to_dict_recursive(self, propgroup: 'IDPropertyGroup') -> dict:
+    def prefs_to_dict_recursive(self, propgroup: IDPropertyGroup) -> dict:
         """Recursively convert AddonPreferences to a dictionary.
         Note that AddonPreferences don't support PointerProperties,
         so this function doesn't either."""
@@ -82,15 +59,23 @@ class PrefsFileSaveLoadMixin:
 
         rna_class = None
         if isinstance(propgroup, bpy.types.AddonPreferences):
-            prop_dict = {key:getattr(propgroup, key) for key in propgroup.bl_rna.properties.keys() if key not in ('rna_type', 'bl_idname')}
+            prop_dict = {
+                key: getattr(propgroup, key)
+                for key in propgroup.bl_rna.properties.keys()
+                if key not in ("rna_type", "bl_idname")
+            }
         else:
             property_group_class_name = type(propgroup).__name__
             rna_class = bpy.types.PropertyGroup.bl_rna_get_subclass_py(
                 property_group_class_name
             )
-            if not hasattr(rna_class, 'properties'):
+            if not hasattr(rna_class, "properties"):
                 rna_class = None
-            prop_dict = {key:getattr(propgroup, key) for key in propgroup.bl_rna.properties.keys() if key not in ('rna_type')}
+            prop_dict = {
+                key: getattr(propgroup, key)
+                for key in propgroup.bl_rna.properties.keys()
+                if key not in ("rna_type")
+            }
 
         for key, value in prop_dict.items():
             if key in type(self).omit_from_disk:
@@ -103,7 +88,7 @@ class PrefsFileSaveLoadMixin:
                 if (
                     rna_class
                     and key in rna_class.properties
-                    and hasattr(rna_class.properties[key], 'enum_items')
+                    and hasattr(rna_class.properties[key], "enum_items")
                 ):
                     # Save enum values as string, not int.
                     ret[key] = rna_class.properties[key].enum_items[value].identifier
@@ -111,7 +96,7 @@ class PrefsFileSaveLoadMixin:
                     ret[key] = value
         return ret
 
-    def apply_prefs_from_dict_recursive(self, propgroup, data):
+    def apply_prefs_from_dict_recursive(self, propgroup: IDPropertyGroup, data: dict):
         for key, value in data.items():
             if not hasattr(propgroup, key):
                 # Property got removed or renamed in the implementation.
@@ -119,7 +104,7 @@ class PrefsFileSaveLoadMixin:
             if type(value) is list:
                 for elem in value:
                     collprop = getattr(propgroup, key)
-                    entry = collprop.get(elem['name'])
+                    entry = collprop.get(elem["name"])
                     if not entry:
                         entry = collprop.add()
                     self.apply_prefs_from_dict_recursive(entry, elem)
@@ -131,7 +116,7 @@ class PrefsFileSaveLoadMixin:
     @staticmethod
     def get_prefs_filepath() -> Path:
         addon_name = __package__.split(".")[-1]
-        return Path(bpy.utils.user_resource('CONFIG')) / Path(addon_name + ".json")
+        return Path(bpy.utils.user_resource("CONFIG")) / Path(addon_name + ".json")
 
     def save_prefs_to_file(self, _context=None):
         data_dict = self.prefs_to_dict_recursive(propgroup=self)
@@ -163,3 +148,29 @@ class PrefsFileSaveLoadMixin:
                 raise exc
             type(self).loading = False
         return success
+
+
+def get_addon_prefs(context: Context | None = None):
+    if not context:
+        context = bpy.context
+
+    addons = context.preferences.addons
+    if base_package.startswith("bl_ext"):
+        # 4.2 and later
+        name = base_package
+    else:
+        # Pre-4.2
+        name = base_package.split(".")[0]
+
+    if name in addons:
+        prefs = addons[name].preferences
+        if prefs is None:
+            pass
+            # print("This happens when packaging the extension, due to the registration delay.")
+        return addons[name].preferences
+
+
+def update_prefs_on_file(self=None, context: Context | None = None) -> tuple[str, dict]:
+    prefs = get_addon_prefs(context)
+    if not type(prefs).loading:
+        prefs.save_prefs_to_file()

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -11,7 +11,7 @@ from . import __package__ as base_package
 def get_addon_prefs(context=None):
     if not context:
         context = bpy.context
-    if base_package.startswith('bl_ext'):
+    if base_package.startswith("bl_ext"):
         # 4.2
         return context.preferences.addons[base_package].preferences
     else:
@@ -20,10 +20,10 @@ def get_addon_prefs(context=None):
 
 def poll_deformed_mesh_with_vgroups(operator, context, must_deform=True) -> bool:
     obj = context.active_object
-    if not obj or obj.type != 'MESH':
+    if not obj or obj.type != "MESH":
         operator.poll_message_set("No active mesh object.")
         return False
-    if must_deform and ('ARMATURE' not in [m.type for m in obj.modifiers]):
+    if must_deform and ("ARMATURE" not in [m.type for m in obj.modifiers]):
         operator.poll_message_set("This mesh is not deformed by an Armature modifier.")
         return False
     if not obj.vertex_groups:
@@ -57,7 +57,7 @@ def get_deforming_vgroups(mesh_ob: Object, arm_ob: Object = None) -> list[Vertex
 def get_deforming_armature(mesh_ob: Object) -> Object | None:
     """Return first Armature modifier's target object."""
     for mod in mesh_ob.modifiers:
-        if mod.type == 'ARMATURE':
+        if mod.type == "ARMATURE":
             return mod.object
 
 
@@ -66,14 +66,18 @@ def poll_weight_paint_mode(operator, context, with_rig=False, with_groups=False)
     operators should be available or not."""
 
     obj = context.active_object
-    if context.mode != 'PAINT_WEIGHT':
+    if context.mode != "PAINT_WEIGHT":
         operator.poll_message_set("Must be in Weight Paint mode.")
         return False
     if with_rig:
-        if 'ARMATURE' not in (m.type for m in obj.modifiers):
-            operator.poll_message_set("This mesh is not deformed by an Armature modifier.")
+        if "ARMATURE" not in (m.type for m in obj.modifiers):
+            operator.poll_message_set(
+                "This mesh is not deformed by an Armature modifier."
+            )
             return False
-        if not context.pose_object or context.pose_object != get_deforming_armature(obj):
+        if not context.pose_object or context.pose_object != get_deforming_armature(
+            obj
+        ):
             operator.poll_message_set(
                 "Couldn't find deforming armature, or it is not in pose mode."
             )
@@ -92,7 +96,7 @@ def reveal_bone(pose_bone: PoseBone, select=True):
     """
     arm_obj = pose_bone.id_data
 
-    if hasattr(arm_obj, 'layers'):
+    if hasattr(arm_obj, "layers"):
         # Blender 3.6 and below: Bone Layers.
         enabled_layers = [i for i in range(32) if arm_obj.layers[i]]
 
