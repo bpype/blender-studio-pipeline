@@ -44,6 +44,11 @@ def disable_addon(addon_name: str):
             'FINISHED'
         }, f"Failed to unregister {addon_name}."
 
+    repos = bpy.context.preferences.extensions.repos
+    repo = next((r for r in repos if r.name == addon_name), None)
+    if repo:
+        repos.remove(repo)
+
 
 def enable_this(addon_name):
     _repo_dir, addon_name, module_name = get_filepath_info(

@@ -1,8 +1,8 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from bpy.types import Menu, MESH_MT_vertex_group_context_menu
+from bpy.types import Context, Menu, MESH_MT_vertex_group_context_menu
 
 VG_CONTEXT_MENU = MESH_MT_vertex_group_context_menu
 
@@ -10,147 +10,169 @@ VG_CONTEXT_MENU = MESH_MT_vertex_group_context_menu
 class MESH_MT_vertex_group_batch_delete(Menu):
     bl_label = "Batch Delete"
 
-    def draw(self, context):
+    def draw(self, context: Context):
         layout = self.layout
-        layout.operator("object.vertex_group_remove", text="All Groups", icon='TRASH').all = True
         layout.operator(
-            "object.vertex_group_remove", text="All Unlocked Groups", icon='UNLOCKED'
+            "object.vertex_group_remove", text="All Groups", icon="TRASH"
+        ).all = True
+        layout.operator(
+            "object.vertex_group_remove", text="All Unlocked Groups", icon="UNLOCKED"
         ).all_unlocked = True
         layout.separator()
         layout.operator(
-            'object.delete_empty_deform_vgroups', text="Empty Deform Groups", icon='GROUP_BONE'
+            "object.delete_empty_deform_vgroups",
+            text="Empty Deform Groups",
+            icon="GROUP_BONE",
         )
         layout.operator(
-            'object.delete_unused_vgroups', text="Unused Non-Deform Groups", icon='BRUSH_DATA'
+            "object.delete_unused_vgroups",
+            text="Unused Non-Deform Groups",
+            icon="BRUSH_DATA",
         )
         layout.operator(
-            'object.delete_unselected_deform_vgroups',
+            "object.delete_unselected_deform_vgroups",
             text="Unselected Deform Groups",
-            icon='RESTRICT_SELECT_ON',
+            icon="RESTRICT_SELECT_ON",
         )
 
 
 class MESH_MT_vertex_group_symmetry(Menu):
     bl_label = "Symmetry"
 
-    def draw(self, context):
+    def draw(self, _context: Context):
         layout = self.layout
         layout.operator(
             "object.vertex_group_mirror",
             text="Mirror Active Group (Proximity)",
-            icon='AUTOMERGE_OFF',
+            icon="AUTOMERGE_OFF",
         ).use_topology = False
         layout.operator(
-            "object.vertex_group_mirror", text="Mirror Active Group (Topology)", icon='AUTOMERGE_ON'
+            "object.vertex_group_mirror",
+            text="Mirror Active Group (Topology)",
+            icon="AUTOMERGE_ON",
         ).use_topology = True
 
         layout.separator()
 
-        layout.operator("object.symmetrize_vertex_weights", text="Symmetrize Groups", icon='MOD_MIRROR')
+        layout.operator(
+            "object.symmetrize_vertex_weights",
+            text="Symmetrize Groups",
+            icon="MOD_MIRROR",
+        )
 
 
 class MESH_MT_vertex_group_sort(Menu):
     bl_label = "Sort"
 
-    def draw(self, context):
+    def draw(self, _context: Context):
         layout = self.layout
         layout.operator(
             "object.vertex_group_sort",
-            icon='SORTALPHA',
+            icon="SORTALPHA",
             text="By Name",
-        ).sort_type = 'NAME'
+        ).sort_type = "NAME"
         layout.operator(
             "object.vertex_group_sort",
-            icon='BONE_DATA',
+            icon="BONE_DATA",
             text="By Bone Hierarchy",
-        ).sort_type = 'BONE_HIERARCHY'
+        ).sort_type = "BONE_HIERARCHY"
 
 
 class MESH_MT_vertex_group_copy(Menu):
     bl_label = "Copy"
 
-    def draw(self, context):
+    def draw(self, context: Context):
         layout = self.layout
 
         obj = context.active_object
         if obj and obj.vertex_groups and obj.vertex_groups.active:
             layout.operator(
                 "object.vertex_group_copy",
-                icon='DUPLICATE',
+                icon="DUPLICATE",
                 text=f'Duplicate "{obj.vertex_groups.active.name}"',
             )
         layout.separator()
         layout.operator(
             "object.vertex_group_copy_to_selected",
             text="Synchronize Groups on Selected",
-            icon='RESTRICT_SELECT_OFF',
+            icon="RESTRICT_SELECT_OFF",
         )
 
 
 class MESH_MT_vertex_group_lock(Menu):
     bl_label = "Batch Lock"
 
-    def draw(self, context):
+    def draw(self, _context: Context):
         layout = self.layout
 
-        props = layout.operator("object.vertex_group_lock", icon='LOCKED', text="Lock All")
-        props.action, props.mask = 'LOCK', 'ALL'
-        props = layout.operator("object.vertex_group_lock", icon='UNLOCKED', text="Unlock All")
-        props.action, props.mask = 'UNLOCK', 'ALL'
         props = layout.operator(
-            "object.vertex_group_lock", icon='UV_SYNC_SELECT', text="Invert All Locks"
+            "object.vertex_group_lock", icon="LOCKED", text="Lock All"
         )
-        props.action, props.mask = 'INVERT', 'ALL'
+        props.action, props.mask = "LOCK", "ALL"
+        props = layout.operator(
+            "object.vertex_group_lock", icon="UNLOCKED", text="Unlock All"
+        )
+        props.action, props.mask = "UNLOCK", "ALL"
+        props = layout.operator(
+            "object.vertex_group_lock", icon="UV_SYNC_SELECT", text="Invert All Locks"
+        )
+        props.action, props.mask = "INVERT", "ALL"
 
 
 class MESH_MT_vertex_group_weight(Menu):
     bl_label = "Weights"
 
-    def draw(self, context):
+    def draw(self, _context: Context):
         layout = self.layout
 
         layout.operator(
             "object.vertex_group_remove_from",
-            icon='MESH_DATA',
+            icon="MESH_DATA",
             text="Remove Selected Verts from All Groups",
         ).use_all_groups = True
         layout.operator(
-            "object.vertex_group_clean", icon='BRUSH_DATA', text="Clean 0 Weights from All Groups"
-        ).group_select_mode = 'ALL'
+            "object.vertex_group_clean",
+            icon="BRUSH_DATA",
+            text="Clean 0 Weights from All Groups",
+        ).group_select_mode = "ALL"
 
         layout.separator()
 
         layout.operator(
             "object.vertex_group_remove_from",
-            icon='TRASH',
+            icon="TRASH",
             text="Remove All Verts from Selected Group",
         ).use_all_verts = True
 
         layout.separator()
 
         layout.operator(
-            'paint.weight_from_bones', text="Assign Automatic from Bones", icon='BONE_DATA'
-        ).type = 'AUTOMATIC'
+            "paint.weight_from_bones",
+            text="Assign Automatic from Bones",
+            icon="BONE_DATA",
+        ).type = "AUTOMATIC"
         op = layout.operator(
-            'object.vertex_group_normalize_all', text="Normalize Deform", icon='IPO_SINE'
+            "object.vertex_group_normalize_all",
+            text="Normalize Deform",
+            icon="IPO_SINE",
         )
-        op.group_select_mode = 'BONE_DEFORM'
+        op.group_select_mode = "BONE_DEFORM"
         op.lock_active = False
 
 
-def draw_misc(self, context):
+def draw_misc(self, _context: Context):
     layout = self.layout
-    layout.operator('object.focus_deform_vgroups', icon='ZOOM_IN')
+    layout.operator("object.focus_deform_vgroups", icon="ZOOM_IN")
 
 
-def draw_vertex_group_menu(self, context):
+def draw_vertex_group_menu(self, _context: Context):
     layout = self.layout
-    layout.row().menu(menu='MESH_MT_vertex_group_batch_delete', icon='TRASH')
-    layout.row().menu(menu='MESH_MT_vertex_group_symmetry', icon='ARROW_LEFTRIGHT')
-    layout.row().menu(menu='MESH_MT_vertex_group_sort', icon='SORTALPHA')
-    layout.row().menu(menu='MESH_MT_vertex_group_copy', icon='DUPLICATE')
-    layout.row().menu(menu='MESH_MT_vertex_group_lock', icon='LOCKED')
-    layout.row().menu(menu='MESH_MT_vertex_group_weight', icon='MOD_VERTEX_WEIGHT')
+    layout.row().menu(menu="MESH_MT_vertex_group_batch_delete", icon="TRASH")
+    layout.row().menu(menu="MESH_MT_vertex_group_symmetry", icon="ARROW_LEFTRIGHT")
+    layout.row().menu(menu="MESH_MT_vertex_group_sort", icon="SORTALPHA")
+    layout.row().menu(menu="MESH_MT_vertex_group_copy", icon="DUPLICATE")
+    layout.row().menu(menu="MESH_MT_vertex_group_lock", icon="LOCKED")
+    layout.row().menu(menu="MESH_MT_vertex_group_weight", icon="MOD_VERTEX_WEIGHT")
 
 
 registry = [

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2024-2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -22,7 +22,7 @@ from . import (
 bl_info = {
     "name": "Easy Weight",
     "author": "Demeter Dzadik",
-    "version": (1, 0, 9),
+    "version": (2, 0, 0),
     "blender": (4, 2, 0),
     "location": "Weight Paint->W key & Sidebar->Easy Weight",
     "description": "Operators to make weight painting easier.",
@@ -30,7 +30,6 @@ bl_info = {
     "doc_url": "https://studio.blender.org/tools/addons/easy_weight",
     "tracker_url": "https://projects.blender.org/studio/blender-studio-tools",
 }
-
 
 modules = [
     force_apply_mirror,
@@ -44,9 +43,10 @@ modules = [
     prefs,
     utils,
 ]
+ModuleType = type(modules[0])
 
 
-def register_unregister_modules(modules, register: bool):
+def register_unregister_modules(modules: list[ModuleType], register: bool):
     """Recursively register or unregister modules by looking for either
     un/register() functions or lists named `registry` which should be a list of
     registerable classes.
@@ -56,21 +56,23 @@ def register_unregister_modules(modules, register: bool):
     for mod in modules:
         if register:
             importlib.reload(mod)
-        if hasattr(mod, 'registry'):
+        if hasattr(mod, "registry"):
             for class_to_register in mod.registry:
                 try:
                     register_func(class_to_register)
                 except Exception as e:
-                    un = 'un' if not register else ''
-                    print(f"Warning: Failed to {un}register class: {class_to_register.__name__}")
+                    un = "un" if not register else ""
+                    print(
+                        f"Warning: Failed to {un}register class: {class_to_register.__name__}"
+                    )
                     print(e)
 
-        if hasattr(mod, 'modules'):
+        if hasattr(mod, "modules"):
             register_unregister_modules(mod.modules, register)
 
-        if register and hasattr(mod, 'register'):
+        if register and hasattr(mod, "register"):
             mod.register()
-        elif hasattr(mod, 'unregister'):
+        elif hasattr(mod, "unregister"):
             mod.unregister()
 
 
