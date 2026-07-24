@@ -266,8 +266,9 @@ def transfer_modifier_props(context: Context, source_mod: Modifier, target_mod: 
             for socket_name in props.inputs.keys():
                 source_socket = getattr(props.inputs, socket_name, None)
                 target_socket = getattr(target_props.inputs, socket_name, None)
-                if source_socket and target_socket and hasattr(source_socket, "value"):
-                    target_socket.value = source_socket.value
+                if source_socket and target_socket:
+                    for socket_prop in source_socket.keys():
+                        target_socket[socket_prop] = source_socket[socket_prop]
         else:
             for key, value in source_mod.items():
                 typ = type(getattr(target_mod, f'["{key}"]'))
