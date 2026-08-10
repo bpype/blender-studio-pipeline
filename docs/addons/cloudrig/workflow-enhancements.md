@@ -28,6 +28,7 @@ The operator can also be found under 3D View Header -> Pose -> Transform -> Scal
 
 In the 3D View only, this hotkey masks Blender's built-in Rename operator to provide more convenient renaming in the case of symmetrically named objects and bones. Renaming of the opposite item can be toggled off. You will also see a preview of the result of the renaming, which may not be what you asked for, as the desired name might be occupied. In this case, the names are incremented with CloudRig's name increment rules, as opposed to Blender's .001 suffixes.
 
+Additionally, renaming bones this way will preserve any references to those bones in metarig component parameters.
 
 ## Better Duplicate & Extrude
 - **E** (Extrude) and **Shift+D** (Duplicate) increment bone names:
@@ -105,9 +106,11 @@ Pops up a list of collections that were [marked](organizing-bones#selection-sets
 Available with the rig, even if a user doesn't have CloudRig installed.
 
 ## Improve Link/Append
-This user preference tweaks Blender's linking and appending behaviour to make it slightly more convenient:
+This user preference tweaks Blender's linking and appending behaviour to make it slightly more convenient.
 - When linking a collection which contains armatures, the collection and the armatures become automatically overridden and selected.
 - When linking or appending armatures which have runnable Python scripts attached, they are automatically executed.
+
+You can configure whether you'd like this to take effect when linking ANY armature, or only CloudRig armatures, or simply disable it altogether.
 
 ## Bone Chain from Edge Loops
 This operator is found in Mesh Edit mode under the Add menu, and it's useful for quickly creating a chain of bones, mainly for tube shapes like fingers, tails, hair strands, tentacles, spikes, etc. Just select the edge loops and run it. A pop-up will ask for all the info it needs;
