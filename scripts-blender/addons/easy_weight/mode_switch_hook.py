@@ -144,22 +144,25 @@ def get_armature_of_meshob(obj: Object):
 
 
 def set_brush_prefs():
-    if bpy.app.version >= (4, 3, 0):
-        # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file
-        # until they are first accessed, so let's do that when needed. We also can't check
-        # whether these brushes exist without looping over all of them.
-        for brush_name in ("Blur", "Paint"):
-            brush = next(
-                (
-                    brush
-                    for brush in bpy.data.brushes
-                    if brush.use_paint_weight and brush.name == brush_name
-                ),
-                None,
-            )
-            if brush_name == "Paint" and brush:
-                brush.blend = "ADD"
     prefs = get_addon_prefs()
+    if not prefs.always_unify_brush_settings:
+        return
+
+    if (4, 3, 0) <= bpy.app.version < (5, 3, 0) and prefs.set_add_blend_mode:
+        # Since the Brush Assets in Blender 4.3, brushes are not local to the .blend file
+        # until they are first accessed, so let's do that when needed.
+        paint_brush = next(
+            (
+                brush
+                for brush in bpy.data.brushes
+                if brush.use_paint_weight and brush.name == "Paint"
+            ),
+            None,
+        )
+        if paint_brush:
+            paint_brush.blend = "ADD"
+
+    # Fire update callbacks to push the values onto every WP brush.
     prefs.global_front_faces_only = prefs.global_front_faces_only
     prefs.global_accumulate = prefs.global_accumulate
     prefs.global_falloff_shape_sphere = prefs.global_falloff_shape_sphere

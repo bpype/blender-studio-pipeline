@@ -25,14 +25,23 @@ Powerful reset operator with a pop-up to specify what you want to reset:
 - **Transforms**: If enabled, resets Location/Rotatoin/Scale of bones.
 - **Custom Properties**: If enabled, resets custom properties of bones to their default values.
 
+#### Hide UI During Transformations
+Can be enabled for a minor performance boost while interacting with the rig. This sadly also causes the scrollbar to reset.
+
+#### Context Sensitive Mode
+When enabled, only those generated rig settings will be displayed, which relate to any selected bones. This reduces UI clutter. If all bones are deselected, all properties are displayed, rather than none of them.
+
+#### Show Solo
+When enabled, display a Solo button next to any Bone Collection visibility buttons. Such buttons can be added by the rigger via the metarig.
+
 #### UI Edit Mode
 This option is aimed at riggers; It is only available on Metarigs, and only with CloudRig installed. It allows the rigger to create their own interface for custom properties, or in fact any properties, nested into panels, labels, and rows. To learn how to use this feature, see the [Properties UI](properties-ui) page.
 
 #### IK/FK Switch
-If your rig containts any IK/FK components, their IK/FK switch properties will appear here.  
-While you can simply use the slider to switch between FK and IK control schemes, this will not automatically preserve the existing pose.  
+If your rig containts any IK/FK components, their IK/FK switch properties will appear here.
+While you can simply use the slider to switch between FK and IK control schemes, this will not automatically preserve the existing pose.
 <img src="/media/addons/cloudrig/snap_bake_popup.jpg" width=400>
-Next to each slider (that supports it), is a **Snap & Bake** operator. This lets you snap the bones of the IK controls to the FK controls or vice versa.  This will always insert a keyframe on all transforms of the affected bones, as well as the slider.  
+Next to each slider (that supports it), is a **Snap & Bake** operator. This lets you snap the bones of the IK controls to the FK controls or vice versa.  This will always insert a keyframe on all transforms of the affected bones, as well as the slider.
 You can also do this over a frame range by enabling the **Bake** option.
 
 

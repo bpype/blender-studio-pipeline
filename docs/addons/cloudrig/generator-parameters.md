@@ -1,7 +1,12 @@
 # Generator Parameters
 These parameters are found under Properties->Armature->CloudRig->Generation, and are the high level options used for generating a rig from a metarig.
 
-<img src="/media/addons/cloudrig/generator_parameters.png" width=450>  
+<img src="/media/addons/cloudrig/generator_parameters.png" width=450>
+
+## General
+
+### Advanced Mode
+Reveal options deemed not important enough for beginner users, as well as parameters which are forced to a certain value and cannot be changed.
 
 ### Target Rig
 The armature object used as the generation target. If empty, a new one will be created, and assigned here. You may rename the object.
@@ -13,14 +18,18 @@ You may specify a text datablock stored in this .blend file, to be executed as a
 This option only appears when your metarig contains [FK Chain](cloudrig-types#chain-fk) components. If this option is enabled, a test Action will be generated with keyframes defined by the generated rig's hierarchy and the parameters of each FK Chain component. The purpose of this Action is to help you in a common weight painting workflow, where the character is rotated on each of their joints to test deformations. If you want to make manual tweaks to this action, make sure to disable this option, so that your keyframe tweaks don't get overwritten when you regenerate the rig.
 
 ### Root Bone
-Name of the root bone. While optional, some rig features such as FK Hinge require the rig to have a root bone. This is not a bone selector, because this option will actually affect the metarig, by creating a bone with the specified name. After that, you're free to fully customize this root bone, with two caveats: 
-1) If you want to rename the bone, you also have to change the name in this input box. 
+Name of the root bone. While optional, some rig features such as FK Hinge require the rig to have a root bone. This is not a bone selector, because this option will actually affect the metarig, by creating a bone with the specified name. After that, you're free to fully customize this root bone, with two caveats:
+1) If you want to rename the bone, you also have to change the name in this input box.
 2) You cannot parent this bone to another bone. The parenting will be cleared. This bone should be the true root.
 
 ### Properties Bone
 Name of the default properties bone to create, when necessary. For example, for a limb rig with IK/FK sliders, those sliders are properties, which need to be stored somewhere. This setting specifies a bone name to create as fallback for that storage. If no properties are needed by the rig, this bone won't be created.
 
-# Custom Shapes
+## Log
+This panel warns about potential issues detected in your rig that are likely to be unintentional.
+See the [Troubleshooting](troubleshooting) page for more info.
+
+## Appearance: Custom Shapes
 
 ### Collection
 The collection where rig widgets will be stored. This collection shouldn't contain anything else, since this is also used for detecting duplicate or unused widgets. If not specified, it will be created. You may rename the collection. If the refresh icon is enabled, widgets will be force-reloaded each time you regenerate.
@@ -33,6 +42,9 @@ When disabled, only the properties or custom shapes will be preserved on the gen
 ### Base Wire Width
 Defaults to 0.5, this value is added to the Wire Width of all bones in the generated rig. You can reduce it to 0 if you find the lines too thick, but this is not recommended for the sake of users with poor eyesight.
 
+## Appearance: Bone Color Names
+This panel lets you associate names with Blender's 20 bone color presets. These names will be displayed in CloudRig UI elements that let you choose colors. This is useful as a reminder to yourself about which colors you want to use for what purpose, to help maintain consistency within a rig. You can also assign a couple of presets via the button in the header. Adding your own presets is not currently possible.
+
 # Rig Components
 
 This panel shows a hierarchy of your rig components. Selecting an entry will select the corresponding bone. The list also defines the generation order, which can matter in some cases. You can re-order elements at the same hierarchy depth (ie. siblings). The hierarchy itself is defined by bone parenting in the metarig. You can also disable elements, which will cause them and their children to be ignored by the generator.
@@ -42,6 +54,3 @@ Removing an entry means un-assigning the component type from the given bone.
 
 # Actions
 This panel lets you configure automated Action constraint set-ups, which is incredibly useful for bone-based face rigging. See the [Actions](actions) page for more details.
-
-# Generation Log
-This panel warns you of things in your rig that are likely to be unintentional. Of course it can't catch everything, and could even have some false positives sometimes (hopefully very rarely). See the [Troubleshooting](troubleshooting) page for more info.

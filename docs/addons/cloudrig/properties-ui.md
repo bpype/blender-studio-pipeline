@@ -5,7 +5,7 @@ CloudRig lets you build a custom rig UI, containing built-in properties, custom 
 ## What are Custom Properties?
 
 In Blender, you can define [Custom Properties](https://docs.blender.org/manual/en/latest/files/custom_properties.html) on objects or bones. You can specify their name, min/max/default values, tooltip, whether they're a floating point number, a whole number, a boolean toggle, a color, and so on.
-You can then use [Drivers](https://docs.blender.org/manual/en/latest/animation/drivers/index.html) to connect these properties to your character and/or rig, to allow animators to intuitively configure things.  
+You can then use [Drivers](https://docs.blender.org/manual/en/latest/animation/drivers/index.html) to connect these properties to your character and/or rig, to allow animators to intuitively configure things.
 
 ##### Use case examples:
 - An integer property to swap between different outfits, by driving the visibility of objects and modifiers.
@@ -35,26 +35,32 @@ With CloudRig's UI editor you can:
 - Display a custom name for each value of an Integer or Boolean property.
 - Display custom icons for the True/False states of a Boolean property.
 
+#### General Features
+There are a number of functionalities available in all rigs, see the [Rig UI](rig-ui#settings) page for details.
+
 ## UI Editing Workflow
 
-##### Step 1: Enabling UI Edit Mode
+#### Step 1: Enabling UI Edit Mode
 
 Let's say you want to add a property to your rig's Settings panel. You can find CloudRig's Properties UI Editor by selecting any armature with the CloudRig setting enabled (ie. a metarig), and navigating to: 3D View -> Sidebar (N-panel) -> CloudRig -> Settings -> **UI Edit Mode**.
 
 <img src="/media/addons/cloudrig/props_ui_edit_mode.png" width=800>
 
-Enabling this mode reveals (among other things) the "**Add Property to UI**" button. This pops up the following panel, where you can fill in all the info about what/where/how you want to add to the UI. These are all explained in the next section.
+Enabling this mode reveals a couple of buttons:
+- **Add Property to UI**: Pops up a panel where you can fill in all the info about what/where/how you want to add to the UI. These are all explained in Step 2 below.
+- **Ensure Bone Collections UI**: Creates a Bone Collections panel containing visibility toggle buttons for all bone collections. You can then remove the ones you don't want animators to access. Running this operation again will not affect top-level collections which already have a button, nor their children.
+
 
 ---
 
-##### Step 2: Adding (or editing) a UI Element
+#### Step 2: Adding (or editing) a UI Element
 Whether you're adding a new UI element or editing an existing one, you will see this same pop-up:
 <img src="/media/addons/cloudrig/props_ui_add_prop_simple.png" width=800>
 
 - **Bone icon**: When enabled, it lets you easily select a **bone** as the property owner, rather than having to type in the RNA Path of the bone like `pose.bones["Root"]`.
 - **Collection icon**: When enabled, it lets you easily select a **bone collection** as the property owner, rather than having to type in the RNA Path of the collection like `data.collections_all["IK Controls"]`.
 - **Property Owner**: When neither of the previous two options are enabled, you can type in the RNA Path to any property. For example, `pose.bones["Spine"].constraints["Stretch To"]` will point at the Stretch To constraint on the Spine bone.
-- **Property Name**: Name of the property on the selected property owner. 
+- **Property Name**: Name of the property on the selected property owner.
     - To continue the above constraint example, you could type `influence` in this field, to simply add the constraint's influence slider to the UI.
     - If the chosen property owner has Custom Properties, a drop-down selector will be shown of existing ones.
         - **Plus icon**: Instead of using the drop-down selector, type in anything, allowing you to create a new property.
@@ -105,7 +111,7 @@ Along with the gear cog, we have a few other icons next to each property while U
 
 ---
 
-##### Step 5: Editing a UI Element
+#### Step 5: Editing a UI Element
 
 The pencil icon next to a property lets you edit the property's CloudRig UI settings:
 
@@ -129,7 +135,7 @@ Of course at the end of the day, these properties don't do anything on their own
 
 ## Example Use Case: Bone Collections
 
-Besides outfit swapping, you can also use this system to make a grid UI of Bone Collections, like so:  
+Besides outfit swapping, you can also use this system to make a grid UI of Bone Collections, like so:
 <img src="/media/addons/cloudrig/props_ui_bone_collections.png" width=600>
 
 Which is made super convenient by using the Collection toggle in the top-right, which lets you select collections by name, and assigns sensible defaults so you don't need to do anything else:

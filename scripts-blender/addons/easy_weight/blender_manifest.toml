@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "easyweight"
-version = "1.1.0"
+version = "1.1.1"
 name = "EasyWeight"
 tagline = "Weight Painting Workflow Boosters"
 maintainer = "Demeter Dzadik <demeter@blender.org>"

@@ -66,7 +66,7 @@ All CloudRig component types share some basic functionality, like letting you ch
 
 
 - #### Advanced Mode
-    Technically a user preference, enabling this lets you see options that are deemed not important enough for beginner users, as well as parameters which are forced to a certain value and cannot be changed.
+    See [Generator Parameters](generator-parameters#advanced-mode). This option is also displayed here for convenience.
 - #### [Constraint Relinking](constraint-relinking)
     On any component, you can add constraints to the metarig bones. On generation, these constraints will be moved to the generated bones that make the most sense for a given component type.
 
