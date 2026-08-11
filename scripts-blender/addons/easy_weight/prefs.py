@@ -49,6 +49,12 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         default=True,
         update=update_prefs_on_file,
     )
+    always_unify_brush_settings: BoolProperty(
+        name="Always Apply Brush Settings",
+        description="Apply global brush settings when entering Weight Paint mode",
+        default=True,
+        update=update_prefs_on_file,
+    )
 
     def update_auto_clean(self, _context: Context):
         update_prefs_on_file()
@@ -112,6 +118,12 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         update=update_unified_strength,
     )
 
+    set_add_blend_mode: BoolProperty(
+        name="Additive Paint",
+        description="Set the Blend Mode of the `Paint` brush to `Add`",
+        default=True,
+    )
+
     def draw(self, context: Context):
         layout = self.layout
         layout.use_property_split = True
@@ -125,6 +137,35 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
         col.prop(self, "always_multipaint")
         col.prop(self, "always_xray")
         col.prop(self, "always_reveal_armature")
+
+        brush_col = layout.column(align=True)
+        brush_header, brush_panel = brush_col.panel(
+            "EasyWeight Unified Brush Settings", default_closed=True
+        )
+        header_row = brush_header.row()
+        header_row.label(text="Unified Brush Settings")
+        if brush_panel:
+            col = brush_panel.column(align=True)
+            col.prop(self, "always_unify_brush_settings")
+            col.prop(self, "global_front_faces_only")
+            col.prop(self, "global_accumulate")
+            col.prop(self, "global_unified_strength")
+            if bpy.app.version < (5, 3, 0):
+                col.prop(self, "set_add_blend_mode")
+            text, icon = ("Sphere", "SPHERE") if self.global_falloff_shape_sphere else ("Circle", "MESH_CIRCLE")
+            split = col.row().split(factor=0.4)
+            split.use_property_split = False
+            row = split.row()
+            row.alignment = 'RIGHT'
+            row.label(text="Falloff Shape: ")
+            split.prop(
+                self,
+                "global_falloff_shape_sphere",
+                text=text,
+                icon=icon,
+                invert_checkbox=self.global_falloff_shape_sphere,
+                toggle=True,
+            )
 
         main_col = layout.column(align=True)
         hotkey_header, hotkey_panel = main_col.panel(
