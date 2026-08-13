@@ -69,8 +69,7 @@ def query_yes_no(question, default="yes"):
 
     The "answer" return value is True for "yes" or False for "no".
     """
-    valid = {"yes": True, "y": True, "ye": True,
-             "no": False, "n": False}
+    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
     if default is None:
         prompt = " [y/n] "
     elif default == "yes":
@@ -92,8 +91,8 @@ def query_yes_no(question, default="yes"):
         elif choice in valid:
             return valid[choice]
         else:
-            sys.stdout.write("Please respond with 'yes' or 'no' "
-                             "(or 'y' or 'n').\n")
+            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+
 
 def parse_thumbnail_size(size_str):
     """Turn various size formats into a width:height pair for the ffmpeg scale filter.
@@ -236,7 +235,7 @@ ffmpeg_command = [
     '-vf',
     f'fps=1/{interval},scale={thumbnail_size}',
     '-copyts',  # With this option -to refers to the original timestamp
-    f'{tmp_dir.name}/%3d.jpg'
+    f'{tmp_dir.name}/%3d.jpg',
 ]
 
 # Generate scaled thumbnails from video file
@@ -251,7 +250,7 @@ montage_command = [
     '-tile',
     f'{args.grid_size}',
     f'{tmp_dir.name}/*.jpg',
-    f'{args.output_file}'
+    f'{args.output_file}',
 ]
 
 # Build grid from the thumbnails stored in tmp_dir
