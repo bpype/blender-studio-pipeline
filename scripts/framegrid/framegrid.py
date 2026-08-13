@@ -206,7 +206,9 @@ ffmpeg_command = [
 ]
 
 # Generate scaled thumbnails from video file
-subprocess.call(ffmpeg_command)
+if subprocess.call(ffmpeg_command) != 0:
+    print('Thumbnail generation failed, no grid was created.')
+    sys.exit(1)
 
 montage_command = [
     toolset['montage'],
