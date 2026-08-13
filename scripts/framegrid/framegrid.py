@@ -129,9 +129,10 @@ def get_sec(time_str):
 
 def get_time_str(time_in_seconds: float):
     hours = int(time_in_seconds // 3600)
-    minutes = int(time_in_seconds // 60)
-    seconds = time_in_seconds - (60 * minutes)
-    return f'{hours:02d}:{minutes:02d}:{seconds:02.5f}'
+    minutes = int((time_in_seconds % 3600) // 60)
+    seconds = time_in_seconds - (3600 * hours) - (60 * minutes)
+    return f'{hours:02d}:{minutes:02d}:{seconds:08.5f}'
+
 
 toolset = {
     'ffmpeg': os.environ.get('FFMPEG_BIN', 'ffmpeg'),
