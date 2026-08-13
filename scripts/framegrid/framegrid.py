@@ -37,7 +37,12 @@ import tempfile
 parser = argparse.ArgumentParser(description='Generate film grids.')
 parser.add_argument('-i', '--in_file', help='Input movie file', required=True)
 parser.add_argument('-g', '--grid_size', help='Grid size, for example 5x5', default='5x5')
-parser.add_argument('-t', '--thumbnail_size', help='Thumbnail size', default='320:-1')
+parser.add_argument(
+    '-t',
+    '--thumbnail_size',
+    help='Thumbnail size, for example 320, 320px or 320x180 (height defaults to auto)',
+    default='320:-1',
+)
 parser.add_argument('-o', '--output_file', help='Output file path', default='out_grid.png')
 parser.add_argument('-y', '--skip_confirmation', help='Skip confirmation', action='store_true')
 parser.add_argument('-ss', '--ss', help='Trim start', default='00:00:00')
@@ -89,6 +94,32 @@ def query_yes_no(question, default="yes"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
+def parse_thumbnail_size(size_str):
+    """Turn various size formats into a width:height pair for the ffmpeg scale filter.
+
+    Accepted forms are '320', '320px', '320x180' and '320:180'. Treat a single value
+    as width, and make height be -1, so ffmpeg keeps the original aspect ratio.
+    """
+    tokens = size_str.strip().lower().replace('px', '').replace('x', ':').split(':')
+    if len(tokens) > 2:
+        print(f'Invalid input for --thumbnail_size: {size_str}')
+        sys.exit()
+
+    dimensions = []
+    for token in tokens:
+        token = token.strip()
+        try:
+            dimensions.append(int(token))
+        except ValueError:
+            print(f'Invalid input for --thumbnail_size: {size_str}')
+            sys.exit()
+
+    if len(dimensions) == 1:
+        # there is only one number, treat it as width, and compute height automatically
+        dimensions.append(-1)
+
+    return f'{dimensions[0]}:{dimensions[1]}'
 
 
 def get_sec(time_str):
@@ -158,6 +189,8 @@ except ValueError:
     print(f'Invalid input for --grid_size: {args.grid_size}')
     sys.exit()
 
+thumbnail_size = parse_thumbnail_size(args.thumbnail_size)
+
 info = gather_video_info()
 video_duration = float(info['format']['duration'])
 
@@ -178,7 +211,7 @@ print('Summary:')
 print(f'Video duration:          {video_duration} seconds')
 print(f'Thumbnails count:        {thumbnails_count}')
 print(f'Thumbnail interval:      every {interval} second')
-print(f'Thumbnail resolution:    {args.thumbnail_size}')
+print(f'Thumbnail resolution:    {thumbnail_size}')
 print(f'Video start:             {video_start_time}')
 print(f'Video end:               {video_end_time}')
 
@@ -200,7 +233,7 @@ ffmpeg_command = [
     '-to',
     f'{video_end_time}',
     '-vf',
-    f'fps=1/{interval},scale={args.thumbnail_size}',
+    f'fps=1/{interval},scale={thumbnail_size}',
     '-copyts',  # With this option -to refers to the original timestamp
     f'{tmp_dir.name}/%3d.jpg'
 ]
