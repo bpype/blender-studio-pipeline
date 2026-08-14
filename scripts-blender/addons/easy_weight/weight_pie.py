@@ -141,7 +141,7 @@ class EASYWEIGHT_MT_PIE_easy_weight_overlays(Menu):
         prefs = get_addon_prefs(context)
 
         # 1) < X-Ray
-        if context.pose_object.show_in_front:
+        if hasattr(context.pose_object, 'show_in_front') and context.pose_object.show_in_front:
             pie.prop(
                 context.pose_object,
                 "show_in_front",
