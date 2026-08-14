@@ -235,7 +235,7 @@ ffmpeg_command = [
     '-vf',
     f'fps=1/{interval},scale={thumbnail_size}',
     '-copyts',  # With this option -to refers to the original timestamp
-    f'{tmp_dir.name}/%3d.jpg',
+    f'{tmp_dir.name}/%8d.jpg',
 ]
 
 # Generate scaled thumbnails from video file
