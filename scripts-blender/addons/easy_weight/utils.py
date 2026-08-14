@@ -37,29 +37,30 @@ def delete_vgroups(mesh_ob, vgroups: list[VertexGroup]):
         mesh_ob.vertex_groups.remove(vgroup)
 
 
-def get_deforming_vgroups(mesh_ob: Object, arm_ob: Object = None) -> list[VertexGroup]:
-    """Get the vertex groups of a mesh object that correspond to a deform bone in the given armature."""
+def get_deforming_vgroups(mesh_ob: Object, arm_obs: list[Object] | None = None) -> list[VertexGroup]:
+    """Get the vertex groups of a mesh object that correspond to a deform bone in any of the given armatures."""
 
-    if not arm_ob:
-        arm_ob = get_deforming_armature(mesh_ob)
-    if not arm_ob:
+    if not arm_obs:
+        arm_obs = get_deforming_armatures(mesh_ob)
+    if not arm_obs:
         return []
 
-    deforming_vgroups = []
+    deforming_vgroup_names = set()
 
-    for bone in arm_ob.data.bones:
-        if bone.name in mesh_ob.vertex_groups and bone.use_deform:
-            deforming_vgroups.append(mesh_ob.vertex_groups[bone.name])
+    for arm_ob in arm_obs:
+        for bone in arm_ob.data.bones:
+            if bone.name in mesh_ob.vertex_groups and bone.use_deform:
+                deforming_vgroup_names.add(bone.name)
 
-    return deforming_vgroups
+    return [mesh_ob.vertex_groups[name] for name in deforming_vgroup_names]
 
-
-def get_deforming_armature(mesh_ob: Object) -> Object | None:
-    """Return first Armature modifier's target object."""
+def get_deforming_armatures(mesh_ob: Object) -> list[Object]:
+    """Return all Armature modifiers' target objects."""
+    arm_obs = []
     for mod in mesh_ob.modifiers:
-        if mod.type == "ARMATURE":
-            return mod.object
-
+        if mod.type == "ARMATURE" and mod.object:
+            arm_obs.append(mod.object)
+    return arm_obs
 
 def poll_weight_paint_mode(operator, context, with_rig=False, with_groups=False):
     """Function used for operator poll functions, ie. to determine whether
@@ -70,14 +71,13 @@ def poll_weight_paint_mode(operator, context, with_rig=False, with_groups=False)
         operator.poll_message_set("Must be in Weight Paint mode.")
         return False
     if with_rig:
-        if "ARMATURE" not in (m.type for m in obj.modifiers):
+        arm_obs = get_deforming_armatures(obj)
+        if not arm_obs:
             operator.poll_message_set(
                 "This mesh is not deformed by an Armature modifier."
             )
             return False
-        if not context.pose_object or context.pose_object != get_deforming_armature(
-            obj
-        ):
+        if not context.pose_object or context.pose_object not in arm_obs:
             operator.poll_message_set(
                 "Couldn't find deforming armature, or it is not in pose mode."
             )
