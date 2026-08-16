@@ -40,5 +40,5 @@ def order_midpoint(lo: str, hi: str | None) -> str:
     lo_int = _ord_to_int(lo, n)
     hi_int = _ord_to_int(hi, n)
     if hi_int <= lo_int:
-        raise ValueError(f"order_midpoint called with lo >= hi: {lo!r} >= {hi!r}")
+        raise ValueError(f"order_midpoint called with lo >= hi: {lo!r} >= {hi!r}. This can happen if you tried re-ordering modifiers owned by a different task layer.")
     return _int_to_ord((lo_int + hi_int) // 2, n)

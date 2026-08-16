@@ -80,7 +80,12 @@ class PrefsFileSaveLoadMixin:
         for key, value in prop_dict.items():
             if key in type(self).omit_from_disk:
                 continue
-            if type(value) in (list, bpy.types.bpy_prop_collection_idprop):
+            if hasattr(bpy.types, 'bpy_prop_collection_idprop'):
+                # Blender 5.x
+                coll_prop_type = bpy.types.bpy_prop_collection_idprop
+            else:
+                coll_prop_type = bpy.types.bpy_prop_collection
+            if type(value) in (list, coll_prop_type):
                 ret[key] = [self.prefs_to_dict_recursive(elem) for elem in value]
             elif type(value) is IDPropertyGroup:
                 ret[key] = self.prefs_to_dict_recursive(value)

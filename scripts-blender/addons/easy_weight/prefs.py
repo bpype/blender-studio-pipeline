@@ -93,9 +93,13 @@ class EASYWEIGHT_addon_preferences(PrefsFileSaveLoadMixin, bpy.types.AddonPrefer
 
     def update_unified_strength(self, context: Context):
         update_prefs_on_file()
-        context.tool_settings.weight_paint.unified_paint_settings.use_unified_strength = (
-            self.global_unified_strength
-        )
+        if hasattr(context.tool_settings, 'unified_paint_settings'):
+            # Blender 4.x
+            owner = context.tool_settings
+        else:
+            # Blender 5.x
+            owner = context.tool_settings.weight_paint
+        owner.unified_paint_settings.use_unified_strength = self.global_unified_strength
 
     global_front_faces_only: BoolProperty(
         name="Front Faces Only",
