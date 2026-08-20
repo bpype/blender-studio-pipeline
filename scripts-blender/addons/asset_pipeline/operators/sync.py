@@ -197,6 +197,7 @@ class SharedPush:
 
         sync_execute_push(self, context)
         profiler.log_all()
+        self.report_info()
         return {'FINISHED'}
 
     def report_info(self):
