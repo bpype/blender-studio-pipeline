@@ -84,7 +84,7 @@ class Preserve:
                 continue
 
             if indexes.get('uv_layer'):
-                uv_layer = obj.data.uv_layers[indexes.get('uv_layer')]
+                uv_layer = obj.data.uv_layers.get(indexes.get('uv_layer'))
                 if uv_layer:
                     obj.data.uv_layers.active = uv_layer
 

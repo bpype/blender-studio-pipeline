@@ -51,7 +51,7 @@ def attribute_clean(obj: Object):
 
     for attribute_name_to_remove in reversed(attributes_to_remove):
         attribute_to_remove = obj.data.attributes.get(attribute_name_to_remove)
-        logger.debug(f"Cleaning attribute {attribute.name}")
+        logger.debug(f"attribute_clean: Removing {attribute_name_to_remove}")
         obj.data.attributes.remove(attribute_to_remove)
 
 
@@ -71,13 +71,13 @@ def init_attributes(scene: Scene, obj: Object):
         return
     transfer_data = obj.transfer_data_ownership
     td_type_key = constants.ATTRIBUTE_KEY
-    for atttribute in attributes_get_editable(obj.data.attributes):
+    for attribute in attributes_get_editable(obj.data.attributes):
         # Only add new ownership transfer_data_item if vertex group doesn't have an owner
-        ownership_data = find_ownership_data(transfer_data, atttribute.name, td_type_key)
+        ownership_data = find_ownership_data(transfer_data, attribute.name, td_type_key)
         if not ownership_data:
-            task_layer_owner, auto_surrender = get_transfer_data_owner(asset_pipe, td_type_key, atttribute.name)
+            task_layer_owner, auto_surrender = get_transfer_data_owner(asset_pipe, td_type_key, attribute.name)
             asset_pipe.add_temp_transfer_data(
-                name=atttribute.name,
+                name=attribute.name,
                 owner=task_layer_owner,
                 type=td_type_key,
                 obj_name=obj.name,
@@ -125,6 +125,19 @@ def transfer_attribute(
             setattr(target_data, key, getattr(source_data, key))
 
 
+def attribute_value_field_name(attribute: Attribute) -> str | None:
+    """Returns the name of the property on an attribute's data items that
+    holds its actual value (e.g. 'value', 'vector', 'color'), derived from
+    RNA, so it stays correct if Blender adds new attribute types.
+    """
+    if not len(attribute.data):
+        return None
+    keys = set(attribute.data[0].bl_rna.properties.keys()) - set(Attribute.bl_rna.properties.keys())
+    # Color types also expose 'color_srgb', an sRGB-converted alias of 'color'.
+    keys.discard('color_srgb')
+    return next(iter(keys), None)
+
+
 def proximity_transfer_single_attribute(
     source_obj: Object,
     target_obj: Object,
@@ -153,19 +166,12 @@ def proximity_transfer_single_attribute(
     # )
     logger = logging.get_logger()
 
-    data_sfx = {
-        'INT8': 'value',
-        'INT': 'value',
-        'FLOAT': 'value',
-        'FLOAT2': 'vector',
-        'BOOLEAN': 'value',
-        'STRING': 'value',
-        'BYTE_COLOR': 'color',
-        'FLOAT_COLOR': 'color',
-        'FLOAT_VECTOR': 'vector',
-    }
-
-    data_sfx = data_sfx[source_attribute.data_type]
+    data_sfx = attribute_value_field_name(source_attribute)
+    if data_sfx is None:
+        logger.warning(
+            f'Proximity based transfer not supported for attribute type {source_attribute.data_type}. Skipping attribute {source_attribute.name} on {target_obj.name}.'
+        )
+        return
 
     # if topo_match:
     #     # TODO: optimize using foreach_get/set rather than loop
@@ -177,7 +183,7 @@ def proximity_transfer_single_attribute(
     if source_attribute.data_type == 'STRING':
         # TODO: add NEAREST transfer fallback for attributes without interpolation
         logger.warning(
-            f'Proximity based transfer for generic attributes of type STRING not supported yet. Skipping attribute {source_attribute.name} on {target_obj}.'
+            f'Proximity based transfer for generic attributes of type STRING not supported yet. Skipping attribute {source_attribute.name} on {target_obj.name}.'
         )
         return
 
@@ -200,7 +206,7 @@ def proximity_transfer_single_attribute(
                 continue
             weights = mathutils.interpolate.poly_3d_calc([tri[i].vert.co for i in range(3)], point)
 
-            if data_sfx in ['color']:
+            if data_sfx == 'color':
                 vals_weighted = [
                     weights[i] * (np.array(getattr(source_attribute.data[tri[i].vert.index], data_sfx)))
                     for i in range(3)
@@ -214,7 +220,7 @@ def proximity_transfer_single_attribute(
     elif domain == 'EDGE':
         # TODO support proximity fallback for generic edge attributes
         logger.warning(
-            f'Proximity based transfer of generic edge attributes not supported yet. Skipping attribute {source_attribute.name} on {target_obj}.'
+            f'Proximity based transfer of generic edge attributes not supported yet. Skipping attribute {source_attribute.name} on {target_obj.name}.'
         )
         return
     elif domain == 'FACE':

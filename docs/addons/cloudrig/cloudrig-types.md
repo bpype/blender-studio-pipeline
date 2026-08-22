@@ -21,6 +21,7 @@ These are CloudRig's component types. Most component types are built on top of o
             - [Feather](#feather)
             - [Spine: IK/FK](#spine-ik-fk)
             - [Spine: Cartoon](#spine-cartoon)
+            - [Spine: Simple](#spine-simple)
             - [Spine: Squashy (Deprecated!)](#spine-squashy)
             - [Shoulder](#shoulder)
             - [Chain: IK](#chain-ik)
@@ -253,6 +254,19 @@ A spine set-up of any length (although at least 3 bones) perfect for cartoony ch
 
 - #### World-Align Torso
     Flatten the torso control to align with the closest world axis.
+
+</details>
+
+## Spine: Simple
+Extends the FK Chain component with a lightweight spine set-up. Requires a chain of at least 3 bones.
+
+<details>
+<summary> Parameters </summary>
+
+- #### Pivot Position
+    Number of bones (starting from the base of the chain) that belong to the Hips section. The rest of the chain belongs to the Chest section.
+- #### World-Align Controls
+    Align the Torso, Hips, and Chest controls with the world axes.
 
 </details>
 
