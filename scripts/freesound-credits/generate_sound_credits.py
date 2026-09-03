@@ -7,8 +7,8 @@ import bpy
 import os
 import pathlib
 import requests
-import sys
 import time
+from collections import defaultdict
 
 # Must set API Key as Enviroinment Variable or add to script here.
 # API Key can be generated using an existing freesound.org account
@@ -27,8 +27,8 @@ def load_api_key():
         API_KEY = env_key
         return
 
-def get_sound_list():
-    sound_list = []
+def get_sound_dict():
+    sound_dict = defaultdict(list)
 
     # Iterate through all the sound strips in the current scene
     for sound_strip in [s for s in bpy.context.scene.sequence_editor.strips_all if s.type=='SOUND']:
@@ -37,10 +37,10 @@ def get_sound_list():
         # Assume that if a file starts with an int, it's from freesound
         try:
             sound_id = int(sound_id)
-            sound_list.append(filename)
+            sound_dict[filename].append(sound_strip.name)
         except ValueError:
             print(f'Skipping {sound_id}')
-    return set(sound_list)
+    return sound_dict
 
 
 def fetch_sound_info(query):
@@ -49,25 +49,29 @@ def fetch_sound_info(query):
     search_params = {'query': query, 'token': API_KEY}
     r = requests.get(search_url, params=search_params)
 
-    # Check the status code of the response
-    if r.status_code == 200:
-        # If the search was successful, get the first sound in the results
+    try:
+        r.raise_for_status()
         return r.json()['results'][0]
-    else:
-        print(f'Error searching for sound with filename "{query}"\n\n')
+    except requests.exceptions.HTTPError as e:
+        print(
+            f'Error searching for sound with filename "{query}":\n'
+            f'    Error message: {e}\n'
+            f'    Response: {r.text}\n'
+        )
         return None
 
 
-def generate_credits(sound_list):
+def generate_credits(sound_dict):
     blendfile_name = bpy.path.basename(bpy.data.filepath)
     with open(f'{blendfile_name}-sound_credits.txt', 'w') as f:
-        for sound in sound_list:
+        for sound in sound_dict:
             print(f'Processing {sound}')
             time.sleep(0.5)
 
             info = fetch_sound_info(sound)
             if not info:
                 continue
+
             f.write(f'Filename: {sound}\n')
             f.write(f'Credits: {info["username"]}\n')
             f.write(f'License: {info["license"]}\n\n')
@@ -78,8 +82,8 @@ def main():
     if API_KEY == "":
         print("FREESOUND_API_KEY not set")
         return
-    sound_list = get_sound_list()
-    generate_credits(sound_list)
+    sound_dict = get_sound_dict()
+    generate_credits(sound_dict)
 
 
 main()
