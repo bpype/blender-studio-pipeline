@@ -63,7 +63,7 @@ def get_used_vgroups(mesh_ob: Object) -> list[VertexGroup]:
         else:
             used_vgroups.extend(get_referenced_vgroups(mesh_ob, modifier))
             if modifier.type == "ARMATURE":
-                used_vgroups.extend(get_deforming_vgroups(mesh_ob, modifier.object))
+                used_vgroups.extend(get_deforming_vgroups(mesh_ob, [modifier.object]))
         # Masks of Physics settings.
         if hasattr(modifier, "settings"):
             used_vgroups.extend(get_referenced_vgroups(mesh_ob, modifier.settings))
@@ -135,6 +135,34 @@ def get_vgroups_used_by_constraints_of_dependent_objects(
 
 
 def get_vgroups_used_by_geonodes(
+    mesh_ob: Object, modifier: Modifier
+) -> list[VertexGroup]:
+    if hasattr(modifier, "properties"):
+        # 5.3+: GeoNodes modifier inputs became real RNA properties instead of
+        # raw ID Properties: https://projects.blender.org/blender/blender/pulls/138117
+        return get_vgroups_used_by_geonodes_53(mesh_ob, modifier)
+    return get_vgroups_used_by_geonodes_legacy(mesh_ob, modifier)
+
+
+def get_vgroups_used_by_geonodes_53(
+    mesh_ob: Object, modifier: Modifier
+) -> list[VertexGroup]:
+    used_vgroups = []
+    inputs = getattr(modifier.properties, "inputs", None)
+    if not inputs:
+        return used_vgroups
+    for identifier in geomod_get_input_identifiers(modifier):
+        input_props = getattr(inputs, identifier, None)
+        if not input_props or getattr(input_props, "type", None) != "ATTRIBUTE":
+            continue
+        attrib_name = input_props.attribute_name
+        if attrib_name in mesh_ob.vertex_groups:
+            # NOTE: Could be a false positive if this is a non-vertexgroup attribute with a matching name.
+            used_vgroups.append(mesh_ob.vertex_groups[attrib_name])
+    return used_vgroups
+
+
+def get_vgroups_used_by_geonodes_legacy(
     mesh_ob: Object, modifier: Modifier
 ) -> list[VertexGroup]:
     used_vgroups = []
