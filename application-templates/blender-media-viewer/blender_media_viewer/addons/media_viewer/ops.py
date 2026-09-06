@@ -388,7 +388,6 @@ class MV_OT_toggle_timeline(bpy.types.Operator):
 
             # Restore Timeline State.
             timeline_state.apply_to_area(area_timeline)
-            # area_timeline.spaces.active.show_region_toolbar = False # TODO: does not exist, expose to PythonAPI
 
             logger.info("Show timeline")
 

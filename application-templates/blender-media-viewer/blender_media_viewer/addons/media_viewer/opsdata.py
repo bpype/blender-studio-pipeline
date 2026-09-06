@@ -112,7 +112,7 @@ def fit_timeline_view(context: bpy.types.Context, area: bpy.types.Area = None) -
 
     ctx = get_context_for_area(area)
     with context.temp_override(**ctx):
-        bpy.ops.action.view_all()
+        bpy.ops.anim.scene_range_frame()
 
 
 def fit_image_editor_view(

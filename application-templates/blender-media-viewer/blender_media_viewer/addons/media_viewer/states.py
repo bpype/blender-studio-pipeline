@@ -36,6 +36,7 @@ class TimelineState:
         else:
             self.space_data = SpaceData()
             self.space_data.show_region_ui = False
+            self.space_data.show_region_channels = False
 
     def apply_to_area(self, area: bpy.types.Area) -> None:
         self.space_data.apply_to_area(area)
@@ -47,6 +48,7 @@ class SpaceData:
     show_region_tool_props: bool = False
     show_region_toolbar: bool = False  # Toolbar on the right.
     show_region_ui: bool = True  # File path input bar.
+    show_region_channels: bool = False
 
     @classmethod
     def from_area(cls, area: bpy.types.Area) -> SpaceData:
