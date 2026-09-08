@@ -47,7 +47,7 @@ Select bones related to the active bone. Available in Pose, Weight Paint, and Ed
 - **Up/Down**: Select a bone with a higher/lower number in its name, e.g., from `Hair1.L` to `Hair2.L`.
 - **Left/Right**: Select the parent bone or a child bone. Multiple children are shown in a drop-down menu.
 - **Top Left/Right**: Select bones that target or are targeted by this bone via constraints.
-- **Bottom Left**: Select the start and end handles of Bendy Bones.
+- **Bottom Left**: Select the corresponding deform bone. If a bendy bone is selected, select its start or end handle.
 - **Bottom Right**: Open a pop-up menu to search for a bone by name.
 
 ## Bone Specials Pie (X)
