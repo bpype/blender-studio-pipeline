@@ -185,9 +185,7 @@ Extends the functionality of the Toon Chain. In addition to stretch controls, th
 - #### Counter-Rotate Stretch Controls
     Amount by which the STR controls should "resist" the rotation they inherit from FK bones. A value of 0.5 is useful for smooth chains.
 - #### Inherit Scale
-    Sets the scale inheritance type for FK controls. The "Propagate" option will use the rotation mode of the metarig bones for the corresponding FK controls.
-- #### Rotation Mode
-    Rotation Mode for the FK controls. The same "Propagate" option is available here.
+    Sets the scale inheritance type for FK controls. The "Propagate" option will use the inheritance mode of the metarig bones for the corresponding FK controls.
 - #### Duplicate First FK
     Create an extra parent control for the first FK control.
 

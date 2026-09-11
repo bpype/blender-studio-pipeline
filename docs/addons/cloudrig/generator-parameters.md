@@ -25,6 +25,9 @@ Name of the root bone. While optional, some rig features such as FK Hinge requir
 ### Properties Bone
 Name of the default properties bone to create, when necessary. For example, for a limb rig with IK/FK sliders, those sliders are properties, which need to be stored somewhere. This setting specifies a bone name to create as fallback for that storage. If no properties are needed by the rig, this bone won't be created.
 
+### Allow Quaternions
+The rotation modes of your metarig bones will propagate in a (hopefully) predictable way through the generated controls. Blender's default rotation mode is Quaternion, but since many animators dislike Quaternions because they're difficult to use with the Graph Editor, CloudRig by default prevents riggers from generating rigs using Quaternion rotation mode, and will force XYZ Euler instead. If you dislike that, you can enable this option.
+
 ## Log
 This panel warns about potential issues detected in your rig that are likely to be unintentional.
 See the [Troubleshooting](troubleshooting) page for more info.
