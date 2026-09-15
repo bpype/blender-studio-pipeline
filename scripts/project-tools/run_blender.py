@@ -354,7 +354,7 @@ def update_extensions():
             with open(extension_files) as file:
                 lines = [line.rstrip() for line in file]
             for file in lines:
-                old_file = PATH_LOCAL / 'extensions' / file
+                old_file = PATH_LOCAL / 'extensions' / 'system' / file
                 if old_file.exists():
                     if old_file.is_dir():
                         shutil.rmtree(old_file)
