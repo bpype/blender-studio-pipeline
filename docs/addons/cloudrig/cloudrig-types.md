@@ -353,9 +353,9 @@ Extends the functionality of the Generic Limb component with footroll. This requ
 <img src="/media/addons/cloudrig/cloud_leg.gif" width=500>
 
 - #### Foot Roll
-    Whether to create a foot roll setup.
+    Whether to create a foot and toe roll setup. Note that the toe will roll around the tip of the toe bone, so you should place it at the tip of the character's shoe.
 - #### Heel Pivot
-    If you are using foot roll, you can specify a bone whose location will be used as the pivot point for when the foot is rolled backwards.
+    If you are using foot roll, you can specify a bone whose location will be used as the pivot point for when the foot is rolled backwards and side-to-side. You should place the heel bone at the heel of the character's shoe, pointing from the center out, with the head and tail representing the side edges of the shoe.
 - #### Forefoot Control
     Create an additional IK control at the ball of the foot.
 
