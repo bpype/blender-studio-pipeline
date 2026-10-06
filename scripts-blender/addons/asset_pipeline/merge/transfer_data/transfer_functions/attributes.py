@@ -103,14 +103,19 @@ def transfer_attribute(
     if target_attribute:
         target_attributes.remove(target_attribute)
 
+    # Vertex groups share the mesh attribute name namespace. A leftover vertex
+    # group of the same name (e.g. from before it was replaced by an attribute
+    # of another kind) would silently block or rename the attribute below.
+    colliding_vgroup = target_obj.vertex_groups.get(attribute_name)
+    if colliding_vgroup:
+        target_obj.vertex_groups.remove(colliding_vgroup)
+        logger.warning(f"Removed vertex group that was colliding with new attribute name: {target_obj.name} -> {attribute_name}")
+
     target_attribute = target_attributes.new(
         name=attribute_name,
         type=source_attribute.data_type,
         domain=source_attribute.domain,
     )
-    if not target_attribute:
-        logger.debug(f"Failed to create attribute: {target_obj.name} -> {attribute_name}")
-        return
 
     if not is_obdata_identical(source_obj, target_obj):
         proximity_transfer_single_attribute(source_obj, target_obj, source_attribute, target_attribute)

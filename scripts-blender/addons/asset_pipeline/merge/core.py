@@ -13,7 +13,6 @@ from ..merge.naming import task_layer_prefix_transfer_data_update
 from ..props import AssetPipeline, AssetTransferDataTemp
 from .asset_mapping import AssetTransferMapping, merge_get_target_name
 from .naming import (
-    get_id_type_name,
     merge_add_suffix_to_hierarchy,
     merge_remove_suffix_from_hierarchy,
 )
@@ -92,7 +91,6 @@ def ownership_get(
         # Mark Asset ID Owner for objects in the current task layers collection
         if obj.asset_id_owner == "NONE" and obj in task_layer_objs:
             obj.asset_id_owner = default_task_layer
-            # obj.name = asset_prefix_name_get(obj.name)
         # Skip items that have no owner
         if obj.asset_id_owner == "NONE":
             continue
@@ -244,9 +242,8 @@ def merge_task_layer(
         return local_col, error_msg
 
     if len(map.conflict_ids) != 0:
-        for conflict_obj in map.conflict_ids:
-            type_name = get_id_type_name(conflict_obj)
-            error_msg += f"Ownership conflict found for {type_name}: '{conflict_obj.name}'\n"
+        for conflict_id in map.conflict_ids:
+            error_msg += f"Ownership conflict found for {conflict_id.bl_rna.name}: '{conflict_id.name}'\n"
         return local_col, error_msg
     mapped_time = time.time()
     profiles.add((mapped_time - imported_time), "MAPPING")

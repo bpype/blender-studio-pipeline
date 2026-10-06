@@ -14,7 +14,7 @@ from pathlib import Path
 
 import bpy
 
-from . import prefs
+from .utils import get_addon_prefs
 
 logger = logging.getLogger(__name__)
 
@@ -104,15 +104,14 @@ class Hooks:
                 hook(*args, **kwargs)
 
     def load_hooks(self, context):
-        hook_dirs = [
-            get_production_hook_dir(),
-            get_asset_hook_dir(),
-        ]  # TODO: This should be a function param.
-        for hook_dir in hook_dirs:
-            if not hook_dir or not hook_dir.exists():
-                logger.debug(f"Hooks directory not found: {hook_dir}")
+        hook_paths = (
+            get_production_hooks_path(),
+            get_asset_hooks_path(),
+        )
+        for hook_file_path in hook_paths:
+            if not hook_file_path.exists():
+                logger.debug(f"Hooks directory not found: {hook_file_path}")
                 continue
-            hook_file_path = hook_dir.resolve() / "hooks.py"
             module_name = __package__ + ".production_hooks"
             try:
                 spec = importlib.util.spec_from_file_location(module_name, hook_file_path)
@@ -123,8 +122,6 @@ class Hooks:
                 self.register_hooks(hooks_module)
             except FileNotFoundError:
                 logger.debug(f"No hook file found in optional location: {hook_file_path}")
-
-        return False
 
     def register(self, func: HookFunction) -> None:
         logger.info(f"Registering hook: '{func.__name__}'")
@@ -145,21 +142,12 @@ class Hooks:
             self.register(module_item)
 
 
-def get_production_hook_dir() -> Path:
-    root_dir = Path(prefs.project_root_dir_get())
-    prod_dir = root_dir.joinpath("project_files/pro/")
-    if not prod_dir.exists():
-        logger.warning(
-            f"Production directory {str(prod_dir)} not found. Production hooks will not work."
-        )
-        return
-    hook_dir = prod_dir.joinpath("config/asset_pipeline")
-    hook_dir.mkdir(parents=True, exist_ok=True)
-    return hook_dir
+def get_production_hooks_path() -> Path:
+    return get_addon_prefs().hooks_dir_path.resolve() / "hooks.py"
 
 
-def get_asset_hook_dir() -> Path:
-    return Path(bpy.data.filepath).parent
+def get_asset_hooks_path() -> Path:
+    return Path(bpy.data.filepath).parent.resolve() / "hooks.py"
 
 
 def hook(

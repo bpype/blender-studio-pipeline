@@ -105,24 +105,6 @@ def merge_add_suffix_to_hierarchy(collection: Collection, suffix_base: str) -> N
         assert db.name == new_name, "Failed to rename datablock. Should never happen!"
 
 
-def asset_prefix_name_get(name: str) -> str:
-    """Returns a string with the asset prefix if it is not already set.
-    Users can specify a prefix to live on all objects during the
-    asset creation process. This prefix is stored in the scene.
-
-    Args:
-        name (str): Name to add prefix to
-
-    Returns:
-        str: Returns name with prefix
-    """
-    asset_pipe = bpy.context.scene.asset_pipeline
-    if name.startswith(asset_pipe.prefix + constants.NAME_DELIMITER):
-        return name
-    prefix = asset_pipe.prefix + constants.NAME_DELIMITER if asset_pipe.prefix != "" else ""
-    return prefix + name
-
-
 def task_layer_prefix_name_get(name: str, task_layer_owner: str) -> str:
     """Returns a string with the task layer prefix if one is not already set.
     Prefix for assets is defined task_layer.json file within TASK_LAYER_TYPES
@@ -186,19 +168,3 @@ def task_layer_prefix_transfer_data_update(
     td_data[transfer_data_item.name].name = new_name
     transfer_data_item.name = new_name
     return True
-
-
-def get_id_type_name(id: ID) -> str:
-    """Return the cosmetic name of a given ID type
-
-    Args:
-        id (ID): Any datablock.
-
-    Returns:
-        str: Name of an ID type e.g. Object will return 'Object'
-    """
-    type_str = str(id)
-    if "types." in type_str:
-        return type_str.split("types.")[1].replace("'>", "")
-    else:
-        return type_str

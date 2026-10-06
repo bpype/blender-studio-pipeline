@@ -24,6 +24,7 @@ from ..merge.publish import find_sync_target
 from ..merge.shared_ids import get_shared_id_icon, init_shared_ids
 from ..merge.task_layer import draw_task_layer_selection
 from ..operators.ownership_manager import draw_all_data_ownership_of_obj
+from ..utils import get_addon_prefs
 
 
 class ASSETPIPE_OT_prepare_sync(Operator):
@@ -367,7 +368,7 @@ def sync_execute_pull(self, context: Context):
         external_file=self._sync_target,
     )
 
-    addon_prefs = prefs.get_addon_prefs()
+    addon_prefs = get_addon_prefs()
     if addon_prefs.preserve_action:
         preserve_map.set_action_map()
 

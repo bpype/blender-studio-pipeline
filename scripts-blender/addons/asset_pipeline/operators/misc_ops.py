@@ -7,12 +7,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import bpy
-from bpy.props import BoolVectorProperty, EnumProperty
+from bpy.props import BoolVectorProperty
 from bpy.types import Context, Event, Operator
 
 from ..asset_catalog import get_asset_catalog_items
 from ..config import verify_task_layer_json_data
-from ..hooks import get_asset_hook_dir, get_production_hook_dir
 from ..merge import naming, task_layer
 
 
@@ -136,59 +135,9 @@ class ASSETPIPE_OT_refresh_asset_cat(Operator):
         return {'FINISHED'}
 
 
-class ASSETPIPE_OT_save_asset_hook(Operator):
-    bl_idname = "assetpipe.save_production_hook"
-    bl_label = "Save Production Hook"
-    bl_description = """Save new hook file based on example file. Production hooks are used across all assets. Asset hooks are only used in the current asset.
-    - Production hooks: 'project_files/pro/config' directory.
-    - Asset hooks are stored at the root of the asset's directory'"""
-    mode: EnumProperty(
-        name="Hooks Mode",
-        description=
-        "Choose to either save production level or asset level hooks",
-        items=[
-            ('PROD', 'Production', 'Save Prododuction Level Hooks'),
-            ('ASSET', 'Asset', 'Save Asset Level Hooks'),
-        ],
-    )
-
-    def execute(self, context: Context):
-        if self.mode == 'PROD':
-            example_hooks_dir = Path(__file__).parent.parent / Path("hook_examples/prod_hooks.py")
-            hook_dir = get_production_hook_dir()
-            if not hook_dir:
-                self.report({'ERROR'}, "Production directory must be specified in the add-on preferences.")
-                return {'CANCELLED'}
-            save_hook_path = (get_production_hook_dir() / Path("hooks.py")).resolve()
-        else:  # if self.mode == 'ASSET'
-            example_hooks_dir = Path(__file__).parent.parent / Path("hook_examples/asset_hooks.py")
-            save_hook_path = (get_asset_hook_dir() / Path('hooks.py')).resolve()
-
-        if not example_hooks_dir.exists():
-            self.report({'ERROR'}, "Cannot find example hook file: {path}".format(path=example_hooks_dir))
-            return {'CANCELLED'}
-
-        if save_hook_path.exists():
-            self.report(
-                {'ERROR'},
-                f"Cannot overwrite existing hook file at  '{save_hook_path.__str__()}'",
-            )
-            return {'CANCELLED'}
-
-        with example_hooks_dir.open() as source:
-            contents = source.read()
-
-        # Write contents to target file
-        with save_hook_path.open('w') as target:
-            target.write(contents)
-        self.report({'INFO'}, f"Hook File saved to {save_hook_path.__str__()}")
-        return {'FINISHED'}
-
-
 registry = [
     ASSETPIPE_OT_update_local_task_layers,
     ASSETPIPE_OT_revert_file,
     ASSETPIPE_OT_fix_prefixes,
     ASSETPIPE_OT_refresh_asset_cat,
-    ASSETPIPE_OT_save_asset_hook,
 ]

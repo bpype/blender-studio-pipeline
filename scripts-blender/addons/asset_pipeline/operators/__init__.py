@@ -1,4 +1,5 @@
 from . import (
+    hook_ops,
     initialize_asset,
     misc_ops,
     ownership_manager,
@@ -14,4 +15,5 @@ modules = [
     sync,
     surrender_ownership,
     ownership_manager,
+    hook_ops,
 ]

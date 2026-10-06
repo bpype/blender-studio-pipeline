@@ -132,6 +132,7 @@ class ASSETPIPE_OT_publish_new_version(Operator):
             return {'CANCELLED'}
         catalog_id = get_asset_id(context.scene.asset_pipeline.asset_catalog_name)
         new_filepath = publish.create_next_published_file(
+            context,
             current_file=Path(bpy.data.filepath),
             publish_type=self.publish_types,
             catalog_id=catalog_id,
@@ -176,7 +177,11 @@ class ASSETPIPE_OT_publish_staged_as_active(Operator):
         # Delete Staged File
         staged_file.unlink()
         catalog_id = get_asset_id(context.scene.asset_pipeline.asset_catalog_name)
-        publish.create_next_published_file(current_file=current_file, catalog_id=catalog_id)
+        publish.create_next_published_file(
+            context,
+            current_file=current_file,
+            catalog_id=catalog_id,
+        )
         return {'FINISHED'}
 
 

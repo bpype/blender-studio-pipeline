@@ -11,6 +11,7 @@ from bpy.types import Context, Panel, UILayout
 from . import constants
 from .config import get_task_layer_dict, verify_task_layer_json_data
 from .merge.publish import is_staged_publish
+from .operators.hook_ops import draw_hook_ops
 
 
 class ASSETPIPE_PT_initialize_asset(Panel):
@@ -26,15 +27,16 @@ class ASSETPIPE_PT_initialize_asset(Panel):
 
     def draw(self, context: Context) -> None:
         layout = self.layout
-        asset_pipe = context.scene.asset_pipeline
-        layout.prop(asset_pipe, "new_file_mode", expand=True)
-        layout.prop(asset_pipe, "task_layer_config_type")
-        if asset_pipe.new_file_mode == "BLANK":
-            layout.prop(asset_pipe, "name")
-            layout.prop(asset_pipe, "prefix")
-            layout.prop(asset_pipe, "dir")
+        ass_pipe = context.scene.asset_pipeline
+        new_ass_props = ass_pipe.new_asset_props
+        layout.prop(new_ass_props, "new_file_mode", expand=True)
+        layout.prop(new_ass_props, "task_layer_config_type")
+        if new_ass_props.new_file_mode == "BLANK":
+            layout.prop(new_ass_props, "name")
+            layout.prop(new_ass_props, "prefix")
+            layout.prop(new_ass_props, "dir")
         else:
-            layout.prop_search(asset_pipe, 'asset_collection_name', bpy.data, 'collections')
+            layout.prop_search(ass_pipe, 'asset_collection_name', bpy.data, 'collections')
         layout.operator("assetpipe.create_new_asset")
 
 
@@ -208,13 +210,12 @@ class ASSETPIPE_PT_sync_tools(Panel):
     def poll(cls, context):
         return poll_valid_workfile(context)
 
-    def draw(self, context: Context) -> None:
+    def draw(self, _context: Context) -> None:
         layout = self.layout
-        layout.operator("assetpipe.revert_file", icon="LOOP_BACK")
 
-        col = layout.column(align=True)
-        col.operator("assetpipe.save_production_hook", text="Create Production Hook", icon='HOOK').mode = 'PROD'
-        col.operator("assetpipe.save_production_hook", text="Create Asset Hook", icon='HOOK').mode = 'ASSET'
+        draw_hook_ops(layout)
+
+        layout.operator("assetpipe.revert_file", icon="LOOP_BACK")
         layout.operator("assetpipe.fix_prefixes", icon="MODIFIER")
 
 
