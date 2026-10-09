@@ -1,18 +1,21 @@
-# SPDX-FileCopyrightText: 2025 Blender Studio Tools Authors
+# SPDX-FileCopyrightText: 2026 Blender Studio Tools Authors
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+
 import bpy
-from pathlib import Path
-from .prefs import get_addon_prefs
 
 
 def save_images():
-    prefs = get_addon_prefs()
-    user_path = Path(prefs.save_images_path)
-    default_path = Path(bpy.data.filepath).parent.joinpath("images")
-    save_path = default_path if prefs.save_images_path == "" else user_path
     for img in bpy.data.images:
-        if img.is_dirty:
-            filepath = save_path.joinpath(img.name).__str__() + ".png"
-            img.save(filepath=filepath)
+        if not img.is_dirty:
+            continue
+        try:
+            if img.source == "GENERATED" or img.packed_file:
+                img.pack()
+            else:
+                img.save()
+        except Exception:
+            # Should never happen.
+            # https://projects.blender.org/blender/blender/issues/152638
+            print(f"Incremental Autosave: Failed to save dirty image: {img.name}")

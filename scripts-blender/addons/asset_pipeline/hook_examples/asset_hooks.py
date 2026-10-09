@@ -13,8 +13,7 @@ Keyword Arguments:
 
 Notes:
     Function Naming: Must be unique between production hooks and asset hooks files
-    Production Hook Path: 'your_project_name/project_files/pro/assets/scripts/asset_pipeline/hooks.py'
-    Asset Hook Path: 'your_project_name/project_files/pro/assets/{asset_type}/{asset_name}/hooks.py'
+    Asset Hook Path: 'path/to/asset/hooks.py' (next to `publish` dir)
 '''
 
 

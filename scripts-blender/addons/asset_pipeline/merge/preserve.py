@@ -5,7 +5,7 @@
 import bpy
 from bpy.types import Collection
 
-from .. import prefs
+from ..utils import get_addon_prefs
 from .transfer_data.transfer_functions.shape_keys import shape_key_set_active
 
 
@@ -16,7 +16,7 @@ class Preserve:
         self.generate_preserve_maps()
 
     def generate_preserve_maps(self) -> None:
-        addon_prefs = prefs.get_addon_prefs()
+        addon_prefs = get_addon_prefs()
         if addon_prefs.preserve_action:
             self._action_dict = self._get_action_map()
         if addon_prefs.preserve_indexes:

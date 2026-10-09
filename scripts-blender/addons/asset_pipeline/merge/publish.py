@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import bpy
+from bpy.types import Context
 
 from .. import constants
 
@@ -29,7 +30,10 @@ def find_file_version(published_file: Path) -> int:
     return int(name_without_ext.split(constants.FILE_DELIMITER)[1].replace("v", ""))
 
 
-def get_next_published_file(current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY) -> Path:
+def get_next_published_file(
+        current_file: Path,
+        publish_type=constants.ACTIVE_PUBLISH_KEY,
+    ) -> Path:
     """Returns the path where the next published file version should be saved to
 
     Args:
@@ -40,12 +44,11 @@ def get_next_published_file(current_file: Path, publish_type=constants.ACTIVE_PU
         Path: Path where the next published file should be saved to, path doesn't exist yet
     """ """"""
     last_publish = find_latest_publish(current_file, publish_type)
-    base_name = bpy.context.scene.asset_pipeline.name
+    base_name = current_file.stem.rsplit(constants.FILE_DELIMITER, 1)[0]
     publish_dir = current_file.parent.joinpath(publish_type)
     publish_dir.mkdir(parents=True, exist_ok=True)  # Create Directory if it doesn't exist
     if not last_publish:
         new_version_number = 1
-
     else:
         new_version_number = find_file_version(last_publish) + 1
     new_version = "{0:0=3d}".format(new_version_number)
@@ -70,7 +73,10 @@ def get_asset_catalogues():
 
 
 def create_next_published_file(
-    current_file: Path, publish_type=constants.ACTIVE_PUBLISH_KEY, catalog_id: str = ''
+    context: Context,
+    current_file: Path,
+    publish_type=constants.ACTIVE_PUBLISH_KEY,
+    catalog_id: str = '',
 ) -> str:
     """Creates new Published version of a given Publish Type
 
@@ -81,7 +87,7 @@ def create_next_published_file(
     # TODO Set Catalogue here
 
     new_file_path = get_next_published_file(current_file, publish_type)
-    asset_col = bpy.context.scene.asset_pipeline.asset_collection
+    asset_col = context.scene.asset_pipeline.asset_collection
     if publish_type == constants.ACTIVE_PUBLISH_KEY:
         asset_col.asset_mark()
         if catalog_id != '' or catalog_id != 'NONE':

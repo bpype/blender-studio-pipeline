@@ -12,9 +12,8 @@ Keyword Arguments:
     asset_col: Collection # Get the top level collection for the current asset
 
 Notes:
-    Function Naming: Must be unique between production hooks and asset hooks files
-    Production Hook Path: 'your_project_name/project_files/pro/assets/scripts/asset_pipeline/hooks.py'
-    Asset Hook Path: 'your_project_name/project_files/pro/assets/{asset_type}/{asset_name}/hooks.py'
+    Function Naming must be unique between production hooks and asset hooks files
+    Production Hook Path: 'assets_dir/scripts/asset_pipeline/hooks.py'
 '''
 
 
