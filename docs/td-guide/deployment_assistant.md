@@ -28,12 +28,12 @@ The `deployment_assistant.py` script finalizes your Blender Studio Tools project
 1. **Navigate to the tools directory**  
    - **Linux/Mac:**  
      ```bash
-     cd ~/data/your_project_name/svn/tools
+     cd ~/data/your_project_name/tools
      ./deployment_assistant.py
      ```
    - **Windows:**  
      ```bash
-     cd %HOMEPATH%\data\your_project_name\svn\tools
+     cd %HOMEPATH%\data\your_project_name\tools
      python deployment_assistant.py
      ```
 

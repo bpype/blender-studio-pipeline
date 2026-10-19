@@ -170,8 +170,8 @@ If the `default_owner` is not local to the current file and the `auto_surrender`
 ## Hooks
 Hooks are used to add custom functionality to the asset pipeline. Hooks are optional. The hooks are defined in a python file. There are two types of Hooks, Production Level and Asset Level. Production Hooks are used globally on all assets. Asset Hooks are used only on a specific asset. 
 
-    - Production hooks: `your_project_name/pro/svn/pro/config/asset_pipeline/hooks.py`
-    - Asset hooks: `your_project_name/pro/svn/assets/{asset_type}/{asset_name}/hooks.py` 
+    - Production hooks: `your_project_name/project_files/pro/config/asset_pipeline/hooks.py`
+    - Asset hooks: `your_project_name/project_files/pro/assets/{asset_type}/{asset_name}/hooks.py`
 
 
 Hook files can be automatically created using the `Create Production Hook` and `Create Asset Hook` operators, from the tools sub-panel in the asset pipeline side panel. Below is an example of a hook file.

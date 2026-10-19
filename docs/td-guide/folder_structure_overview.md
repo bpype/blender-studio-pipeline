@@ -11,14 +11,15 @@ External studios can use a different root folder, such as a user's home director
   Contains a local copy of the project's Blender version and any extensions distributed by the project. Also stores `userpref.blend` for per-project user preferences.
 - **shared/**  
   Symlink to a shared network drive or a synchronized folder (e.g., Syncthing, Dropbox). Used for ephemeral data such as renders, audio, and video files that can be regenerated if lost.
-- **svn/**  
-  Contains .blend files for production and pre-production. Recommended to use version control software (SVN, GIT-LFS, or Perforce) to track changes. Also contains project tools.
+- **project_files/**
+  Contains .blend files for production and pre-production. Recommended to use version control software (Git-LFS, or Similar) to track changes.
+- **tools** Contains helper scripts to run/setup specific blender versions/addons for the project.
 
 ## Version Management Modes
 There are two methods of version control for projects:
 
 - **Version Control (Recommended):**  
-  Use SVN or GIT-LFS to track changes to Blender files.
+  Use Git-LFS to track changes to Blender files.
 - **Disk Versions:**  
   As a backup, new versions are saved in the relevant shot or asset directory when new [playblast](/artist-guide/project_tools/usage-playblast) versions are created.
 
@@ -29,17 +30,19 @@ _This setting can be configured when using the [Setup Assistant](/td-guide/setup
 project_name/
     ├── local   # Local Blender & Preferences
     ├── shared  # Symlink or sync folder (Syncthing, Dropbox, etc)
-    ├── svn     # Version Controlled (SVN, GIT-LFS, etc)
+    ├── project_files # Version Controlled (Git-LFS, etc)
+    ├── tools         # Helper scripts and tools
     └── render  # Symlink to Render Farm Output (optional)
 ```
-See the [`shared`](/naming-conventions/shared-folder-structure.md) and [`svn`](/naming-conventions/svn-folder-structure.md) directory overviews for more details.
+TODO
+See the [`shared`](/naming-conventions/shared-folder-structure.md) and [`project files`](/naming-conventions/project-files-folder-structure.md) directory overviews for more details.
 
 ### Disk Versions Folder Layout
 ```bash
 project_name/
     ├── local   # Local Blender & Preferences
     ├── shared  # Symlink or sync folder (Syncthing, Dropbox, etc)
-    ├── svn     # Symlink or sync folder (Syncthing, Dropbox, etc)
+    ├── project_files # Symlink or sync folder (Syncthing, Dropbox, etc)
     └── render  # Symlink to Render Farm Output (optional)
 ```
 
@@ -72,7 +75,7 @@ data/
     │   ├── deliver     # Final approved render of film
     │   ├── export      # Exports of edit in progress
     │   └── footage     # Renders created during shot production
-    ├── svn/     # Version controlled (SVN, GIT-LFS, etc) folder containing production files
+    ├── project_files/ # Version controlled (Git-LFS, etc) folder containing production files
     │   ├── dev        # Visual development and tests
     │   ├── edit       # Blend files for video editing
     │   │   ├── audio

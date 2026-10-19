@@ -290,7 +290,7 @@ blender-kitsu has different checks that are performed during file load or during
 ![image info](/media/addons/blender_kitsu/error_animation.jpg)
 
  ## Shot Builder
-Shot Builder is a Feature of the Blender Kitsu Add-on To automatically build shot files, using the data from Kitsu server and the file structures defined on the [Blender Studio](https://studio.blender.org/tools/naming-conventions/svn-folder-structure) website. 
+Shot Builder is a Feature of the Blender Kitsu Add-on To automatically build shot files, using the data from Kitsu server and the file structures defined on the [Blender Studio](https://studio.blender.org/tools/naming-conventions/project-files-folder-structure) website.
 
 ### Features
  - Saves a 'Shot' File for each of the Shot's Task Types on Kitsu Server.
@@ -298,8 +298,8 @@ Shot Builder is a Feature of the Blender Kitsu Add-on To automatically build sho
  - Creates output collections for certain Task Types (anim, fx, layout, lighting, previz, storyboard)
  - Links output collections between Task Types based on [Shot Assembly](https://studio.blender.org/tools/pipeline-overview/shot-production/shot-assembly) specifications
  - Loads Editorial Export (defined in preferences) into Shot file's VSE area (if available)
- - Loads Assets via `asset_index.json` file stored at `your_production/svn/pro/assets/asset_index.json`
- - Executes a `hook.py` file stored at `your_production/svn/pro/assets/shot-builder/hooks.py`
+ - Loads Assets via `asset_index.json` file stored at `your_production/project_files/pro/assets/asset_index.json`
+ - Executes a `hook.py` file stored at `your_production/project_files/pro/assets/shot-builder/hooks.py`
 
 ### Getting Started
 #### Shot Setup
@@ -329,14 +329,14 @@ Shot Builder uses hooks to extend the functionality of the shot builder. To crea
 2. Search for the `Blender Kitsu` Add-On
 3. In the `Blender Kitsu` Add-On preferences find the `Shot Builder` section
 4. Run the Operator `Save Shot Builder Hook File`
-5. Edit the file `your_project_name/svn/pro/config/shot_builder/hooks.py` to customize your hooks. 
+5. Edit the file `your_project_name/project_files/pro/config/shot_builder/hooks.py` to customize your hooks.
 
 ```
 Arguments to use in hooks
     scene: bpy.types.Scene # current scene
     shot: Shot class from blender_kitsu.types.py
-    prod_path: str # path to production root dir (your_project/svn/)
-    shot_path: str # path to shot file (your_project/svn/pro/shots/{sequence_name}/{shot_name}/{shot_task_name}.blend)
+    prod_path: str # path to production root dir (your_project/project_files/)
+    shot_path: str # path to shot file (your_project/project_files/pro/shots/{sequence_name}/{shot_name}/{shot_task_name}.blend)
     
 Notes
      matching_task_type = ['anim', 'lighting', 'fx', 'comp'] # either use list or just one string
@@ -356,13 +356,13 @@ Shot Builder can load Exports from Editorial to the .blend's VSE for reference.
 1. Open Blender
 2. Select File>New
 3. From dialogue box, select the desired Sequence/Shot/Task Type
-4. Hit `ok` to run the tool. The tool will create a new file in the directory `your_project/svn/pro/shots/{sequence_name}/{shot_name}/{shot_name}+{task_type_name}.blend`
+4. Hit `ok` to run the tool. The tool will create a new file in the directory `your_project/project_files/pro/shots/{sequence_name}/{shot_name}/{shot_name}+{task_type_name}.blend`
 
 
 ### Templates
 Template files are used to implement custom UI when building new shots. Templates are custom .blend files named after the corresponding task type on the Kitsu Server for a given project. Workspaces from the template files are loaded into newly built shot files. 
 
-1. Save a new .blend file in the directory `your_project_name/svn/pro/config/shot_builder/templates`
+1. Save a new .blend file in the directory `your_project_name/project_files/pro/config/shot_builder/templates`
 2. Name the .blend file after a task type in Kitsu (e.g. Animation, Layout, Compositing), name must match exactly the [task type](https://kitsu.cg-wire.com/customization-pipeline/#task-type) name on Kitsu Server.
 3. Customize Workspaces to create custom UI for the task type, and save the file.
 
@@ -370,7 +370,7 @@ Template files are used to implement custom UI when building new shots. Template
 
 
 ### Settings
-Settings.json file can be created by navigating to add-on preferences and running the "Save Shot Builder Settings File" operator. This will save hook files at `your_project_name/svn/pro/config/shot_builder` directory. 
+Settings.json file can be created by navigating to add-on preferences and running the "Save Shot Builder Settings File" operator. This will save hook files at `your_project_name/project_files/pro/config/shot_builder` directory.
 
 Settings file controls core features of the shot builder on a task type basis. 
 

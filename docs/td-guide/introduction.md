@@ -25,12 +25,10 @@ We use two shared drives:
 * `/shared` to store project and shared data
 
 ## Version Control System
-We use SVN. While it presents a higher barrier to entry, it offers a robust and efficient way to store and version large binary files during production.
-
-This means we need an SVN service (which can be on the LAN or online).
+We use Git-LFS to store and version large binary files during production. A Git server can be set up for local access or made accessible over the internet.
 
 ## Network/Web Services
-
+* Git (version control project files)
 * Syncthing (needs access to `/shared`)
 * Flamenco (**render farm** needs access to `/shared` and `/render`)
 * Kitsu (**production tracker** can be hosted anywhere)

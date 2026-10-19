@@ -29,7 +29,7 @@ python init_project_folder_structure.py %HOMEPATH%\data\your_project_name # Wind
 This will create the basic directories for your production:
 - `local`: This is where the local copy of Blender and the add-ons will be installed.
 - `shared`: This is the folder that should be shared over the network.
-- `svn`: This is the version-controlled folder where the `.blend` production files will live.
+- `project_files`: This is the version-controlled folder where the `.blend` production files will live.
 
 4. Create the render directory (optional):
 ```bash

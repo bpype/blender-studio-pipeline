@@ -447,7 +447,7 @@ class KITSU_addon_preferences(bpy.types.AddonPreferences):
 
     version_control: bpy.props.BoolProperty(  # type: ignore
         name="Use Version Control",
-        description="Indicates if SVN or GIT-LFS is being used for version control. If disabled local backups of production files will be created when Publishing to Kitsu",
+        description="Indicates if Git-LFS (or similar) is being used for version control. If disabled local backups of production files will be created when Publishing to Kitsu",
         default=True,
     )
 

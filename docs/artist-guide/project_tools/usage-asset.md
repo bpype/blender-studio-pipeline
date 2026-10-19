@@ -31,4 +31,4 @@ The next step is to create an asset and store that information on the Kitsu Serv
 </div>
 
 
-6. Your new Asset file will be saved to `your_project_name/svn/pro/assets/{asset_type}/{asset_name}/{asset_name}.blend`.
+6. Your new Asset file will be saved to `your_project_name/project_files/pro/assets/{asset_type}/{asset_name}/{asset_name}.blend`.

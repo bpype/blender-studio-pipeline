@@ -22,7 +22,7 @@ download_file(
 A helper script is provided to easily generate a `sha256sum` for a given add-on and place it in the correct directory.
 
 ```bash
-cd  ~/data/your_project_name/svn/tools
+cd  ~/data/your_project_name/tools
 python deploy_custom_addon.py 
 ```
 
