@@ -4,7 +4,7 @@
 Most productions begin with a previz or storyboard step, showing the overall direction and plan for the production. By inputting this as video strip(s) into a VSE file, you can automatically create the corresponding shots on the Kitsu Server directly from the VSE.
 
 1. If not already done, ensure your project settings are set up in [Blender Kitsu Add-On Preferences](https://studio.blender.org/tools/addons/blender_kitsu#how-to-get-started).
-2. Navigate to `Project > New Edit` in the header or `File > New > Edit File` to create a new Edit file at the path `your_project_name/svn/edit`.
+2. Navigate to `Project > New Edit` in the header or `File > New > Edit File` to create a new Edit file at the path `your_project_name/project_files/edit`.
 
 <div style="padding: 12px; background: var(--color-bg-secondary, transparent); border-radius: 8px; margin-bottom: 20px;">
     <img src="/media/artist-guide/project_tools/invoke_new_edit.jpg" width="600" alt="Invoke New Edit" style="display: block; margin: auto;" />

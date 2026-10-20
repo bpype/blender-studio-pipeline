@@ -108,16 +108,16 @@ Project path created at: ~/data/your_project_name
 
 ### Version Control
 
-- Indicate if you use SVN or GIT-LFS. If not, disk-based versioning is enabled.  
+- Indicate if you use Git-LFS or similar version control software. If not, disk-based versioning is enabled.
   See [Version Management Modes](folder_structure_overview.md#version-management-modes) for details.
 
 ```text
 *************************
 * Version Control Setup *
 *************************
-The Blender Studio Tools project is designed to work with version control software (SVN/GIT-LFS) to manage versioning of project files such as Assets & Shots.
+The Blender Studio Tools project is designed to work with version control software (Git-LFS) to manage versioning of project files such as Assets & Shots.
 If you are not using version control, the Blender Kitsu add-on will create version files on your disk to provide versioning functionality.
-Are you using a version control software (SVN/GIT-LFS)? (y/n): y
+Are you using a version control software (e.g. Git-LFS)? (y/n): y
 ```
 
 ### Blender Branch
@@ -140,10 +140,11 @@ Selected Blender Branch: 4.5.x v45
 
 ## 📂 Mounting Project Folders
 
-After setup, make sure the `svn` and `shared` directories are available on artist workstations. Then, run [deployment assistant](deployment_assistant.md) on each workstation.
+After setup, make sure the `project_files` and `shared` directories are available on artist workstations. Then, run [deployment assistant](deployment_assistant.md) on each workstation.
 
-::: info Setting Up SVN & Syncthing
-- If using [SVN](https://studio.blender.org/tools/td-guide/svn-setup) or GIT LFS, make your initial commit of `your_project_name/svn` now.
+ TODO
+::: info Setting Up Git-LFS & Syncthing
+- If using [Git](https://studio.blender.org/tools/td-guide/git-setup) or similar, make your initial commit of `your_project_name/project_files` now.
 - If using [Syncthing](https://studio.blender.org/tools/td-guide/syncthing-setup) or a NAS, set up your shared folder `your_project_name/shared` now.
 :::
 

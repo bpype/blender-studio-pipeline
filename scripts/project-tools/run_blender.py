@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import zipfile
 
 from pathlib import Path
@@ -145,6 +146,39 @@ def extract_zip(file_path: Path, dst_path: Path):
     shutil.rmtree(temp_dir)
 
 
+def extract_extension_archive(archive_path: Path, extract_path: Path):
+    with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_path)
+
+    top_level_entries = list(extract_path.iterdir())
+    manifest_path = extract_path / 'blender_manifest.toml'
+    if manifest_path.is_file():
+        try:
+            with open(manifest_path, 'rb') as manifest_file:
+                manifest = tomllib.load(manifest_file)
+        except (OSError, tomllib.TOMLDecodeError) as error:
+            raise ValueError("Could not read blender_manifest.toml") from error
+
+        package_id = manifest.get('id')
+        if not isinstance(package_id, str) or not package_id or package_id in {'.', '..'} or '/' in package_id or '\\' in package_id:
+            raise ValueError("blender_manifest.toml must contain a valid package id")
+
+        package_dir = extract_path / package_id
+        if package_dir.exists():
+            raise ValueError("Archive already contains a folder matching the package id")
+        package_dir.mkdir()
+        for entry in top_level_entries:
+            shutil.move(entry, package_dir / entry.name)
+        return [package_id]
+
+    if top_level_entries and all(
+        entry.is_dir() and (entry / 'blender_manifest.toml').is_file() for entry in top_level_entries
+    ):
+        return [entry.name for entry in top_level_entries]
+
+    raise ValueError("Archive must contain a root manifest or addon folders with manifests")
+
+
 def update_extension(extension_zip_name, src_folder_name='extensions', dst_path_base=PATH_LOCAL / 'extensions' / 'system'):
     extension_zip_sha = extension_zip_name + '.sha256'
     # This is the file that records all toplevel folders/files installed by this extension
@@ -183,9 +217,12 @@ def update_extension(extension_zip_name, src_folder_name='extensions', dst_path_
     # Extract the archive in a temp location and move the extensions content to local
     src_path_base = Path(tempfile.mkdtemp())
 
-    # Extract the zip file to the temporary directory
-    with zipfile.ZipFile(artifact_archive, 'r') as zip_ref:
-        zip_ref.extractall(src_path_base)
+    try:
+        extension_top_level_files = extract_extension_archive(artifact_archive, src_path_base)
+    except (ValueError, zipfile.BadZipFile) as error:
+        logger.error("Could not install extension %s: %s" % (extension_zip_name, error))
+        shutil.rmtree(src_path_base)
+        return
 
     # Remove all files previously installed by the archive
     local_installed_files = local_artifact_dir / extension_zip_files
@@ -199,9 +236,6 @@ def update_extension(extension_zip_name, src_folder_name='extensions', dst_path_
                     shutil.rmtree(old_file)
                 else:
                     old_file.unlink()
-
-    # Get a list of the top level content of the extension in case it doesn't just contain one folder
-    extension_top_level_files = [entry.name for entry in src_path_base.iterdir()]
 
     with open(local_installed_files, 'w') as f:
         for extension_file in extension_top_level_files:

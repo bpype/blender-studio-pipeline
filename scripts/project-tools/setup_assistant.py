@@ -385,14 +385,14 @@ def ensure_kitsu_project_short_name(project: dict, access_token: str):
 
 def check_version_control():
     print(
-        "The Blender Studio Tools project is designed to work with version control software (SVN/GIT-LFS) to manage versioning project files such as Assets & Shots."
+        "The Blender Studio Tools project is designed to work with version control software (Git-LFS) to manage versioning project files such as Assets & Shots."
     )
     print(
         "If you are not using version control the Blender Kitsu add-on will create version files on your disk to provide versioning functionality."
     )
     while True:
         answer = (
-            input("Are you using a version control software (SVN/GIT-LFS)? (y/n): ").strip().lower()
+            input("Are you using a version control software (Git-LFS)? (y/n): ").strip().lower()
         )
         if answer.lower() == "y":
             return True
@@ -505,9 +505,9 @@ def main():
     print_header("Mounting Project Folders", 1)
 
     print(
-        f"If you are using SVN or GIT LFS to do version control please make your initial commit of project folder now."
+        f"If you are using Git-LFS to do version control please make your initial commit of project folder now."
     )
-    print("https://studio.blender.org/tools/td-guide/svn-setup")
+    print("https://studio.blender.org/tools/td-guide/git-setup")
     print()
     print(
         f"If you are using Syncthing or other to sync files, please setup your sync of {project_path.joinpath('shared').as_posix()} now."
@@ -516,7 +516,7 @@ def main():
 
     print()
     print(
-        f"Next step: Ensure the SVN and Shared directories above are available on your artist workstations. Once the directories are setup, you can run deployment assistant on an Artist workstation."
+        f"Next step: Ensure the project_files and Shared directories above are available on your artist workstations. Once the directories are setup, you can run deployment assistant on an Artist workstation."
     )
     print(f"{project_path.joinpath('tools/deployment_assistant.py').as_posix()}")
     print(

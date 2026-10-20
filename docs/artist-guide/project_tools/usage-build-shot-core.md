@@ -16,10 +16,10 @@ Casting is the process of associating a Kitsu Asset Entity with a given shot. Th
     <img src="/media/artist-guide/project_tools/draw_new_shot.jpg" width="600" alt="Draw New Shot" style="display: block; margin: auto;" />
 </div>
 
-3. The new file will be saved to `your_project_name/svn/pro/shots/{sequence}/{shot}/{shot}.blend`.
+3. The new file will be saved to `your_project_name/project_files/pro/shots/{sequence}/{shot}/{shot}.blend`.
 
 ::: info Shot Builder Hooks 
 Use the `Save Shot Builder Hook File` operator in the **Blender Kitsu** Add-on preferences.
 
-Edit the file `your_project/svn/pro/assets/scripts/shot-builder/hooks.py` to customize.
+Edit the file `your_project/project_files/pro/assets/scripts/shot-builder/hooks.py` to customize.
 :::

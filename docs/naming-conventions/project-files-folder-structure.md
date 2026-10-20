@@ -1,4 +1,4 @@
-# SVN Folder Structure
+# Project Files Folder Structure
 
 ::: warning Work in Progress
 October 17th 2023 - The content of this page is currently being edited/updated.
@@ -16,7 +16,7 @@ October 17th 2023 - The content of this page is currently being edited/updated.
 
 ## Proposal adopted in October 2023:
 ``` bash
-svn
+project_files
 ├── pro # All files from the production
 │   ├── assets # All assets from the production
 │   │   ├── chars # Characters & character variations

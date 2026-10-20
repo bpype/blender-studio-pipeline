@@ -69,6 +69,7 @@ export default defineConfig({
         items: [
           { text: 'Project Overview', link: '/artist-guide/project_tools/project-overview' },
           { text: 'Project Blender', link: '/artist-guide/project_tools/project-blender' },
+          { text: 'Using Git', link: '/artist-guide/git-usage' },
           {
             text: 'Project Tools',
             collapsed: true,
@@ -157,11 +158,11 @@ export default defineConfig({
                 ],
               },
               {
-                text: 'SVN',
+                text: 'Project Files',
                 collapsed: true,
                 items: [
-                  { text: 'SVN Setup', link: '/td-guide/svn-setup' },
-                  { text: 'Populating SVN', link: '/td-guide/populating_svn' },
+                  { text: 'Git Setup', link: '/td-guide/git-setup' },
+                  { text: 'Populating Project Files', link: '/td-guide/populating_project_files' },
                 ],
               },
               {
@@ -224,7 +225,7 @@ export default defineConfig({
           { text: 'In-file Naming', link: '/naming-conventions/datablock-names' },
           { text: 'Examples', link: '/naming-conventions/examples' },
           { text: 'Shared Folder Structure', link: '/naming-conventions/shared-folder-structure' },
-          { text: 'SVN Folder Structure', link: '/naming-conventions/svn-folder-structure' },
+          { text: 'Project Files Structure', link: '/naming-conventions/project-files-folder-structure' },
         ]
       },
 
@@ -273,7 +274,6 @@ export default defineConfig({
               { text: 'Introduction', link: '/gentoo/user/introduction' },
               { text: 'Installing Software', link: '/gentoo/user/installing-software' },
               { text: 'Running Blender', link: '/gentoo/user/running-blender' },
-              { text: 'SVN', link: '/gentoo/user/svn' },
 
             ]
           },

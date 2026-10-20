@@ -27,4 +27,4 @@ The following settings will be set automatically if they exist. You can set a cu
 - **Render Review**
     - Farm Output Directory: `data/your_project_name/render/`
 - **Advanced**
-    - Use Version Control (bool): Indicates if SVN or GIT-LFS is being used for version control. If disabled, local backups of production files will be created when publishing to Kitsu.
+    - Use Version Control (bool): Indicates if Git-LFS or similar is being used for version control. If disabled, local backups of production files will be created when publishing to Kitsu.

@@ -18,9 +18,9 @@ This guide will walk you through the steps to set up a new project on a new mach
 4. **Prepare Project Folders**  
    Ensure project folders are accessible on artist workstations:
    - **Version Control Software:**  
-     Set up an [`SVN`](svn-setup.md) repository and a [`Shared`](syncthing-setup.md) folder according to the [Folder Structure](folder_structure_overview#version-controlled-folder-layout), and install them on artist workstations.
+   Set up a [`Git`](git-setup.md) repository and a [`Shared`](syncthing-setup.md) folder according to the [Folder Structure](folder_structure_overview#version-controlled-folder-layout), and make them available on artist workstations.
    - **Disk Version:**  
-     Mount both the `SVN` and `Shared` directories according to the [Folder Structure](folder_structure_overview#disk-versions-folder-layout) on all artist workstations via network file share or [file sync](syncthing-setup.md).
+     Mount both the `Project Files` and `Shared` directories according to the [Folder Structure](folder_structure_overview#disk-versions-folder-layout) on all artist workstations via network file share or [file sync](syncthing-setup.md).
 
 5. **Run Deployment Assistant**  
    Run the [Deployment Assistant](deployment_assistant.md) on artist workstations to finalize configuration.

@@ -1,29 +1,26 @@
-# Populating `SVN`
+# Populating `Project Files`
 
-This folder should contain a version-controlled file system to be shared over the network (using SVN, GIT-LFS, etc.). Connect this folder to your version control software of choice and create the following folder structure. More details about the shared folder structure can be found [here](/naming-conventions/svn-folder-structure.md).
+This folder should contain version-controlled files (using Git LFS or similar) or be shared over the network for disk-based versioning. Connect it to your chosen version control system and create the folder structure below. See the [Project Files folder structure](/naming-conventions/project-files-folder-structure.md) documentation for details.
 
 ## Initial Directory Set-Up
 
-1. Follow the [SVN-Setup guide](/td-guide/svn-setup.md) to create your SVN repository **before** populating the directory with folders. *(Optional)*
+1. Follow the [Git Setup Guide](/td-guide/git-setup.md) to create your Git repository **before** populating the directory with folders. *(Skip if using Disk Versions)*
 2. Use the following commands to generate the folder structure below.
     ```bash
     # Linux/Mac
     cd ~/data/blender-studio-tools/scripts/project-tools
-    ./init_project_folder_structure.py ~/data/your_project_name/svn --json_file folder_structure_svn.json
+    ./init_project_folder_structure.py ~/data/your_project_name/project_files --json_file folder_structure_project_files.json
     ```
     ```bash
     # Windows
     cd %HOMEPATH%\data\blender-studio-tools\scripts\project-tools
-    python init_project_folder_structure.py %HOMEPATH%\data\your_project_name\svn --json_file folder_structure_svn.json
+    python init_project_folder_structure.py %HOMEPATH%\data\your_project_name\project_files --json_file folder_structure_project_files.json
     ```
 
-## Add Existing Directory to User Workstation
-
-1. Clone your SVN folder directly into the target directory `data/your_project_name/svn`.
 
 ```bash
 .
-└── svn/
+└── project_files/
     ├── dev/        # Anything related to early development or tests
     │   ├── boards
     │   ├── concepts

@@ -14,7 +14,7 @@ Naming things well is notoriousy difficult, mostly because a name that works wel
 
 - **type** (char, set, lib, props) of asset - not for shots
     - **variant** (voice, red, blurry) changes meaning of the content > only for exports and renders, not for work files
-        - **version** (v001, v002) only for renders and exports, not for work files as they have a history on the SVN
+        - **version** (v001, v002) only for renders and exports, not for work files as they have a history on Git
             - **version_info** (720p, lowres, cache) the content is the same
 
 
@@ -66,5 +66,5 @@ Example: `140_0010-anim.blend`
 
 Its position in the repository would be at:
 
-`svn/pro/shots/140_credits/140_0010/140_0010-anim.blend`
+`project_files/pro/shots/140_credits/140_0010/140_0010-anim.blend`
 

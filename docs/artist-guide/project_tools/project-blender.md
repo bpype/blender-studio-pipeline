@@ -14,12 +14,12 @@ The next step is to deploy the required software onto each of the studio's works
 ### Using our scripts to download the latest Blender LTS or daily build version
 ```bash
 # Linux/Mac
-cd ~/data/your_project_name/svn/tools
+cd ~/data/your_project_name/tools
 ./update_blender.py
 ```
 ```bash
 # Windows
-cd %HOMEPATH%\data\your_project_name\svn\tools
+cd %HOMEPATH%\data\your_project_name\tools
 python update_blender.py
 ```
 
@@ -58,11 +58,11 @@ Note that the file names do not have to match exactly with the examples above as
 
 ## Create Shortcut
 
-Once your project has been set up using the "Project Tools" scripts, the `run_blender.py` script should be available inside `your_project_name/svn/tools`. Follow the steps below to create a shortcut to this script. This shortcut will call the `run_blender.py` script, which will fetch the correct Blender version for your operating system from the `your_project_name/shared/artifacts/blender` directory and extract it to the `local` directory. It will also fetch extensions in the `your_project_name/shared/artifacts/extensions` folder.
+Once your project has been set up using the "Project Tools" scripts, the `run_blender.py` script should be available inside `your_project_name/tools`. Follow the steps below to create a shortcut to this script. This shortcut will call the `run_blender.py` script, which will fetch the correct Blender version for your operating system from the `your_project_name/shared/artifacts/blender` directory and extract it to the `local` directory. It will also fetch extensions in the `your_project_name/shared/artifacts/extensions` folder.
 
 ### Create Linux Shortcut
 ```bash
-cd ~/data/your_project_name/svn/tools
+cd ~/data/your_project_name/tools
 ./install_desktop_file.sh
 ```
 ::: info Available on Gentoo
@@ -84,12 +84,12 @@ TODO Replace Image with Project-Tools version
 
 ### Create Windows Shortcut
 
-1. Open the directory `%HOMEPATH%\data\your_project_name\svn\tools`
+1. Open the directory `%HOMEPATH%\data\your_project_name\tools`
 2. Create a shortcut to `launch_blender_win.bat` on your desktop
 
 ### Create Mac Shortcut
 
-1. Open the directory `~/data/your_project_name/svn/tools`
+1. Open the directory `~/data/your_project_name/tools`
 2. In Finder, select the `launch_blender_mac.command` and press `ctrl+shift+command+t` to add it to the dock.
 
 ## Run Blender 
@@ -98,12 +98,12 @@ To launch Blender from the terminal, open the tools directory within your projec
 
 ```bash
 # Linux/Mac
-cd ~/data/your_project_name/svn/tools
+cd ~/data/your_project_name/tools
 ./run_blender.py
 ```
 ```bash
 # Windows
-cd %HOMEPATH%\data\your_project_name\svn\tools
+cd %HOMEPATH%\data\your_project_name\tools
 python run_blender.py
 ```
 
@@ -121,12 +121,12 @@ Internally to the Blender Studio only, the Blender inside your project is automa
 
 ```bash
 # Linux/Mac
-cd ~/data/your_project_name/svn/tools
+cd ~/data/your_project_name/tools
 ./update_blender.py
 ```
 ```bash
 # Windows
-cd %HOMEPATH%\data\your_project_name\svn\tools
+cd %HOMEPATH%\data\your_project_name\tools
 python update_blender.py
 ```
 ## Rollback Blender
@@ -135,12 +135,12 @@ Use `rollback_blender.py` to switch the "current" version hosted in `your_projec
 
 ```bash
 # Linux/Mac
-cd ~/data/your_project_name/svn/tools
+cd ~/data/your_project_name/tools
 ./rollback_blender.py
 ```
 ```bash
 # Windows
-cd %HOMEPATH%\data\your_project_name\svn\tools
+cd %HOMEPATH%\data\your_project_name\tools
 python rollback_blender.py
 ```
 
@@ -150,12 +150,12 @@ In some cases, users may want to run a previous version of Blender on their mach
 
 ```bash
 # Linux/Mac
-cd ~/data/your_project_name/svn/tools
+cd ~/data/your_project_name/tools
 ./run_blender_previous.py
 ```
 ```bash
 # Windows
-cd %HOMEPATH%\your_project_name\svn\tools
+cd %HOMEPATH%\your_project_name\tools
 python rollback_blender_local.py
 ```
 
@@ -164,12 +164,12 @@ All extensions in the Blender Studio Pipeline repository can be quickly download
 
 ```bash
 # Linux/Mac
-cd ~/data/your_project_name/svn/tools
+cd ~/data/your_project_name/tools
 ./update_extensions.py
 ```
 ```bash
 # Windows
-cd %HOMEPATH%\data\your_project_name\svn\tools
+cd %HOMEPATH%\data\your_project_name\tools
 python update_extensions.py
 ```
 
