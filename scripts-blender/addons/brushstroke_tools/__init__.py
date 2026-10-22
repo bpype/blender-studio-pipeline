@@ -2,6 +2,17 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+bl_info = {
+    "name": "Brushstroke Tools",
+    "author": "Simon Thommes",
+    "version": (0, 3, 3),
+    "blender": (4, 2, 0),
+    "location": "3D View -> Sidebar -> Brushstroke Tools",
+    "description": "Brushstroke painting tools by the Blender Studio",
+    "category": "Material",
+    "doc_url": "https://studio.blender.org/tools/addons/brushstroke_tools",
+}
+
 import importlib
 from . import geomod, utils, icons, settings, preferences, ui, draw_tool, ops
 import tomllib as toml

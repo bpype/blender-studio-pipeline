@@ -2,6 +2,17 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+bl_info = {
+    "name": "Pose Shape Keys",
+    "author": "Demeter Dzadik ",
+    "version": (0, 3, 3),
+    "blender": (4, 2, 0),
+    "location": "Properties -> Data -> Pose Shape Keys",
+    "description": "Preserve your shape keys through weight changes, and much more",
+    "category": "Rigging",
+    "doc_url": "https://studio.blender.org/tools/addons/pose_shape_keys",
+}
+
 import importlib
 
 import bpy

@@ -2,6 +2,17 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+bl_info = {
+    "name": "Asset Pipeline",
+    "author": "Demeter Dzadik",
+    "version": (0, 3, 3),
+    "blender": (4, 2, 0),
+    "location": "3D View -> Sidebar -> Asset Pipeline",
+    "description": "Asset data merger for studio collaboration",
+    "category": "System",
+    "doc_url": "https://studio.blender.org/tools/addons/asset_pipeline",
+}
+
 import importlib
 from types import ModuleType
 
