@@ -49,7 +49,7 @@ class OBJECT_OT_gnsk_add_shape(Operator):
     )
     uv_name: StringProperty(
         name="UVMap",
-        description="UV Map to use for the deform space magic. All selected objects must have a map with this name, or the default will be used",
+        description="UV Map to use for the Tangent Space transfer mode. All selected objects must have a map with this name",
     )
     transfer_mode: EnumProperty(
         name="Transfer Mode",
@@ -62,16 +62,16 @@ class OBJECT_OT_gnsk_add_shape(Operator):
     )
 
     def invoke(self, context, _event):
-        for o in context.selected_objects:
-            if o.type != 'MESH':
-                continue
-            uvs = o.data.uv_layers
-            if len(uvs) == 0:
-                self.report({'ERROR'}, 'All selected mesh objects must have a UV Map!')
-                return {'CANCELLED'}
-
-        uvs = context.object.data.uv_layers
-        self.uv_name = "GNSK" if "GNSK" in uvs else uvs[0].name
+        # UV Maps are only needed by the Tangent Space transfer mode, which is
+        # validated in execute(). The other modes transfer by vertex index.
+        obj = context.object
+        uvs = obj.data.uv_layers if obj and obj.type == 'MESH' else []
+        if "GNSK" in uvs:
+            self.uv_name = "GNSK"
+        elif len(uvs) > 0:
+            self.uv_name = uvs[0].name
+        else:
+            self.uv_name = ""
 
         self.shape_name = "ShapeKey: Frame " + str(context.scene.frame_current)
         wm = context.window_manager
@@ -81,7 +81,7 @@ class OBJECT_OT_gnsk_add_shape(Operator):
         layout = self.layout
         layout.prop(self, 'shape_name')
         layout.prop(self, 'transfer_mode')
-        if self.transfer_mode == "TANGENT_SPACE":
+        if self.transfer_mode == "Tangent Space":
             layout.prop_search(self, 'uv_name', context.object.data, 'uv_layers', icon='GROUP_UVS')
 
     def execute(self, context):
@@ -102,10 +102,14 @@ class OBJECT_OT_gnsk_add_shape(Operator):
                 obj.select_set(False)
 
         mesh_objs = context.selected_objects[:]
-        for obj in mesh_objs:
-            if self.transfer_mode == "TANGENT_SPACE" and self.uv_name not in obj.data.uv_layers:
-                self.report({'ERROR'}, f'Object "{obj.name}" has no UV Map named "{self.uv_name}"!')
-                return {'CANCELLED'}
+        if self.transfer_mode == "Tangent Space":
+            for obj in mesh_objs:
+                if self.uv_name not in obj.data.uv_layers:
+                    self.report(
+                        {'ERROR'},
+                        f'Tangent Space requires a UV Map, but object "{obj.name}" has none named "{self.uv_name}"!',
+                    )
+                    return {'CANCELLED'}
 
         # Keep track of objects which will get the GNSK modifier.
         # Tuple of (original_obj, mod_index)
@@ -150,10 +154,12 @@ class OBJECT_OT_gnsk_add_shape(Operator):
             gnsk.storage_object = sk_ob
 
             geomod_set_param_value(mod, 'Sculpt', sk_ob)
+            # The UVMap input is only used by Tangent Space, so meshes without UVs can skip it.
             uv_map = sk_ob.data.uv_layers.get(self.uv_name)
-            if not uv_map:
+            if not uv_map and len(sk_ob.data.uv_layers) > 0:
                 uv_map = sk_ob.data.uv_layers[0]
-            geomod_set_param_attribute(mod, 'UVMap', uv_map.name)
+            if uv_map:
+                geomod_set_param_attribute(mod, 'UVMap', uv_map.name)
 
             # Add references from the shape key object to the deformed objects.
             # This is used for the visibility switching operator.

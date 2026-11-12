@@ -5,9 +5,24 @@
 import bpy
 from bl_ui.generic_ui_list import draw_ui_list
 
-from .geonode_util import geomod_get_identifier
+from .geonode_util import geomod_get_identifier, geomod_get_param_attribute, geomod_get_param_value
+from .operators import TRANSFER_MODES
 from .prefs import get_addon_prefs
 from .props import GeoNodeShapeKey
+
+
+def is_missing_uvs(gnsk: GeoNodeShapeKey, modifier) -> bool:
+    """Whether the modifier is in Tangent Space mode, without the UV Map that mode requires."""
+    mode = geomod_get_param_value(modifier, "Transfer Mode")
+    if mode not in ("Tangent Space", TRANSFER_MODES["Tangent Space"]):
+        return False
+
+    uv_name = geomod_get_param_attribute(modifier, "UVMap")
+    storage = gnsk.storage_object
+    for ob in (gnsk.id_data, storage):
+        if not ob or ob.type != 'MESH' or uv_name not in ob.data.uv_layers:
+            return True
+    return False
 
 
 class GNSK_UL_main(bpy.types.UIList):
@@ -29,11 +44,14 @@ class GNSK_UL_main(bpy.types.UIList):
             row.label(text="Error: Modifier was removed.")
             return
         row = split.row(align=True)
+        # Highlight the mode when it can't work: Tangent Space needs a UV Map on both objects.
+        mode_row = row.row(align=True)
+        mode_row.alert = is_missing_uvs(gnsk, modifier)
         if bpy.app.version >= (5, 2, 0):
-            row.prop(getattr(modifier.properties.inputs, geomod_get_identifier(modifier, "Transfer Mode")), "value", text="", emboss=True)
+            mode_row.prop(getattr(modifier.properties.inputs, geomod_get_identifier(modifier, "Transfer Mode")), "value", text="", emboss=True)
             row.prop(getattr(modifier.properties.inputs, geomod_get_identifier(modifier, "Factor")), "value", text="", emboss=True)
         else:
-            row.prop(modifier, f'["{geomod_get_identifier(modifier, "Transfer Mode")}"]', text="", emboss=True)
+            mode_row.prop(modifier, f'["{geomod_get_identifier(modifier, "Transfer Mode")}"]', text="", emboss=True)
             row.prop(modifier, f'["{geomod_get_identifier(modifier, "Factor")}"]', text="", emboss=True)
         row = row.row(align=True)
         row.alignment = 'RIGHT'
