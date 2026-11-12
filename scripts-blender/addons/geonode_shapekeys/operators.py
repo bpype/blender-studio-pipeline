@@ -91,8 +91,14 @@ class OBJECT_OT_gnsk_add_shape(Operator):
             self.report({'ERROR'}, "Node tree file not found. Check your Add-On preferences.")
             return {'CANCELLED'}
 
+        # Unlike linked meshes, local ones can be in Edit/Sculpt/etc mode. That would give us
+        # stale evaluated geometry, and leave the object stuck in that mode once it gets hidden.
+        if context.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
         for obj in context.selected_objects:
-            if obj.type != 'MESH':
+            # Linked objects without an override can't store modifiers.
+            if obj.type != 'MESH' or obj.library:
                 obj.select_set(False)
 
         mesh_objs = context.selected_objects[:]
@@ -126,7 +132,8 @@ class OBJECT_OT_gnsk_add_shape(Operator):
             gnsk = obj.geonode_shapekeys.add()
             gnsk.name = self.shape_name
 
-            obj.override_library.is_system_override = False
+            if obj.override_library:
+                obj.override_library.is_system_override = False
             mod = obj.modifiers.new(gnsk.name, type='NODES')
             mod.node_group = ensure_shape_key_node_tree(context)
 
@@ -394,7 +401,7 @@ def get_active_gnsk_targets(obj):
 
 
 class OBJECT_OT_gnsk_toggle_object(Operator):
-    """Swap between the sculpt and overridden objects"""
+    """Swap between the sculpt and target objects"""
 
     bl_idname = "object.geonode_shapekey_switch_focus"
     bl_label = "Switch to Render Objects"

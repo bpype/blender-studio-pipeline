@@ -13,7 +13,7 @@ class GeoNodeShapeKey(PropertyGroup):
         description="Name of the modifier, storage object, etc", override={'LIBRARY_OVERRIDABLE'}
     )
 
-    # On overridden objects, this stores the local object for sculpting.
+    # On target objects, this stores the local object for sculpting.
     # Used for deletion and back and forth switching.
     storage_object: PointerProperty(
         name="Storage Object", type=Object, override={'LIBRARY_OVERRIDABLE'}
@@ -73,6 +73,6 @@ def register():
         options={'LIBRARY_EDITABLE'}, override={'LIBRARY_OVERRIDABLE'}
     )
 
-    # On local objects for sculpting, this stores the overridden object.
-    # Used for swapping back and forth between the two objects.
+    # On local objects for sculpting, this stores the target objects.
+    # Used for switching context between source and target objects.
     Object.geonode_shapekey_targets = CollectionProperty(type=GNSK_TargetObject)

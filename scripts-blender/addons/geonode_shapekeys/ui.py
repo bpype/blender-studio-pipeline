@@ -79,12 +79,20 @@ class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_parent_id = "DATA_PT_shape_keys"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
         ob = context.object
+        if not ob or ob.type != 'MESH':
+            return False
 
-        return ob.override_library or len(ob.geonode_shapekey_targets) > 0
+        if len(ob.geonode_shapekey_targets) > 0:
+            return True
+
+        # Works on local and overridden objects, but linked objects
+        # without an override can't store modifiers.
+        return not ob.library
 
     def draw(self, context):
         layout = self.layout
