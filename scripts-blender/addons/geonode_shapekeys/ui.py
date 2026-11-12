@@ -36,8 +36,8 @@ class GNSK_UL_main(bpy.types.UIList):
         split = layout.row().split(factor=0.4, align=True)
 
         row = split.row()
-        if gnsk.storage_object:
-            row.prop(gnsk.storage_object, 'name', text="", emboss=False, icon='OBJECT_DATA')
+        # Renaming this also renames the modifier and storage object, see props.py.
+        row.prop(gnsk, 'name', text="", emboss=False, icon='OBJECT_DATA')
         modifier = gnsk.modifier
         if not modifier:
             row.alert=True
@@ -87,6 +87,11 @@ class GNSK_UL_main(bpy.types.UIList):
 
         for op in ops:
             op.gnsk_index = gnsk.index
+
+        # Same visibility toggles as in the modifier panel.
+        vis_row = row.row(align=True)
+        vis_row.prop(modifier, 'show_viewport', text="", emboss=False)
+        vis_row.prop(modifier, 'show_render', text="", emboss=False)
 
 
 class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
