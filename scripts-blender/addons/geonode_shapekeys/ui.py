@@ -5,9 +5,24 @@
 import bpy
 from bl_ui.generic_ui_list import draw_ui_list
 
-from .geonode_util import geomod_get_identifier
+from .geonode_util import geomod_get_identifier, geomod_get_param_attribute, geomod_get_param_value
+from .operators import TRANSFER_MODES
 from .prefs import get_addon_prefs
 from .props import GeoNodeShapeKey
+
+
+def is_missing_uvs(gnsk: GeoNodeShapeKey, modifier) -> bool:
+    """Whether the modifier is in Tangent Space mode, without the UV Map that mode requires."""
+    mode = geomod_get_param_value(modifier, "Transfer Mode")
+    if mode not in ("Tangent Space", TRANSFER_MODES["Tangent Space"]):
+        return False
+
+    uv_name = geomod_get_param_attribute(modifier, "UVMap")
+    storage = gnsk.storage_object
+    for ob in (gnsk.id_data, storage):
+        if not ob or ob.type != 'MESH' or uv_name not in ob.data.uv_layers:
+            return True
+    return False
 
 
 class GNSK_UL_main(bpy.types.UIList):
@@ -21,19 +36,22 @@ class GNSK_UL_main(bpy.types.UIList):
         split = layout.row().split(factor=0.4, align=True)
 
         row = split.row()
-        if gnsk.storage_object:
-            row.prop(gnsk.storage_object, 'name', text="", emboss=False, icon='OBJECT_DATA')
+        # Renaming this also renames the modifier and storage object, see props.py.
+        row.prop(gnsk, 'name', text="", emboss=False, icon='OBJECT_DATA')
         modifier = gnsk.modifier
         if not modifier:
             row.alert=True
             row.label(text="Error: Modifier was removed.")
             return
         row = split.row(align=True)
+        # Highlight the mode when it can't work: Tangent Space needs a UV Map on both objects.
+        mode_row = row.row(align=True)
+        mode_row.alert = is_missing_uvs(gnsk, modifier)
         if bpy.app.version >= (5, 2, 0):
-            row.prop(getattr(modifier.properties.inputs, geomod_get_identifier(modifier, "Transfer Mode")), "value", text="", emboss=True)
+            mode_row.prop(getattr(modifier.properties.inputs, geomod_get_identifier(modifier, "Transfer Mode")), "value", text="", emboss=True)
             row.prop(getattr(modifier.properties.inputs, geomod_get_identifier(modifier, "Factor")), "value", text="", emboss=True)
         else:
-            row.prop(modifier, f'["{geomod_get_identifier(modifier, "Transfer Mode")}"]', text="", emboss=True)
+            mode_row.prop(modifier, f'["{geomod_get_identifier(modifier, "Transfer Mode")}"]', text="", emboss=True)
             row.prop(modifier, f'["{geomod_get_identifier(modifier, "Factor")}"]', text="", emboss=True)
         row = row.row(align=True)
         row.alignment = 'RIGHT'
@@ -70,6 +88,11 @@ class GNSK_UL_main(bpy.types.UIList):
         for op in ops:
             op.gnsk_index = gnsk.index
 
+        # Same visibility toggles as in the modifier panel.
+        vis_row = row.row(align=True)
+        vis_row.prop(modifier, 'show_viewport', text="", emboss=False)
+        vis_row.prop(modifier, 'show_render', text="", emboss=False)
+
 
 class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
     """Panel to draw the GeoNode ShapeKey UI"""
@@ -79,12 +102,20 @@ class GNSK_PT_GeoNodeShapeKeys(bpy.types.Panel):
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_parent_id = "DATA_PT_shape_keys"
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
         ob = context.object
+        if not ob or ob.type != 'MESH':
+            return False
 
-        return ob.override_library or len(ob.geonode_shapekey_targets) > 0
+        if len(ob.geonode_shapekey_targets) > 0:
+            return True
+
+        # Works on local and overridden objects, but linked objects
+        # without an override can't store modifiers.
+        return not ob.library
 
     def draw(self, context):
         layout = self.layout

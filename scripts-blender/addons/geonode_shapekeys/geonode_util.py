@@ -43,6 +43,19 @@ def geomod_get_param_value(modifier: Modifier, param_name: str):
     return modifier[input_id]
 
 
+def geomod_get_param_attribute(modifier: Modifier, param_name: str) -> str:
+    """Return the attribute name that the given modifier input is set to use, or an empty string."""
+    input_id = geomod_get_identifier(modifier, param_name)
+    if not input_id:
+        return ""
+    if bpy.app.version >= (5, 2):
+        prop = getattr(modifier.properties.inputs, input_id)
+        return prop.attribute_name if prop.type == "ATTRIBUTE" else ""
+    if not modifier.get(input_id + "_use_attribute"):
+        return ""
+    return modifier.get(input_id + "_attribute_name", "")
+
+
 def geomod_set_param_use_attribute(modifier: Modifier, param_name: str, use_attrib: bool):
     input_id = geomod_get_identifier(modifier, param_name)
     if bpy.app.version >= (5, 2):

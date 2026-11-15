@@ -2,18 +2,80 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import re
+
 from bpy.props import CollectionProperty, IntProperty, PointerProperty, StringProperty
 from bpy.types import Modifier, Object, PropertyGroup
 
 from .operators import geomod_get_param_value
 
 
+_is_renaming = False
+
+
+def _replace_name(current: str, old_name: str | None, new_name: str) -> str:
+    """Return `current` with `old_name` replaced by `new_name`, so that any prefix or
+    suffix that was added to it (for example by the user) is preserved.
+
+    If `old_name` can't be found in `current`, fall back to using `new_name` as-is.
+    """
+    if old_name:
+        # The modifier name may have a .001 suffix that the storage object doesn't have.
+        candidates = [old_name, re.sub(r"\.\d{3,}$", "", old_name)]
+        for candidate in candidates:
+            if candidate and candidate in current:
+                return current.replace(candidate, new_name, 1)
+    return new_name
+
+
+def _update_gnsk_name(self, _context):
+    """Keep the modifier, storage object, and the entries of all other objects sharing
+    this shape in sync with the name that was just set on this entry."""
+    global _is_renaming
+    if _is_renaming or not self.storage_object:
+        # Not fully set up yet (see OBJECT_OT_gnsk_add_shape), or we are the ones renaming.
+        return
+
+    _is_renaming = True
+    try:
+        new_name = self.name
+        storage = self.storage_object
+
+        entries = [self]
+        for target in storage.geonode_shapekey_targets:
+            if not target.obj:
+                continue
+            for other in target.obj.geonode_shapekeys:
+                if other.storage_object == storage and other.as_pointer() != self.as_pointer():
+                    entries.append(other)
+
+        # The modifier still has the old name at this point, so use it to find out
+        # what the shape was called before the rename.
+        old_mod = self.modifier
+        old_name = old_mod.name if old_mod else None
+
+        for gnsk in entries:
+            mod = gnsk.modifier
+            if mod:
+                mod.name = new_name
+                # The name may have gotten a .001 suffix to stay unique on this object.
+                gnsk.name = mod.name
+            else:
+                gnsk.name = new_name
+
+        storage.name = _replace_name(storage.name, old_name, new_name)
+    finally:
+        _is_renaming = False
+
+
 class GeoNodeShapeKey(PropertyGroup):
     name: StringProperty(
-        description="Name of the modifier, storage object, etc", override={'LIBRARY_OVERRIDABLE'}
+        description="Name of the modifier, storage object, etc. Renaming it renames those as well",
+        override={'LIBRARY_OVERRIDABLE'},
+        update=_update_gnsk_name,
     )
 
-    # On overridden objects, this stores the local object for sculpting.
+    # On target objects, this stores the local object for sculpting.
     # Used for deletion and back and forth switching.
     storage_object: PointerProperty(
         name="Storage Object", type=Object, override={'LIBRARY_OVERRIDABLE'}
@@ -73,6 +135,6 @@ def register():
         options={'LIBRARY_EDITABLE'}, override={'LIBRARY_OVERRIDABLE'}
     )
 
-    # On local objects for sculpting, this stores the overridden object.
-    # Used for swapping back and forth between the two objects.
+    # On local objects for sculpting, this stores the target objects.
+    # Used for switching context between source and target objects.
     Object.geonode_shapekey_targets = CollectionProperty(type=GNSK_TargetObject)
