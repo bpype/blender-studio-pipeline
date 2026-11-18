@@ -6,7 +6,7 @@ Before Shot Assembly can begin two requirements need to be met. Firstly, shots t
 
 
 ::: info Building a Project
-Learn how to build a complete project including shots in a step-by-step format, see the [Project Usage Guide](/artist-guide/project_tools/project-usage.md).
+Learn how to build a complete project including shots in a step-by-step format, see the [Project Usage Guide](/pipeline/project-workflow/project-usage.md).
 :::
 ## Preparing Metadata Strips from a Previz Sequence
 
@@ -18,7 +18,7 @@ Metadata Strips are created from the Previz Strips, they are either linked to an
 ![Metadata Strips](/media/pipeline-overview/shot-production/pets_metadata_strips.png)
 
 ::: info Preparing an Edit
-For more information about Metadata Strips and the processes involved in managing the edit of your film see the [Prepare Edit Guide](/artist-guide/project_tools/usage-sync-edit.md).
+For more information about Metadata Strips and the processes involved in managing the edit of your film see the [Prepare Edit Guide](/pipeline/project-workflow/usage-sync-edit.md).
 :::
 
 ## Shot Types

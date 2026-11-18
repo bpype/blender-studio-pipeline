@@ -58,43 +58,31 @@ export default defineConfig({
       {
         text: 'Blender Studio Tools',
         items: [
-          { text: 'Introduction', link: '/overview/introduction' },
+          { text: 'Welcome', link: '/overview/introduction' },
           { text: 'Design Principles', link: '/overview/design-principles' },
-
         ]
       },
       {
-        text: 'Artist Guide',
+        text: 'Pipeline',
         collapsed: false,
         items: [
-          { text: 'Project Overview', link: '/artist-guide/project_tools/project-overview' },
-          { text: 'Project Blender', link: '/artist-guide/project_tools/project-blender' },
-          { text: 'Using Git', link: '/artist-guide/git-usage' },
-          {
-            text: 'Project Tools',
+          { text: 'Getting Started', link: '/pipeline/getting-started.md' },
+          { text: 'Workflow',
+            link: '/pipeline/workflow.md',
             collapsed: true,
-            items: [
-
-              {
-                text: 'Project Usage',
-                collapsed: true,
-                items: [
-                  { text: 'Introduction', link: '/artist-guide/project_tools/project-usage' },
-                  { text: 'Prepare Edit', link: '/artist-guide/project_tools/usage-sync-edit' },
-                  { text: 'Creating Assets', link: '/artist-guide/project_tools/usage-asset' },
-                  { text: 'Building Shots', link: '/artist-guide/project_tools/usage-build-shot' },
-                  { text: 'Playblast Shot', link: '/artist-guide/project_tools/usage-playblast' },
-                  { text: 'Import Playblast', link: '/artist-guide/project_tools/usage-import-playblast' },
-                  { text: 'Update Shot', link: '/artist-guide/project_tools/usage-update-shot' },
-                  { text: 'Flamenco Render', link: '/artist-guide/project_tools/usage-render-flamenco' },
-                  { text: 'Render Review', link: '/artist-guide/project_tools/usage-render-review' },
-                  { text: 'Final Render', link: '/artist-guide/project_tools/usage-final-render' },
-                ],
-              },
-            ],
+            items:[
+              // { text: 'Introduction', link: '/pipeline/project-workflow/project-usage' },
+              { text: 'Prepare Edit', link: '/pipeline/project-workflow/usage-sync-edit' },
+              { text: 'Creating Assets', link: '/pipeline/project-workflow/usage-asset' },
+              { text: 'Building Shots', link: '/pipeline/project-workflow/usage-build-shot' },
+              { text: 'Playblast Shot', link: '/pipeline/project-workflow/usage-playblast' },
+              { text: 'Import Playblast', link: '/pipeline/project-workflow/usage-import-playblast' },
+              { text: 'Update Shot', link: '/pipeline/project-workflow/usage-update-shot' },
+              { text: 'Flamenco Render', link: '/pipeline/project-workflow/usage-render-flamenco' },
+              { text: 'Render Review', link: '/pipeline/project-workflow/usage-render-review' },
+              { text: 'Final Render', link: '/pipeline/project-workflow/usage-final-render' },
+            ]
           },
-          { text: 'Debugging', link: '/artist-guide/debugging' },
-          { text: 'Kitsu', link: '/artist-guide/kitsu' },
           {
             text: 'Pre-Production',
             collapsed: true,
@@ -130,102 +118,126 @@ export default defineConfig({
               { text: 'Coloring', link: '/artist-guide/shot-production/coloring' },
             ]
           },
+          {
+            text: 'Operations',
+            collapsed: true,
+
+            items: [
+              { text: 'Launching Blender', link: '/tools/scripts/project-tools/project-blender' },
+              { text: 'Git Usage', link: '/pipeline/operations/git-usage' },
+              { text: 'Kitsu Management', link: '/pipeline/operations/kitsu' },
+              { text: 'Debugging Overrides', link: '/pipeline//operations/debugging' },
+              {
+                text: 'File & Naming Conventions',
+                collapsed: true,
+                link: '/pipeline//file-and-naming-conventions/intro',
+                items: [
+                  { text: 'In-file Naming', link: '/pipeline//file-and-naming-conventions/datablock-names' },
+                  { text: 'File Types', link: '/pipeline//file-and-naming-conventions/file-types' },
+                  { text: 'Project Files Structure', link: '/pipeline//file-and-naming-conventions/project-files-folder-structure' },
+                  { text: 'Shared Folder Structure', link: '/pipeline//file-and-naming-conventions/shared-folder-structure' },
+                ]
+              },
+            ]
+          },
         ],
       },
+      {
+        text: 'Tools',
+        collapsed: false,
+
+        items: [
+
+          {
+            text: 'Add-ons',
+            link: '/addons/overview',
+            items: [
+              { text: 'Anim Cupboard', link: '/addons/anim_cupboard' },
+              { text: 'Asset Pipeline', link: '/addons/asset_pipeline' },
+              { text: 'Blender Kitsu', link: '/addons/blender_kitsu' },
+              { text: 'Blender Log', link: '/addons/blender_log' },
+              { text: 'Brushstroke Tools', link: '/addons/brushstroke_tools' },
+              {
+                text: 'CloudRig',
+                collapsed: true,
+                items: [
+                  { text: 'Introduction', link: '/addons/cloudrig/introduction' },
+                  { text: 'Component Types', link: '/addons/cloudrig/cloudrig-types' },
+                  { text: 'Generator Parameters', link: '/addons/cloudrig/generator-parameters' },
+                  { text: 'Rig UI', link: '/addons/cloudrig/rig-ui' },
+                  { text: 'Properties UI', link: '/addons/cloudrig/properties-ui' },
+                  { text: 'Organizing Bones', link: '/addons/cloudrig/organizing-bones' },
+                  { text: 'Actions', link: '/addons/cloudrig/actions' },
+                  { text: 'Troubleshooting', link: '/addons/cloudrig/troubleshooting' },
+                  { text: 'Constraint Relinking', link: '/addons/cloudrig/constraint-relinking' },
+                  { text: 'Workflow Boosters', link: '/addons/cloudrig/workflow-enhancements' },
+                  { text: 'Contribute', link: '/addons/cloudrig/code' },
+                ],
+              },
+              { text: 'Contact Sheet', link: '/addons/contactsheet' },
+              { text: 'Easy Weight', link: '/addons/easy_weight' },
+              { text: 'Geonode Shapekeys', link: '/addons/geonode_shapekeys' },
+              { text: 'Lattice Magic', link: '/addons/lattice_magic' },
+              { text: 'Lighting Overrider', link: '/addons/lighting_overrider' },
+              { text: 'Pose Shape Keys', link: '/addons/pose_shape_keys' },
+            ]
+          },
+        ]
+      },
 
       {
-        text: 'IT and TD Guide',
+        text: 'Studio Setup',
         collapsed: true,
         items: [
-          { text: 'Introduction', link: '/td-guide/introduction' },
-          { text: 'Quick Start', link: '/td-guide/quick-start' },
-          { text: 'Folder Structure', link: '/td-guide/folder_structure_overview' },
-          { text: 'Python', link: '/td-guide/python' },
-          { text: 'Kitsu', link: '/td-guide/kitsu_server' },
-          { text: 'Setup Assistant', link: '/td-guide/setup_assistant' },
-          { text: 'Deployment Assistant', link: '/td-guide/deployment_assistant' },
+          { text: 'Overview', link: '/studio-setup/introduction' },
+          { text: 'Repository', link: '/studio-setup/repository' },
+          { text: 'Folder Structure', link: '/studio-setup/folder_structure_overview' },
+          { text: 'Python', link: '/studio-setup/python' },
+          { text: 'Kitsu', link: '/studio-setup/kitsu_server' },
+          { text: 'Git Setup', link: '/studio-setup/git-setup' },
+          { text: 'Syncthing Setup', link: '/studio-setup/syncthing-setup' },
           {
-            text: 'Manual Configuration',
+            text: 'Project Tools',
+            link: '/tools/scripts/project-tools/overview',
             collapsed: true,
             items: [
-              { text: 'Folder Structure Setup', link: '/td-guide/folder_structure_setup' },
+              { text: 'Populating Shared', link: '/tools/scripts/project-tools/folder-structure-setup/populating_shared' },
+              { text: 'Populating Project Files', link: '/tools/scripts/project-tools/folder-structure-setup/populating_project_files' },
+              { text: 'Blender Setup', link: '/tools/scripts/project-tools/blender_setup' },
+              { text: 'Extensions Setup', link: '/tools/scripts/project-tools/extensions_setup' },
+              { text: 'Add-ons Preferences', link: '/tools/scripts/project-tools/addon_preferences' },
+            ],
+          },
+          { text: 'Flamenco', link: '/studio-setup/flamenco_setup' },
+
+
+          {
+            text: 'Gentoo',
+            collapsed: true,
+            items: [
+              { text: 'Overview', link: '/gentoo/td/overview' },
               {
-                text: 'Shared',
-                collapsed: true,
+                text: 'Setup',
+                collapsed: false,
                 items: [
-                  { text: 'Syncthing Setup', link: '/td-guide/syncthing-setup' },
-                  { text: 'Populating Shared', link: '/td-guide/populating_shared' },
+                  { text: 'Installation', link: '/gentoo/td/installation' },
+                  { text: 'Maintenance', link: '/gentoo/td/maintaince' },
+                  { text: 'Render Farm', link: '/gentoo/td/render_farm' },
+                  { text: 'Troubleshooting', link: '/gentoo/td/troubleshooting' },
                 ],
               },
               {
-                text: 'Project Files',
-                collapsed: true,
+                text: 'Usage',
+                collapsed: false,
                 items: [
-                  { text: 'Git Setup', link: '/td-guide/git-setup' },
-                  { text: 'Populating Project Files', link: '/td-guide/populating_project_files' },
-                ],
-              },
-              {
-                text: 'Blender',
-                collapsed: true,
-                items: [
-                  { text: 'Blender Setup', link: '/td-guide/blender_setup' },
-                  { text: 'Extensions Setup', link: '/td-guide/extensions_setup' },
-                  { text: 'Add-Ons Preferences', link: '/td-guide/addon_preferences' },
-                ],
+                  { text: 'Introduction', link: '/gentoo/user/introduction' },
+                  { text: 'Installing Software', link: '/gentoo/user/installing-software' },
+                  { text: 'Running Blender', link: '/gentoo/user/running-blender' },
+
+                ]
               },
             ],
           },
-          { text: 'Flamenco', link: '/td-guide/flamenco_setup' },
-
-        ]
-      },
-      {
-        text: 'Add-ons',
-        link: '/addons/overview',
-
-        collapsed: true,
-        items: [
-          { text: 'Anim Cupboard', link: '/addons/anim_cupboard' },
-          { text: 'Asset Pipeline', link: '/addons/asset_pipeline' },
-          { text: 'Blender Kitsu', link: '/addons/blender_kitsu' },
-          { text: 'Blender Log', link: '/addons/blender_log' },
-          { text: 'Brushstroke Tools', link: '/addons/brushstroke_tools' },
-          {
-            text: 'CloudRig',
-            collapsed: true,
-            items: [
-              { text: 'Introduction', link: '/addons/cloudrig/introduction' },
-              { text: 'Component Types', link: '/addons/cloudrig/cloudrig-types' },
-              { text: 'Generator Parameters', link: '/addons/cloudrig/generator-parameters' },
-              { text: 'Rig UI', link: '/addons/cloudrig/rig-ui' },
-              { text: 'Properties UI', link: '/addons/cloudrig/properties-ui' },
-              { text: 'Organizing Bones', link: '/addons/cloudrig/organizing-bones' },
-              { text: 'Actions', link: '/addons/cloudrig/actions' },
-              { text: 'Troubleshooting', link: '/addons/cloudrig/troubleshooting' },
-              { text: 'Constraint Relinking', link: '/addons/cloudrig/constraint-relinking' },
-              { text: 'Workflow Boosters', link: '/addons/cloudrig/workflow-enhancements' },
-              { text: 'Contribute', link: '/addons/cloudrig/code' },
-            ],
-          },
-          { text: 'Contact Sheet', link: '/addons/contactsheet' },
-          { text: 'Easy Weight', link: '/addons/easy_weight' },
-          { text: 'Geonode Shapekeys', link: '/addons/geonode_shapekeys' },
-          { text: 'Lattice Magic', link: '/addons/lattice_magic' },
-          { text: 'Lighting Overrider', link: '/addons/lighting_overrider' },
-          { text: 'Pose Shape Keys', link: '/addons/pose_shape_keys' },
-        ]
-      },
-      {
-        text: 'Naming Conventions',
-        collapsed: true,
-        items: [
-          { text: 'Introduction', link: '/naming-conventions/introduction' },
-          { text: 'File Types', link: '/naming-conventions/file-types' },
-          { text: 'In-file Naming', link: '/naming-conventions/datablock-names' },
-          { text: 'Examples', link: '/naming-conventions/examples' },
-          { text: 'Shared Folder Structure', link: '/naming-conventions/shared-folder-structure' },
-          { text: 'Project Files Structure', link: '/naming-conventions/project-files-folder-structure' },
         ]
       },
 
@@ -249,34 +261,6 @@ export default defineConfig({
           },
           { text: 'Asset Publishing', link: '/archive/pipeline-proposal-2019/asset-publishing/introduction' },
           { text: 'Character Pipeline Assistant', link: '/archive/pipeline-proposal-2019/asset-publishing/character-pipeline-assistant' },
-        ],
-      },
-      {
-        text: 'Gentoo',
-        collapsed: true,
-        items: [
-          {
-            text: 'TD',
-            collapsed: false,
-            items: [
-              { text: 'Overview', link: '/gentoo/td/overview' },
-              { text: 'Installation', link: '/gentoo/td/installation' },
-              { text: 'Maintenance', link: '/gentoo/td/maintaince' },
-              { text: 'Render Farm', link: '/gentoo/td/render_farm' },
-              { text: 'Troubleshooting', link: '/gentoo/td/troubleshooting' },
-            ],
-          },
-
-          {
-            text: 'User',
-            collapsed: false,
-            items: [
-              { text: 'Introduction', link: '/gentoo/user/introduction' },
-              { text: 'Installing Software', link: '/gentoo/user/installing-software' },
-              { text: 'Running Blender', link: '/gentoo/user/running-blender' },
-
-            ]
-          },
         ],
       },
     ],
