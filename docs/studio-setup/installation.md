@@ -10,8 +10,8 @@ This guide will walk you through the steps to set up a new project on a new mach
 2. **Set Up Kitsu**
    Set up the [Kitsu](/studio-setup/kitsu_server.md) server and project.
 
-3. **Run Setup Assistant**
-   Download and run the [Setup Assistant](setup_assistant.md) to initialize your project.
+3. **Create Project Folders**
+   Follow the [Project Folder Setup](/tools/scripts/project-tools/folder_structure_setup.md) guide to create the required project directories.
 
 4. **Prepare Project Folders**
    Ensure project folders are accessible on artist workstations:
@@ -20,8 +20,8 @@ This guide will walk you through the steps to set up a new project on a new mach
    - **Disk Versioning:**
      Mount both the `Project Files` and `Shared` directories according to the [Folder Structure](folder_structure_overview#disk-versions-folder-layout) on all artist workstations via network file share or [file sync](syncthing-setup.md).
 
-5. **Run Deployment Assistant**
-   Run the [Deployment Assistant](deployment_assistant.md) on artist workstations to finalize configuration.
+5. **Install Expo Manager**
+   Install and configure the [Expo Manager add-on](/addons/expo-manager/introduction.md) in Blender. To use disk versions instead of version control, enable `version_backups` in the [project configuration](/addons/expo-manager/configuration.md#project-settings).
 
 6. **Set Up Flamenco**
    Set up the [Flamenco](flamenco_setup.md) Server.

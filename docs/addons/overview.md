@@ -10,13 +10,6 @@
 		<h2 class="feature-card__title">Asset Pipeline</h2>
 		<p class="feature-card__tagline">Let multiple artists work on one asset in separate task layer files, then merge their work into a published asset.</p>
 	</a>
-	<a class="feature-card" href="../addons/blender_kitsu">
-		<div class="feature-card__thumbnail">
-			<img src="../media/addons/banners/expo.webp" alt="">
-		</div>
-		<h2 class="feature-card__title">Blender Kitsu</h2>
-		<p class="feature-card__tagline">Organize shots, assets, and edits in your production, using a Kitsu as a backend.</p>
-	</a>
 	<a class="feature-card" href="../addons/brushstroke_tools">
 		<div class="feature-card__thumbnail">
 			<img src="../media/addons/brushstroke_tools/painterly_fishing_hut-UI.jpg" alt="">
@@ -37,6 +30,13 @@
 		</div>
 		<h2 class="feature-card__title">Easy Weights</h2>
 		<p class="feature-card__tagline">Quality-of-life improvements for weight painting, including a weight paint pie menu and automatic cleanup.</p>
+	</a>
+	<a class="feature-card" href="../addons/expo-manager/introduction">
+		<div class="feature-card__thumbnail">
+			<img src="../media/addons/banners/expo.webp" alt="">
+		</div>
+		<h2 class="feature-card__title">Expo Manager</h2>
+		<p class="feature-card__tagline">Organize shots, assets, and edits in your production, using Kitsu as a backend.</p>
 	</a>
 	<a class="feature-card" href="../addons/pose_shape_keys">
 		<div class="feature-card__thumbnail">

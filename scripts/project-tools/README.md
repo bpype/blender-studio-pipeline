@@ -7,11 +7,9 @@ of having a shared network folder available to all participants.
 This shared folder can be read-only as it is used to ensure that all participants has the same Blender
 version and add-ons.
 
-You can use the assistant scripts to get running quickly! Below the assistant scripts the core scripts themselves will be explained in the order one needs to execute them to setup everything correctly manually.
+To get started, create a project folder skeleton with `init_project_folder_structure.py`, then follow the sections below to configure Blender and extensions.
 
-Let's get going!
-
-**NOTE:** All scripts besides the `init_project_folder_structure.py` script, is only meant to be run from within the created folder skeleton!
+**NOTE:** All scripts besides `init_project_folder_structure.py` are only meant to be run from within the created folder skeleton.
 
 ## init_project_folder_structure.py
 

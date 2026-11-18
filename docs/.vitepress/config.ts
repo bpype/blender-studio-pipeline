@@ -75,11 +75,12 @@ export default defineConfig({
               { text: 'Prepare Edit', link: '/pipeline/project-workflow/usage-sync-edit' },
               { text: 'Creating Assets', link: '/pipeline/project-workflow/usage-asset' },
               { text: 'Building Shots', link: '/pipeline/project-workflow/usage-build-shot' },
-              { text: 'Playblast Shot', link: '/pipeline/project-workflow/usage-playblast' },
-              { text: 'Import Playblast', link: '/pipeline/project-workflow/usage-import-playblast' },
+              { text: 'Publish Shot', link: '/pipeline/project-workflow/usage-playblast' },
+              { text: 'Import Publish', link: '/pipeline/project-workflow/usage-import-playblast' },
               { text: 'Update Shot', link: '/pipeline/project-workflow/usage-update-shot' },
-              { text: 'Flamenco Render', link: '/pipeline/project-workflow/usage-render-flamenco' },
+              { text: 'Render Shot', link: '/pipeline/project-workflow/usage-render-flamenco' },
               { text: 'Render Review', link: '/pipeline/project-workflow/usage-render-review' },
+              { text: 'Import Render', link: '/pipeline/project-workflow/usage-import-render' },
               { text: 'Final Render', link: '/pipeline/project-workflow/usage-final-render' },
             ]
           },
@@ -155,6 +156,23 @@ export default defineConfig({
               { text: 'Anim Cupboard', link: '/addons/anim_cupboard' },
               { text: 'Asset Pipeline', link: '/addons/asset_pipeline' },
               { text: 'Blender Kitsu', link: '/addons/blender_kitsu' },
+              {
+                text: 'Expo Manager',
+                collapsed: true,
+                items: [
+                  { text: 'Introduction', link: '/addons/expo-manager/introduction.md' },
+                  { text: 'Configuration', link: '/addons/expo-manager/configuration.md' },
+                  { text: 'Context', link: '/addons/expo-manager/context.md' },
+                  { text: 'File Builder', link: '/addons/expo-manager/file_builder.md' },
+                  { text: 'Shots', link: '/addons/expo-manager/shot.md' },
+                  { text: 'Assets', link: '/addons/expo-manager/asset.md' },
+                  { text: 'Editing', link: '/addons/expo-manager/edit.md' },
+                  { text: 'Render Review', link: '/addons/expo-manager/render-review.md' },
+                  { text: 'Conventions', link: '/addons/expo-manager/conventions.md' },
+                  { text: 'Backups', link: '/addons/expo-manager/backups.md' },
+
+                ]
+              },
               { text: 'Blender Log', link: '/addons/blender_log' },
               { text: 'Brushstroke Tools', link: '/addons/brushstroke_tools' },
               {
@@ -245,6 +263,7 @@ export default defineConfig({
         text: 'Archive',
         collapsed: true,
         items: [
+          { text: 'Blender Kitsu', link: '/addons/blender_kitsu' },
           { text: 'Pipeline Proposal', link: '/archive/pipeline-proposal-2019/introduction' },
           { text: 'Attact Updates', link: '/archive/pipeline-proposal-2019/attract-improvements' },
           { text: 'Task Companion Add-on', link: '/archive/pipeline-proposal-2019/task-companion-add-on' },
@@ -273,7 +292,7 @@ export default defineConfig({
   },
   // Override internal component 'VPNavBar'
   vite: {
-    resolve: {
+        resolve: {
       alias: [
         {
           find: /^.*\/VPNavBar\.vue$/,

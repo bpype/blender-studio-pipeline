@@ -1,4 +1,8 @@
+
 # Blender Kitsu
+::: warning
+The Blender Kitsu is no longer receiving updates. Add-on will soon be replaced with [Expo Manager](/addons/expo-manager/introduction.md). The last stable version of the add-on is available in the [Blender Studio Tools Blender 5.2 release bundle](https://projects.blender.org/studio/blender-studio-tools/releases/tag/blender-5.2).
+:::
 blender-kitsu is an add-on to interact with Kitsu from within Blender. It also has features that are not directly related to Kitsu but support certain aspects of the Blender Studio Pipeline. [Blender-Kitsu blogpost](https://studio.blender.org/blog/kitsu-addon-for-blender/)
 
 ## How to get started
@@ -12,7 +16,7 @@ If Kitsu is up and running and you can successfully log in via the web interface
 
 ###### **Setup Login Data**
 
-![image info](/media/addons/blender_kitsu/prefs_login.jpg)
+![image info](/media/archive/blender_kitsu/prefs_login.jpg)
 
 >**Host**: The web address of your kitsu server (e.g., https://kitsu.mydomain.com)<br/>
 **Email**: The email you use to log in to kitsu<br/>
@@ -22,7 +26,7 @@ Press the login button. If the login was successful, the next step is..
 
 ###### **Setup Project Settings**
 
-![image info](/media/addons/blender_kitsu/prefs_project.jpg)
+![image info](/media/archive/blender_kitsu/prefs_project.jpg)
 
 >**Project Root Directory**: Path to the root of your project. Will later be used to configure the addon on a per project basis<br/>
 
@@ -30,7 +34,7 @@ Press the login button. If the login was successful, the next step is..
 ###### **Setup Animation Tools**
 
 
-![image info](/media/addons/blender_kitsu/prefs_anim_tools.jpg)
+![image info](/media/archive/blender_kitsu/prefs_anim_tools.jpg)
 
 
 >**Playblast Root Directory**: Path to a directory in which playblasts will be saved to<br/>
@@ -40,19 +44,19 @@ Press the login button. If the login was successful, the next step is..
 
 ###### **Setup Lookdev Tools**
 
-![image info](/media/addons/blender_kitsu/prefs_lookdev.jpg)
+![image info](/media/archive/blender_kitsu/prefs_lookdev.jpg)
 
 >**Render Presets Directory**: Path to a directory in which you can save .py files that will be displayed in render preset dropdown. More info in: How to use render presets.<br/>
 
 ###### **Setup Media Search Paths**
 
-![image info](/media/addons/blender_kitsu/prefs_outdated_media.jpg)
+![image info](/media/archive/blender_kitsu/prefs_outdated_media.jpg)
 
 >**Path List**: List of paths to top level directory. Only media that is a child (recursive) of one of these directories will be scanned for outdated media.<br/>
 
 ###### **Setup Miscellaneous**
 
-![image info](/media/addons/blender_kitsu/prefs_misc.jpg)
+![image info](/media/archive/blender_kitsu/prefs_misc.jpg)
 
 >**Thumbnail Directory**: Directory where thumbnails will be saved before uploading them to kitsu. Cannot be edited.<br/>
 **Sequence Editor Render Directory**: Directory where sequence editor renderings will be saved before uploading them to kitsu. Cannot be edited<br/>
@@ -71,7 +75,7 @@ blender-kitsu sequence editor tools were constructed with the idea in mind to ha
 ##### Metadata Strips
 Metadata Strips are regular Movie Strips that can be linked to a shot in kitsu. It is a good idea to create a separate metadata strip in a separate channel that represents the shot. That gives you the freedom to assemble a shot out of multiple elements, like multiple storyboard pictures, and still have one metadata strip that contains the full shot range.
 
-![image info](/media/addons/blender_kitsu/metadata_strip.001.jpg)
+![image info](/media/archive/blender_kitsu/metadata_strip.001.jpg)
 
 >**Good to know**: A metadata strip can have 3 states. It can be **initialized** but **not** linked yet. That means the movie strips knows I am a metadata strip but I don't have a relationship to a shot on Kitsu yet. It can be **linked**, which means the strip is already initialized and is linked to a sequence_id and shot_id on Kitsu. Only if a strip is linked you can exchange metadata, push thumbnails etc. The last state is **uninitialized** which basically means it's a regular movie strips and has nothing to do with kitsu.
 
@@ -81,7 +85,7 @@ This will create a blank movie strip. The metadata strip will be placed one chan
 
 ###### Initialize a Shot
 1. Select a metadata strip and open the `Kitsu` tab in the sidebar of the sequence editor. You will find multiple ways on how to initialize your strip.
-![image info](/media/addons/blender_kitsu/sqe_init_shot.jpg)
+![image info](/media/archive/blender_kitsu/sqe_init_shot.jpg)
 
 2. Case A: Shot does **already exist** on Kitsu
 
@@ -89,7 +93,7 @@ This will create a blank movie strip. The metadata strip will be placed one chan
 
     2.2 Alternatively you can also link a shot by pasting the URL. (e.G: https://kitsu.yourdomain.com/productions/fc77c0b9-bb76-41c3-b843-c9b156f9b3ec/shots/e7e6be02-5574-4764-9077-965d57b1ec12) <br/>
 
-    ![image info](/media/addons/blender_kitsu/sqe_link_shot.jpg)
+    ![image info](/media/archive/blender_kitsu/sqe_link_shot.jpg)
 
 3. Case B: Shot **does not exist** on Kitsu yet
 
@@ -102,12 +106,12 @@ This will create a blank movie strip. The metadata strip will be placed one chan
     3.4 Execute the `Submit New Shot` operator in the `Push` Panel (Will warn you if the shot already exists on Kitsu). This operator can optionally populate each 'Shot' with a task set to the project's default task status.
 
 >**Note**: Most of the operator are selection sensitive. So you can do these operations for a batch of sequence strips. If you have nothing selected it will usually try to operate on all strips in the sequence editor. <br/>
-![image info](/media/addons/blender_kitsu/sqe_init_selection.jpg)
+![image info](/media/archive/blender_kitsu/sqe_init_selection.jpg)
 
 ##### Metadata
 If you select a single linked strip you will see a `Metadata` panel that shows you the information that is related to the sequence and shot the strip is linking to.
 
-![image info](/media/addons/blender_kitsu/sqe_metadata.jpg)
+![image info](/media/archive/blender_kitsu/sqe_metadata.jpg)
 
 The frame range will be updated by using the Blender editing tools on the strip. (trimming, sliding, etc.). <br/>
 If you execute the `Initialize Shot Start Frame` operator (refresh icon) the current in point of the strip will be remapped so the shot starts at 101 in the current editing state. <br/>
@@ -115,7 +119,7 @@ You can reassign the shot to another sequence by executing the `Link Sequence` O
 
 If you linked in a sequence that has no `["data"]["color"]` attribute on Kitsu yet the gpu overlay line will be white. In order to add a new sequence color execute the `Add Sequence Color` operator. <br/>
 
-![image info](/media/addons/blender_kitsu/sqe_sequence_color_init.jpg)
+![image info](/media/archive/blender_kitsu/sqe_sequence_color_init.jpg)
 
 
 All this information and more can be `pushed` to kitsu which bring us to the next panel. <br/>
@@ -123,13 +127,13 @@ All this information and more can be `pushed` to kitsu which bring us to the nex
 ##### Missing Metadata Strip Media
 If your scene contains any metadata strips that have "missing media" a **Fix Metadata Strips** box will appear in your Kitsu Panel. Simply select the metadata strips that have missing media, or none to fix all strips, and run the `Fix Missing Media` operator. <br/>
 
-![image info](/media/addons/blender_kitsu/sqe_fix_metadata_media.jpg)
+![image info](/media/archive/blender_kitsu/sqe_fix_metadata_media.jpg)
 
 ##### Push
 
 In the `Push` panel you will find all the operators that push data to Kitsu. <br/>
 
-![image info](/media/addons/blender_kitsu/sqe_push.jpg)
+![image info](/media/archive/blender_kitsu/sqe_push.jpg)
 
 >**Metadata**: Pushes metadata of shot: sequence, shot name, frame range, sequence_color
 >>**Note**:  Global edit frame range will be saved in `"frame_in"` `"frame_out"` kitsu shot attribute <br/>
@@ -142,28 +146,28 @@ If you select multiple metadata strips it will always use the middle frame to cr
 ##### Pull
 In the `Pull` panel you will find all the operators that pull data from Kitsu to a metadata strip. <br/>
 
-![image info](/media/addons/blender_kitsu/sqe_pull.jpg)
+![image info](/media/archive/blender_kitsu/sqe_pull.jpg)
 
 >**Metadata**: Pulls metadata of shot: sequence, shot name, shot description and updates the strip name to match the shot name.
 >>**Note**:  Frame ranges will **never** be updated when pulling data from Kitsu. They belong to the edit and will only be pushed to Kitsu.<br/>
 
 If you have not sequence selected the `Pull Entire Edit` Operator will appear in the `Pull` panel.<br/>
 
-![image info](/media/addons/blender_kitsu/sqe_pull_entire_edit.jpg)
+![image info](/media/archive/blender_kitsu/sqe_pull_entire_edit.jpg)
 
 After you selected the channel it will go through all shots on Kitsu, create a metadata strip which will be linked to the respective shot and pulls all metadata. <br/>
 It will use te `frame_in` and `frame_out` attribute on Kitsu to determine the in and out points in the edit. So make sure these are up to date and don't overlap. <br/>
 
 As a result a bigger edit with nice sequence_colors can look pretty cool:
 
-![image info](/media/addons/blender_kitsu/sqe_sequence_colors.jpg)
+![image info](/media/archive/blender_kitsu/sqe_sequence_colors.jpg)
 
 
 ##### Multi Edit Metadata
 
 The `Multi Edit Metadata` panel only appears when you select multiple metadata strips that are all `initialized` but not `linked` yet. <br/>
 
-![image info](/media/addons/blender_kitsu/sqe_multi_edit.jpg)
+![image info](/media/archive/blender_kitsu/sqe_multi_edit.jpg)
 
 It is meant to be way to quickly setup lots of shots if they don't exist on Kitsu yet. You specify the sequence all shots should belong to and adjust the `Shot Counter Start` value. In the preview property you can see how all shots will be named when you execute the `Multi Edit Strip` operator. <br/>
 
@@ -171,7 +175,7 @@ It is meant to be way to quickly setup lots of shots if they don't exist on Kits
 ###### Advanced Settings
 If you enable the `Advanced` mode (via the screwdriver/wrench icon) next to the counter value, you have access to advance settings to customize the operator even more.
 
-![image info](/media/addons/blender_kitsu/sqe_multi_edit_advanced.jpg)
+![image info](/media/archive/blender_kitsu/sqe_multi_edit_advanced.jpg)
 
 You can adjust the number of counter digits, the increment size and also the `Pattern` it will use to generate the shot name. <br/>
 >**Pattern**: supports 3 wildcards. `<Sequence>`, `<Counter>`, `<Project>`, `Episode` that can be used multiple times in any order. <br/>
@@ -181,31 +185,31 @@ You can adjust the number of counter digits, the increment size and also the `Pa
 ##### Import Media
 A collection of operators to Import media based on the Shot associated with the selected metadata strip(s). <br/>
 
-![Media Panel](/media/addons/blender_kitsu/media_panel.jpg)
+![Media Panel](/media/archive/blender_kitsu/media_panel.jpg)
 ##### Import Playblast
 With a metadata strip selected `Import Playblast` Operator will find an image sequence of a given task type located in the Frames Root directory.
-![Import Playblast](/media/addons/blender_kitsu/import_playblast.jpg)
+![Import Playblast](/media/archive/blender_kitsu/import_playblast.jpg)
 
 Use this operator to import image sequences that have been approved via the Render Review system. Image Sequences can be loaded as either `EXR` or `JPG` sequences.
 
 ##### Import Image Sequence
 With a metadata strip selected `Import Image Sequence` Operator will find an image sequence of a given task type located in the Frames Root directory.
-![Import Image Sequence](/media/addons/blender_kitsu/shot_image_sequence.jpg)
+![Import Image Sequence](/media/archive/blender_kitsu/shot_image_sequence.jpg)
 
 Use this operator to import image sequences that have been approved via the Render Review system. Image Sequences can be loaded as either `EXR` or `JPG` sequences.
 
 ##### General Sequence Editor Tools
 In the general tab you can find some tools that don't directly relate to Kitsu but are useful for editing.
 
-![image info](/media/addons/blender_kitsu/sqe_outdated_scan.jpg)
+![image info](/media/archive/blender_kitsu/sqe_outdated_scan.jpg)
 
 `Scan for outdated media` will scan the selected / all sequence strips for their source media file. It searches for a later version in either the Playblast directory or the "Media Update Search Paths" directories (set in the add-on preferences). If the current media file is outdated it will highlight that strip with a red line in the sequence editor:
 
-![image info](/media/addons/blender_kitsu/sqe_outdated_overlay.jpg)
+![image info](/media/archive/blender_kitsu/sqe_outdated_overlay.jpg)
 
 To update the outdated strips you can select them individually and by clicking the `Arrow Up` or `Arrow Down` you cycle through the available versions on disk. You will be prompted with an information if you reached the latest or oldest version.
 
-![image info](/media/addons/blender_kitsu/sqe_outdated_update.jpg)
+![image info](/media/archive/blender_kitsu/sqe_outdated_update.jpg)
 
 
 >**Note**: The operator searches for a version string e.G `v001` and checks files that are named the same but have a different version. <br/>
@@ -216,7 +220,7 @@ blender-kitsu context features were constructed with the idea in mind to create 
 
 To create 'context' you can find the `Context Browser` in the `Kitsu` panel in the sidebar of the 3D Viewport. <br/>
 
-![image info](/media/addons/blender_kitsu/context_browser.jpg)
+![image info](/media/archive/blender_kitsu/context_browser.jpg)
 
 By selecting the different drop down menus you can browse through the Kitsu file structure and set e.G the active sequence, active shot and task type you want to work on. <br/>
 
@@ -229,7 +233,7 @@ Depending on which `Task Type` you select different tool sets will be available.
 The animation tools will show up when you selected a `Task Type` with the name `Animation`. <br/>
 
 
-![image info](/media/addons/blender_kitsu/context_animation_tools.jpg)
+![image info](/media/archive/blender_kitsu/context_animation_tools.jpg)
 
 >**Create Playblast**: Will create a openGL viewport render of the viewport from which the operator was executed and uploads it to Kitsu. The `+` button increments the version of the playblast. If you would override an older version you will see a warning before the filepath. The `directory` button will open a file browser in the playblast directory. The playblast will be uploaded to the `Animation` Task Type of the active shot that was set in the `Context Browser`. The web browser will be opened after the playblast and should point to the respective shot on Kitsu. By default Metadata will be burned into the playblast file, to disable this enable `Manual Playblast Burn-Ins` in Add-On preferences. <br/>
 **Push Frame Start**: Will Push the current scene's frame start to Kitsu. This will set the `['data']['3d_start]` attribute of the Kitsu shot.
@@ -278,7 +282,7 @@ Backups need to be manually restored.
 ##### Lookdev Tools
 The lookdev tools will show up when you selected a `Task Type` with the name `Lighting` | `Rendering` | `Compositing`. <br/>
 
-![image info](/media/addons/blender_kitsu/context_lookdev_tools.jpg)
+![image info](/media/archive/blender_kitsu/context_lookdev_tools.jpg)
 
 >**Apply Render Preset**: Consists of a dropdown menu that displays all `.py` files which are present in the `Render Presets Directory` (defined in the add-on preferences). Select the `.py` file you want to execute. When you hit the `Play` button the `main()` function of the python file will be executed. Very useful to quickly switch between different render settings.
 
@@ -287,7 +291,7 @@ The lookdev tools will show up when you selected a `Task Type` with the name `Li
 blender-kitsu has different checks that are performed during file load or during editing. If it detects an error that prevents other operators to run it will display an error in the ui. <br/>
 
 
-![image info](/media/addons/blender_kitsu/error_animation.jpg)
+![image info](/media/archive/blender_kitsu/error_animation.jpg)
 
  ## Shot Builder
 Shot Builder is a Feature of the Blender Kitsu Add-on To automatically build shot files, using the data from Kitsu server and the file structures defined on the [Blender Studio](https://studio.blender.org/tools/naming-conventions/project-files-folder-structure) website.
@@ -303,23 +307,23 @@ Shot Builder is a Feature of the Blender Kitsu Add-on To automatically build sho
 
 ### Getting Started
 #### Shot Setup
-The Shot Builder requires shot data including Name, Frame Rate, and Duration to be stored on a Kitsu Server. Please follow the [Sequence Editor](#sequence-editor) guide to create metadata strips and Push that data to the Kitsu server or follow the [Kitsu First Production](https://kitsu.cg-wire.com/first_production/) to manually enter this data into the Kitsu Server. 
+The Shot Builder requires shot data including Name, Frame Rate, and Duration to be stored on a Kitsu Server. Please follow the [Sequence Editor](#sequence-editor) guide to create metadata strips and Push that data to the Kitsu server or follow the [Kitsu First Production](https://kitsu.cg-wire.com/first_production/) to manually enter this data into the Kitsu Server.
 
 #### Asset Setup
 ##### Kitsu Server
 Assets needs to be associated with each shot in your production. Please follow the [Kitsu Breakdown](https://kitsu.cg-wire.com/getting-started-production/) guide to Cast your assets to shots.
 
 ##### Assets
-To match Assets File to the casting breakdown on the Kitsu server, we need to tag the Asset with a filepath and collection. This can be done via the Blender Kitsu Add-On. This data will be used to match a Kitsu Asset with a Collection within a .blend file, that will be linked into all shots that have that Asset "casted in it". 
+To match Assets File to the casting breakdown on the Kitsu server, we need to tag the Asset with a filepath and collection. This can be done via the Blender Kitsu Add-On. This data will be used to match a Kitsu Asset with a Collection within a .blend file, that will be linked into all shots that have that Asset "casted in it".
 
 1. Open the file for a given Asset.
 2. Under the Kitsu>Context Panel, check the following settings.
-    - **Type** is set to Asset. 
-    - **Asset Type** is set to the correct Asset Type (Collection, Prop, etc) 
+    - **Type** is set to Asset.
+    - **Asset Type** is set to the correct Asset Type (Collection, Prop, etc)
     - **Asset** Field is set to the matching entry on the Kitsu server for the current file.
 3. Under the Kitsu>Context>Set Asset sub-panel...
     - **Collecton**  is set to the Asset's parent collection.
-    - Run the **Set Kitsu Asset** operator to send the current filepath and selected collection to the Kitsu Server. 
+    - Run the **Set Kitsu Asset** operator to send the current filepath and selected collection to the Kitsu Server.
 
 You should now see the filepath and collection under the Asset's Metadata on the Kitsu Server.
 
@@ -337,14 +341,14 @@ Arguments to use in hooks
     shot: Shot class from blender_kitsu.types.py
     prod_path: str # path to production root dir (your_project/project_files/)
     shot_path: str # path to shot file (your_project/project_files/pro/shots/{sequence_name}/{shot_name}/{shot_task_name}.blend)
-    
+
 Notes
      matching_task_type = ['anim', 'lighting', 'fx', 'comp'] # either use list or just one string
      output_col_name = shot.get_output_collection_name(task_type_short_name="anim")
 
 ```
 #### Editorial Exports
-Shot Builder can load Exports from Editorial to the .blend's VSE for reference. 
+Shot Builder can load Exports from Editorial to the .blend's VSE for reference.
 
 1. Open `Edit>Preferences>Add-Ons`
 2. Search for the `Blender Kitsu` Add-On
@@ -360,7 +364,7 @@ Shot Builder can load Exports from Editorial to the .blend's VSE for reference.
 
 
 ### Templates
-Template files are used to implement custom UI when building new shots. Templates are custom .blend files named after the corresponding task type on the Kitsu Server for a given project. Workspaces from the template files are loaded into newly built shot files. 
+Template files are used to implement custom UI when building new shots. Templates are custom .blend files named after the corresponding task type on the Kitsu Server for a given project. Workspaces from the template files are loaded into newly built shot files.
 
 1. Save a new .blend file in the directory `your_project_name/project_files/pro/config/shot_builder/templates`
 2. Name the .blend file after a task type in Kitsu (e.g. Animation, Layout, Compositing), name must match exactly the [task type](https://kitsu.cg-wire.com/customization-pipeline/#task-type) name on Kitsu Server.
@@ -372,10 +376,10 @@ Template files are used to implement custom UI when building new shots. Template
 ### Settings
 Settings.json file can be created by navigating to add-on preferences and running the "Save Shot Builder Settings File" operator. This will save hook files at `your_project_name/project_files/pro/config/shot_builder` directory.
 
-Settings file controls core features of the shot builder on a task type basis. 
+Settings file controls core features of the shot builder on a task type basis.
 
 Features
-- `OUTPUT_COL_CREATE` decide to create an output collection for a given task type. 
+- `OUTPUT_COL_CREATE` decide to create an output collection for a given task type.
 - `OUTPUT_COL_LINK_MAPPING` controls which output collections are linked into which shot files. (e.g. link animation output collection into lighting file)
 - `LOAD_EDITORIAL_REF` controls if the editorial export is imported into a given shot file
 - `ASSET_TYPE_TO_OVERRIDE` collections matching these prefixes will be created with override if true

@@ -24,7 +24,7 @@ There are two methods of version control for projects:
 - **Disk Versions:**
   As a backup, new versions are saved in the relevant shot or asset directory when new [playblast](/pipeline/project-workflow/usage-playblast) versions are created.
 
-_This setting can be configured when using the [Setup Assistant](/studio-setup/setup_assistant.md)._
+Choose the version management mode that matches your project's workflow.
 
 ### Version Controlled Folder Layout
 ```bash
@@ -61,7 +61,7 @@ For simplicity, this guide assumes you are working within your system's **home f
   ```
 
 Next, create the project folder and all subfolders.
-This can be handled automatically by [`setup_assistant.py`](/studio-setup/setup_assistant.md) or [created manually](/tools/scripts/project-tools/folder_structure_setup.md) via the project tools scripts.
+Create the project folders using the [Project Folder Setup](/tools/scripts/project-tools/folder_structure_setup.md) guide.
 
 ### Full Folder Structure Overview
 ```bash

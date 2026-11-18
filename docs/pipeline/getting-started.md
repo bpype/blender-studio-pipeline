@@ -4,11 +4,11 @@ The Blender Studio Pipeline is a collection of open-source software centered aro
 
 ## Quick Start
 
-Our design principles of an editorial-centric workflow, review and approval, and no caching are implemented in the Expo Project Manager:
+Our design principles of an editorial-centric workflow, review and approval, and no caching are implemented in Expo Manager:
 
-- [**Expo Project Manager**](../addons/blender_kitsu.md)
+- [**Expo Manager**](../addons/expo-manager/introduction.md)
 
-It's a Blender extension for building and managing production files using a [Kitsu server](https://kitsu.cg-wire.com/) for task management. It supports our [project workflow](/pipeline/project-workflow/project-usage.md).
+It's a Blender extension for building and managing production files using a [Kitsu server](https://kitsu.cg-wire.com/) for task management. It supports our [project workflow](/pipeline/workflow.md).
 
 
 ## Set Up Your Own Studio Pipeline
@@ -19,7 +19,7 @@ At Blender Studio, we want to share what we know about making animated films. Th
 
 - **Launching Blender**: It's important to ensure everyone on the team is running the same version of Blender. You may choose to use an [LTS release from a package manager](https://www.blender.org/download/lts/) for automatic updates. We use [Project Tools](/tools/scripts/project-tools/overview.md) to distribute Blender to our workstations and launch it in an isolated "production environment", and control the exact version of Blender the production is using.
 
-- **Project Manager**: We use [Expo Project Manager](/addons/expo_project_manager.md), a Blender extension for building and managing production files with a [Kitsu server](https://kitsu.cg-wire.com/) for task management. It supports our [project workflow](/pipeline/project-workflow/project-usage.md).
+- **Project Manager**: We use [Expo Manager](/addons/expo-manager/introduction.md), a Blender extension for building and managing production files with a [Kitsu server](https://kitsu.cg-wire.com/) for task management. It supports our [project workflow](/pipeline/workflow.md).
 
 - **Version Control**: We use [Git](/studio-setup/git-setup.md) to store all of our project files in a version-controlled manner. This ensures that all revisions are snapshotted and makes it easy to restore any file you need.
 
@@ -29,5 +29,4 @@ At Blender Studio, we want to share what we know about making animated films. Th
 
 - **Python**: Sometimes you need to run scripts outside of Blender. Having the right [Python](/studio-setup/python.md) installed on all your machines is important.
 
-- **Rendering**: We use [Flamenco](/studio-setup/flamenco_setup.md) as our render-farm solution. It runs on all our workstations, allowing them to form a distributed render farm within the studio. If you choose, you can also render locally using [Expo Project Manager](/addons/expo_project_manager.md).
-
+- **Rendering**: We use [Flamenco](/studio-setup/flamenco_setup.md) as our render-farm solution. It runs on all our workstations, allowing them to form a distributed render farm within the studio. If you choose, you can also render locally using [Expo Manager](/addons/expo-manager/shot.md#publish-preview--publish-render).
