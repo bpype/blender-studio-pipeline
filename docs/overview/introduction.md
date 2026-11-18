@@ -28,7 +28,7 @@ Over the years –while contributing to Blender's design and development– the 
 	</a>
 </div>
 
-Join the discussion at the [Blender Studio Tools Channel](https://blender.chat/channel/blender-studio-tools) on Blender Chat, the central hub for discussion about the Blender Studio Tools.
+Join the discussion at the [Blender Studio Tools Channel](https://chat.blender.org/#/room/#blender-studio-pipeline:blender.org) on Blender Chat, the central hub for discussion about the Blender Studio Tools.
 
 -----------------------------------------------------------------------------------------------
 
