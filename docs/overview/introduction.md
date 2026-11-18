@@ -19,7 +19,7 @@ Over the years –while contributing to Blender's design and development– the 
 		<h2 class="feature-card__title">Pipeline</h2>
 		<p class="feature-card__tagline">How we make films entirely in Blender, and how we organize and collaborate on our projects.</p>
 	</a>
-	<a class="feature-card" href="./../pipeline/introduction">
+	<a class="feature-card" href="./../studio-setup/introduction">
 		<div class="feature-card__thumbnail">
 			<img src="../media/banners/studio.jpg" alt="">
 		</div>
