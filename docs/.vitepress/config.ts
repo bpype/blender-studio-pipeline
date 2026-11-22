@@ -221,7 +221,7 @@ export default defineConfig({
             items: [
               { text: 'Populating Shared', link: '/tools/scripts/project-tools/folder-structure-setup/populating_shared' },
               { text: 'Populating Project Files', link: '/tools/scripts/project-tools/folder-structure-setup/populating_project_files' },
-              { text: 'Blender Setup', link: '/tools/scripts/project-tools/blender_setup' },
+              { text: 'Blender Setup', link: '/tools/scripts/project-tools/project-blender' },
               { text: 'Extensions Setup', link: '/tools/scripts/project-tools/extensions_setup' },
               { text: 'Add-ons Preferences', link: '/tools/scripts/project-tools/addon_preferences' },
             ],
