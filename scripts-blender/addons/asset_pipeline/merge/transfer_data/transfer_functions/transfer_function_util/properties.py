@@ -105,8 +105,8 @@ def copy_coll_prop(src_cp, tgt_cp, x_mirror=False):
 
 def copy_custom_property(src_owner, tgt_owner, prop_name, x_mirror=False):
     """Copy a custom property (one that was created via the UI or via Python dictionary syntax)."""
+    assert prop_name in src_owner.keys(), f'Property "{prop_name}" not found in {src_owner}.'
     prop = src_owner.id_properties_ui(prop_name)
-    assert prop, f'Property "{prop_name}" not found in {src_owner}.'
     value = src_owner[prop_name]
     if x_mirror:
         value = x_mirror_value(value)

@@ -1,24 +1,24 @@
 # Shot Assembly
 
 
-Before Shot Assembly can begin two requirements need to be met. Firstly, shots to be assembled need to have corresponding Tasks on the Kitsu Server, and secondly those shots must have Assets ‘cast’ or associated with each shot. These will describe when the shot happens in the edit and what assets appear in the shot.
+Before shot assembly can begin, two requirements must be met. First, the Shots to be assembled need corresponding Tasks on the Kitsu server. Second, those Shots must have Assets cast or associated with them. These records describe when each Shot happens in the Edit and which Assets appear in it.
 
 
 
 ::: info Building a Project
-Learn how to build a complete project including shots in a step-by-step format, see the [Project Usage Guide](/artist-guide/project_tools/project-usage.md).
+Learn how to build a complete project, including Shots, in the [Project Workflow](/pipeline/workflow.md).
 :::
 ## Preparing Metadata Strips from a Previz Sequence
 
-To begin Shot Assembly it is required to describe the name/length of each shot inside a “Video Sequence Editor” .blend file. Once a Previz Sequence has been assembled into the VSE, ['Metadata Strips’](https://studio.blender.org/tools/addons/blender_kitsu#metadata-strips) can be created for each shot. A Metadata Strip is an empty video strip that is linked into the project management software Kitsu. Metadata Strips are used to push updates to the frame ranges of each shot to Kitsu, which are later used in the Shot Assembly process.
+To begin shot assembly, create strips with each Shot's name and duration in an [Edit .blend file](/addons/expo-manager/edit.md). After assembling a previz Sequence in the VSE, create [metadata strips](/addons/expo-manager/edit.md#metadata-strips) for each Shot. Each metadata strip represents a Shot linked to Kitsu and is used to push its frame range to the server.
 
-Metadata Strips are created from the Previz Strips, they are either linked to an existing Kitsu Shot, or a new Shot/Sequence can be pushed from the VSE to the Kitsu Server. The shot’s in, out and duration will be determined by the strip’s length. Multiple Metadata Strips can be made out of a single previz strip if required, adjust the shot’s timing by simply trimming the Metadata Strip in the timeline. These Metadata Strips are then pushed to Kitsu Server to update the shot info on the server side. Below is a Previz Sequence with it’s Metadata Strips.
+Metadata strips are created from previz strips. They can be linked to an existing Kitsu Shot, or a new Shot and Sequence can be created in the VSE and pushed to the Kitsu server. The Shot's start frame, end frame, and duration are determined by the strip's length. If needed, create multiple metadata strips from one previz strip and adjust each Shot's timing by trimming its metadata strip in the timeline. Push the metadata strips to Kitsu to update the Shot information. The image below shows a previz Sequence with its metadata strips.
 
 
-![Metadata Strips](/media/pipeline-overview/shot-production/pets_metadata_strips.png)
+![Metadata Strips](/media/addons/expo_manager/edit_metadata_strips.jpg)
 
 ::: info Preparing an Edit
-For more information about Metadata Strips and the processes involved in managing the edit of your film see the [Prepare Edit Guide](/artist-guide/project_tools/usage-sync-edit.md).
+For more information about metadata strips and the processes involved in managing your film's Edit, see the [Prepare Edit Guide](/pipeline/project-workflow/usage-sync-edit.md).
 :::
 
 ## Shot Types
@@ -30,7 +30,7 @@ For more information about Metadata Strips and the processes involved in managin
 
 ## Maintaining Existing Shots
 
-After shots have been created in some cases the shot’s length or position may be adjusted by the editor. These changes will be tracked in Kitsu using the Metadata Strips described above. If a Metadata Strip for a given shot has been changed, those changes will be pushed into Kitsu. In this case when users open a shot file they will be warned within the Playblast Tools section of their Kitsu add-on to pull the new frame range into their .blend file.
+After Shots have been created, the editor may adjust their length or position. These changes are tracked in Kitsu through the metadata strips described above. Push the changes to Kitsu. When users open a Shot file, Expo Manager's Frame Range panel warns them if they need to pull the updated frame range into their `.blend` file.
 
 
-![Frame Range Outdated](/media/artist-guide/project_tools/frame_range_out_of_date.png)
+![Frame Range Outdated](/media/addons/expo_manager/frame_range_panel.jpg)
