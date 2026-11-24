@@ -4,7 +4,7 @@
 
 from bpy.types import Object, Scene
 
-from .... import constants
+from .... import constants, logging
 from ....props import AssetTransferData
 from ...task_layer import get_transfer_data_owner
 from ..transfer_util import find_ownership_data
@@ -17,6 +17,12 @@ from .transfer_function_util.properties import (
 
 
 def transfer_custom_prop(prop_name: str, target_obj: Object, source_obj: Object):
+    if prop_name not in get_all_runtime_prop_names(source_obj):
+        # The ownership data refers to a property that no longer exists on the source object.
+        logging.get_logger().warning(
+            f"Custom Property '{prop_name}' not found on '{source_obj.name}', skipping transfer to '{target_obj.name}'."
+        )
+        return
     copy_runtime_property(source_obj, target_obj, prop_name)
     transfer_drivers(source_obj, target_obj, '', prop_name)
 
